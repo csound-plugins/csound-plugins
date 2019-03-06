@@ -1,0 +1,26 @@
+#!/bin/bash
+CSD=bench_dict_get.csd
+echo
+echo
+echo "Benchmarking get speed, hashtable vs channel"
+
+bench() {
+    NUMKEYS=$1
+    echo -e "\n\n----------------------------------------------------------"
+    echo
+    echo "                  numkeys: " $NUMKEYS
+    echo
+    echo ">>>>>>>>>>>>>>>>>> hashtable version <<<<<<<<<<<<<"
+    echo
+    csound --nosound --omacro:NUMKEYS=$NUMKEYS --omacro:INSTRNUM=3 "$CSD" 2>&1 | grep "Elapsed time at end of performance"
+    
+    echo
+    echo ">>>>>>>>>>>>>>>>> chnset version <<<<<<<<<<<<<<<<<"
+    echo
+    csound --nosound --omacro:NUMKEYS=$NUMKEYS --omacro:INSTRNUM=2 "$CSD" 2>&1 | grep "Elapsed time at end of performance"
+}
+
+
+for numkeys in 5000 10000 50000 100000 200000; do
+    bench $numkeys
+done

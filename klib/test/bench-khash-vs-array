@@ -1,0 +1,7 @@
+#!/bin/bash
+echo Array version
+sleep 1
+csound --nosound dict_bench_array.csd     2>&1 | grep "Elapsed time at end of performance"
+echo khash version
+sleep 1
+csound --nosound dict_bench_intfloat.csd  2>&1 | grep "Elapsed time at end of performance"

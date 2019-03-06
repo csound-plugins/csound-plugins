@@ -1,0 +1,12 @@
+#!/bin/bash
+CSD=bench_dict_set.csd
+
+echo
+echo ">>>>>>>>>>>>>>>>>> hashtable version <<<<<<<<<<<<<"
+echo
+csound --omacro:INSTNUM=1 --nosound "$CSD" 2>&1 | grep "Elapsed time"
+
+echo
+echo ">>>>>>>>>>>>>>>>> chnset version <<<<<<<<<<<<<<<<<"
+echo
+csound --omacro:INSTNUM=2 --nosound "$CSD" 2>&1 | grep "Elapsed time"
