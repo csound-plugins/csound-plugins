@@ -61,10 +61,7 @@ instr 1
   printf ">>>> bar: %f,  foo: %f \n", 1, kbar, kfoo 
 
   ; now create another dict, this one will outlive this note
-  idict2 dict_new "ss", 1
-  
-  dict_set idict2, "baz", "bazvalue"
-  dict_set idict2, "hoo", "hoovalue"
+  idict2 dict_new "ss", 1, "baz", "bazvalue", "foo", "foovalue"
   
   ; schedule another inst, pass this dict
   event "i", 2, 0, 1, idict2
@@ -75,20 +72,20 @@ endin
 
 instr 2
   idict = p4
-  kbaz = dict_get(idict, "baz")
-  printf "instr 2, kbaz = %f \n", 1, kbaz
+  Sbaz = dict_get(idict, "baz")
+  printf "instr 2, kbaz = %s \n", 1, Sbaz
   
   ; free dict at the end of this note
   dict_free idict, 1  
   turnoff
 endin
 
-schedule 1, 0, 1
+; schedule 1, 0, 1
 
 </CsInstruments>
 <CsScore>
 
-; i 1 0 2
+i 1 0 2
 
 </CsScore>
 </CsoundSynthesizer> 
