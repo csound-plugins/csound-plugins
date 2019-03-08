@@ -1,12 +1,26 @@
+/*
+   kdict.c
 
-#include "/usr/local/include/csound/csdl.h"
-// #include "csdl.h"
-// #include "arrays.h"
-#include "/usr/local/include/csound/arrays.h"
-// #include "/usr/local/include/csound/csound.h"
-#include "khash.h"
-#include "ukstring.h"
-#include <ctype.h>
+  Copyright (C) 2019 Eduardo Moguillansky
+
+  This file is part of Csound.
+
+  The Csound Library is free software; you can redistribute it
+  and/or modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  Csound is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with Csound; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  02110-1301 USA
+
+  */
 
 /*
 
@@ -108,11 +122,10 @@
     the end of the collection.
     This opcode is meant to be used in a loop at k-time
 
-    kcount = dict_size(idict)
-    while kcount > 0 do
-      Skey, kvalue dict_iter idict
+    kidx = 0
+    while kidx < dict_size(idict)-1 do
+      Skey, kvalue, kidx dict_iter idict
       ; do something with Skey / kvalue
-      kcount -= 1
     od
 
   dict_size
@@ -129,6 +142,15 @@
 
 */
 
+// #include "csdl.h"
+#include "/usr/local/include/csound/csdl.h"
+// #include "arrays.h"
+#include "/usr/local/include/csound/arrays.h"
+#include "khash.h"
+#include "ukstring.h"
+#include <ctype.h>
+
+
 #define KHASH_STRKEY_MAXSIZE 63
 #define HANDLES_INITIAL_SIZE 200
 
@@ -141,10 +163,10 @@
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef DEBUG
-    #define DBG(fmt, ...) do {printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);}while(0)
+    #define DBG(fmt, ...) printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);
     #define DBG_(m) DBG("%s", m)
 #else
     #define DBG(fmt, ...)
@@ -172,7 +194,6 @@
 // p: an opcode struct with a member 'g' pointing to KHASH_GLOBALS
 #define get_handle(p) ( &((p)->g->handles[(int)*p->handleidx]) )
 
-
 // #define CSOUND_MULTICORE
 
 #ifdef CSOUND_MULTICORE
@@ -183,12 +204,60 @@
     #define UNLOCK(x) do {} while(0)
 #endif
 
+// ---------------------- Utilities -----------------------
+
+/**
+ * Adapted from kstring/ks_setn but with csound->ReAlloc as allocator
+ */
+static inline void
+kstr_setn(CSOUND *csound, kstring_t *ks, const char *src, int srclen) {
+    if(srclen >= ks->m) {
+        char *tmp;
+        ks->m = srclen + 1;
+        kroundup32(ks->m);
+        if ((tmp = (char*)csound->ReAlloc(csound, ks->s, ks->m)))
+            ks->s = tmp;
+        else {
+            ks->l = 0;
+            return;
+        }
+    }
+    ks->l = srclen;
+    memcpy(ks->s, src, ks->l);
+    ks->s[ks->l] = 0;
+}
+
+/**
+ * set ks to s, reallocating if necessary.
+ * A kstring never shrinks down, only grows
+ */
+static inline void
+kstr_set_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
+    kstr_setn(csound, ks, s->data, strlen(s->data));
+}
+
+/**
+ * init ks to s
+ */
+static inline void
+kstr_init_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
+    ks->s = csound->Strdup(csound, s->data);
+    ks->l = strlen(ks->s);
+    ks->m = ks->l + 1;
+}
+
+/**
+ * like strncpy but really makes sure that the dest str is 0 terminated
+ */
 static inline
 void strncpy0(char *dest, const char *src, size_t n) {
     strncpy(dest, src, n);
     dest[n] = '\0';
 }
 
+/**
+ * Set a STRINGDAT* from a source string and its length
+ */
 static inline int32_t
 stringdat_set(CSOUND *csound, STRINGDAT *s, const char *src, int32_t srclen) {
     if(s->data == NULL) {
@@ -203,12 +272,12 @@ stringdat_set(CSOUND *csound, STRINGDAT *s, const char *src, int32_t srclen) {
     return OK;
 }
 
-
 // float=1, str=2
 const int khStrFlt = 21;
 const int khStrStr   = 22;
 const int khIntStr   = 12;
 const int khIntFlt = 11;
+
 
 KHASH_MAP_INIT_STR(khStrFlt, MYFLT);
 KHASH_MAP_INIT_STR(khStrStr, kstring_t);
@@ -260,50 +329,35 @@ typedef struct {
     void *mutex_;
 } KHASH_GLOBALS;
 
-// ihandle hashtab_new "type", isglobal=0
+
+// ----------------- dict_new ------------------
+
 typedef struct {
     OPDS h;
     // outputs
     MYFLT *handleidx;
-
     // inputs
     STRINGDAT *keyvaltype;
     MYFLT *isglobal;
-    void *inargs[VARGMAX];
-
+    void  *inargs[VARGMAX];
     // internal
     KHASH_GLOBALS *g;
     int khtype;
 } DICT_NEW;
 
-// ihandle hashtab_new "type", isglobal=0
-typedef struct {
-    OPDS h;
-    // outputs
-    MYFLT *handleidx;
-
-    // inputs
-    STRINGDAT *keyvaltype;
-    MYFLT *isglobal;
-
-
-    // internal
-    KHASH_GLOBALS *g;
-    int khtype;
-} HASHTAB_NEW_INARGS;
-
-
 // forward declarations
 static int32_t dict_reset(CSOUND *csound, KHASH_GLOBALS *g);
 static int32_t _dict_free(CSOUND *csound, KHASH_GLOBALS *g, int32_t idx);
 
-// forward declaration for set_many funcs
 static int32_t set_many_ss(CSOUND *cs, void** inargs, int32_t numargs, KHASH_HANDLE *handle);
 static int32_t set_many_sf(CSOUND *cs, void** inargs, int32_t numargs, KHASH_HANDLE *handle);
 static int32_t set_many_is(CSOUND *cs, void** inargs, int32_t numargs, KHASH_HANDLE *handle);
 static int32_t set_many_if(CSOUND *cs, void** inargs, int32_t numargs, KHASH_HANDLE *handle);
 
-
+/**
+ * Create the globals struct. Will be called once, the first time one of the
+ * dict_ opcodes is called
+ */
 static KHASH_GLOBALS* create_globals(CSOUND *csound) {
     int err = csound->CreateGlobalVariable(csound, GLOBALS_NAME, sizeof(KHASH_GLOBALS));
     if (err != 0) {
@@ -319,16 +373,22 @@ static KHASH_GLOBALS* create_globals(CSOUND *csound) {
     return g;
 }
 
+/**
+ * get the globals struct
+ */
 static inline KHASH_GLOBALS* dict_globals(CSOUND *csound) {
     KHASH_GLOBALS *g = (KHASH_GLOBALS*)csound->QueryGlobalVariable(csound, GLOBALS_NAME);
     if(LIKELY(g != NULL)) return g;
     return create_globals(csound);
 }
 
+/**
+ * find a free index to create a new dict. Will grow the internal array if more
+ * room is needed
+ */
 static inline int32_t
 dict_getfreeslot(KHASH_GLOBALS *g) {
     KHASH_HANDLE *handles = g->handles;
-
     for(int32_t i=0; i<g->maxhandles; i++) {
         if(handles[i].khashptr == NULL)
             return i;
@@ -346,7 +406,14 @@ dict_getfreeslot(KHASH_GLOBALS *g) {
     return idx;
 }
 
-
+/**
+ *  Creates a new dict, sets its pointer at a free index and returns this index
+ *
+ * g: globals as returned by dict_globals
+ * khtype: the int signature of this dict
+ * isglobal: should this dict be deallocated together with the instrument or should
+ *           it outlive the instr
+ */
 static int32_t
 dict_make(CSOUND *csound, KHASH_GLOBALS *g, int khtype, int isglobal) {
     int32_t idx = dict_getfreeslot(g);
@@ -376,6 +443,10 @@ dict_make(CSOUND *csound, KHASH_GLOBALS *g, int khtype, int isglobal) {
     return idx;
 }
 
+/**
+ * dict_reset: function called when exiting performance
+ * @param g: globals
+ */
 static int32_t
 dict_reset(CSOUND *csound, KHASH_GLOBALS *g) {
     int32_t i;
@@ -392,6 +463,10 @@ dict_reset(CSOUND *csound, KHASH_GLOBALS *g) {
     return OK;
 }
 
+/**
+ * Free all memory associated with a dict at given idx, free the slot
+ * NB: a slot is free when the handle's khashptr is NULL
+ */
 static int32_t
 _dict_free(CSOUND *csound, KHASH_GLOBALS *g, int32_t idx) {
     KHASH_HANDLE *handle = &(g->handles[idx]);
@@ -441,6 +516,10 @@ _dict_free(CSOUND *csound, KHASH_GLOBALS *g, int32_t idx) {
     return OK;
 }
 
+/**
+ * function called when deiniting a dict (for example, when a local dict
+ * was created and the note it belongs to is released)
+ */
 static int32_t
 dict_deinit_callback(CSOUND *csound, DICT_NEW* p) {
     DBG("%s", "deinit callback");
@@ -453,7 +532,16 @@ dict_deinit_callback(CSOUND *csound, DICT_NEW* p) {
     return _dict_free(csound, g, idx);
 }
 
-// convert an int definition of a hashtab type A -> B to its string representation
+/**
+ * A dict has a type defined by a string of two characters. The first defined
+ * the type of the key, the second of the value. f=float, i=int, s=string
+ * This string representation has also a numeric representation, in base 10,
+ * where 1 = number, 2 = string
+ *
+ * This numeric representation is internal and we don't need to make the
+ * differentiation between int and float because keys can't be float.
+ * returns NULL if error
+ */
 static char*
 intdef_to_stringdef(int32_t intdef) {
     switch(intdef) {
@@ -469,8 +557,28 @@ intdef_to_stringdef(int32_t intdef) {
     return NULL;
 }
 
-// convert a str definition of a hashtab type A -> B to its int representation
-// returns -1 in case of error
+/**
+ * convert a type name to its int representation
+ * 1 = number, 2 = string (12 = number->string)
+ */
+static inline int32_t type_char_to_int(char c) {
+    switch(c) {
+    case 'S':
+        return 2;
+    case 'c':
+    case 'i':
+    case 'k':
+        return 1;
+    default:
+        return -1; // signal an error
+    }
+}
+
+
+/**
+ * convert a str definition of a dict type to its numeric representation
+ * returns -1 in case of error
+ */
 static int32_t
 stringdef_to_intdef(STRINGDAT *s) {
     if(strlen(s->data) != 2)
@@ -483,6 +591,19 @@ stringdef_to_intdef(STRINGDAT *s) {
     else return -1;
 }
 
+/**
+ * dict_new opcode, works at i-time only
+ *
+ * idict  dict_new Stype, [isglobal=0, key, value, key, value, ...]
+ *
+ * Stype: the type of the dict
+ *   sf: str -> float
+ *   ss: str -> str
+ *   if: int -> float
+ *   is: int -> str
+ *
+ *  isglobal: if 1, the dict is not deleted after the note is freed
+ */
 static int32_t
 dict_new(CSOUND *csound, DICT_NEW *p) {
     p->g = dict_globals(csound);
@@ -504,29 +625,14 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
 }
 
 
-
-// convert a type name to its int representation
-// 1 = number, 2 = string (12 = number->string)
-static inline int32_t type_char_to_int(char c) {
-    switch(c) {
-    case 'S':
-        return 2;
-    case 'c':
-    case 'i':
-    case 'k':
-        return 1;
-    default:
-        return -1; // signal an error
-    }
-}
-
-
-/* check a multi-arg signature of the form: key, value, key, value, ...
-   args: an array of arguments
-   numargs: the size of args
-   khtype: the integer representation of the type of a pair
+/**
+ * check a multi-arg signature of the form: key, value, key, value, ...
+ * @param args: an array of arguments
+ * @param numargs: the size of args
+ * @param khtype: the integer representation of the type of a pair
  */
-static int32_t check_multi_signature(CSOUND *csound, void **args, int numargs, int khtype) {
+static int32_t
+check_multi_signature(CSOUND *csound, void **args, int numargs, int khtype) {
     CS_TYPE *cstype;
     int pairtype = 0;
     if(numargs % 2 != 0)
@@ -549,7 +655,14 @@ static int32_t check_multi_signature(CSOUND *csound, void **args, int numargs, i
     return OK;
 }
 
-
+/**
+ * version of the opcode to allow to set initial values for
+ * a new dict
+ *
+ * Example:
+ *
+ *      idict  dict_new "sf", 0, "foo", 10, "bar", 20.5, "baz", 45
+ */
 static int32_t
 dict_new_many(CSOUND *csound, DICT_NEW *p) {
     int32_t ret = dict_new(csound, p);
@@ -579,7 +692,10 @@ dict_new_many(CSOUND *csound, DICT_NEW *p) {
 //                         SET
 // ------------------------------------------------------
 
-// hashtab_set ihandle, Skey, kvalue
+/**
+ * dict_set: set the value of an existing key, or create a new
+ * key:value pair
+ */
 typedef struct {
     OPDS h;
     // out
@@ -594,6 +710,7 @@ typedef struct {
     uint32_t counter;
 } DICT_SET_if;
 
+// init func for dict_set int->float
 static int32_t
 dict_set_if_0(CSOUND *csound, DICT_SET_if *p) {
     p->g = dict_globals(csound);
@@ -603,6 +720,7 @@ dict_set_if_0(CSOUND *csound, DICT_SET_if *p) {
     return OK;
 }
 
+// perf func for dict_set int->float
 static int32_t
 dict_set_if(CSOUND *csound, DICT_SET_if *p) {
     khint_t k;
@@ -634,13 +752,13 @@ dict_set_if(CSOUND *csound, DICT_SET_if *p) {
     return OK;
 }
 
+// init func to dict_set int->float at i-time
 static int32_t
 dict_set_if_i(CSOUND *csound, DICT_SET_if *p) {
     dict_set_if_0(csound, p);
     return dict_set_if(csound, p);
 }
 
-// hashtab_set ihandle, Skey, kvalue
 typedef struct {
     OPDS h;
     // out
@@ -656,6 +774,7 @@ typedef struct {
     char lastkey_data[KHASH_STRKEY_MAXSIZE+1];
 } DICT_SET_sf;
 
+// init func for dict_set str->float
 static int32_t
 dict_set_sf_0(CSOUND *csound, DICT_SET_sf *p) {
     KHASH_GLOBALS *g = dict_globals(csound);
@@ -667,6 +786,7 @@ dict_set_sf_0(CSOUND *csound, DICT_SET_sf *p) {
     return OK;
 }
 
+// perf func for dict_set str->float
 static int32_t
 dict_set_sf(CSOUND *csound, DICT_SET_sf *p) {
     KHASH_HANDLE *handle = get_handle(p);
@@ -702,6 +822,7 @@ dict_set_sf(CSOUND *csound, DICT_SET_sf *p) {
     return OK;
 }
 
+// i-time dict_set str->float
 static int32_t
 dict_set_sf_i(CSOUND *csound, DICT_SET_sf *p) {
     dict_set_sf_0(csound, p);
@@ -711,14 +832,11 @@ dict_set_sf_i(CSOUND *csound, DICT_SET_sf *p) {
 // hashtab_set ihandle, Skey, kvalue
 typedef struct {
     OPDS h;
-
     // out
     MYFLT *handleidx;
-
     // in
     STRINGDAT *outkey;
     STRINGDAT *outvalue;
-
     // internal
     KHASH_GLOBALS *g;
     uint64_t counter;
@@ -727,7 +845,7 @@ typedef struct {
     char lastkey_data[KHASH_STRKEY_MAXSIZE+1];
 } DICT_SET_ss;
 
-
+// init func for dict_set str->str
 static int32_t
 dict_set_ss_0(CSOUND *csound, DICT_SET_ss *p) {
     p->g = dict_globals(csound);
@@ -738,36 +856,6 @@ dict_set_ss_0(CSOUND *csound, DICT_SET_ss *p) {
     return OK;
 }
 
-
-// Adapted from kstring/ks_setn but with csound->ReAlloc as allocator
-static inline void kstr_setn(CSOUND *csound, kstring_t *ks, const char *src, int srclen) {
-    if(srclen >= ks->m) {
-        char *tmp;
-        ks->m = srclen + 1;
-        kroundup32(ks->m);
-        if ((tmp = (char*)csound->ReAlloc(csound, ks->s, ks->m)))
-            ks->s = tmp;
-        else {
-            ks->l = 0;
-            return;
-        }
-    }
-    ks->l = srclen;
-    memcpy(ks->s, src, ks->l);
-    ks->s[ks->l] = 0;
-}
-
-// set ks to s, reallocating if necessary. A kstring never shrinks down, only grows
-static inline void kstr_set_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
-    kstr_setn(csound, ks, s->data, strlen(s->data));
-}
-
-// init ks to s
-static inline void kstr_init_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
-    ks->s = csound->Strdup(csound, s->data);
-    ks->l = strlen(ks->s);
-    ks->m = ks->l + 1;
-}
 
 static inline void kstr_init(kstring_t *ks) {
     ks->l = 0;
@@ -874,6 +962,12 @@ dict_set_is(CSOUND *csound, DICT_SET_is *p) {
 //                      DEL
 // -----------------------------------------------------
 
+/*
+ * This removes a key:value pair from a dict. It is called
+ * as dict_set without a value
+ *
+ */
+
 typedef struct {
     OPDS h;
     MYFLT *handleidx;
@@ -965,7 +1059,8 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
 //                         GET
 // ------------------------------------------------------
 
-// kvalue hashtab_get ihandle, kkey, kdefault=0
+// kvalue dict_get ihandle, kkey, kdefault=0
+
 typedef struct {
     OPDS h;
     MYFLT *kout;
@@ -1020,7 +1115,8 @@ dict_get_if_i(CSOUND *csound, DICT_GET_if *p) {
     return dict_get_if(csound, p);
 }
 
-// kvalue hashtab_get ihandle, Skey (can be changed), kdefault=0
+// kvalue dict_get ihandle, Skey (can be changed), kdefault=0
+
 typedef struct {
     OPDS h;
     MYFLT *kout;
@@ -1064,9 +1160,6 @@ dict_get_sf(CSOUND *csound, DICT_GET_sf *p) {
     */
     // use cached idx, not really necessary since we declared ihandle as i-var
     KHASH_HANDLE *handle = &(p->g->handles[p->_handleidx]);
-    // these checks are not necessary since the handle can't change
-    // CHECK_HANDLE(handle);
-    // CHECK_HASHTAB_TYPE(handle->khtype, khStrFlt);
     khash_t(khStrFlt) *h = handle->khashptr;
     khiter_t k;
     // test fast path
@@ -1095,6 +1188,7 @@ dict_get_sf_i(CSOUND *csound, DICT_GET_sf *p) {
 }
 
 // kvalue dict_get idict, Skey (Skey can change)
+
 typedef struct {
     OPDS h;
     // out
@@ -1162,6 +1256,7 @@ hashtab_get_ss(CSOUND *csound, DICT_GET_ss *p) {
 
 
 // kvalue dict_get ihandle, kkey, kdefault=0
+
 typedef struct {
     OPDS h;
     STRINGDAT *outstr;
@@ -1218,15 +1313,17 @@ hashtab_get_is(CSOUND *csound, DICT_GET_is *p) {
 //           FREE
 // -------------------------------
 
-/*
+/**
+ * Free (destroy) a dict now or at the end of this note
+ *
+ * dict_free ihandle, iwhen (0=at init time, 1=end of note)
+ *
+ * modelled after ftfree
+ *
+ * NB: dict_free can only be called with a global dict (isglobal=1)
+ *
+ */
 
-  dict_free ihandle, iwhen (0=at init time, 1=end of note)
-
-  modelled after ftfree
-  
-  dict_free can only be called with a global hashtable (isglobal=1)
-  
-*/
 typedef struct {
     OPDS h;
     MYFLT *handleidx;
@@ -1242,11 +1339,13 @@ dict_free_callback(CSOUND *csound, DICT_FREE *p) {
     return _dict_free(csound, g, idx);
 }
 
+/**
+ * modelled after ftfree - works at init time
+ * Only global dicts can be freed in this way. Local dicts are deallocated
+ * automatically at the end of the note
+ */
 static int32_t
 dict_free(CSOUND *csound, DICT_FREE *p) {
-    // modeled after ftfree - works at init time 
-    // only global hashtables can be freed in this way. for local hashtables, the
-    // canonical way is to free them at the end of the note
     int32_t idx = (int32_t)*p->handleidx;
     KHASH_GLOBALS *g = dict_globals(csound);
     KHASH_HANDLE *handle = &(g->handles[idx]);
@@ -1285,18 +1384,18 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, KHASH_HANDLE *handle) {
     int32_t chars = 0;
     // linelength could be changed dynamically in the future
     const int32_t linelength = 80;
-    char currline[256];
+    char line[256];
     if(khtype == khIntFlt) {
         khash_t(khIntFlt) *h = handle->khashptr;
         char *fmt = "%d: %.5f";
         for(k = kh_begin(h); k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;            
-            chars += sprintf(currline+chars, "%d: %.5f", kh_key(h, k), kh_value(h, k));
+            chars += sprintf(line+chars, "%d: %.5f", kh_key(h, k), kh_value(h, k));
             if(chars < linelength) {
-                currline[chars++] = '\t';
+                line[chars++] = '\t';
             } else {
-                currline[chars+1] = '\0';
-                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)currline);
+                line[chars+1] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
                 chars = 0;
             }
         }
@@ -1304,12 +1403,12 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, KHASH_HANDLE *handle) {
         khash_t(khIntStr) *h = handle->khashptr;
         for(k = kh_begin(h); k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
-            chars += sprintf(currline+chars, "%d: %s", kh_key(h, k), kh_val(h, k).s);
+            chars += sprintf(line+chars, "%d: %s", kh_key(h, k), kh_val(h, k).s);
             if(chars < linelength) {
-                currline[chars++] = '\t';
+                line[chars++] = '\t';
             } else {
-                currline[chars+1] = '\0';
-                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)currline);
+                line[chars+1] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
                 chars = 0;
             }
         }
@@ -1317,12 +1416,12 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, KHASH_HANDLE *handle) {
         khash_t(khStrFlt) *h = handle->khashptr;
         for(k = kh_begin(h); k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;                      
-            chars += sprintf(currline+chars, "%s: %.5f", kh_key(h, k), kh_val(h, k));
+            chars += sprintf(line+chars, "%s: %.5f", kh_key(h, k), kh_val(h, k));
             if(chars < linelength) {
-                currline[chars++] = '\t';
+                line[chars++] = '\t';
             } else {
-                currline[chars+1] = '\0';
-                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)currline);
+                line[chars+1] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
                 chars = 0;
             }
         }
@@ -1330,12 +1429,12 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, KHASH_HANDLE *handle) {
         khash_t(khStrStr) *h = handle->khashptr;
         for(k = kh_begin(h); k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;                      
-            chars += sprintf(currline+chars, "%s: %s", kh_key(h, k), kh_val(h, k).s);
+            chars += sprintf(line+chars, "%s: %s", kh_key(h, k), kh_val(h, k).s);
             if(chars < linelength) {
-                currline[chars++] = '\t';
+                line[chars++] = '\t';
             } else {
-                currline[chars+1] = '\0';
-                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)currline);
+                line[chars+1] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
                 chars = 0;
             }
         }
@@ -1343,8 +1442,8 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, KHASH_HANDLE *handle) {
         return PERFERR(Str("dict: format not supported"));
     // last line
     if(chars > 0) {
-        currline[chars] = '\0';
-        csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)currline);
+        line[chars] = '\0';
+        csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
     }
     return OK;
 }
@@ -1376,6 +1475,26 @@ dict_print_k(CSOUND *csound, DICT_PRINT *p) {
     }
     return OK;
 }
+
+// --------------------------------------------------
+//                    QUERY
+// --------------------------------------------------
+
+/*
+ * kout dict_query idict, Scmd
+ *
+ * Query groups together different commands to get some information
+ * about the dictionary without having to create a specific opcode
+ *
+ *  Commands     Action
+ *
+ *   size        the number of key:value pairs
+ *   exists      does this idx point to a valid slot?
+ *   type        the type of this dict as an int signature
+ *   keys        the keys of this dict, as an array (k or S, depending on the type)
+ *   values      the values of this dict, as an array (k or S, depending on the type)
+ *
+ */
 
 
 typedef struct {
@@ -1422,8 +1541,6 @@ static int32_t dict_query_0(CSOUND *csound, DICT_QUERY1 *p) {
     dict_query(csound, p);
     return OK;
 }
-
-
 
 // dict_size: returns the number of key:valie pairs, -1 if dict does not exist
 
@@ -1558,6 +1675,8 @@ dict_query_arr(CSOUND *csound, DICT_QUERY_ARR *p) {
     }
 }
 
+
+// init func for dict_query when expecting an array
 static int32_t
 dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     p->g = dict_globals(csound);
@@ -1598,15 +1717,25 @@ dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     return OK;
 }
 
-/*   dict_iter
 
-    xkey, xvalue, kidx  dict_iter idict, kreset=1
+// ----------------------------------------------
+//                    ITER
+// ----------------------------------------------
 
-    ireset: the reseting policy.
-      0: do not reset. This will iterate at most once over the pairs, and stop
-      1: reset at the beginning of every k-cycle
-      2: reset at the end of iteration
-
+/**
+ * dict_iter
+ *
+ * xkey, xvalue, kidx  dict_iter idict, kreset=1
+ *
+ *   kreset: the reseting policy.
+ *     0: do not reset. This will iterate at most once over the pairs, and stop
+ *     1: reset at the beginning of every k-cycle (the default)
+ *     2: reset at the end of iteration
+ *
+ * xkey: the key of this pair
+ * xvalue: the value of this pair
+ * kidx: the index of this pair (will be -1 when reached end of iteration)
+ *
  */
 
 typedef struct {
@@ -1615,11 +1744,10 @@ typedef struct {
     void *outkey;
     void *outvalue;
     MYFLT *kidx;
-
     // in
     MYFLT *handleidx;
     MYFLT *kreset;
-
+    // internal
     KHASH_GLOBALS *g;
     uint32_t _handleidx;
     int32_t numyields;    // number of yields since last reset
@@ -1628,6 +1756,7 @@ typedef struct {
     char signature[3];
 } DICT_ITER;
 
+// dict_iter init function common to all types
 static int32_t
 dict_iter_init_common(CSOUND *csound, DICT_ITER *p) {
     p->_handleidx = (int32_t)*p->handleidx;
@@ -1742,7 +1871,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
     return OK;
 }
 
-
+/*
 // dict_set idict, "foo", 0.4, "var", 5, "baz", 10
 typedef struct {
     OPDS h;
@@ -1762,6 +1891,7 @@ dict_set_many_0(CSOUND *csound, DICT_SET_MANY *p) {
     check_multi_signature(csound, p->inargs, numargs, handle->khtype);
     return OK;
 }
+*/
 
 static int32_t
 set_many_ss(CSOUND *csound, void** inargs, int32_t numargs, KHASH_HANDLE *handle) {
@@ -1837,6 +1967,7 @@ set_many_is(CSOUND *csound, void** inargs, int32_t numargs, KHASH_HANDLE *handle
     return OK;
 }
 
+/*
 // set multiple key:value pairs
 static int32_t
 dict_set_many(CSOUND *csound, DICT_SET_MANY *p) {
@@ -1856,6 +1987,7 @@ dict_set_many(CSOUND *csound, DICT_SET_MANY *p) {
     }
     return NOTOK;
 }
+*/
 
 #define S(x) sizeof(x)
 
@@ -1879,8 +2011,8 @@ static OENTRY localops[] = {
     { "dict_set", S(DICT_SET_if), 0, 1, "",  "iii",  (SUBR)dict_set_if_i},
     { "dict_set", S(DICT_SET_is), 0, 3, "",  "ikS",  (SUBR)dict_set_is_0, (SUBR)dict_set_is },
 
-    { "dict_set.manyS", S(DICT_SET_MANY), 0, 3, "", "iSS*", (SUBR)dict_set_many_0, (SUBR)dict_set_many },
-    { "dict_set.manyk", S(DICT_SET_MANY), 0, 3, "", "iSk*", (SUBR)dict_set_many_0, (SUBR)dict_set_many },
+    // { "dict_set.manyS", S(DICT_SET_MANY), 0, 3, "", "iSS*", (SUBR)dict_set_many_0, (SUBR)dict_set_many },
+    // { "dict_set.manyk", S(DICT_SET_MANY), 0, 3, "", "iSk*", (SUBR)dict_set_many_0, (SUBR)dict_set_many },
 
     // { "dict_del", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
     { "dict_set", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
