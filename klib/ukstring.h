@@ -1,1 +1,0 @@
-/home/em/dev/c/ukstring.h

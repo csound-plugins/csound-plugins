@@ -18,7 +18,7 @@ opcode rndarr, i[], i
   iOut[] init inum 
   i0 = 0
   while i0 < inum do 
-    iOut[i0] = rnd(1)
+    iOut[i0] = unirand(1)
     i0 += 1
   od 
   xout iOut
@@ -98,16 +98,36 @@ instr 2
 
   ; compress / fade
   aref init 1 
-  again compress2 aref, aleft, -90, -48, -24, 3, 0.05, 0.2, 0.05
-  aenv = again * cossegr:a(0, 1, 1, 0.1, 0)
+  asig = 0.707 * (aleft + aright)
+  again compress2 aref, asig, -90, -48, -24, 2.5, 0.05, 0.2, 0.05
+  aleft *= again 
+  aright *= again 
+
+  again2 compress2 aref, (aleft+aright)*0.707, -90, -6, -3, 20, 0.002, 0.010, 0.02
+  aenv = again2 * cossegr:a(0, 1, 1, 0.1, 0)
   outs aleft*aenv, aright*aenv
 endin
+
+opcode test, a, k
+  kfreq xin 
+  aout oscili 0.1, kfreq 
+  xout aout 
+endop 
+
+instr 3
+  ; test udo
+  kfreqs[] fillarray 440, 443 
+  aA[] poly 2, "test", kfreqs 
+  a0 sumarray aA
+  outs a0, a0 
+endin 
       
 </CsInstruments>
 <CsScore>
 
-i 1 0 8
-i 2 9 50
+; i 1 0 8
+; i 2 9 50
+i 3 0 1
 
 </CsScore>
 </CsoundSynthesizer>
