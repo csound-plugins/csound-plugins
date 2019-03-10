@@ -32,13 +32,13 @@ The manifest should have the minimal form:
 
 ```json
 {
-    'name': 'mylib',
-    'opcodes': ['foo', 'bar'],
-    'author': 'name',
-    'author_email': 'name@email.com',
-    'license': 'LGPL',
-    'description': 'Description of this package',
-    'url': 'http://github.com/...'
+    "name": "mylib",
+    "opcodes": ["foo", "bar"],
+    "author": "name",
+    "author_email": "name@email.com",
+    "license": "LGPL",
+    "description": "Description of this package",
+    "url": "http://github.com/..."
 }
         
 ```
