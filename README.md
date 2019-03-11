@@ -1,8 +1,12 @@
+# Repository of plugins
+
+This is a repository for plugins for [csound](csound.com). 
+
 # Organisation
 
 An opcode is normally implemented as part of a library, to allow for different
 versions and related opcodes to share functionality.
-Each library should live in its own directory.
+Each library lives in its own directory.
 The tree can be structured as follows:
 
 
