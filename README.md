@@ -2,6 +2,10 @@
 
 This is a repository for plugins for [csound](csound.com). 
 
+# Documentation of all plugins
+
+See the [wiki](https://github.com/gesellkammer/csound-plugins/wiki)
+
 # Organisation
 
 An opcode is normally implemented as part of a library, to allow for different
