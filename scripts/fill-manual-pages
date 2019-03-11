@@ -1,0 +1,8 @@
+#!/bin/bash
+ownfolder=$(realpath $(dirname $0))
+echo $ownfolder
+templatefiles=$(find src -name "*.md_")
+echo $templatefiles
+for f in $templatefiles; do
+    ./scripts/fill-manual-page.py "$f"
+done

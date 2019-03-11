@@ -2,7 +2,7 @@
 base=poly
 pluginsdir=/usr/local/lib/csound/plugins64-6.0
 includedir=/usr/local/include/csound
-includeH=/home/em/dev/forks/csound/H
+# includeH=/home/em/dev/forks/csound/H
 libdir=/usr/local/lib/csound
 
 
@@ -14,8 +14,7 @@ cp ../$base.c .
 cp ../*.h .
 
 cmd="gcc -O2 -shared -msse2 -o $lib -Wall -std=c99 -fPIC -mfpmath=sse -ffast-math -Wall -Wextra \
- -Wno-missing-field-initializers -DUSE_DOUBLE -DB64BIT -I$includedir -I$includeH $base.c"
-# cmd="gcc -O1 -shared -o $lib -Wall -fPIC -DUSE_DOUBLE -I$includedir $base.c"
+ -Wno-missing-field-initializers -DUSE_DOUBLE -DB64BIT -I$includedir $base.c"
 
 echo -e "\n\n\n\n----------------------------------------\n\n\n\n"
 

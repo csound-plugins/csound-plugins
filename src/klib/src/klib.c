@@ -169,6 +169,8 @@ typedef uint64_t ui64;
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
 
+#define UI32MAX 0x7FFFFFFF
+
 // #define DEBUG
 
 #ifdef DEBUG
@@ -198,7 +200,10 @@ typedef uint64_t ui64;
                         (s)->size, KHASH_STRKEY_MAXSIZE)
 
 // p: an opcode struct with a member 'g':KHASH_GLOBALS* and input handleidx:MYFLT*
-#define get_handle(p) ( &((p)->g->handles[(i32)*p->handleidx]) )
+#define get_handle_check(p)  ((ui32)*(p)->handleidx < p->g->maxhandles ? &((p)->g->handles[(ui32)*(p)->handleidx]) : NULL)
+
+#define get_handle(p) (&((p)->g->handles[(ui32)*(p)->handleidx]))
+
 
 // #define CSOUND_MULTICORE
 
@@ -216,7 +221,7 @@ typedef uint64_t ui64;
  * Adapted from kstring/ks_setn but with csound->ReAlloc as allocator
  */
 static inline void
-kstr_setn(CSOUND *csound, kstring_t *ks, const char *src, int srclen) {
+kstr_setn(CSOUND *csound, kstring_t *ks, const char *src, ui32 srclen) {
     if(srclen >= ks->m) {
         char *tmp;
         ks->m = srclen + 1;
@@ -236,7 +241,7 @@ kstr_setn(CSOUND *csound, kstring_t *ks, const char *src, int srclen) {
 // set ks to s, reallocating if necessary. A kstring never shrinks down, only grows
 static inline void
 kstr_set_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
-    kstr_setn(csound, ks, s->data, strlen(s->data));
+    kstr_setn(csound, ks, s->data, (ui32)strlen(s->data));
 }
 
 // init ks to s
@@ -256,30 +261,32 @@ void strncpy0(char *dest, const char *src, size_t n) {
 
 // Set a STRINGDAT* from a source string and its length
 static inline i32
-stringdat_set(CSOUND *csound, STRINGDAT *s, const char *src, i32 srclen) {
+stringdat_set(CSOUND *csound, STRINGDAT *s, char *src, ui32 srclen) {
     if(s->data == NULL) {
         s->data = csound->Strdup(csound, src);
-        s->size = srclen + 1;
-    } else if (s->size <= srclen) {
+        s->size = (i32) srclen + 1;
+    } else if ((ui32)s->size <= srclen) {
         csound->Free(csound, s->data);
         s->data = csound->Strdup(csound, src);
-        s->size = srclen + 1;
+        s->size = (i32) srclen + 1;
     } else
         strcpy(s->data, src);
     return OK;
 }
 
 // float=1, str=2
-const int khStrFlt = 21;
-const int khStrStr = 22;
-const int khIntStr = 12;
-const int khIntFlt = 11;
+enum {
+    khStrFlt = 21,
+    khStrStr = 22,
+    khIntStr = 12,
+    khIntFlt = 11
+};
 
 // Initialize all possible types
-KHASH_MAP_INIT_STR(khStrFlt, MYFLT);
-KHASH_MAP_INIT_STR(khStrStr, kstring_t);
-KHASH_MAP_INIT_INT(khIntFlt, MYFLT);
-KHASH_MAP_INIT_INT(khIntStr, kstring_t);
+KHASH_MAP_INIT_STR(khStrFlt, MYFLT)
+KHASH_MAP_INIT_STR(khStrStr, kstring_t)
+KHASH_MAP_INIT_INT(khIntFlt, MYFLT)
+KHASH_MAP_INIT_INT(khIntStr, kstring_t)
 
 
 typedef struct {
@@ -291,6 +298,7 @@ typedef struct {
     void *mutex_;
     spin_lock_t lock;
 } HANDLE;
+
 
 // handle: a KHASH_HANDLE, code: the code to run with the hashtabele h
 #define with_hashtable(handle, code) {               \
@@ -321,10 +329,17 @@ typedef struct {
 
 typedef struct {
     CSOUND *csound;
-    ui32 maxhandles;
     HANDLE *handles;
+    ui32 maxhandles;
     void *mutex_;
 } HASH_GLOBALS;
+
+
+static inline HANDLE *get_handle_by_idx(HASH_GLOBALS *g, ui32 idx) {
+    if(idx > g->maxhandles)
+        return NULL;
+    return &(g->handles[idx]);
+}
 
 
 // ----------------- dict_new ------------------
@@ -344,12 +359,12 @@ typedef struct {
 
 // forward declarations
 static i32 dict_reset(CSOUND *csound, HASH_GLOBALS *g);
-static i32 _dict_free(CSOUND *csound, HASH_GLOBALS *g, i32 idx);
+static i32 _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx);
 
-static i32 set_many_ss(CSOUND *cs, void** inargs, i32 numargs, HANDLE *handle);
-static i32 set_many_sf(CSOUND *cs, void** inargs, i32 numargs, HANDLE *handle);
-static i32 set_many_is(CSOUND *cs, void** inargs, i32 numargs, HANDLE *handle);
-static i32 set_many_if(CSOUND *cs, void** inargs, i32 numargs, HANDLE *handle);
+static i32 set_many_ss(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
+static i32 set_many_sf(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
+static i32 set_many_is(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
+static i32 set_many_if(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
 
 /**
  * Create the globals struct. Will be called once, the first time one of the
@@ -447,7 +462,7 @@ dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal) {
  */
 static i32
 dict_reset(CSOUND *csound, HASH_GLOBALS *g) {
-    i32 i;
+    ui32 i;
     DBG("%s", "hashtab_reset");
     for(i = 0; i < g->maxhandles; i++) {
         if(g->handles[i].hashtab != NULL)
@@ -466,7 +481,7 @@ dict_reset(CSOUND *csound, HASH_GLOBALS *g) {
  * NB: a slot is free when the handle's hashtab is NULL
  */
 static i32
-_dict_free(CSOUND *csound, HASH_GLOBALS *g, i32 idx) {
+_dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
     HANDLE *handle = &(g->handles[idx]);
     khint_t k;
     kstring_t *ks;
@@ -477,7 +492,7 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, i32 idx) {
         // we need to free all keys
         for (k = 0; k < kh_end(h); ++k) {
             if (kh_exist(h, k))
-                csound->Free(csound, (char*)kh_key(h, k));
+                csound->Free(csound, kh_key(h, k));
         }
         kh_destroy(khStrFlt, h);
     } else if (khtype == khStrStr) {
@@ -488,7 +503,7 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, i32 idx) {
                 ks = &(kh_val(h, k));
                 if(ks->s != NULL)
                     csound->Free(csound, ks->s);
-                csound->Free(csound, (char*)kh_key(h, k));
+                csound->Free(csound, kh_key(h, k));
             }
         }
         kh_destroy(khStrStr, h);
@@ -521,7 +536,7 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, i32 idx) {
 static i32
 dict_deinit_callback(CSOUND *csound, DICT_NEW* p) {
     DBG("%s", "deinit callback");
-    int idx = (i32)*p->handleidx;
+    ui32 idx = (ui32)*p->handleidx;
     HASH_GLOBALS *g = p->g;
     if(g->handles[idx].hashtab == NULL) {
         csound->Message(csound, "%s\n", Str("dict already freed"));
@@ -609,7 +624,7 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
     if(khtype < 0)
         return INITERR(Str("dict: type not understood."
                            ". Expected one of 'sf', 'ss', 'if', 'is'"));
-    ui32 idx = dict_make(csound, p->g, khtype, *p->isglobal);
+    ui32 idx = dict_make(csound, p->g, khtype, (i32) *p->isglobal);
     if(idx == 0)
         return INITERR(Str("dict: failed to allocate the hashtable"));
     *p->handleidx = (MYFLT)idx;
@@ -630,12 +645,12 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
  * @param khtype: the integer representation of the type of a pair
  */
 static i32
-check_multi_signature(CSOUND *csound, void **args, int numargs, int khtype) {
+check_multi_signature(CSOUND *csound, void **args, ui32 numargs, int khtype) {
     CS_TYPE *cstype;
     int pairtype = 0;
     if(numargs % 2 != 0)
         return INITERRF("number of arguments should be even, got %d", numargs);
-    for(int i=0; i<numargs; i+=2) {
+    for(ui32 i=0; i<numargs; i+=2) {
         cstype = csound->GetTypeForArg(args[i]);
         char c0 = cstype->varTypeName[0];
         cstype = csound->GetTypeForArg(args[i+1]);
@@ -703,17 +718,17 @@ typedef struct {
     MYFLT *outval;
     // internal
     HASH_GLOBALS *g;
-    khint_t lastidx;
-    i32 lastkey;
-    ui32 counter;
+    ui32 lastidx;
+    ui32 lastkey;
+    ui64 counter;
 } DICT_SET_if;
 
 // init func for dict_set int->float
 static i32
 dict_set_if_0(CSOUND *csound, DICT_SET_if *p) {
     p->g = dict_globals(csound);
-    p->lastidx = -1;
-    p->lastkey = -1;
+    p->lastidx = UI32MAX;   // mark this idx as invalid
+    p->lastkey = UI32MAX;
     p->counter = 0;
     return OK;
 }
@@ -726,7 +741,7 @@ dict_set_if(CSOUND *csound, DICT_SET_if *p) {
     CHECK_HANDLE(handle);
     CHECK_HASHTAB_TYPE(handle->khtype, khIntFlt);
     khash_t(khIntFlt) *h = handle->hashtab;
-    i32 key = *p->outkey;
+    ui32 key = (ui32) *p->outkey;
 
     if(handle->counter == p->counter && key == p->lastkey) {
         k = p->lastidx;
@@ -814,7 +829,7 @@ dict_set_sf(CSOUND *csound, DICT_SET_sf *p) {
         handle->counter++;
     }
     kh_value(h, k) = *p->outval;
-    strncpy0(p->lastkey_data, p->outkey->data, p->outkey->size-1);
+    strncpy0(p->lastkey_data, p->outkey->data, strlen(p->outkey->data));
     p->lastkey_size = p->outkey->size;
     p->counter = handle->counter;
     return OK;
@@ -854,13 +869,6 @@ dict_set_ss_0(CSOUND *csound, DICT_SET_ss *p) {
     return OK;
 }
 
-
-static inline void kstr_init(kstring_t *ks) {
-    ks->l = 0;
-    ks->m = 0;
-    ks->s = NULL;
-}
-
 static i32
 dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
     HASH_GLOBALS *g = p->g;
@@ -881,7 +889,7 @@ dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
     } else {
         CHECK_KEY_SIZE(p->outkey);
         p->lastidx = k = kh_put(khStrStr, h, p->outkey->data, &absent);
-        strncpy0(p->lastkey_data, p->outkey->data, p->outkey->size);
+        strncpy0(p->lastkey_data, p->outkey->data, (size_t)(p->outkey->size - 1));
         if (absent) {
             kh_key(h, k) = csound->Strdup(csound, p->outkey->data);
             ks = &(h->vals[k]);
@@ -909,15 +917,15 @@ typedef struct {
     // internal
     HASH_GLOBALS *g;
     khint_t lastidx;
-    i32 lastkey;
+    ui32 lastkey;
     ui64 counter;
 } DICT_SET_is;
 
 static i32
 dict_set_is_0(CSOUND *csound, DICT_SET_is *p) {
     p->g = dict_globals(csound);
-    p->lastidx = -1;
-    p->lastidx = -1;
+    p->lastidx = UI32MAX;
+    p->lastkey = UI32MAX;
     p->counter = 0;
     return OK;
 }
@@ -930,7 +938,7 @@ dict_set_is(CSOUND *csound, DICT_SET_is *p) {
     khash_t(khIntStr) *h = handle->hashtab;
     CHECK_HASHTAB_EXISTS(h);
     CHECK_HASHTAB_TYPE(handle->khtype, khIntStr);
-    i32 key = *p->outkey;
+    ui32 key = (ui32) *p->outkey;
     kstring_t *ks;
     khint_t k;
     if(handle->counter == p->counter && key == p->lastkey) {
@@ -987,7 +995,7 @@ dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
         if(k != kh_end(h)) {
             // key exists, free key str and remove item
             LOCK(handle);
-            csound->Free(csound, (char*)kh_key(h, k));
+            csound->Free(csound, kh_key(h, k));
             kh_del(khStrFlt, h, k);
             handle->counter++;
             UNLOCK(handle);
@@ -999,7 +1007,7 @@ dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
         if(k != kh_end(h)) {
             // key exists, free key str and value, remove item
             LOCK(handle);
-            csound->Free(csound, (char*)kh_key(h, k));
+            csound->Free(csound, kh_key(h, k));
             ks = &(h->vals[k]);
             csound->Free(csound, ks->s);
             kh_del(khStrStr, h, k);
@@ -1023,7 +1031,7 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
     HANDLE *handle = &(g->handles[idx]);
     i32 khtype = handle->khtype;
     khiter_t k;
-    int key = (int)*p->outkey;
+    ui32 key = (ui32)*p->outkey;
     if(khtype == khIntFlt) {
         khash_t(khIntFlt) *h = g->handles[idx].hashtab;
         CHECK_HASHTAB_EXISTS(h);
@@ -1072,13 +1080,13 @@ typedef struct {
     HASH_GLOBALS *g;
     ui64 counter;
     khiter_t lastidx;
-    int lastkey;
+    ui32 lastkey;
 } DICT_GET_if;
 
 static i32
 dict_get_if_0(CSOUND *csound, DICT_GET_if *p) {
     p->g = dict_globals(csound);
-    p->lastidx = -1;
+    p->lastidx = UI32MAX;
     p->lastkey = 0;
     p->counter = 0;
     return OK;
@@ -1093,7 +1101,7 @@ dict_get_if(CSOUND *csound, DICT_GET_if *p) {
     CHECK_HASHTAB_EXISTS(h);
     CHECK_HASHTAB_TYPE(handle->khtype, khIntFlt);
     khiter_t k;
-    i32 key = (i32)*p->outkey;
+    ui32 key = (ui32)*p->outkey;
     if(p->counter == handle->counter &&        // fast path
        p->lastkey == key) {
         k = p->lastidx;
@@ -1124,21 +1132,21 @@ typedef struct {
     MYFLT *defaultval;
     // internal
     HASH_GLOBALS *g;
-    i32 _handleidx;
-    ui64 counter;
     khiter_t lastidx;
+    ui32 _handleidx;
     i32 lastkey_size;
+    ui64 counter;
     char lastkey_data[KHASH_STRKEY_MAXSIZE+1];
 } DICT_GET_sf;
 
 static i32
 dict_get_sf_0(CSOUND *csound, DICT_GET_sf *p) {
-    i32 idx;
+    ui32 idx;
     p->g = dict_globals(csound);
-    p->lastkey_size = -1;
+    p->lastkey_size = 0;
     p->lastidx = 0;
     p->counter = 0;
-    p->_handleidx = idx = (i32)*p->handleidx;
+    p->_handleidx = idx = (ui32)*p->handleidx;
     CHECK_HASHTAB_TYPE(p->g->handles[idx].khtype, khStrFlt);
     return OK;
 }
@@ -1163,7 +1171,7 @@ dict_get_sf(CSOUND *csound, DICT_GET_sf *p) {
     // test fast path
     if(p->counter == handle->counter &&         \
        p->outkey->size == p->lastkey_size &&       \
-       memcmp(p->outkey->data, p->lastkey_data, p->lastkey_size)==0) {
+       memcmp(p->outkey->data, p->lastkey_data, (size_t)p->lastkey_size)==0) {
        // strcmp(p->key->data, p->lastkey_data)==0) {
         k = p->lastidx;
         *p->kout = k != kh_end(h) ? kh_val(h, k) : *p->defaultval;
@@ -1173,7 +1181,7 @@ dict_get_sf(CSOUND *csound, DICT_GET_sf *p) {
     p->lastidx = k = kh_get(khStrFlt, h, p->outkey->data);
     DBG("slow path: k=%d", k);
     p->lastkey_size = p->outkey->size;
-    strncpy0(p->lastkey_data, p->outkey->data, p->outkey->size);
+    strncpy0(p->lastkey_data, p->outkey->data, (size_t)(p->outkey->size-1));
     *p->kout = k != kh_end(h) ? kh_val(h, k) : *p->defaultval;
     p->counter = handle->counter;
     return OK;
@@ -1245,7 +1253,7 @@ hashtab_get_ss(CSOUND *csound, DICT_GET_ss *p) {
         // key found, update cache
         p->lastidx = k;   // save last key index
         p->counter = handle->counter;
-        strncpy0(p->lastkey_data, p->outkey->data, p->outkey->size);
+        strncpy0(p->lastkey_data, p->outkey->data, (size_t) p->outkey->size-1);
         p->lastkey_size = p->outkey->size;
     } 
     ks = &(kh_val(h, k));
@@ -1266,14 +1274,14 @@ typedef struct {
     HASH_GLOBALS *g;
     ui64 counter;
     khiter_t lastidx;
-    int lastkey;
+    ui32 lastkey;
 } DICT_GET_is;
 
 
 static i32
 hashtab_get_is_0(CSOUND *csound, DICT_GET_is *p) {
     p->g = dict_globals(csound);
-    p->lastidx = -1;
+    p->lastidx = UI32MAX;
     p->lastkey = 0;
     p->counter = 0;
     HANDLE *handle = get_handle(p);
@@ -1286,7 +1294,7 @@ static i32
 hashtab_get_is(CSOUND *csound, DICT_GET_is *p) {
     HANDLE *handle = get_handle(p);
     khash_t(khIntStr) *h = handle->hashtab;
-    i32 key = (i32)*p->outkey;
+    ui32 key = (ui32)*p->outkey;
     khiter_t k;
     kstring_t *ks;
     if(p->counter == handle->counter && p->lastkey == key) {  // fast path
@@ -1330,7 +1338,7 @@ typedef struct {
 
 static i32
 dict_free_callback(CSOUND *csound, DICT_FREE *p) {
-    i32 idx = (i32)*p->handleidx;
+    ui32 idx = (ui32)*p->handleidx;
     HASH_GLOBALS *g = dict_globals(csound);
     if(g->handles[idx].hashtab == NULL)
         return PERFERR(Str("dict free: instance does not exist!"));
@@ -1344,14 +1352,14 @@ dict_free_callback(CSOUND *csound, DICT_FREE *p) {
  */
 static i32
 dict_free(CSOUND *csound, DICT_FREE *p) {
-    i32 idx = (i32)*p->handleidx;
+    ui32 idx = (ui32)*p->handleidx;
     HASH_GLOBALS *g = dict_globals(csound);
     HANDLE *handle = &(g->handles[idx]);
     if(handle->hashtab == NULL)
         return PERFERR(Str("dict free: instance does not exist"));
     if(handle->isglobal == 0)
         return PERFERR(Str("dict free: only global dicts can be freed"));
-    if(*p->iwhen == 0) {
+    if((i32)*p->iwhen == 0) {
         return _dict_free(csound, g, idx);
     }
     // free at the end of the note
@@ -1463,7 +1471,7 @@ dict_print_k_0(CSOUND *csound, DICT_PRINT *p) {
 static i32
 dict_print_k(CSOUND *csound, DICT_PRINT *p) {
     HANDLE *handle = get_handle(p);
-    i32 trig = *p->ktrig;
+    i32 trig = (i32) *p->ktrig;
     if(handle->hashtab == NULL)
         return PERFERR(Str("dict does not exist"));
     if(trig == -1 || (trig > 0 && trig > p->lasttrig)) {
@@ -1500,8 +1508,9 @@ typedef struct {
 
     MYFLT *handleidx;
     STRINGDAT *cmdstr;
-    i32 cmd;
+
     HASH_GLOBALS *g;
+    i32 cmd;
 } DICT_QUERY1;
 
 static i32 dict_size(CSOUND *csound, DICT_QUERY1 *p);
@@ -1512,12 +1521,12 @@ static i32 dict_query(CSOUND *csound, DICT_QUERY1 *p) {
     case 0:  // size
         return dict_size(csound, p);
     case 1:  // type
-        handle = get_handle(p);
-        *p->out = handle->hashtab == NULL ? 0 : handle->khtype;
+        handle = get_handle_check(p);
+        *p->out = (handle == NULL || handle->hashtab == NULL) ? 0 : handle->khtype;
         return OK;
     case 2:  // exists
-        handle = get_handle(p);
-        *p->out = handle != NULL ? 1 : 0;
+        handle = get_handle_check(p);
+        *p->out = (handle == NULL || handle->hashtab == NULL) ? 0 : 1;
         return OK;
     }
     return OK;
@@ -1542,6 +1551,7 @@ static i32 dict_query_0(CSOUND *csound, DICT_QUERY1 *p) {
 // dict_size: returns the number of key:valie pairs, -1 if dict does not exist
 
 static i32 dict_size(CSOUND *csound, DICT_QUERY1 *p) {
+    IGN(csound);
     HANDLE *handle = get_handle(p);
     if(handle->hashtab == NULL)
         *p->out = -1;
@@ -1574,7 +1584,8 @@ typedef struct {
 static i32
 dict_query_arr_keys_s(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
     STRINGDAT *outdata = (STRINGDAT*)(out->data);
-    i32 counter=0, khtype=handle->khtype;
+    ui32 counter = 0;
+    i32 khtype = handle->khtype;
     const char *key;
     if(khtype == khStrFlt) {
         khash_t(khStrFlt) *h = handle->hashtab;
@@ -1593,9 +1604,11 @@ dict_query_arr_keys_s(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
 // return the integer keys as an array
 static i32
 dict_query_arr_keys_i(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
+    IGN(csound);
     MYFLT *outdata = (MYFLT*)(out->data);
-    i32 counter=0, khtype=handle->khtype;
-    i32 key;
+    ui32 counter = 0;
+    i32 khtype = handle->khtype;
+    ui32 key;
     if(khtype == khIntFlt) {
         khash_t(khIntFlt) *h = handle->hashtab;
         kh_foreach_key(h, key, { outdata[counter++] = key; });
@@ -1614,14 +1627,14 @@ dict_query_arr_values_s(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
     kstring_t *ks;
     if(khtype == khIntStr) {
         khash_t(khIntStr) *h = handle->hashtab;
-        for(i32 k=0; k!=kh_end(h); ++k) {
+        for(khiter_t k=0; k!=kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
             ks = &(kh_val(h, k));
             stringdat_set(csound, &(outdata[counter++]), ks->s, ks->l);
         }
     } else {
         khash_t(khStrStr) *h = handle->hashtab;
-        for(i32 k=0; k!=kh_end(h); ++k) {
+        for(khiter_t k=0; k!=kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
             ks = &(kh_val(h, k));
             stringdat_set(csound, &(outdata[counter++]), ks->s, ks->l);
@@ -1633,6 +1646,7 @@ dict_query_arr_values_s(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
 // return the numeric values as an array
 static i32
 dict_query_arr_values_f(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
+    IGN(csound);
     MYFLT *outdata = (MYFLT*)(out->data);
     MYFLT val;
     i32 counter=0, khtype=handle->khtype;
@@ -1646,7 +1660,7 @@ dict_query_arr_values_f(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
     return OK;
 }
 
-static i32 handle_get_hashtable_size(HANDLE *handle) {
+static ui32 handle_get_hashtable_size(HANDLE *handle) {
     with_hashtable(handle, {
         return kh_size(h);
     })
@@ -1656,12 +1670,12 @@ static i32 handle_get_hashtable_size(HANDLE *handle) {
 // dict_query_arr: query operatins returning an array (keys, values)
 static i32
 dict_query_arr(CSOUND *csound, DICT_QUERY_ARR *p) {
-    i32 idx = (i32)*(p->handleidx);
+    ui32 idx = (ui32)*(p->handleidx);
     HANDLE *handle = &(p->g->handles[idx]);
     CHECK_HANDLE(handle);
 
-    i32 size = handle_get_hashtable_size(handle);
-    tabensure(csound, p->out, size);
+    ui32 size = handle_get_hashtable_size(handle);
+    tabensure(csound, p->out, (i32) size);
 
     switch(p->cmd) {
     case 0:  // keys, string
@@ -1753,19 +1767,19 @@ typedef struct {
     HASH_GLOBALS *g;
     ui32 _handleidx;
     i32 numyields;    // number of yields since last reset
-    i32 nextk;        // iteration index
-    ui64 kcycle;
+    khiter_t nextk;        // iteration index
+    ui64 kcounter;
     char signature[3];
 } DICT_ITER;
 
 // dict_iter init function common to all types
 static i32
 dict_iter_init_common(CSOUND *csound, DICT_ITER *p) {
-    p->_handleidx = (i32)*p->handleidx;
+    p->_handleidx = (ui32)*p->handleidx;
     p->g = dict_globals(csound);
     p->nextk = 0;
     p->numyields = 0;
-    p->kcycle = 999;
+    p->kcounter = 999;
     HANDLE *handle = &(p->g->handles[p->_handleidx]);
     khash_t(khStrStr) *h = handle->hashtab;
     CHECK_HASHTAB_EXISTS(h);
@@ -1798,11 +1812,11 @@ static i32 dict_iter_if_0(CSOUND *csound, DICT_ITER *p) {
 
 static i32
 dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
-    i32 kreset = *p->kreset;
+    i32 kreset = (i32) *p->kreset;
     if(kreset == 1) {
         // reset at every new cycle
-        if(p->h.insdshead->kcounter != p->kcycle) {
-            p->kcycle = p->h.insdshead->kcounter;
+        if(p->h.insdshead->kcounter != p->kcounter) {
+            p->kcounter = p->h.insdshead->kcounter;
             p->numyields = 0;
             p->nextk = 0;
         }
@@ -1813,13 +1827,13 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
     if(khtype == khStrStr) {
         khash_t(khStrStr) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
-        for(i32 k=p->nextk; k != kh_end(h); ++k) {
+        for(khiter_t k=p->nextk; k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
             const char *key = kh_key(h, k);
             stringdat_set(csound, (STRINGDAT*)p->outkey, key, strlen(key));
             kstr = &(kh_val(h, k));
             stringdat_set(csound, (STRINGDAT*)p->outval, kstr->s, kstr->l);
-            p->nextk = k+1;
+            p->nextk = k + 1;
             *p->kidx = p->numyields;
             p->numyields++;
             return OK;
@@ -1827,7 +1841,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
     } else if (khtype == khStrFlt) {
         khash_t(khStrFlt) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
-        for(i32 k=p->nextk; k != kh_end(h); ++k) {
+        for(khiter_t k=p->nextk; k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
             const char *key = kh_key(h, k);
             stringdat_set(csound, (STRINGDAT*)p->outkey, key, strlen(key));
@@ -1840,7 +1854,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
     } else if(khtype == khIntStr ) {
         khash_t(khIntStr) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
-        for(i32 k=p->nextk; k != kh_end(h); ++k) {
+        for(khiter_t k=p->nextk; k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
             *((MYFLT*)p->outkey) = kh_key(h, k);
             kstr = &(kh_val(h, k));
@@ -1853,7 +1867,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
     } else if(khtype == khIntFlt) {
         khash_t(khIntFlt) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
-        for(i32 k=p->nextk; k != kh_end(h); ++k) {
+        for(khiter_t k=p->nextk; k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
             *((MYFLT*)p->outkey) = kh_key(h, k);
             *((MYFLT*)p->outval) = kh_val(h, k);
@@ -1875,7 +1889,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
 
 
 static i32
-set_many_ss(CSOUND *csound, void** inargs, i32 numargs, HANDLE *handle) {
+set_many_ss(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     khash_t(khStrStr) *h = handle->hashtab;
     int absent;
     kstring_t *ks;
@@ -1896,7 +1910,7 @@ set_many_ss(CSOUND *csound, void** inargs, i32 numargs, HANDLE *handle) {
 }
 
 static i32
-set_many_sf(CSOUND *csound, void** inargs, i32 numargs, HANDLE *handle) {
+set_many_sf(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     khash_t(khStrFlt) *h = handle->hashtab;
     int absent;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
@@ -1912,11 +1926,12 @@ set_many_sf(CSOUND *csound, void** inargs, i32 numargs, HANDLE *handle) {
 }
 
 static i32
-set_many_if(CSOUND *csound, void** inargs, i32 numargs, HANDLE *handle) {
+set_many_if(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
+    IGN(csound);
     khash_t(khIntFlt) *h = handle->hashtab;
     int absent;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
-        i32 key = *((MYFLT*)(inargs[argidx]));// (i32)*((MYFLT*)(inargs[argidx]));
+        ui32 key = (ui32) *((MYFLT*)(inargs[argidx]));
         khiter_t k = kh_put(khIntFlt, h, key, &absent);
         if(absent) {
             kh_key(h, k) = key;
@@ -1928,13 +1943,13 @@ set_many_if(CSOUND *csound, void** inargs, i32 numargs, HANDLE *handle) {
 }
 
 static i32
-set_many_is(CSOUND *csound, void** inargs, i32 numargs, HANDLE *handle) {
+set_many_is(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     khash_t(khIntStr) *h = handle->hashtab;
     int absent;
     kstring_t *ks;
     STRINGDAT *val;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
-        i32 key = (i32)*((MYFLT*)(inargs[argidx]));
+        ui32 key = (ui32) *((MYFLT*)(inargs[argidx]));
         val = (STRINGDAT *)inargs[argidx+1];
         khiter_t k = kh_put(khIntStr, h, key, &absent);
         ks = &(h->vals[k]);

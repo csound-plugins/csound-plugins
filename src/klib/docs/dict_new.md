@@ -1,5 +1,7 @@
 # dict_new
 
+## Abstract
+
 Create a hashtable 
 
 ## Description

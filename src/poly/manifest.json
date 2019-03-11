@@ -1,0 +1,12 @@
+{
+    "name": "poly",
+    "opcodes": [
+      "poly", 
+      "polyseq",
+    ],
+    "author": "Eduardo Moguillansky",
+    "author_email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "description": "Multiple (parallel or sequential) instances of an opcode",
+    "url": ""
+}

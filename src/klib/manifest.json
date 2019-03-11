@@ -1,0 +1,17 @@
+{
+    "name": "klib",
+    "opcodes": [
+      "dict_new", 
+      "dict_free",
+      "dict_get",
+      "dict_set",
+      "dict_size",
+      "dict_query",
+      "dict_print"
+    ],
+    "author": "Eduardo Moguillansky",
+    "author_email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "description": "A hashtable for csound",
+    "url": ""
+}
