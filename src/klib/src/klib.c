@@ -261,7 +261,7 @@ void strncpy0(char *dest, const char *src, size_t n) {
 
 // Set a STRINGDAT* from a source string and its length
 static inline i32
-stringdat_set(CSOUND *csound, STRINGDAT *s, char *src, ui32 srclen) {
+stringdat_set(CSOUND *csound, STRINGDAT *s, char *src, size_t srclen) {
     if(s->data == NULL) {
         s->data = csound->Strdup(csound, src);
         s->size = (i32) srclen + 1;

@@ -66,7 +66,7 @@ a simple CMakeLists.txt would suffice:
 
 # Installation
 
-At the root folder, do
+At the root folder of this repository, do
 
 
     mkdir build

@@ -3,7 +3,7 @@
 import argparse
 import os
 import sys
-
+    
 parser = argparse.ArgumentParser(description="fill a markdown template file with an example csd")
 parser.add_argument("templatefile")
 parser.add_argument("--example", default=None,

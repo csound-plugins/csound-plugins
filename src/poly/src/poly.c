@@ -52,9 +52,7 @@
 #endif
 */
 
-// #include "csdl.h"
-#include "/usr/local/include/csound/csdl.h"
-// #include "find_opcode.h"
+#include "csdl.h"
 #include "arrays.h"
 #include <ctype.h>
 
@@ -67,29 +65,31 @@
 #define DBG(s)        do{printf("\n>>>  "s"\n"); fflush(stdout);} while(0)
 #define DBGF(fmt,...) do{printf("\n>>>  "fmt"\n", __VA_ARGS__); fflush(stdout);}while(0)
 
-#define POLY_MAXINPARAMS  20
-#define POLY_MAXOUTPARAMS 16
+#define POLY_MAXINPARAMS  31
+#define POLY_MAXOUTPARAMS 15
 #define POLY_MAXPARAMS    (POLY_MAXINPARAMS + 2 + POLY_MAXOUTPARAMS)
+
+
+typedef int32_t i32;
+typedef uint32_t ui32;
 
 
 // --------------------------------------------
 //               Utilities
 // --------------------------------------------
 
-/** put a copy of src in dest with all chars converted to uppercase
- */
+/** put a copy of src in dest with all chars converted to uppercase */
 static void str_tolower(char *dest, char *src) {
-    uint32_t c = 0;
+    ui32 c = 0;
 
     while (src[c] != '\0') {
-        dest[c] = tolower(src[c]);
+        dest[c] = (char)tolower(src[c]);
         c++;
     }
     dest[c] = 0;
 }
 
-/** Return 1 if all characters in s are uppercase, 0 otherwise
- */
+/** Return 1 if all characters in s are uppercase, 0 otherwise */
 static int all_upper(char *s) {
     while (*s) {
         char c = *s;
@@ -100,10 +100,20 @@ static int all_upper(char *s) {
     return 1;
 }
 
-/** Return the index of c in s, or -1 if c is not found
- */
-static int32_t findchar(char *s, char c) {
-    uint32_t idx = 0;
+/** Return 1 if all characters in s are lowercase, 0 otherwise */
+static int all_lower(char *s) {
+    while (*s) {
+        char c = *s;
+        if(c >= 'A' && c <= 'Z')
+            return 0;
+        s++;
+    }
+    return 1;
+}
+
+/** Return the index of c in s, or -1 if c is not found */
+static i32 findchar(char *s, char c) {
+    i32 idx = 0;
     while(*s) {
         char _c = *s;
         if(_c == c)
@@ -119,9 +129,8 @@ static int32_t findchar(char *s, char c) {
  * (used to check blacklist)
  *
  */
-static int32_t str_in_list(char *str, const char **strlist) {
-    int32_t i = 0;
-    for(i=0; i<100; ++i) {
+static i32 str_in_list(char *str, const char **strlist) {
+    for(ui32 i=0; i<100; ++i) {
         if(strlist[i] == NULL)
             return 0;
         if(strcmp(str, strlist[i]) == 0)
@@ -140,8 +149,7 @@ static int32_t str_in_list(char *str, const char **strlist) {
     }}
 
 
-/** A list of opcodes which do not work properly with poly
- */
+/** A list of opcodes which do not work properly with poly */
 static const char* poly_blacklist[] = {
     "specdisp",
     NULL
@@ -219,7 +227,7 @@ typedef struct {
     void **inargs;
 
     // fixed version of inuminst
-    uint32_t num_instances;
+    ui32 num_instances;
 
     // opcode struct corresponding to opcode_name
     OENTRY *opc;
@@ -233,25 +241,30 @@ typedef struct {
     // each instance.
     OPCSTATE *states;
 
+    // start idx of inargs which needs to be multiplexed.
+    // firstcol=0 for poly, firstcol=num_output_args for polyseq
+    ui32 firstcol;
+
+    // number of input args passed to the opcode (discarding own args of poly)
+    ui32 num_input_args;
+
+    // number of output args passed to the opcode, which should correspond to
+    // opc_numouts
+    ui32 num_output_args;
+
     // input signature of the poly object (without numinstances and Sopcodename)
     // One char per input arg: a for audio, k for scalar, upper case indicates
     // an array (A or K).
     char in_signature[POLY_MAXINPARAMS+1];
 
     // the same, for output
-    char out_signature[POLY_MAXOUTPARAMS];
+    char out_signature[POLY_MAXOUTPARAMS+1];
 
-    // number of input args passed to the opcode (discarding own args of poly)
-    uint32_t num_input_args;
-
-    // number of output args passed to the opcode, which should correspond to
-    // opc_numouts
-    uint32_t num_output_args;
 
     // the length of opc->intypes and opc->outypes. The indicate the size of the opc
     // struct we need to control (the rest is internal storage)
-    uint32_t opc_numouts;
-    uint32_t opc_numins;
+    ui32 opc_numouts;
+    ui32 opc_numins;
 
     // this holds the OPTXT created for the opcode, to be freed later (it is shared
     // by all instances, so it needs to be created/freed only once)
@@ -265,9 +278,9 @@ typedef struct {
  *
  * returns the number of arguments
  */
-static int32_t get_numargs(char *argtypes) {
+static ui32 get_numargs(char *argtypes) {
     // no array args or varargs supported
-    return strlen(argtypes);
+    return (ui32) strlen(argtypes);
 }
 
 /** Generates a signature from the type of the arguments
@@ -280,11 +293,11 @@ static int32_t get_numargs(char *argtypes) {
  *
  * NB: This works for any opcode.
 */
-static int32_t get_signature(CSOUND *csound, void **args, int32_t numargs,
-                             char *dest) {
+static i32
+get_signature(CSOUND *csound, void **args, ui32 numargs, char *dest) {
     CS_TYPE *cstype;
     ARRAYDAT *arr;
-    for(int i=0; i < numargs; i++) {
+    for(ui32 i=0; i < numargs; i++) {
         cstype = csound->GetTypeForArg(args[i]);
         char c = cstype->varTypeName[0];
         switch(c) {
@@ -302,7 +315,7 @@ static int32_t get_signature(CSOUND *csound, void **args, int32_t numargs,
         case '[':
             arr = (ARRAYDAT *)args[i];
             c = arr->arrayType->varTypeName[0];
-            dest[i] = toupper(c);
+            dest[i] = (char)toupper(c);
             break;
         default:
             return INITERRF("Could not parse signature. idx %d = '%c'", i, c);
@@ -312,17 +325,16 @@ static int32_t get_signature(CSOUND *csound, void **args, int32_t numargs,
     return OK;
 }
 
-const MYFLT default_unset = FL(-1000);
-const MYFLT default_fail = FL(-999);
+static const i32 default_unset = -1000;
+static const i32 default_fail  = -999;
 
-/** Returns the default value corresponding to a given char in a signature
- */
+/** Returns the default value corresponding to a given char in a signature */
 MYFLT get_default_value(char c) {
     switch(c) {
     case 'a':
     case 'k':
     case 'i':
-        return default_unset;
+        return (MYFLT)default_unset;
     case 'o':
     case 'O':
     case 'x':
@@ -336,7 +348,7 @@ MYFLT get_default_value(char c) {
     case 'q':
         return 10;
     default:
-        return default_fail;
+        return (MYFLT)default_fail;
     }
 }
 
@@ -346,26 +358,30 @@ MYFLT get_default_value(char c) {
 
    handleidx: which handle (by index) to setup
 */
-static int32_t handle_setup(CSOUND *csound, POLY1 *p, uint32_t handleidx) {
+static i32
+handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
+    ui32 firstcol = p->firstcol;
     ARRAYDAT *arr;
-    uint32_t col, nsmps = CS_KSMPS;
+    ui32 col, nsmps = CS_KSMPS;
     OPCHANDLE *handle = &(p->handles[handleidx]);
     char c;
     MYFLT default_value;
     void **inargs = &(handle->state->args[p->num_output_args]);
-    for(col = 0; col < p->opc_numins; col++) {
+    // opc_numins: the TOTAL number of inputs expected by opcode
+    // num_input_args: the number of inputs actually passed to poly
+    for(col = firstcol; col < p->opc_numins; col++) {
         // handle->state->inargs[col] = &(handle->indata[col]);
         inargs[col] = &(handle->indata[col]);
         c = p->opc->intypes[col];
         default_value = get_default_value(c);
-        if(default_value == default_fail)
+        if((i32)default_value == default_fail)
             return INITERRF(Str("failed to parse signature (%s), char failed: '%c'"),
                             p->opc->intypes, c);
-        if(default_value != default_unset)
+        if((i32)default_value != default_unset)
             handle->indata[col] = default_value;
     }
 
-    for(col=0; col<p->num_input_args; col++) {
+    for(col=firstcol; col<p->num_input_args; col++) {
         c = p->in_signature[col];
         // point the state args to our internal storage. This gets rewriten by
         // the a-arguments, which point directly to var / array input
@@ -406,7 +422,7 @@ static int32_t handle_setup(CSOUND *csound, POLY1 *p, uint32_t handleidx) {
     if((arr)->dimensions != 1)                                                    \
       return INITERRF(Str("array dimensions (%d) should be 1"),                   \
                       (arr)->dimensions);                                         \
-    if((uint32_t)(arr)->sizes[0] < minsize) {                                     \
+    if((ui32)(arr)->sizes[0] < minsize) {                                         \
       return INITERRF(Str("input array size (%d) must be >= num. instances (%d)"),\
                       (arr)->sizes[0], minsize);                                  \
     }} while(0)
@@ -415,9 +431,9 @@ static int32_t handle_setup(CSOUND *csound, POLY1 *p, uint32_t handleidx) {
     return INITERRF(Str("Could not alloc %s"), (id))
 
 
-static int32_t poly1_deinit(CSOUND *csound, POLY1 *p);
+static i32 poly1_deinit(CSOUND *csound, POLY1 *p);
 
-// for debugging only
+#ifdef DEBUG
 static void debug_dump_opc(OENTRY *opc) {
     printf("dsblksiz: %d\n", opc->dsblksiz);
     printf("opcname: %s\n", opc->opname);
@@ -439,15 +455,14 @@ static void dump_types(CSOUND *csound, void **args, int32_t numargs) {
 }
 
 
-/*
-static int32_t find_test(CSOUND *csound) {
+static i32 find_test(CSOUND *csound) {
     OENTRY *opc = find_opcode_new(csound, "oscili", "a", "kk");
     if(opc != NULL) { printf("opcode found !! \n"); }
     opc = find_opcode_new(csound, "oscili", "a", "ik");
     if(opc != NULL) { printf("lo encontre 2 !! \n"); }
     return OK;
 }
-*/
+#endif
 
 
 
@@ -456,58 +471,80 @@ static int32_t find_test(CSOUND *csound) {
 // inputs must have no string
 // opc out sig: a or k, no S or arrays, one arg at least
 // opc in sig: no arrays, no String
-static int32_t signature_check(CSOUND *csound, POLY1 *p) {
+static i32 poly_signature_check(CSOUND *csound, POLY1 *p) {
     // first check own sig
     if(p->num_output_args < 1)
-        return INITERRF("at least 1 output arg. needed, got %d", p->num_output_args);
+        return INITERRF(Str("at least 1 output arg. needed, got %d"), p->num_output_args);
     // we only accept arrays as out args, so out sig must be all uppercase
     if(!all_upper(p->out_signature))
-        return INITERRF("poly output args must be arrays, got %s", p->out_signature);
+        return INITERRF(Str("poly output args must be arrays, got %s"), p->out_signature);
     if(findchar(p->in_signature, 's') >= 0 || findchar(p->in_signature, 'S') >= 0)
-        return INITERRF("no strings accepted as input (yet), got %s", p->in_signature);
+        return INITERRF(Str("no strings accepted as input (yet), got %s"), p->in_signature);
     str_for_each(p->opc->intypes, c, {
         if(c=='[' || c==']' || c=='S')
-            return INITERRF("opcode's intype %c not supported", c);
+            return INITERRF(Str("opcode's intype %c not supported"), c);
     });
     str_for_each(p->opc->outypes, c, {
         if(c != 'a' && c != 'k' && c != 'i')
-            return INITERRF("opcode's outtype %c not supported", c);
+            return INITERRF(Str("opcode's outtype %c not supported"), c);
     });
     return OK;
 }
 
-static int32_t poly1_init(CSOUND *csound, POLY1 *p) {
+void handle_set_state(POLY1 *p, ui32 idx) {
+    OPCHANDLE *handle = &(p->handles[idx]);
+    OENTRY *opc = p->opc;
+    char *state0 = (char *)p->states;
+    OPCSTATE *state = (OPCSTATE *)(state0 + idx*opc->dsblksiz);
+    state->h.iopadr = opc->iopadr;
+    state->h.opadr = opc->kopadr;
+    state->h.insdshead = p->h.insdshead;
+    state->h.optext = p->optext;
+    handle->state = state;
+}
+
+OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
+    OPTXT *optext = csound->Calloc(csound, sizeof(OPTXT));
+    optext->nxtop = NULL;
+    optext->t.oentry = p->opc;
+    optext->t.inArgCount = p->num_input_args;
+    optext->t.outArgCount = p->num_output_args;
+    optext->t.linenum = p->h.optext->t.linenum;
+    optext->t.opcod = p->opc->opname;
+    optext->t.intype = p->h.optext->t.intype;
+    OPCODINFO *inm = (OPCODINFO*) p->opc->useropinfo;
+    if(inm!=NULL) {
+        printf("inm->instno %d \n", inm->instno); fflush(stdout);
+    }
+    return optext;
+}
+
+static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     OENTRY *opc;
-    int32_t ret, nsmps = CS_KSMPS;
-    uint32_t i;
-    OPCSTATE *state;
-    // in/out signature used to find the opcode
-    char opc_out_signature[32];
-    char opc_in_signature[64];
+    i32 ret;
+    ui32 i, nsmps = CS_KSMPS;
+    char opc_outsig[64];    // in/out signature used to find the opcode
+    char opc_insig[64];
 
-    p->num_input_args = csound->GetInputArgCnt(p) - 2;
-    p->num_output_args = csound->GetOutputArgCnt(p);
-
-    // point named arguments to argument list
-
-    p->num_instances = (int32_t ) *((MYFLT*)(p->args[p->num_output_args]));
+    p->firstcol = 0;
+    p->num_input_args = (ui32)csound->GetInputArgCnt(p) - 2;
+    p->num_output_args = (ui32)csound->GetOutputArgCnt(p);
+    p->num_instances = (ui32 ) *((MYFLT*)(p->args[p->num_output_args]));
     p->opcode_name = (STRINGDAT*) p->args[p->num_output_args + 1];
     p->inargs = &(p->args[p->num_output_args + 2]);
 
     if(str_in_list(p->opcode_name->data, poly_blacklist))
-        return INITERRF("Opcode %s not supported", p->opcode_name->data);
+        return INITERRF(Str("Opcode %s not supported"), p->opcode_name->data);
 
-    ret = get_signature(csound, p->inargs, p->num_input_args, p->in_signature);
-    if(ret != OK)
-        return INITERR("poly: could not parse input signature");
+    if(get_signature(csound, p->inargs, p->num_input_args, p->in_signature) != OK)
+        return INITERR(Str("could not parse input signature"));
 
-    ret = get_signature(csound, p->args, p->num_output_args, p->out_signature);
-    if(ret != OK)
-        return INITERR("poly: could not parse output signature");
+    if(get_signature(csound, p->args, p->num_output_args, p->out_signature) != OK)
+        return INITERR(Str("could not parse output signature"));
 
     // the target signature is just our signature without any arrays (thus lowercase)
-    str_tolower(opc_in_signature, p->in_signature);
-    str_tolower(opc_out_signature, p->out_signature);
+    str_tolower(opc_insig, p->in_signature);
+    str_tolower(opc_outsig, p->out_signature);
 
     if(p->num_input_args != strlen(p->in_signature))
         return INITERRF(Str("arg. count mismatch (num input args: %d, signature: %s"),
@@ -516,13 +553,10 @@ static int32_t poly1_init(CSOUND *csound, POLY1 *p) {
     if(p->num_instances < 1)
         return INITERRF(Str("num. instances must be >= 1, got %d"), p->num_instances);
 
-    opc = csound->find_opcode_new(csound, p->opcode_name->data,
-                                  opc_out_signature, opc_in_signature);
-    // opc = find_opcode_new(csound, p->opcode_name->data,
-    //                      opc_out_signature, opc_in_signature);
+    opc = csound->find_opcode_new(csound, p->opcode_name->data, opc_outsig, opc_insig);
     if(opc == NULL)
         return INITERRF(Str("Opcode '%s' with signature '%s'/'%s' not found"),
-                        p->opcode_name->data, opc_out_signature, opc_in_signature);
+                        p->opcode_name->data, opc_outsig, opc_insig);
     p->opc = opc;
     p->opc_numins = get_numargs(opc->intypes);
     p->opc_numouts = get_numargs(opc->outypes);
@@ -533,79 +567,59 @@ static int32_t poly1_init(CSOUND *csound, POLY1 *p) {
     if(p->opc_numins > POLY_MAXOUTPARAMS)
         return INITERRF(Str("opcode has too many output arguments (%d, max=%d"),
                         p->opc_numouts, POLY_MAXOUTPARAMS);
-
-    ret = signature_check(csound, p);
-    if(ret != OK)
-        return INITERR("Signature not supported by poly");
+    if(poly_signature_check(csound, p) != OK)
+        return INITERR(Str("Signature not supported by poly"));
 
     for(i=0; i < p->num_output_args; ++i)
-        tabensure(csound, (ARRAYDAT*)p->args[i], p->num_instances);
+        tabensure(csound, (ARRAYDAT*)p->args[i], (int) p->num_instances);
 
     // create handles for each instance. we allocate all handles at once.
     p->handles = (OPCHANDLE*)csound->Calloc(csound, p->num_instances*sizeof(OPCHANDLE));
     CHECKALLOC(p->handles, "handles");
     for(i=0; i<p->num_input_args; i++) {
         char c = p->in_signature[i];
-        // here we don't check k-arrays, since at this time a k-array would not
-        // be populated and might not have dimensions/size
+        // here we don't check k-arrays, since at this time a k-array is not populated
         if(c=='I' || c=='A' || c=='S') {
             ARRAYDAT *arr = (ARRAYDAT*) p->inargs[i];
             CHECKARR1D(arr, p->num_instances);
         }
     }
 
-    OPTXT *optext = csound->Calloc(csound, sizeof(OPTXT));
-    optext->nxtop = NULL;
-    optext->t.oentry = opc;
-    optext->t.inArgCount = p->num_input_args;
-    optext->t.outArgCount = p->num_output_args;
-    optext->t.linenum = p->h.optext->t.linenum;
-    optext->t.opcod = opc->opname;
-    optext->t.intype = p->h.optext->t.intype;
-    OPCODINFO *inm = (OPCODINFO*)opc->useropinfo;
-    if(inm==NULL)
-        printf("inm is null! \n");
-    else {
-        printf("inm->instno %d \n", inm->instno); fflush(stdout);
-    }
-    p->optext = optext;
+    p->optext = poly_make_optext(csound, p);
+    OPCODINFO *inm = (OPCODINFO*) p->opc->useropinfo;
+    if(inm != NULL)
+        return INITERRF("UDOs are not supported (instno=%i)", inm->instno);
 
     // we allocate all states as an array
     p->states = (OPCSTATE*)csound->Calloc(csound, (p->num_instances)*(opc->dsblksiz));
     CHECKALLOC(p->states, "states for handle");
-    char *states0 = (char *)p->states;
-
     for(i=0; i < p->num_instances; i++) {
+        handle_set_state(p, i);
         OPCHANDLE *handle = &(p->handles[i]);
-        state = (OPCSTATE *)(states0 + i*opc->dsblksiz);
-        state->h.iopadr = opc->iopadr;
-        state->h.opadr = opc->kopadr;
-        state->h.insdshead = p->h.insdshead;
-        state->h.optext = optext;
-        handle->state = state;
-
-        for(uint32_t j=0; j<p->num_output_args; j++) {
+        for(ui32 j=0; j<p->num_output_args; j++) {
             char c = p->out_signature[j];
             ARRAYDAT *arrout = (ARRAYDAT *)(p->args[j]);
             if(c == 'A') {
-                state->args[j] = &(arrout->data[i*nsmps]);
+                handle->state->args[j] = &(arrout->data[i*nsmps]);
             } else if(c == 'K') {
-                state->args[j] = &(arrout->data[i]);
+                handle->state->args[j] = &(arrout->data[i]);
             } else
                 return INITERRF(Str("type not supported: %c"), c);
         }
-        ret = handle_setup(csound, p, i);
-        if(ret != OK)
-            return INITERR(Str("poly: failed to setup handle"));
 
-        if(opc->iopadr != NULL) {
-            ret = opc->iopadr(csound, (void*)handle->state);
+        // setup input args
+        if(OK != handle_set_inputs(csound, p, i))
+            return INITERR(Str("poly: failed to setup handle"));
+    }
+    if(opc->iopadr != NULL) {
+        for(i=0; i < p->num_instances; i++) {
+            ret = opc->iopadr(csound, p->handles[i].state);
             if(ret != OK)
                 return INITERRF("Error in opcode's init func (instance #%d)", i);
         }
+
     }
-    csound->RegisterDeinitCallback(csound, p,
-                                   (int32_t (*)(CSOUND*, void*))poly1_deinit);
+    csound->RegisterDeinitCallback(csound, p, (i32 (*)(CSOUND*, void*))poly1_deinit);
     return OK;
 }
 
@@ -614,7 +628,7 @@ static int32_t poly1_init(CSOUND *csound, POLY1 *p) {
  * deallocates everything we allocated
  *
  */
-static int32_t poly1_deinit(CSOUND *csound, POLY1 *p) {
+static i32 poly1_deinit(CSOUND *csound, POLY1 *p) {
     if(p->handles != NULL) {
         csound->Free(csound, p->handles);
         p->handles = NULL;
@@ -636,16 +650,16 @@ static int32_t poly1_deinit(CSOUND *csound, POLY1 *p) {
  * calls kopadr for all instances of the opcode
  *
  */
-static int32_t poly1_perf(CSOUND *csound, POLY1 *p) {
+static i32 poly1_perf(CSOUND *csound, POLY1 *p) {
     ARRAYDAT *arr;
     char *in_signature = p->in_signature;
-    uint32_t col, i, numcols = p->num_input_args;
+    ui32 col, i, numcols = p->num_input_args;
     if(UNLIKELY(p->opc->kopadr == NULL))
         return PERFERRF(Str("opcode %s has no performance callback!"),
                         p->opcode_name->data);
 
     // check k-arrays, they might have changed size
-    for(col=0; col < numcols; col++) {
+    for(col=p->firstcol; col < numcols; col++) {
         if(in_signature[col] == 'K') {
             arr = (ARRAYDAT*)p->inargs[col];
             CHECKARR1D(arr, p->num_instances);
@@ -655,8 +669,8 @@ static int32_t poly1_perf(CSOUND *csound, POLY1 *p) {
     for(i=0; i<p->num_instances; i++) {
         OPCHANDLE *handle = &(p->handles[i]);
         if(UNLIKELY(handle == NULL))
-            return PERFERR("poly: handle is NULL!");
-        for(col=0; col<numcols; col++) {
+            return PERFERRF(Str("handle %d is invalid"), i);
+        for(col=p->firstcol; col<numcols; col++) {
             char c = in_signature[col];
             if(c == 'K' || c == 'I') {
                 // a number array, copy data to internal storage
@@ -674,10 +688,204 @@ static int32_t poly1_perf(CSOUND *csound, POLY1 *p) {
 
 // --------------------------------------------------------------------------
 
+/**
+ * polyseq
+ *
+ * aout polyseq numinstances:i, opcodename:s, ain, params ...
+ * kout polyseq numinstances:i, opcodename:s, kin, params ...
+ *
+ * params can be anything: k, a, k[] or a[]
+ *
+ * For arrays, they need to be at least the size of `numinstances`
+ * Scalar and audio inputs are "shared" by all instances
+ *
+ * The opcode used is derived of the types used as outputs and inputs
+ * to the poly object. For example, to implement a parametric eq:
+ *
+ *   kfreqs[] fillarray 500, 600, 700
+ *   aout polyseq 10, "pareq", ain, kFreqs, kBoosts, 0.2
+ *
+ *   will search for an opcode "pareq" with signature "a", "akki"
+ *
+ * The number of outputs in the opcode defines the behaviour: if the opcode
+ * is called with two audio outputs, like 'a0, a1 polyseq ...', then the input
+ * arguments are expected to mirror this as
+ * '... polyseq inuminst, "opcode", a0, a1, ...', and these inputs can't be arrays
+ *
+ * Mapping: the first instance is mapped to the inputs and outputs of the polyseq
+ * opcode. The inputs and outputs of the remaining instances are mapped both to
+ * the outputs of the polyseq. The sequential evaluation does the trick.
+ *
+ */
+
+// check that signatures are valid to be used with polyseq
+// own sig: outputs should have correlated inputs, outputs can't be arrays
+// opc out sig: a or k, no S or arrays, one arg at least
+// opc in sig: no arrays, no String
+static i32 polyseq_signature_check(CSOUND *csound, POLY1 *p) {
+    // first check own sig
+    if(p->num_output_args < 1)
+        return INITERRF(Str("at least 1 output arg. needed, got %d"), p->num_output_args);
+    if(p->num_input_args < p->num_output_args)
+        return INITERRF(Str("num. input args (%d) should be at least %d"),
+                        p->num_input_args, p->num_output_args);
+    // we don't accept arrays as out args, so out sig must be all lowercase
+    if(!all_lower(p->out_signature))
+        return INITERRF(Str("poly output args can't be arrays, got %s"), p->out_signature);
+    if(findchar(p->in_signature, 's') >= 0 || findchar(p->in_signature, 'S') >= 0)
+        return INITERRF(Str("no strings accepted as input (yet), got %s"), p->in_signature);
+    // now check opcode's signature: no arrays there
+    str_for_each(p->opc->intypes, c, {
+        if(c=='[' || c==']' || c=='S')
+            return INITERRF(Str("opcode's intype %c not supported"), c);
+    });
+    str_for_each(p->opc->outypes, c, {
+        if(c != 'a' && c != 'k' && c != 'i')
+            return INITERRF(Str("opcode's outtype %c not supported"), c);
+    });
+    for(ui32 idx=0; idx < p->num_output_args; idx++) {
+        if(p->out_signature[idx] != p->in_signature[idx])
+            return INITERRF("The output args (%s) should match the first input args (%s)",
+                            p->out_signature, p->in_signature);
+    }
+    return OK;
+}
+
+
+static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
+    ui32 i;
+    i32 ret;
+    char opc_outsig[64];    // out signature used to find the opcode
+    char opc_insig[64];     // in signature used to find opcode
+
+    p->num_input_args = (ui32)csound->GetInputArgCnt(p) - 2;
+    p->num_output_args = (ui32)csound->GetOutputArgCnt(p);
+    p->num_instances = (ui32 ) *((MYFLT*)(p->args[p->num_output_args]));
+    p->opcode_name = (STRINGDAT*) p->args[p->num_output_args + 1];
+    p->inargs = &(p->args[p->num_output_args + 2]);
+    p->firstcol = p->num_output_args;
+
+    if(str_in_list(p->opcode_name->data, poly_blacklist))
+        return INITERRF(Str("Opcode %s not supported"), p->opcode_name->data);
+
+    ret = get_signature(csound, p->inargs, p->num_input_args, p->in_signature);
+    if(ret != OK)
+        return INITERR(Str("Couldn't parse input signature"));
+
+    ret = get_signature(csound, p->args, p->num_output_args, p->out_signature);
+    if(ret != OK)
+        return INITERR(Str("Couldn't parse output signature"));
+
+    // the target signature is just our signature without any arrays (thus lowercase)
+    str_tolower(opc_insig, p->in_signature);
+    str_tolower(opc_outsig, p->out_signature);
+
+    if(p->num_input_args != strlen(p->in_signature))
+        return INITERRF(Str("arg. count mismatch (num input args: %d, signature: %s"),
+                        p->num_input_args, p->in_signature);
+
+    if(p->num_instances < 1)
+        return INITERRF(Str("num. instances must be >= 1, got %d"), p->num_instances);
+
+    OENTRY *opc = csound->find_opcode_new(csound, p->opcode_name->data,
+                                          opc_outsig, opc_insig);
+    if(opc == NULL)
+        return INITERRF(Str("Opcode '%s' with signature '%s'/'%s' not found"),
+                        p->opcode_name->data, opc_outsig, opc_insig);
+
+    if(findchar(opc->intypes, '[') >= 0 || findchar(opc->outypes, '[') >= 0)
+        return INITERR(Str("Opcodes with arrays as inputs or outputs are not supported"));
+
+    p->opc = opc;
+    p->opc_numins = get_numargs(opc->intypes);
+    p->opc_numouts = get_numargs(opc->outypes);
+
+    if(p->opc_numins > POLY_MAXINPARAMS)
+        return INITERRF(Str("Opcode has too many input arguments (%d, max=%d"),
+                        p->opc_numins, POLY_MAXINPARAMS);
+    if(p->opc_numins > POLY_MAXOUTPARAMS)
+        return INITERRF(Str("Opcode has too many output arguments (%d, max=%d"),
+                        p->opc_numouts, POLY_MAXOUTPARAMS);
+
+    if(OK != polyseq_signature_check(csound, p))
+        return INITERR(Str("Signature not supported by polyseq"));
+
+    // create handles for each instance. we allocate all handles at once.
+    p->handles = (OPCHANDLE*)csound->Calloc(csound, p->num_instances*sizeof(OPCHANDLE));
+    CHECKALLOC(p->handles, "handles");
+    for(i=0; i<p->num_input_args; i++) {
+        char c = p->in_signature[i];
+        // here we don't check k-arrays, since at this time a k-array would not
+        // be populated and might not have correct size
+        if(c=='I' || c=='A' || c=='S') {
+            ARRAYDAT *arr = (ARRAYDAT*) p->inargs[i];
+            CHECKARR1D(arr, p->num_instances);
+        }
+    }
+
+    p->optext = poly_make_optext(csound, p);
+
+    // we allocate all states as an array
+    p->states = (OPCSTATE*)csound->Calloc(csound, (p->num_instances)*(opc->dsblksiz));
+    CHECKALLOC(p->states, "states for handle");
+    // set each state
+    for(i=0; i < p->num_instances; i++) {
+        handle_set_state(p, i);
+    }
+
+    // polyseq has two types of args: chained args and multiplexed args
+    // len(chained) == num. outputs of polyseq == polyseq.inputs[:len(polyseq.outputs)]
+    // chained args are daisy chained:
+    //     p.input = handle[0].input
+    //     handle[-1].output = p.output
+    //     handle[x].input = handle[x+1].output = p.output
+    //     which results in all instances but the first having i/o set to p.output
+
+    // first we map all handles I/O to p.output
+    ui32 numchained = p->num_output_args;
+    OPCHANDLE *handle;
+    for(i=0; i<p->num_instances; i++) {
+        handle = &(p->handles[i]);
+        for(ui32 j=0; j < numchained; j++) {
+            handle->state->args[numchained+j] = p->args[j];
+            handle->state->args[j] = p->args[j];
+        }
+    }
+
+    // then we single-case handle 0, mapping handle.input to p.input
+    handle = &(p->handles[0]);
+    for(ui32 j=0; j < numchained; j++) {
+        handle->state->args[numchained + j] = p->inargs[j];
+    }
+
+    // now map the multiplexed args. This is the same as in poly
+    for(i=0; i < p->num_instances; i++) {
+        if(OK != handle_set_inputs(csound, p, i))
+            return INITERR(Str("failed to setup handle"));
+    }
+
+    // finished! now we can call the opcode's init func
+    if(opc->iopadr != NULL) {
+        for(i=0; i < p->num_instances; i++) {
+            if(OK != opc->iopadr(csound, p->handles[i].state))
+                return INITERRF("Error in opcode's init func (instance #%d)", i);
+        }
+    }
+
+    // register out deinit func to deallocate everything
+    csound->RegisterDeinitCallback(csound, p, (i32 (*)(CSOUND*, void*))poly1_deinit);
+    return OK;
+}
+
+
+// --------------------------------------------------------------------------
+
+
 #define S(s) sizeof(s)
 
 static OENTRY localops[] = {
     { "poly", S(POLY1), 0, 3, "*", "iS*", (SUBR)poly1_init, (SUBR)poly1_perf },
+    { "polyseq", S(POLY1), 0, 3, "*", "iS*", (SUBR)polyseq_init, (SUBR)poly1_perf }
 };
 
 LINKAGE
