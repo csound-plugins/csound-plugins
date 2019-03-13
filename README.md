@@ -2,77 +2,28 @@
 
 This is a repository for plugins for [csound](csound.com). 
 
+# Plugins in this repo
+
+* `dict` plugins: very efficient hashtables for csound
+* `poly` plugins: parallel and sequential multiplexing opcodes, they enable to create and control multiple instances of a csound opcode
+
 # Documentation of all plugins
 
 See the [wiki](https://github.com/gesellkammer/csound-plugins/wiki)
 
-# Organisation
-
-An opcode is normally implemented as part of a library, to allow for different
-versions and related opcodes to share functionality.
-Each library lives in its own directory.
-The tree can be structured as follows:
-
-
-    mylib/
-      CMakeLists.txt
-      manifest.json
-      [ README.md ]
-      src/
-        mylib.c
-      examples/
-        foo.csd
-        bar.csd
-      docs/
-        foo.md
-        bar.md
-        
-
-For each opcode defined in mylib.c there should be an example `opcode.csd` 
-and a manual page `opcode.md`. Optionally it is possible to include a README.md
-where a short description of the opcodes in this library is given 
-
-
-# Manifest
-
-The manifest should have the minimal form: 
-
-
-```json
-{
-    "name": "mylib",
-    "opcodes": ["foo", "bar"],
-    "author": "name",
-    "author_email": "name@email.com",
-    "license": "LGPL",
-    "description": "Description of this package",
-    "url": "http://github.com/..."
-}
-        
-```
-
-In this case, three opcodes are defined, and these names should correspond to
-the .csd example living inside of the `examples` folder, and a .md file 
-living inside the `docs` folder.
-
-
-# Build
-
-We use cmake as a build tool. For simple opcodes with no extra dependencies, 
-a simple CMakeLists.txt would suffice:
-
-    make_plugin(mylib src/mylib.c)
-
 
 # Installation
 
-At the root folder of this repository, do
 
-
-    mkdir build
-    cd build
+    git clone https://github.com/gesellkammer/csound-plugins
+    cd csound-plugins
+    mkdir build & cd build
     cmake ..
     make
     sudo make install
 
 
+
+# Contributing 
+
+See [Contributing](https://github.com/gesellkammer/csound-plugins/wiki/contributing)
