@@ -1,6 +1,6 @@
 # Repository of plugins
 
-This is a repository for plugins for [csound](csound.com). 
+This is a repository for plugins for [csound](https://csound.com/). 
 
 # Plugins in this repo
 
