@@ -1,0 +1,12 @@
+{
+    "name": "libname",
+    "opcodes": [
+      "opcodeA", 
+      "opcodeB",
+    ],
+    "author": "Name Surname",
+    "author_email": "name.surname@example.com",
+    "license": "LGPL",
+    "description": "These opcdes implement great things",
+    "url": ""
+}

@@ -8,6 +8,7 @@ Query different properties of a dict
 
 Properties of a dict which do not need a separate opcode (because they are not used very frequently) are merged togehter in this opcode. 
 Possible properties are:
+
 * `exists`: return 1 if the handle points to a valid dict
 * `size`: returns the size of this dict (similar to dict_size)
 * `type`: returns an integer identifying the type of this dict

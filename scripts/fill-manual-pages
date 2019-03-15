@@ -1,8 +1,8 @@
 #!/bin/bash
-ownfolder=$(realpath $(dirname $0))
-echo $ownfolder
-templatefiles=$(find src -name "*.md_")
-echo $templatefiles
+mypath=$(dirname $(realpath $0))
+srcpath=$(realpath $mypath/../src)
+templatefiles=$(find "$srcpath" -name "*.md_")
 for f in $templatefiles; do
-    ./scripts/fill-manual-page.py "$f"
+    echo $f
+    $mypath/fill-manual-page.py "$f"
 done

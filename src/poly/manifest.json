@@ -2,7 +2,7 @@
     "name": "poly",
     "opcodes": [
       "poly", 
-      "polyseq",
+      "polyseq"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

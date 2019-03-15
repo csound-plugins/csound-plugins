@@ -1,0 +1,4 @@
+#!/bin/bash
+./fill-manual-pages
+./generate-readmes
+./update-wiki ~/dev/csound/csound-plugins.wiki

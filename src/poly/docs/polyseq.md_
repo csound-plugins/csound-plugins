@@ -59,6 +59,8 @@ given opcode. The same applies for the output arguments
 
 ## Examples
 
+[LISTEN](https://raw.githubusercontent.com/gesellkammer/csound-plugins/master/src/poly/examples/polyseq.mp3)
+
 {example}
 
 ## See also

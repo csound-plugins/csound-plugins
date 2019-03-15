@@ -1,14 +1,16 @@
+
 # klib
 
-These plugins implement a hashtable and all its operations
+## Description
 
-* A dict can be created by a note or by instr 0.
-* lifetime: either tied to the lifetime of the note, or it can
-  survive the note until dict_free is called later. When a dict
-  is not tied to a note, its handle can be passed around.
-  By default, a dict is local (is freed with the end of the note)
-* key can be either a string or an integer
-* value can be either be a string or a float (maybe in the future also audio
-  and arrays?)
+A hashtable for csound
 
-Operations implemented are: get, set, del, free, print, query 
+## Opcodes implemented
+
+* **dict_new**: Create a hashtable 
+* **dict_free**: Free a hashtable 
+* **dict_get**: Get a value from a hashtable 
+* **dict_set**: Set (or remove) a value from a hashtable 
+* **dict_size**: Returns the number of key:value pairs in a dict 
+* **dict_query**: Query different properties of a dict 
+* **dict_print**: Prints the contents of a dict 

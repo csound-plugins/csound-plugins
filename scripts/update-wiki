@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+import json
+import sys
+import os
+import pathlib
+import argparse
+import shutil
+
+parser = argparse.ArgumentParser()
+parser.add_argument("wikifolder")
+args = parser.parse_args()
+
+def get_rootfolder() -> pathlib.Path:
+    this = pathlib.Path(sys.argv[0]).absolute()
+    return this.parent.parent
+    
+def get_manifests(rootfolder):
+    """
+    returns a list of Paths
+    """
+    root = pathlib.Path(rootfolder)
+    print(rootfolder)
+    return list((root/"src").glob("**/manifest.json"))
+
+    
+def find_manual_pages(rootfolder: pathlib.Path, opcodes):
+    """ for each opcode find a file opcode.md inside rootfolder (recursively) """
+    mdopcodes = {opcode + ".md" for opcode in opcodes}
+    return [md for md in pathlib.Path(rootfolder).glob("**/*.md") if md.name in mdopcodes]
+    
+
+def find_opcodes(rootfolder):
+    """ find opcodes based on the manifest"""
+    manifests = get_manifests(rootfolder)
+    opcodes = set()
+    for manifest in manifests:
+        try:
+            d = json.load(open(str(manifest)))
+        except json.decoder.JSONDecodeError:
+            print(f"Could not decode manifest {manifest}")
+            continue
+        opcodes_in_manifest = d.get("opcodes")
+        if opcodes_in_manifest:
+            opcodes.update(opcodes_in_manifest)
+    return opcodes
+
+if __name__ == "__main__":
+    rootfolder = get_rootfolder()
+    opcodes = find_opcodes(rootfolder)
+    markdownfiles = find_manual_pages(rootfolder, opcodes)
+    wikifolder = pathlib.Path(args.wikifolder).absolute()
+    for markdownfile in markdownfiles:
+        shutil.copy(markdownfile, wikifolder)
+    print(markdownfiles)
+    
