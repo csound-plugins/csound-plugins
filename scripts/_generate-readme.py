@@ -29,6 +29,10 @@ header_template = \
 
 """
 
+if not os.path.exists(args.manifest):
+    print(f"Coud not find manifest: {args.manifest}")
+    sys.exit(-1)
+
 try:
     manifest = json.load(open(args.manifest))
 except:
@@ -101,7 +105,7 @@ def xml_to_markdown(xmlfragment):
     os.remove(markdownfile)
     return out
 
-def xml_get_abstract(tree):
+def xml_get_abstract(tree, remove_format=True):
     for section in tree.iter("section"): 
         title = section.find("title")
         if title.text != "Abstract":
@@ -109,9 +113,11 @@ def xml_get_abstract(tree):
         para = section.find("para")
         if para is None:
             return None
-        # txt = et.tostring(para, encoding="unicode", method="text")
-        txt = et.tostring(para, encoding="unicode")
-        md = xml_to_markdown(txt)
+        if remove_format:
+            md = et.tostring(para, encoding="unicode", method="text")
+        else:
+            md = et.tostring(para, encoding="unicode")
+            md = xml_to_markdown(txt)
         md = remove_newlines(md)
         return md
     return None

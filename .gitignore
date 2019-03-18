@@ -5,3 +5,5 @@ CMakeLists.txt.user
 *.html
 *.xml
 *.autosave
+.wiki
+__pycache__

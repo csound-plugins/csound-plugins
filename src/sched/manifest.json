@@ -1,0 +1,11 @@
+{
+    "name": "sched",
+    "opcodes": [
+      "atstop"
+    ],
+    "author": "Eduardo Moguillansky",
+    "author_email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "description": "Schedule an action when note is stopped",
+    "url": ""
+}

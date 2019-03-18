@@ -1,9 +1,0 @@
-{
-    'name': 'library_name',
-    'opcodes': ['foo', 'bar', 'baz'],
-    'author': 'name',
-    'author_email': 'name@email.com',
-    'license': 'LGPL',
-    'description': 'Description of this package',
-    'url': 'http://github.com/...'
-}

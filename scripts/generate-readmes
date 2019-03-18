@@ -4,5 +4,5 @@ srcpath=$(realpath $mypath/../src)
 manifests=$(find "$srcpath" -name "manifest.json")
 for manifest in $manifests; do 
     echo $manifest
-    $mypath/generate-readme.py --overwrite --manifest "$manifest"
+    $mypath/_generate-readme.py --overwrite --manifest "$manifest"
 done
