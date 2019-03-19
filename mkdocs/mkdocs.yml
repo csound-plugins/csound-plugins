@@ -1,0 +1,7 @@
+site_name: Csound Plugins
+theme: readthedocs
+extra_css:
+    - css/syntax-highlighting.css
+    
+markdown_extensions:
+   - codehilite:
