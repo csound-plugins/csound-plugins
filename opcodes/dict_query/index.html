@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>dict_query - Csound Plugins</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../../css/syntax-highlighting.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "dict_query";
+    var mkdocs_page_input_path = "opcodes/dict_query.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Csound Plugins</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Csound Plugins</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Contributing/">Contributing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Installation/">Installation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Opcodes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../atstop/">atstop</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_free/">dict_free</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_get/">dict_get</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_iter/">dict_iter</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_new/">dict_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_print/">dict_print</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">dict_query</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#dict_query">dict_query</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_set/">dict_set</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_size/">dict_size</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../poly/">poly</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../polyseq/">polyseq</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Csound Plugins</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Opcodes &raquo;</li>
+        
+      
+    
+    <li>dict_query</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="dict_query">dict_query</h1>
+<h2 id="abstract">Abstract</h2>
+<p>Query different properties of a dict</p>
+<h2 id="description">Description</h2>
+<p>Properties of a dict which do not need a separate opcode (because they are not used very frequently) are merged togehter in this opcode. 
+Possible properties are:</p>
+<ul>
+<li><code>exists</code>: return 1 if the handle points to a valid dict</li>
+<li><code>size</code>: returns the size of this dict (similar to dict_size)</li>
+<li><code>type</code>: returns an integer identifying the type of this dict</li>
+<li><code>11</code>: number -&gt; number</li>
+<li><code>12</code>: number -&gt; string</li>
+<li><code>21</code>: string -&gt; number</li>
+<li><code>22</code>: string -&gt; string</li>
+<li><code>keys</code>: returns an array with all the keys defined in this dict (the type of the returned array depends on the type of the keys)</li>
+<li><code>values</code>: returns an array with all the values (the type of the returned array depends on the type of the values). </li>
+</ul>
+<p><strong>NB</strong>: the order in which keys and values are returned represents the corresponding pairs, so keys[i] and values[i] belong to the same pair.</p>
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span>kexists   dict_query idict, &quot;exists&quot;
+ksize     dict_query idict, &quot;size&quot;
+ktype     dict_query idict, &quot;type&quot;
+SKeys[]   dict_query idict, &quot;keys&quot;
+kKeys[]   dict_query idict, &quot;keys&quot;
+kValues[] dict_query idict, &quot;values&quot;
+SValues[] dict_query idict, &quot;values&quot;
+</pre></div>
+
+
+<p><strong>NB</strong>: the arrays returned from keys and values can have either an S- or a k-type, depending on the type definition of the array </p>
+<p><code>dict_query</code> executes at <strong>k-time</strong>. </p>
+<h2 id="arguments">Arguments</h2>
+<ul>
+<li><code>idict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">--</span><span class="n">nosound</span> 
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="cm">/*</span>
+
+<span class="cm">  Example file for dict_query</span>
+
+<span class="cm">  ... dict_query idict, Scmd</span>
+
+<span class="cm">  where Scmd can be: &#39;size&#39;, &#39;type&#39;, &#39;exists&#39;, &#39;keys&#39;, &#39;values&#39;</span>
+
+<span class="cm">*/</span>
+
+
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="c1">; get all the keys as an array</span>
+  <span class="kt">i</span><span class="n">dict1</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;keyA&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;keyB&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;keyC&quot;</span><span class="p">,</span> <span class="mi">3</span>
+  <span class="c1">; check that the dict exists</span>
+  <span class="kt">k</span><span class="n">exists</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict1</span><span class="p">,</span> <span class="s">&quot;exists&quot;</span>
+  <span class="kt">k</span><span class="n">type</span>   <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict1</span><span class="p">,</span> <span class="s">&quot;type&quot;</span>
+  <span class="nb">printf</span> <span class="s">&quot;dict exists = </span><span class="si">%d</span><span class="s">, type = </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">exists</span><span class="p">,</span> <span class="kt">k</span><span class="n">type</span>
+
+  <span class="kt">S</span><span class="n">Keys</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict1</span><span class="p">,</span> <span class="s">&quot;keys&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">S</span><span class="n">Keys</span>
+
+  <span class="c1">; now check a bogus handle</span>
+  <span class="kt">k</span><span class="n">exists999</span> <span class="n">dict_query</span> <span class="mi">999</span><span class="p">,</span> <span class="s">&quot;exists&quot;</span>
+  <span class="nb">printf</span> <span class="s">&quot;dict 999 exists = </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">exists999</span>
+
+  <span class="c1">; get the keys from a different dict</span>
+  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;if&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span><span class="mi">200</span>
+  <span class="kt">k</span><span class="n">Keys</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;keys&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Keys</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%.0f</span><span class="s">&quot;</span>
+  <span class="nb">printf</span> <span class="s">&quot;idict2 has size=</span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dict_query</span><span class="p">(</span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;size&quot;</span><span class="p">)</span>
+
+  <span class="c1">; get values as an array</span>
+  <span class="kt">i</span><span class="n">dict3</span> <span class="n">dict_new</span> <span class="s">&quot;is&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span>
+  <span class="kt">S</span><span class="n">vals</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict3</span><span class="p">,</span> <span class="s">&quot;values&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">S</span><span class="n">vals</span>
+
+
+  <span class="kt">k</span><span class="n">Vals</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;values&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Vals</span>
+
+  <span class="c1">; query the type of the dict</span>
+  <span class="kt">k</span><span class="n">type</span>  <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;type&quot;</span>
+  <span class="nb">printf</span> <span class="s">&quot;the type of dict </span><span class="si">%d</span><span class="s"> is </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="kt">k</span><span class="n">type</span>  
+
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="/opcodes/dict_iter">dict_iter</a></li>
+<li><a href="/opcodes/dict_size">dict_size</a></li>
+</ul>
+<h2 id="credits">Credits</h2>
+<p>Eduardo Moguillansky, 2019</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../dict_set/" class="btn btn-neutral float-right" title="dict_set">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../dict_print/" class="btn btn-neutral" title="dict_print"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../dict_print/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../dict_set/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>dict_print - Csound Plugins</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../../css/syntax-highlighting.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "dict_print";
+    var mkdocs_page_input_path = "opcodes/dict_print.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Csound Plugins</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Csound Plugins</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Contributing/">Contributing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Installation/">Installation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Opcodes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../atstop/">atstop</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_free/">dict_free</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_get/">dict_get</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_iter/">dict_iter</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_new/">dict_new</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">dict_print</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#dict_print">dict_print</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_query/">dict_query</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_set/">dict_set</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_size/">dict_size</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../poly/">poly</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../polyseq/">polyseq</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Csound Plugins</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Opcodes &raquo;</li>
+        
+      
+    
+    <li>dict_print</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="dict_print">dict_print</h1>
+<h2 id="abstract">Abstract</h2>
+<p>Prints the contents of a dict</p>
+<h2 id="description">Description</h2>
+<p><code>dict_print</code> can be used to print the contents of a dict, mostly for debugging
+purposes</p>
+<p><code>dict_print</code> can print both at <strong>i-time</strong> or <strong>k-time</strong></p>
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span>dict_print idict [, ktrig=1]
+</pre></div>
+
+
+<h2 id="arguments">Arguments</h2>
+<ul>
+<li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
+<li><code>ktrig</code>: when to print the dict. Printing will take place whenever ktrig is -1 or 
+           if ktrig is a positive and higher than the last trig</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">--</span><span class="n">nosound</span>
+
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="kd">instr</span> <span class="nf">1</span> 
+  <span class="c1">; create a local dict, mapping strings to numbers</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">30</span>
+  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>
+
+  <span class="c1">; print with a metro</span>
+  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foofoo&quot;</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="s">&quot;barbar&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazbaz&quot;</span>
+
+  <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">2</span>
+  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="kt">k</span><span class="n">trig</span>
+
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+</pre></div>
+
+
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="/opcodes/dict_iter">dict_iter</a></li>
+<li><a href="/opcodes/dict_set">dict_set</a></li>
+<li><a href="/opcodes/dict_query">dict_query</a></li>
+</ul>
+<h2 id="credits">Credits</h2>
+<p>Eduardo Moguillansky, 2019</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../dict_query/" class="btn btn-neutral float-right" title="dict_query">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../dict_new/" class="btn btn-neutral" title="dict_new"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../dict_new/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../dict_query/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>

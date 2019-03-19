@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>polyseq - Csound Plugins</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../../css/syntax-highlighting.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "polyseq";
+    var mkdocs_page_input_path = "opcodes/polyseq.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Csound Plugins</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Csound Plugins</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Contributing/">Contributing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Installation/">Installation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Opcodes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../atstop/">atstop</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_free/">dict_free</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_get/">dict_get</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_iter/">dict_iter</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_new/">dict_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_print/">dict_print</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_query/">dict_query</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_set/">dict_set</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_size/">dict_size</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../poly/">poly</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">polyseq</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#polyseq">polyseq</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Csound Plugins</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Opcodes &raquo;</li>
+        
+      
+    
+    <li>polyseq</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="polyseq">polyseq</h1>
+<h2 id="abstract">Abstract</h2>
+<p><code>polyseq</code> creates and controls multiple <strong>sequential</strong> version of an opcode</p>
+<h2 id="description">Description</h2>
+<p><code>polyseq</code> creates a user given number of instances of an opcode, each with its own state.
+The output of an instance is routed to the input of the next instance, forming a chain.
+Each instance can be controlled individually.</p>
+<p>We differentiate between <code>chained</code> and <code>multiplexed</code> arguments. <code>chained</code> arguments are
+the ones which are mapped from one opcode instance to the next, so that the output of 
+one instance is routed to the input of the next. <code>multiplexed</code> are passed after the 
+<code>chained</code> arguments and work as they do with <code>poly</code>: if an array is passed, then each 
+instance is delivered one element of this array, and if a scalar value is passed, then 
+all instances share the same argument.</p>
+<h3 id="example">Example</h3>
+<p>All this is best explained with an example:</p>
+<div class="codehilite"><pre><span></span><span class="c1">; these two signal chains produce the same result</span>
+<span class="kt">a</span><span class="n">0</span> <span class="nb">pinker</span>
+<span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">330</span>
+
+<span class="kt">a</span><span class="n">eq</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+<span class="kt">a</span><span class="n">eq</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">eq</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+<span class="kt">a</span><span class="n">eq</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">eq</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+<span class="kt">a</span><span class="n">eq</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">eq</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+
+<span class="kt">a</span><span class="n">seq</span> <span class="n">polyseq</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;rbjeq&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+</pre></div>
+
+
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span>xouts polyseq numinstances:i, opcodename:s, xins, params ...
+</pre></div>
+
+
+<p><code>polyseq</code> can have any number of inputs and outputs, as long as the opcode
+used has matching inputs and outputs.     </p>
+<h2 id="arguments">Arguments</h2>
+<ul>
+<li><code>inuminstances</code>: the number of instances of <code>Sopcode</code> to instantiate</li>
+<li><code>Sopcode</code>: the name of the opcode</li>
+<li><code>xins</code>: any number of arguments, either k- or a-rate, which should correspond
+          to the outputs of the opcode</li>
+</ul>
+<p>The number and type of the input arguments depend on the arguments passed to the 
+given opcode. The same applies for the output arguments</p>
+<h3 id="output">Output</h3>
+<p><code>xouts</code>: any number of arguments of type <code>k</code> or <code>a</code>, as output by the opcode</p>
+<h2 id="examples">Examples</h2>
+<p><a href="https://raw.githubusercontent.com/gesellkammer/csound-plugins/master/src/poly/examples/polyseq.mp3">LISTEN</a></p>
+<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="c1">; -odac           </span>
+
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">32</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1">; Example file for polyseq</span>
+
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="c1">; A simple parametric eq.</span>
+  <span class="c1">; On the left channel, the reference signal,</span>
+  <span class="c1">; on the right, the polyseq implementation.</span>
+  <span class="c1">; These should be the same</span>
+
+  <span class="kt">a</span><span class="n">0</span> <span class="nb">pinker</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">ampdb</span><span class="p">(</span><span class="o">-</span><span class="mi">12</span><span class="p">)</span>
+
+  <span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">1400</span><span class="p">,</span> <span class="mi">3000</span><span class="p">,</span> <span class="mi">4400</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">12000</span>
+  <span class="kt">k</span><span class="n">Qs</span><span class="p">[]</span> <span class="nb">fillarray</span>    <span class="mi">10</span><span class="p">,</span>    <span class="mi">20</span><span class="p">,</span>   <span class="mi">10</span><span class="p">,</span>   <span class="mi">20</span><span class="p">,</span>   <span class="mi">10</span><span class="p">,</span>    <span class="mi">20</span>
+  <span class="kt">k</span><span class="n">V</span> <span class="o">=</span> <span class="nb">ampdb</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span>
+
+  <span class="kt">a</span><span class="n">ref</span> <span class="o">=</span> <span class="kt">a</span><span class="n">0</span>
+  <span class="kt">a</span><span class="n">ref</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kt">k</span><span class="n">V</span><span class="p">,</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">a</span><span class="n">ref</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="kt">k</span><span class="n">V</span><span class="p">,</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">a</span><span class="n">ref</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="kt">k</span><span class="n">V</span><span class="p">,</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">a</span><span class="n">ref</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="kt">k</span><span class="n">V</span><span class="p">,</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">a</span><span class="n">ref</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="kt">k</span><span class="n">V</span><span class="p">,</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">a</span><span class="n">ref</span> <span class="nb">rbjeq</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="kt">k</span><span class="n">V</span><span class="p">,</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+
+  <span class="kt">a</span><span class="n">seq</span> <span class="n">polyseq</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">k</span><span class="n">Freqs</span><span class="p">),</span> <span class="s">&quot;rbjeq&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">,</span> <span class="kt">k</span><span class="n">V</span><span class="p">,</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">a</span><span class="n">seq</span>
+
+<span class="kd">endin</span>
+
+<span class="kd">opcode</span> <span class="nf">rndarr</span><span class="p">,</span> <span class="kt">i[]</span><span class="p">,</span> <span class="kt">iii</span>
+  <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="kt">i</span><span class="n">min</span><span class="p">,</span> <span class="kt">i</span><span class="n">max</span> <span class="nb">xin</span> 
+  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">init</span> <span class="kt">i</span><span class="n">num</span> 
+  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kt">i</span><span class="n">delta</span> <span class="o">=</span> <span class="kt">i</span><span class="n">max</span> <span class="o">-</span> <span class="kt">i</span><span class="n">min</span>
+  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">num</span> <span class="k">do</span> 
+    <span class="kt">i</span><span class="n">Out</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span> <span class="o">=</span> <span class="kt">i</span><span class="n">min</span> <span class="o">+</span> <span class="nb">unirand</span><span class="p">(</span><span class="kt">i</span><span class="n">delta</span><span class="p">)</span>
+    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="k">od</span> 
+  <span class="nb">xout</span> <span class="kt">i</span><span class="n">Out</span>
+<span class="kd">endop</span>
+
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="c1">; two varying eqs</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="nb">ampdb</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">)</span>
+
+  <span class="kt">k</span><span class="n">Freqs0</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1400</span><span class="p">,</span> <span class="mi">3000</span><span class="p">,</span> <span class="mi">4400</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">8000</span>
+  <span class="kt">i</span><span class="n">num</span> <span class="nb">lenarray</span> <span class="kt">k</span><span class="n">Freqs0</span>
+
+  <span class="kt">i</span><span class="n">Freqslfo</span><span class="p">[]</span> <span class="nf">rndarr</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.4</span>
+  <span class="kt">k</span><span class="n">Lfos</span><span class="p">[]</span> <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;lfo&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kt">i</span><span class="n">Freqslfo</span>
+
+  <span class="kt">k</span><span class="n">FreqsL</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">k</span><span class="n">Freqs0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="kt">k</span><span class="n">Lfos</span><span class="p">)</span>
+  <span class="kt">k</span><span class="n">FreqsR</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">k</span><span class="n">Freqs0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="kt">k</span><span class="n">Lfos</span><span class="o">*</span><span class="mf">1.62</span><span class="p">)</span>
+
+  <span class="kt">k</span><span class="n">Qs</span><span class="p">[]</span> <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;lfo&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">i</span><span class="n">Freqslfo</span><span class="o">*</span><span class="mf">1.5</span>
+  <span class="kt">k</span><span class="n">Qs</span> <span class="o">+=</span> <span class="mf">7.5</span>
+
+  <span class="kt">a</span><span class="n">eqL</span> <span class="n">polyseq</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;rbjeq&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">FreqsL</span><span class="p">,</span> <span class="nb">ampdb</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="kt">k</span><span class="n">Qs</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">a</span><span class="n">eqR</span> <span class="n">polyseq</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;rbjeq&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">FreqsR</span><span class="p">,</span> <span class="nb">ampdb</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span> <span class="kt">k</span><span class="n">Qs</span><span class="o">*</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span>
+
+  <span class="c1">; declick</span>
+  <span class="kt">a</span><span class="n">env</span> <span class="o">=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">eqL</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span><span class="p">,</span> <span class="kt">a</span><span class="n">eqR</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span>
+<span class="kd">endin</span>
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">5</span>
+<span class="nb">i</span> <span class="mi">2</span> <span class="mi">5</span> <span class="mi">20</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h2 id="see-also">See also</h2>
+<ul>
+<li><code>maparray</code></li>
+<li><a href="/opcodes/poly">poly</a></li>
+</ul>
+<h2 id="credits">Credits</h2>
+<p>Eduardo Moguillansky, 2019</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../poly/" class="btn btn-neutral" title="poly"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../poly/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>

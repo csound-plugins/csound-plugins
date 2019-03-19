@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>atstop - Csound Plugins</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../../css/syntax-highlighting.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "atstop";
+    var mkdocs_page_input_path = "opcodes/atstop.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> Csound Plugins</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Csound Plugins</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Contributing/">Contributing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../Installation/">Installation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Opcodes</span>
+    <ul class="subnav">
+                <li class=" current">
+                    
+    <a class="current" href="./">atstop</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#atstop">atstop</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_free/">dict_free</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_get/">dict_get</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_iter/">dict_iter</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_new/">dict_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_print/">dict_print</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_query/">dict_query</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_set/">dict_set</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../dict_size/">dict_size</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../poly/">poly</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../polyseq/">polyseq</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Csound Plugins</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Opcodes &raquo;</li>
+        
+      
+    
+    <li>atstop</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="atstop">atstop</h1>
+<h2 id="abstract">Abstract</h2>
+<p>Schedule an instrument at the end of the current instrument</p>
+<h2 id="description">Description</h2>
+<p><code>atstop</code> can be used to schedule an instrument event as the last action
+of a given instrument, during the process of being deallocated. This can
+be used to notify when the note has actually stopped, or to schedule a 
+chain of events, free any table or dict allocated, etc. The advantage
+over the <code>release</code> opcode is that <code>atstop</code> is guaranteed to be run 
+after the note has stopped, so there is no danger in deallocating resources
+being used by this note, there are no conflicts with release envelopes, etc.</p>
+<p><strong>NB</strong>: the event is not scheduled at <em>release</em> time (see below "Release time vs Deinit time")
+but at the moment the note is freed.</p>
+<h3 id="release-time-vs-deinit-time">Release time vs deinit time</h3>
+<p><strong>Release time</strong> is when the note is within its <em>release phase</em>, which will only happen 
+if the note has an envelope with a release segment (like <code>linsegr</code>), or if it has 
+setup extra time with <code>xtratim</code>. The opcode <code>release</code> can be used to query if the 
+current note is being released. The instrument keeps running in release phase as 
+long as the release part of the envelope is finished or the extra time allocated
+via <code>xtratim</code> is through. </p>
+<p><strong>Deinit time</strong> is the moment the note is actually being freed, so the instrument is
+not running anymore at this point.  </p>
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span>atstop instrnum, idelay, idur [, p4, p5, ...]
+atstop Sinstrname, idelay, idur [, p4, p5, ...]
+</pre></div>
+
+
+<p><code>atstop</code> executes only at <strong>init time</strong>. </p>
+<h2 id="arguments">Arguments</h2>
+<ul>
+<li><code>instrnum</code> / <code>Sintrname</code>: the number or the name of the instr to be scheduled</li>
+<li><code>idelay</code>: the time offset <strong>after</strong> the stop time of this note to start this instrument</li>
+<li><code>idur</code>: the duration of the event</li>
+<li><code>p4</code>, <code>p5</code>, ...: any other p-arguments, as used with similar opcodes like <code>schedule</code>, <code>event</code>, etc.</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">-</span><span class="n">odac</span>
+
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="cm">/*</span>
+
+<span class="cm">  # This is the example file for the atstop opcode</span>
+
+<span class="cm">  atstop schedules an instrument at the end of the note</span>
+<span class="cm">  This might be useful to notify that a note stopped, or</span>
+<span class="cm">  to schedule a chain of notes, etc.</span>
+
+<span class="cm">  NB: the scheduled event is NOT triggered at release time,</span>
+<span class="cm">  which might be when this note is still playing, if the note</span>
+<span class="cm">  has some release envelope, but when the note is being deleted</span>
+
+<span class="cm">  ## Syntax</span>
+
+<span class="cm">    atstop Sinstrname, idelay, idur, ...</span>
+<span class="cm">    atstop instrnum, idelay, idur, ...</span>
+
+<span class="cm">  * Sinstrname / instrnum: the name or the instrument number to schedule</span>
+<span class="cm">  * idelay: time offset to this note stop</span>
+<span class="cm">  * idur: duration of the scheduled event (-1 = forever)</span>
+
+<span class="cm">*/</span>
+
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="kd">opcode</span> <span class="nf">myvco</span><span class="p">,</span><span class="kt">a</span><span class="p">,</span><span class="kt">ii</span>
+  <span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span> <span class="nb">xin</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="nb">vco2</span><span class="p">,</span> <span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+  <span class="nb">xout</span> <span class="kt">a</span><span class="n">0</span>
+<span class="kd">endop</span>
+
+<span class="c1">; brownian walk</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="nf">myvco</span> <span class="mf">0.1</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
+  <span class="kt">i</span><span class="n">delta</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="nb">rnd</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+  <span class="kt">i</span><span class="n">delta</span> <span class="o">=</span> <span class="kt">i</span><span class="n">delta</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">?</span> <span class="kt">i</span><span class="n">delta</span> <span class="o">:</span> <span class="o">-</span><span class="mf">0.5</span>
+  <span class="kt">i</span><span class="n">midi2</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">+</span> <span class="kt">i</span><span class="n">delta</span>
+  <span class="kt">i</span><span class="n">midi2</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi2</span> <span class="o">&lt;</span> <span class="mi">96</span> <span class="o">?</span> <span class="kt">i</span><span class="n">midi2</span> <span class="o">:</span> <span class="mi">48</span>
+  <span class="kt">i</span><span class="n">durnext</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">rnd</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">/</span> <span class="mi">8</span>
+  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">durnext</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi2</span>
+<span class="kd">endin</span>
+
+<span class="c1">; ping-pong</span>
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="nf">myvco</span> <span class="mf">0.1</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
+  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">&lt;</span> <span class="mi">96</span> <span class="o">?</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">:</span> <span class="mi">48</span>
+
+  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">3</span>
+  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.5</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.050</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
+  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">&lt;</span> <span class="mi">96</span> <span class="o">?</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">:</span> <span class="mi">48</span>
+  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.75</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="kd">endin</span>
+
+
+<span class="kd">instr</span> <span class="nf">100</span>
+  <span class="nb">exitnow</span>
+<span class="kd">endin</span>
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="c1">; i 1 0 0.25 36</span>
+<span class="nb">i</span> <span class="mi">2</span> <span class="mi">0</span> <span class="mf">0.25</span> <span class="mi">48</span>
+<span class="nb">i</span> <span class="mi">100</span> <span class="mi">20</span> <span class="mi">1</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h2 id="see-also">See also</h2>
+<ul>
+<li><code>schedule</code></li>
+<li><code>event</code></li>
+<li><code>release</code></li>
+<li><code>xtratim</code></li>
+</ul>
+<h2 id="credits">Credits</h2>
+<p>Eduardo Moguillansky, 2019</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../dict_free/" class="btn btn-neutral float-right" title="dict_free">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../../Installation/" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="../../Installation/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../dict_free/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>
