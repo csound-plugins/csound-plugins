@@ -180,7 +180,7 @@
 <p>Free a hashtable </p>
 <h2 id="description">Description</h2>
 <p>frees the hashtable either at init time or at the end of the note (similar to ftfree)
-A dict can only be freed if it was created as global (see <a href="/opcodes/dict_new">dict_new</a>).
+A dict can only be freed if it was created as global (see <a href="../dict_new/">dict_new</a>).
 To be able to pass a dict between notes, a note can create a global dict and 
 pass its handle to another note. When the first note is released, the dict lives
 on (because it is global), and it will be either freed at the end of the performance
@@ -260,7 +260,7 @@ or explicitely by calling <code>dict_free</code></p>
 
 
 <h2 id="see-also">See also</h2>
-<p><a href="/opcodes/dict_new">dict_new</a></p>
+<p><a href="../dict_new/">dict_new</a></p>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
               
