@@ -17,7 +17,7 @@ See the [wiki](https://github.com/csound-plugins/csound-plugins/wiki)
 # Installation
 
 
-    git clone https://github.com/gesellkammer/csound-plugins
+    git clone https://github.com/csound-plugins/csound-plugins
     cd csound-plugins
     mkdir build & cd build
     cmake ..
