@@ -1,4 +1,5 @@
 build/
+site/
 test.wav
 CMakeLists.txt.user
 *~
