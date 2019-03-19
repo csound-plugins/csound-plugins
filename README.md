@@ -11,7 +11,7 @@ This is a repository for plugins for [csound](https://csound.com/).
 
 # Documentation of all plugins
 
-See the [wiki](https://github.com/gesellkammer/csound-plugins/wiki)
+See the [wiki](https://github.com/csound-plugins/csound-plugins/wiki)
 
 
 # Installation
@@ -30,4 +30,4 @@ See the [wiki](https://github.com/gesellkammer/csound-plugins/wiki)
 
 # Contributing 
 
-See [Contributing](https://github.com/gesellkammer/csound-plugins/wiki/contributing)
+See [Contributing](https://github.com/csound-plugins/csound-plugins/wiki/contributing)
