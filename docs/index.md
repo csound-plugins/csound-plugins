@@ -20,6 +20,7 @@ A hashtable for csound
 * [dict_size](opcodes/dict_size.md): Returns the number of key:value pairs in a dict 
 * [dict_query](opcodes/dict_query.md): Query different properties of a dict 
 * [dict_print](opcodes/dict_print.md): Prints the contents of a dict 
+* [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
 
 
 ## poly

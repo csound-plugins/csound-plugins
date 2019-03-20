@@ -200,8 +200,8 @@ i 3 0 1
 
 ## See also
 
+* [maparray](http://www.csounds.com/manual/html/maparray.html)
 * [polyseq](polyseq.md)
-* `maparray`
 
 ## Credits
 

@@ -1,4 +1,4 @@
-# poly
+# polyseq
 
 ## Abstract
 
@@ -65,8 +65,8 @@ given opcode. The same applies for the output arguments
 
 ## See also
 
-* `maparray`
-* [poly](poly)
+* [maparray](http://www.csounds.com/manual/html/maparray.html)
+* [poly](poly.md)
 
 ## Credits
 

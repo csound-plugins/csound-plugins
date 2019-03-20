@@ -20,7 +20,7 @@ the end of the collection.
     
 ## Arguments
 
-* `idict`: the handle to the dict as returned by `dict_new`
+* `idict`: the handle to the dict as returned by [dict_new](dict_new.md)
 * `kreset`: the reset policy
   * `kreset = 0`: no reset, iteration stops at the end of the collection is can't start over. 
                   This makes sure that there will be max. 1 iteration within this note
@@ -123,8 +123,8 @@ i 3 0 0.05
 
 ## See also
 
-* [dict_new](dict_new)
-* [dict_size](dict_size)
+* [dict_new](dict_new.md)
+* [dict_size](dict_size.md)
 
 
 ## Credits

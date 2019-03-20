@@ -109,8 +109,8 @@ i 1 0 0.1
 
 ## See also
 
-* [dict_iter](dict_iter)
-* [dict_size](dict_size)
+* [dict_iter](dict_iter.md)
+* [dict_size](dict_size.md)
 
 ## Credits
 

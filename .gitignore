@@ -9,3 +9,4 @@ CMakeLists.txt.user
 .wiki
 __pycache__
 *.stamp
+docs-build

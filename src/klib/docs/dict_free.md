@@ -7,11 +7,11 @@ Free a hashtable
 ## Description
 
 frees the hashtable either at init time or at the end of the note (similar to ftfree)
-A dict can only be freed if it was created as global (see [dict_new](dict_new)).
+A dict can only be freed if it was created as global (see [dict_new](dict_new.md)).
 To be able to pass a dict between notes, a note can create a global dict and 
 pass its handle to another note. When the first note is released, the dict lives
 on (because it is global), and it will be either freed at the end of the performance
-or explicitely by calling `dict_free`
+or explicitely by calling [dict_free](dict_free.md)
 
 ## Syntax
 
@@ -89,7 +89,7 @@ i 1 0 2
 
 ## See also
 
-[dict_new](dict_new)
+[dict_new](dict_new.md)
 
 ## Credits
 

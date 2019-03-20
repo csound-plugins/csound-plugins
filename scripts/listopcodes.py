@@ -9,25 +9,16 @@ import os
 import subprocess
 import xml.etree.ElementTree as et
 import io
-import pathlib
+from pathlib import Path
 
 
 header_template = \
 """
-## {libraryname}
+## {libname}
 
 {description}
 
 """
-
-
-def find_mdfile(opcode, docsfolder):
-    f = os.path.join(docsfolder, f"opcode.md")
-    f = os.path.abspath(f)
-    if os.path.exists(f):
-        return f
-    return None
-    
 
 def markdown_to_xml(mdfile: str) -> str:
     """
@@ -35,7 +26,6 @@ def markdown_to_xml(mdfile: str) -> str:
 
     mdfile: a markdown file
     """
-    # first, we use pandoc to convert to xml
     xmlfile = tempfile.mktemp(suffix=".xml")
     subprocess.call(["pandoc", "--to", "docbook5", "-o", xmlfile, mdfile])
     # before parsing it, we need to add the xlink namespace, since
@@ -45,16 +35,13 @@ def markdown_to_xml(mdfile: str) -> str:
         f.write('<article xmlns:xlink="http://www.w3.org/1999/xlink">')
         f.write(open(xmlfile).read())
         f.write('</article>')
-    # now read it
     tree = et.parse(xmlfile2)
-    # remove tempfiles
     os.remove(xmlfile)
     os.remove(xmlfile2)
     return tree
 
 
 def remove_newlines(s):
-    """ remove newlines and collapse multiple spaces to 1 """
     return " ".join(s.replace("\n", " ").split())
 
 
@@ -69,6 +56,7 @@ def xml_to_markdown(xmlfragment):
     os.remove(markdownfile)
     return out
 
+
 def xml_get_abstract(tree, remove_format=True):
     for section in tree.iter("section"): 
         title = section.find("title")
@@ -82,12 +70,11 @@ def xml_get_abstract(tree, remove_format=True):
         else:
             xml = et.tostring(para, encoding="unicode")
             md = xml_to_markdown(xml)
-        md = remove_newlines(md)
-        return md
+        return remove_newlines(md)
     return None
 
 
-def read_description(opcode: str, docsfolder: pathlib.Path) -> str:
+def read_description(opcode: str, docsfolder: Path) -> str:
     mdfile = docsfolder / f"{opcode}.md"
     if not mdfile.exists():
         print(f"Could not find opcode file {mdfile}")
@@ -96,81 +83,91 @@ def read_description(opcode: str, docsfolder: pathlib.Path) -> str:
     abstract = xml_get_abstract(tree)
     return abstract
 
+def manifest_ok(manifest: dict):
+    neededkeys = {"name", "description", "opcodes"}
+    return set(manifest.keys()).issuperset(neededkeys)
 
-def generate(manifestpath, docsfolder=None, overwrite=False, linkopcodes=False, outfile=None):
-    pluginroot = pathlib.Path(manifestpath).parent.absolute()
+
+def generate(manifestpath, docsfolder=None, overwrite=False, linkopcodes=False,
+             linkprefix="", linksuffix=""):
+    pluginroot = Path(manifestpath).parent.absolute()
     if not os.path.exists(manifestpath):
         raise Exception(f"Coud not find manifest: {manifestpath}")
 
     try:
         manifest = json.load(open(manifestpath))
-    except json.decoder.JSONDecodeError:
-        print(manifestpath)
-        raise Exception("Could not parse manifest")
+    except json.decoder.JSONDecodeError as e:
+        print("\n----------------------------\n")
+        print("    Could not parse ", manifestpath)
+        print("\n----------------------------\n")
+        for i, line in enumerate(open(manifestpath)):
+            print(f"{i+1:02d}: {line.rstrip()}")
+        raise
 
-    libname = manifest.get("name")
-    if libname is None:
-        raise Exception("manifest should define the key 'name' with the name of the library")
+    if not manifest_ok(manifest):
+        print("A manifest should have following keys: "
+              "\n  name: name of the library"
+              "\n  opcodes: a list of opcodes defined"
+              "\n  description: a description of what this library does")
+        print(manifest)
+        raise Exception(f"manifest malformed")
 
-    description = manifest.get("description")
-    if description is None:
-        raise Exception("manifest should define the key 'description' with"
-                        " a description of what the opcodes in this library do")
-
-    opcodes = manifest.get('opcodes')
-    if opcodes is None:
-        raise Exception("manifest should define the key 'opcodes' holding a list of opcodes")
-
-    headerstr = header_template.format(libraryname=libname, description=description)
-    if docsfolder:
-        docsfolder = pathlib.Path(docsfolder)
-    else:
-        docsfolder = pluginroot / "docs"
-
+    libname = manifest["name"]
+    description = manifest["description"]
+    opcodes = manifest["opcodes"]
+    headerstr = header_template.format(libname=libname, description=description)
+    
+    docsfolder = Path(docsfolder) if docsfolder else pluginroot/"docs"
     if not (docsfolder.exists() and docsfolder.is_dir()):
         raise Exception(f"documentation folder not found (searched: {docsfolder})"
                         ", can't generate README")
 
-    if outfile and os.path.exists(outfile) and not overwrite:
-        raise Exception(f"\nOutfile {outfile} exists, aborting (use --overwrite to overwrite)\n")
-
     if linkopcodes:
-        templ = "* [{opcode}]({opcode}): {descr} \n"
+        templ = "* [{opcode}]({linkprefix}{opcode}{linksuffix}): {descr} \n"
     else:
         templ = "* **{opcode}**: {descr} \n"
-    if outfile is None:
-        f = io.StringIO()
-    else:
-        f = open(outfile, "w")
+    
+    f = io.StringIO()
     f.write(headerstr)
     for opcode in opcodes:
         descr = read_description(opcode, docsfolder)
-        s = templ.format(opcode=opcode, descr=descr)
+        s = templ.format(opcode=opcode, descr=descr, 
+                         linkprefix=linkprefix, linksuffix=linksuffix)
         f.write(s)
     return f.getvalue()
-    
+
+   
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--docsfolder", default=None)
     parser.add_argument("-o", "--overwrite", action="store_true")
     parser.add_argument("--outfile", default=None)
     parser.add_argument("--linkopcodes", action="store_true")
+    parser.add_argument("--linkprefix", default="")
+    parser.add_argument("--linksuffix", default="")
     parser.add_argument("manifest")
     args = parser.parse_args()
     manifestpath = os.path.split(args.manifest)[0]
+    link = args.linkopcodes or (args.linkprefix or args.linksuffix)
     try:
-        s = generate(manifestpath, docsfolder=args.docsfolder, overwrite=args.overwrite, 
-                     linkopcodes=args.linkopcodes, outfile=args.outfile)
+        s = generate(manifestpath, 
+                     docsfolder=args.docsfolder, 
+                     overwrite=args.overwrite, 
+                     linkopcodes=link, 
+                     linkprefix=args.linkprefix, 
+                     linksuffix=args.linksuffix)
     except Exception as e:
         print(str(e))
         sys.exit(-1)
+
     if args.outfile is None:
         print(s)
+    else:
+        outfile = args.outfile
+        if outfile and os.path.exists(outfile) and not args.overwrite:
+            raise Exception(f"Outfile {outfile} exists, aborting"
+                            "(use --overwrite to overwrite)\n")
+        open(args.outfile, "w").write(s)
     
-        
     
-    
-    
-    
-    
-    
+

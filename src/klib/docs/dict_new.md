@@ -95,4 +95,7 @@ i 1 0 2
 
 ## See also
 
+* [dict_free](dict_free.md)
+* [dict_set](dict_set.md)
+
 ## Credits

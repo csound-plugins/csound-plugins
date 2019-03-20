@@ -9,10 +9,6 @@ This is a repository for plugins for [csound](https://csound.com/).
          they enable to create and control multiple instances of a csound opcode
 * `sched` plugins: schedule an instrument at specific events
 
-# Documentation of all plugins
-
-Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
-
 
 # Installation
 
@@ -24,9 +20,24 @@ Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
     make
     sudo make install
 
-# Generate the documentation
+
+# Documentation of all plugins
+
+Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
+
+
+## Use the offline documentation
+
+[mkdocs](https://www.mkdocs.org/) needs to be installed via `pip3 install mkdocs --user`
+
+
+    mkdocs serve
+
+
+## Generate the documentation
 
     ./scripts/generate-docs
+
 
 # Contributing 
 

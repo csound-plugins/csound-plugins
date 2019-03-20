@@ -100,8 +100,8 @@ i 1 0 2
 
 ## See also
 
-* [dict_new](dict_new)
-* [dict_set](dict_set)
+* [dict_new](dict_new.md)
+* [dict_set](dict_set.md)
 
 ## Credits
 

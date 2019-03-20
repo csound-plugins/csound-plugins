@@ -21,7 +21,7 @@ If xvalue is not given, `dict_set` removes the key from the dict
   
 `dict_get` executes both at **i-time** and **k-time**. 
 
-**NB**: it is possible to set multiple values at i-time directly with [dict_new](dict_new)
+**NB**: it is possible to set multiple values at i-time directly with [dict_new](dict_new.md)
 
 ## Arguments
 
@@ -94,8 +94,8 @@ i 1 0 2
 
 ## See also
 
-* [dict_new](dict_new)
-* [dict_get](dict_get)
+* [dict_new](dict_new.md)
+* [dict_get](dict_get.md)
 
 ## Credits
 

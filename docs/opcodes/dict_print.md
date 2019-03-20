@@ -66,7 +66,6 @@ i 1 0 1
 * [dict_iter](dict_iter.md)
 * [dict_set](dict_set.md)
 * [dict_query](dict_query.md)
-* `printarray`
 
 ## Credits
 

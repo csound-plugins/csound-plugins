@@ -7,7 +7,8 @@
       "dict_set",
       "dict_size",
       "dict_query",
-      "dict_print"
+      "dict_print",
+      "dict_iter"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

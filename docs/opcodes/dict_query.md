@@ -12,10 +12,10 @@ Possible properties are:
 * `exists`: return 1 if the handle points to a valid dict
 * `size`: returns the size of this dict (similar to dict_size)
 * `type`: returns an integer identifying the type of this dict
-    * `11`: number -> number
-    * `12`: number -> string
-    * `21`: string -> number
-    * `22`: string -> string
+  * `11`: number -> number
+  * `12`: number -> string
+  * `21`: string -> number
+  * `22`: string -> string
 * `keys`: returns an array with all the keys defined in this dict (the type of the returned array depends on the type of the keys)
 * `values`: returns an array with all the values (the type of the returned array depends on the type of the values). 
 

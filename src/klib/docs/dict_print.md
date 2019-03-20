@@ -63,9 +63,9 @@ i 1 0 1
 
 ## See also
 
-* [dict_iter](dict_iter)
-* [dict_set](dict_set)
-* [dict_query](dict_query)
+* [dict_iter](dict_iter.md)
+* [dict_set](dict_set.md)
+* [dict_query](dict_query.md)
 
 ## Credits
 

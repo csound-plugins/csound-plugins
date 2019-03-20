@@ -14,7 +14,7 @@ passed does not point to a valid dict, `dict_size` returns -1. It is thus possib
 to use it to check that the passed handle is valid (similar to `dict_query idict "exists"`,
 see [dict_query](dict_query.md))
 
-`dict_size` can be used together with [dict_iter](opcodes/dict_iter) to iterate over the key:value
+`dict_size` can be used together with [dict_iter](dict_iter) to iterate over the key:value
 pairs 
 
 ## Syntax

@@ -19,7 +19,7 @@ for number values)
     Svalue dict_get idict, Skey
     Svalue dict_get idict, kkey
     
-The type of key and value depend on the type definition of the `dict`, see [dict_new](opcodes/dict_new)
+The type of key and value depend on the type definition of the `dict`, see [dict_new](dict_new)
 
   
 `dict_get` executes both at **i-time** and **k-time**. 
@@ -27,7 +27,7 @@ The type of key and value depend on the type definition of the `dict`, see [dict
 ## Arguments
 
 * `ìdict`: the handle of the dict, as returned by `dict_new`
-* `Skey` / `kkey`: the key to be queries, as previously set by [dict_set](opcodes/dict_set)
+* `Skey` / `kkey`: the key to be queries, as previously set by [dict_set](dict_set)
 * `idefault`: if the key is not present, this value is returned (defaults to 0)
 
 ### Output

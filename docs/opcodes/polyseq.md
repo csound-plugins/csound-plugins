@@ -154,8 +154,8 @@ i 2 5 20
 
 ## See also
 
+* [maparray](http://www.csounds.com/manual/html/maparray.html)
 * [poly](poly.md)
-* `maparray`
 
 ## Credits
 

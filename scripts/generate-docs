@@ -2,50 +2,63 @@
 import json
 import sys
 import os
-import pathlib
 import argparse
 import shutil
 import subprocess
+import fnmatch
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--wikirepo",
                     help="Path to the repository holding the wiki repository"
                     "If given, files are copied there.")
+parser.add_argument("--overwrite", action="store_true")
+
 
 args = parser.parse_args()
 
-def get_rootfolder() -> pathlib.Path:
-    this = pathlib.Path(sys.argv[0]).absolute()
-    return this.parent.parent
-    
-def get_manifests(rootfolder):
+rootfolder = Path(sys.argv[0]).absolute().parent.parent
+assert (rootfolder/"mkdocs.yml").exists()
+
+
+def get_manifests(exclude="*template*"):
     """
     returns a list of Paths
     """
-    root = pathlib.Path(rootfolder)
-    print(rootfolder)
-    return list((root/"src").glob("**/manifest.json"))
+    root = rootfolder
+    manifests = (root/"src").glob("**/manifest.json")
+    manifests = [m for m in manifests if not fnmatch.fnmatch(str(m), exclude)]
+    return manifests
 
-def generate_index_files(buildfolder):
-    # generate home
-    root = get_rootfolder()
-    subprocess.call([root/"scripts"/"_generate-wiki-home.py",
-                     "--destfolder", buildfolder])
+def make_indices(destdir, mode="wiki"):
+    if mode == "wiki":
+        indexname = "Home"
+    elif mode == "mkdocs":
+        indexname = "index"
+    else:
+        raise ValueError("mode should be wiki or mkdocs")
+    root = rootfolder
+    outfile = destdir/f"{indexname}.md"
+    print(f"Calling _generate_index with mode: {mode}, outfile: {outfile}")
+    subprocess.call([root/"scripts"/"_generate_index.py",
+                     "--mode", mode,
+                     "--outfile", outfile])
     
 def fill_manual_pages():
-    root = get_rootfolder()
+    root = rootfolder
     subprocess.call([root / "scripts" / "fill-manual-pages"])
 
     
-def find_manual_pages(rootfolder: pathlib.Path, opcodes):
+def find_manual_pages(opcodes):
     """ for each opcode find a file opcode.md inside rootfolder (recursively) """
     mdopcodes = {opcode + ".md" for opcode in opcodes}
-    return [md for md in pathlib.Path(rootfolder).glob("**/*.md") if md.name in mdopcodes]
+    return [md for md in Path(rootfolder/"src").glob("**/*.md") 
+            if md.name in mdopcodes]
     
 
-def find_opcodes(rootfolder):
+def find_opcodes():
     """ find opcodes based on the manifest"""
-    manifests = get_manifests(rootfolder)
+    manifests = get_manifests()
     opcodes = set()
     for manifest in manifests:
         try:
@@ -58,7 +71,7 @@ def find_opcodes(rootfolder):
         if opcodes_in_manifest:
             opcodes.update(opcodes_in_manifest)
     return opcodes
-
+ 
 def copyall(files, dest):
     if files is None:
         return 
@@ -66,22 +79,82 @@ def copyall(files, dest):
         print(f"copying {f} to {dest}")
         shutil.copy(f, dest)
 
-if __name__ == "__main__":
-    rootfolder = get_rootfolder()
-    buildfolder = rootfolder / ".wiki"
-    buildfolder.mkdir(exist_ok=True)
-    wikifolder = rootfolder/"wiki"
-    copyall(list(wikifolder.glob("*.md")), buildfolder)
-    fill_manual_pages()
-    generate_index_files(buildfolder=buildfolder)
-    opcodes = find_opcodes(rootfolder)
-    manpages = find_manual_pages(rootfolder/"src", opcodes)
-    copyall(manpages, buildfolder)
-    print(f"Generated files are in {buildfolder}")
-    if args.wikirepo:
-        wikirepo = pathlib.Path(args.wikirepo).absolute()
+def build_wiki(manpages, wikirepo=None):
+    """
+    The wiki structure is flat:
+
+        wikirepo/
+            Home.md
+            { any other .md files in root/wiki }
+            { all markdown manpages }
+
+    All links are also flat, no .md termination necessary:
+
+        [mypage](mypage)
+    """
+    wikibuilddir = rootfolder / ".wiki"
+    wikibuilddir.mkdir(exist_ok=True)
+    origdocsdir = rootfolder/"mkdocs"
+    copyall(list(origdocsdir.glob("*.md")), wikibuilddir)
+    make_indices(destdir=wikibuilddir, mode="wiki")
+    copyall(manpages, wikibuilddir)
+    print(f"Generated files are in {wikibuilddir}")
+    if wikirepo:
         print(f"Installing all files to {wikirepo}")
-        wikifiles = buildfolder.glob("*.md")
-        copyall(wikifiles, wikirepo)
-        
+        copyall(wikibuilddir.glob("*.md"), wikirepo)
+
+def copyrec(srcdir, destdir):
+    if os.path.exists(destdir):
+        shutil.rmtree(destdir)
+    shutil.copytree(srcdir, destdir)
     
+def build_mkdocs(manpages):
+    # we first build everything in a build dir, to be
+    # able to check a build
+
+    # where to build the mkdocs structure 
+    build_dir = rootfolder/"docs-build"
+    
+    # where to put the generated site, as expected my mkdocs
+    dest_dir = rootfolder/"docs"
+    
+    # where are the .md original files
+    mkdocs_dir = rootfolder/"mkdocs"
+
+    copyrec(mkdocs_dir, build_dir)
+    make_indices(destdir=build_dir, mode="mkdocs")
+    
+    opcodes_dir = build_dir/"opcodes"
+    opcodes_dir.mkdir(parents=True, exist_ok=True)
+    copyall(manpages, opcodes_dir)
+
+    for f in build_dir.glob("**/*.md_"):
+        os.remove(f)
+
+    if dest_dir.exists() and not args.overwrite:
+        print()
+        print(f"Error: destination dir exists ({str(dest_dir)}).")
+        print("Either remove it or use the --overwrite flag")
+        print()
+        return
+
+    copyrec(build_dir, dest_dir)
+
+    print()
+    print("To put decumentation online:")
+    print("    mkdocs gh-deploy")
+    print()
+    print("To build documentation locally:")
+    print("    mkdocs build")
+    print()
+    print("To serve documentation locally:")
+    print("    mkdocs serve")
+
+
+if __name__ == "__main__":
+    fill_manual_pages()
+    opcodes = find_opcodes()
+    manpages = find_manual_pages(opcodes)
+    # build_wiki(rootfolder, manpages, wikirepo=args.wikirepo)  
+    build_mkdocs(manpages)
+

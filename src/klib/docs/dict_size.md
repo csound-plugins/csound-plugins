@@ -12,7 +12,7 @@ implement a hashtable mapping either strings or integers to strings or floats.
 `dict_size` returns the number of such key:value pairs inside a dict. If the handle
 passed does not point to a valid dict, `dict_size` returns -1. It is thus possible
 to use it to check that the passed handle is valid (similar to `dict_query idict "exists"`,
-see [dict_query](dict_query))
+see [dict_query](dict_query.md))
 
 `dict_size` can be used together with [dict_iter](dict_iter) to iterate over the key:value
 pairs 
@@ -87,8 +87,8 @@ i 1 0 1
 
 ## See also
 
-* [dict_iter](dict_iter)
-* [dict_set](dict_set)
+* [dict_iter](dict_iter.md)
+* [dict_set](dict_set.md)
 
 ## Credits
 

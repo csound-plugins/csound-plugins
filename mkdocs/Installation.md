@@ -3,7 +3,7 @@
 ## From Source
 
 
-The source lives at https://github.com/csound-plugins/csound-plugins
+The source lives at <https://github.com/csound-plugins/csound-plugins>
 
 
 ### Dependencies
