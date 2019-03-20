@@ -512,10 +512,6 @@ OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
     optext->t.linenum = p->h.optext->t.linenum;
     optext->t.opcod = p->opc->opname;
     optext->t.intype = p->h.optext->t.intype;
-    OPCODINFO *inm = (OPCODINFO*) p->opc->useropinfo;
-    if(inm!=NULL) {
-        printf("inm->instno %d \n", inm->instno); fflush(stdout);
-    }
     return optext;
 }
 
@@ -824,6 +820,9 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
     }
 
     p->optext = poly_make_optext(csound, p);
+    OPCODINFO *inm = (OPCODINFO*) p->opc->useropinfo;
+    if(inm != NULL)
+        return INITERRF("UDOs are not supported (instno=%i)", inm->instno);
 
     // we allocate all states as an array
     p->states = (OPCSTATE*)csound->Calloc(csound, (p->num_instances)*(opc->dsblksiz));

@@ -125,9 +125,9 @@ endin
 </CsInstruments>
 <CsScore>
 
-; i 1 0 8
-; i 2 9 50
-i 3 0 1
+i 1 0 8
+i 2 9 50
+; i 3 0 1
 
 </CsScore>
 </CsoundSynthesizer>
