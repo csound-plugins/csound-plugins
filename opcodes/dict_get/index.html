@@ -192,12 +192,12 @@ Svalue dict_get idict, kkey
 </pre></div>
 
 
-<p>The type of key and value depend on the type definition of the <code>dict</code>, see <a href="opcodes/dict_new">dict_new</a></p>
+<p>The type of key and value depend on the type definition of the <code>dict</code>, see <a href="dict_new">dict_new</a></p>
 <p><code>dict_get</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>. </p>
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
-<li><code>Skey</code> / <code>kkey</code>: the key to be queries, as previously set by <a href="opcodes/dict_set">dict_set</a></li>
+<li><code>Skey</code> / <code>kkey</code>: the key to be queries, as previously set by <a href="dict_set">dict_set</a></li>
 <li><code>idefault</code>: if the key is not present, this value is returned (defaults to 0)</li>
 </ul>
 <h3 id="output">Output</h3>
