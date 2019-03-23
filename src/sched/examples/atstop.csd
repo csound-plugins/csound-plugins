@@ -57,33 +57,54 @@ endin
 ; ping-pong
 instr 2
   imidi = p4
+  imidi = imidi < 96 ? imidi : 48
+  
   a0 myvco 0.1, mtof:i(imidi)
   a0 *= linsegr(0, 0.05, 1, 0.05, 0)
   outs a0, a0
-  imidi = imidi < 96 ? imidi : 48
   
-  atstop 3, 0, p3, imidi + 1
+  atstop 3, 0, p3*0.97, imidi + 1
 endin
 
 instr 3
   imidi = p4
-  a0 oscili 0.5, mtof:i(imidi)
+  imidi = imidi < 88 ? imidi : 48
+  a0 oscili 0.8, mtof:i(imidi)
   a0 *= linsegr(0, 0.05, 1, 0.050, 0)
   outs a0, a0
-  imidi = imidi < 96 ? imidi : 48
-  atstop 2, 0, p3*0.75, imidi + 1
+  atstop 2, 0, p3*0.95, imidi + 1
 endin
 
 
-instr 100
+; test calling a named instr at stop
+instr 10
+  a0 oscili 0.1, 440
+  outs a0, a0
+  atstop "foo", 0.5, 1, 1000
+endin
+
+instr foo 
+  ifreq = p4
+  a0 oscili 0.1, ifreq
+  outs a0, a0
+endin
+
+
+instr StopPerformance
   exitnow
 endin
+
+
 
 </CsInstruments>
 <CsScore>
 ; i 1 0 0.25 36
-i 2 0 0.25 48
-i 100 20 1
+
+; i 2 0 0.25 48
+
+i 10 0 1
+i "StopPerformance" 10 1
+
 
 </CsScore>
 </CsoundSynthesizer>

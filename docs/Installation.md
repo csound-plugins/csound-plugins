@@ -10,7 +10,7 @@ The source lives at <https://github.com/csound-plugins/csound-plugins>
 
 * a compiler
 * cmake
-* csound >= 6.12
+* csound >= 6.13
 
 ```
 git clone https://github.com/csound-plugins/csound-plugins

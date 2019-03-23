@@ -139,8 +139,8 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-    {"atstop.s", S(SCHED_DEINIT), 0, 1, "", "Siiz", (SUBR)atstop_s },
-    {"atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiiz", (SUBR)atstop_i }
+    {"atstop.s", S(SCHED_DEINIT), 0, 1, "", "Sim", (SUBR)atstop_s },
+    {"atstop.i", S(SCHED_DEINIT), 0, 1, "", "iim", (SUBR)atstop_i }
     
 };
 

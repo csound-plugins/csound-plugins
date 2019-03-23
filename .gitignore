@@ -10,3 +10,4 @@ CMakeLists.txt.user
 __pycache__
 *.stamp
 docs-build
+\#*\#

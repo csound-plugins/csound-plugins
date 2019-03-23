@@ -5,3 +5,5 @@ extra_css:
     
 markdown_extensions:
    - codehilite:
+
+use_directory_urls: false

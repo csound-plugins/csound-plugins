@@ -1,6 +1,6 @@
 <CsoundSynthesizer>
 <CsOptions>
---nosound 
+
 </CsOptions>
 <CsInstruments>
 
@@ -94,6 +94,9 @@
 
 */
 
+ksmps = 64
+nchnls = 2
+0dbfs = 1
 
 instr 1
   ; create a local dict, mapping strings to numbers
@@ -178,7 +181,6 @@ instr 3
   dict_set idict, "bee", 9
   
 perf:
-  
   ; iterate with a while loop
   kidx = 0
   while kidx < dict_size(idict) - 1 do 
@@ -193,9 +195,7 @@ loop:
   printf "loop) %s -> %f \n", kidx+kt*1000, Skey, kvalue
   kgoto loop
 break:
-
 endin
-
 
 instr 4
   ; test deleting a key
@@ -290,11 +290,51 @@ instr 8
   turnoff
 endin
 
+; One convenient use of dicts is to pass arguments to an instr
+instr 100
+  ; create our communication dict, set initial values
+  idict dict_new "sf", 0, "amp", 0.1, "freq", 1000
+  ; the launched instr will last longer, so will have to deal with
+  ; this dict ceasing to exist
+  event_i "i", 101, 0, p3+1, idict
+
+  ; now we can control the synth with the dict
+  dict_set idict, "freq", linseg:k(440, p3, 455)
+
+  a0 oscili 0.1, 440
+  outch 1, a0 
+endin
+  
+; a variation on dict_get where we either get the value corresponding to a key,
+; or the last value, if the dict does not exist
+opcode dict_receive, k,iSi 
+  idict, Skey, ival0 xin
+  klast init ival0 
+  if (dict_size(idict) > 0 ) then
+    kval dict_get idict, Skey, ival0
+    klast = kval
+  else 
+    kval = klast 
+  endif 
+  xout kval 
+endop
+
+instr 101
+  idict = p4
+  ; get the value for a given key. when the dict does not exist, just
+  ; outputs the last value
+  kamp dict_receive idict, "amp", 0.1 
+  kfreq dict_receive idict, "freq", 1000
+  a0 oscili kamp, kfreq 
+  outch 2, a0
+endin
+
 </CsInstruments>
 <CsScore>
 ; i 1 0 0.01
 ; i 2 0 0.01
-i 8 0 0.1
+; i 8 0 0.1
+i 100 0 10
 f 0 1
 </CsScore>
 </CsoundSynthesizer>

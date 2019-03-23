@@ -31,6 +31,9 @@ the array `kFreqs` it is possible to modify the frequency of each oscillator.
 It is of course possible to chain multiple `poly`s to generate complex effect chains,
 and `poly` can also be used with k-values. 
 
+**NB**: At the moment `poly` works **only** with **builtin opcodes**. This might change
+        in the future
+
 ## Syntax
 
     out1[], [ out2[], ... ] poly inuminstances, Sopcode, xarg0, [xarg1, ...]
@@ -188,9 +191,9 @@ endin
 </CsInstruments>
 <CsScore>
 
-; i 1 0 8
-; i 2 9 50
-i 3 0 1
+i 1 0 8
+i 2 9 50
+; i 3 0 1
 
 </CsScore>
 </CsoundSynthesizer>

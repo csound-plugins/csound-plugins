@@ -51,6 +51,9 @@
            s = string
            i = int
            f = float
+           Alternatively the signature can be spelled out as "str:float", "str:str",
+           "int:float", "int:str"
+
     iglobal: if 1, dict survives the note and is freed at the end of the performance or
              by calling dict_free
 
@@ -95,7 +98,10 @@
     Get the value at a given key. For string keys, an empty string
     is returned when the key is not found. For int keys, either 0
     or a default value given by the user are returned when the
-    key is not found.
+    key is not found. This default value is also returned if the
+    dict does not exist, so dict_get never fails in performance
+    (see dict_size or dict_query to see how to check if the dict
+    is valid)
 
     kvalue dict_get idict, "key" [, kdefault]
 
@@ -591,17 +597,25 @@ static inline i32 type_char_to_int(char c) {
 /**
  * convert a str definition of a dict type to its numeric representation
  * returns -1 in case of error
+ * We accept two formats: a 2 letter signature and a long signature
  */
 static i32
 stringdef_to_intdef(STRINGDAT *s) {
-    if(strlen(s->data) != 2)
-        return -1;
+    size_t l = strlen(s->data);
     char *sdata = (char *)s->data;
-    if(strcmp("ss", sdata) == 0) return khStrStr;
-    else if(strcmp("sf", sdata) == 0) return khStrFlt;
-    else if(strcmp("is", sdata) == 0) return khIntStr;
-    else if(strcmp("if", sdata) == 0) return khIntFlt;
-    else return -1;
+    if(l == 2) {
+        if(!strcmp("ss", sdata)) return khStrStr;
+        else if(!strcmp("sf", sdata)) return khStrFlt;
+        else if(!strcmp("is", sdata)) return khIntStr;
+        else if(!strcmp("if", sdata)) return khIntFlt;
+        else return -1;
+    } else {
+        if (!strcmp("str:str", sdata)) return khStrStr;
+        else if(!strcmp("str:float", sdata)) return khStrFlt;
+        else if(!strcmp("int:float", sdata)) return khIntFlt;
+        else if(!strcmp("int:str", sdata)) return khIntStr;
+        else return -1;
+    }
 }
 
 /**
@@ -1097,9 +1111,12 @@ dict_get_if(CSOUND *csound, DICT_GET_if *p) {
     HASH_GLOBALS *g = p->g;
     i32 idx = (i32)*p->handleidx;
     HANDLE *handle = &(g->handles[idx]);
-    khash_t(khIntFlt) *h = handle->hashtab;
-    CHECK_HASHTAB_EXISTS(h);
+    if(UNLIKELY(handle->hashtab == NULL)) {
+        *p->kout = *p->defaultval;
+        return OK;
+    }
     CHECK_HASHTAB_TYPE(handle->khtype, khIntFlt);
+    khash_t(khIntFlt) *h = handle->hashtab;
     khiter_t k;
     ui32 key = (ui32)*p->outkey;
     if(p->counter == handle->counter &&        // fast path
@@ -1130,6 +1147,7 @@ typedef struct {
     MYFLT *handleidx;
     STRINGDAT *outkey;
     MYFLT *defaultval;
+    MYFLT *failnodict;
     // internal
     HASH_GLOBALS *g;
     khiter_t lastidx;
@@ -1147,7 +1165,6 @@ dict_get_sf_0(CSOUND *csound, DICT_GET_sf *p) {
     p->lastidx = 0;
     p->counter = 0;
     p->_handleidx = idx = (ui32)*p->handleidx;
-    CHECK_HASHTAB_TYPE(p->g->handles[idx].khtype, khStrFlt);
     return OK;
 }
 
@@ -1166,6 +1183,12 @@ dict_get_sf(CSOUND *csound, DICT_GET_sf *p) {
     */
     // use cached idx, not really necessary since we declared ihandle as i-var
     HANDLE *handle = &(p->g->handles[p->_handleidx]);
+    if(UNLIKELY(handle->hashtab == NULL)) {
+        *p->kout = *p->defaultval;
+        return OK;
+    }
+    CHECK_HASHTAB_TYPE(handle->khtype, khStrFlt);
+    // CHECK_HANDLE(handle);
     khash_t(khStrFlt) *h = handle->hashtab;
     khiter_t k;
     // test fast path
@@ -1228,12 +1251,15 @@ hashtab_get_ss(CSOUND *csound, DICT_GET_ss *p) {
     HASH_GLOBALS *g = p->g;
     i32 idx = (i32)*p->handleidx;
     HANDLE *handle = &(g->handles[idx]);
-    khash_t(khStrStr) *h = g->handles[idx].hashtab;
+    if(handle->hashtab == NULL) {
+        p->outstr->data[0] = '\0';
+        return OK;
+    }
+    CHECK_HASHTAB_TYPE(handle->khtype, khStrStr);
+
+    khash_t(khStrStr) *h = handle->hashtab;
     kstring_t *ks;
     khiter_t k;
-
-    CHECK_HASHTAB_EXISTS(h);
-    CHECK_HASHTAB_TYPE(handle->khtype, khStrStr);
 
     // test fast path
     if(p->counter == handle->counter &&
@@ -1246,7 +1272,6 @@ hashtab_get_ss(CSOUND *csound, DICT_GET_ss *p) {
         if(k == kh_end(h)) {
             // key not found, set out to empty string
             p->outstr->data[0] = '\0';
-            p->outstr->size = 1;
             return OK;
         }
 
@@ -1284,15 +1309,17 @@ hashtab_get_is_0(CSOUND *csound, DICT_GET_is *p) {
     p->lastidx = UI32MAX;
     p->lastkey = 0;
     p->counter = 0;
-    HANDLE *handle = get_handle(p);
-    CHECK_HANDLE(handle);
-    CHECK_HASHTAB_TYPE(handle->khtype, khIntStr);
     return OK;
 }
 
 static i32
 hashtab_get_is(CSOUND *csound, DICT_GET_is *p) {
     HANDLE *handle = get_handle(p);
+    if(UNLIKELY(handle==NULL)) {
+        p->outstr->data[0] = '\0';
+        return OK;
+    }
+    CHECK_HASHTAB_TYPE(handle->khtype, khIntStr);
     khash_t(khIntStr) *h = handle->hashtab;
     ui32 key = (ui32)*p->outkey;
     khiter_t k;
@@ -1553,8 +1580,10 @@ static i32 dict_query_0(CSOUND *csound, DICT_QUERY1 *p) {
 static i32 dict_size(CSOUND *csound, DICT_QUERY1 *p) {
     IGN(csound);
     HANDLE *handle = get_handle(p);
-    if(handle->hashtab == NULL)
+    if(handle->hashtab == NULL) {
         *p->out = -1;
+        return OK;
+    }
     with_hashtable(handle, {
         *p->out = kh_size(h);
     })
@@ -1976,7 +2005,8 @@ static OENTRY localops[] = {
     { "dict_get", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
     { "dict_get", S(DICT_GET_if), 0, 3, "k", "ikO", (SUBR)dict_get_if_0, (SUBR)dict_get_if },
     { "dict_get", S(DICT_GET_is), 0, 3, "S", "ik",  (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is },
-    { "dict_get", S(DICT_GET_if), 0, 1, "k", "iio", (SUBR)dict_get_if_i},
+    { "dict_get", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i},
+
 
     { "dict_set", S(DICT_SET_ss), 0, 3, "",  "iSS",  (SUBR)dict_set_ss_0, (SUBR)dict_set_ss },
     { "dict_set", S(DICT_SET_sf), 0, 3, "",  "iSk",  (SUBR)dict_set_sf_0, (SUBR)dict_set_sf },
