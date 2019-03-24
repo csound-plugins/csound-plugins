@@ -28,10 +28,15 @@ Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
 
 ## Use the offline documentation
 
-[mkdocs](https://www.mkdocs.org/) needs to be installed via `pip3 install mkdocs --user`
+FIrst install [mkdocs](https://www.mkdocs.org/):
 
+    pip3 install mkdocs --user
 
-    mkdocs serve
+At the root folder of the project, do: 
+
+    mkdocs build
+
+The documentation can then be browsed at `site/index.html`
 
 
 ## Generate the documentation

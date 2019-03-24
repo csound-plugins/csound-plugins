@@ -4,12 +4,10 @@
 import json
 import argparse
 import sys
-import tempfile
 import os
-import subprocess
-import xml.etree.ElementTree as et
 import io
 from pathlib import Path
+import re
 
 
 header_template = \
@@ -20,68 +18,35 @@ header_template = \
 
 """
 
-def markdown_to_xml(mdfile: str) -> str:
-    """
-    returns the abstract from mdfile
-
-    mdfile: a markdown file
-    """
-    xmlfile = tempfile.mktemp(suffix=".xml")
-    subprocess.call(["pandoc", "--to", "docbook5", "-o", xmlfile, mdfile])
-    # before parsing it, we need to add the xlink namespace, since
-    # pandoc leaves that out :-(
-    xmlfile2 = tempfile.mktemp(suffix=".xml")
-    with open(xmlfile2, "w") as f:
-        f.write('<article xmlns:xlink="http://www.w3.org/1999/xlink">')
-        f.write(open(xmlfile).read())
-        f.write('</article>')
-    tree = et.parse(xmlfile2)
-    os.remove(xmlfile)
-    os.remove(xmlfile2)
-    return tree
-
-
 def remove_newlines(s):
     return " ".join(s.replace("\n", " ").split())
 
-
-def xml_to_markdown(xmlfragment):
-    xmlfile = tempfile.mktemp(suffix=".xml")
-    open(xmlfile, "w").write(xmlfragment)
-    markdownfile = tempfile.mktemp(suffix=".md")
-    subprocess.call(["pandoc", "--from", "docbook", "--to", "markdown",
-                     "-o", markdownfile, xmlfile])
-    out = open(markdownfile).read()
-    os.remove(xmlfile)
-    os.remove(markdownfile)
+def md_read_abstract(mdfile: str, plaintext=True) -> str:
+    abstract = False
+    abstractlines = []
+    for line in open(mdfile):
+        if abstract:
+            if line.strip().startswith("#"):
+                break
+            else:
+                abstractlines.append(line)
+        elif re.search(r"#\s+[aA]bstract\b", line):
+            abstract = True
+    if not abstractlines:
+        return None
+    lines = [line.strip() for line in abstractlines]
+    lines = [line for line in lines if line]
+    out = " ".join(lines)
+    if plaintext:
+        out = out.replace("**", "").replace("`", "")
     return out
-
-
-def xml_get_abstract(tree, remove_format=True):
-    for section in tree.iter("section"): 
-        title = section.find("title")
-        if title.text != "Abstract":
-            continue
-        para = section.find("para")
-        if para is None:
-            return None
-        if remove_format:
-            md = et.tostring(para, encoding="unicode", method="text")
-        else:
-            xml = et.tostring(para, encoding="unicode")
-            md = xml_to_markdown(xml)
-        return remove_newlines(md)
-    return None
-
 
 def read_description(opcode: str, docsfolder: Path) -> str:
     mdfile = docsfolder / f"{opcode}.md"
     if not mdfile.exists():
         print(f"Could not find opcode file {mdfile}")
         return "?"
-    tree = markdown_to_xml(str(mdfile))
-    abstract = xml_get_abstract(tree)
-    return abstract
+    return md_read_abstract(str(mdfile))
 
 def manifest_ok(manifest: dict):
     neededkeys = {"name", "description", "opcodes"}
