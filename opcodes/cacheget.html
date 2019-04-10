@@ -100,7 +100,11 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="cacheset.html">cacheset</a>
+    <a class="" href="cachepop.html">cachepop</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cacheput.html">cacheput</a>
                 </li>
                 <li class="">
                     
@@ -192,7 +196,7 @@ to each distints string inside the cache (we guarantee that passing twice
 the same string will return the same index)</p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>Sstr cacheget idx
-Sstr cacheset kdx
+Sstr cacheget kdx
 </pre></div>
 
 
@@ -200,7 +204,7 @@ Sstr cacheset kdx
 the input variable</p>
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>idx</code> / <code>kdx</code>: the numeric id representing the string, as returned by <code>cacheset</code></li>
+<li><code>idx</code> / <code>kdx</code>: the numeric id representing the string, as returned by <code>cacheput</code></li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
@@ -220,18 +224,18 @@ the input variable</p>
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">  Example file for cacheset / cacheget</span>
+<span class="cm">  Example file for cacheput / cacheget</span>
 
-<span class="cm">  cacheset and cacheget implement a method to internalize strings,</span>
+<span class="cm">  cacheput and cacheget implement a method to internalize strings,</span>
 <span class="cm">  similar to strset and strget, but without having to take care about</span>
 <span class="cm">  setting the indices</span>
 
-<span class="cm">  cacheset puts a strin into the cache and returns an idx identifying </span>
+<span class="cm">  cacheput puts a strin into the cache and returns an idx identifying </span>
 <span class="cm">  this string. If a string is put into the cache which already exists,</span>
 <span class="cm">  we guarantee that the index returned is the same. </span>
 
-<span class="cm">  idx cacheset Sstr          i-time</span>
-<span class="cm">  kdx cacheset Sstr          k-time</span>
+<span class="cm">  idx cacheput Sstr          i-time</span>
+<span class="cm">  kdx cacheput Sstr          k-time</span>
 
 <span class="cm">  cacheget retrieves a str previously put in the cache. If the index</span>
 <span class="cm">  does not point to an existing string, a performance error is raised</span>
@@ -242,17 +246,15 @@ the input variable</p>
 <span class="cm">  Both opcodes work at both i- and k-time, depending on the arguments</span>
 <span class="cm">*/</span>
 
-<span class="c1">; Use cacheset/get to pass multiple strings between instruments</span>
+<span class="c1">; Use cacheput/get to pass multiple strings between instruments</span>
 <span class="kd">instr</span> <span class="nf">1</span>  
-  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cacheset</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">cacheset</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
+  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">i</span><span class="n">dx2</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="n">cacheget</span> <span class="kt">i</span><span class="n">dx1</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="n">cacheget</span> <span class="kt">i</span><span class="n">dx2</span>
+  <span class="kt">S</span><span class="n">1</span> <span class="n">cacheget</span> <span class="vi">p4</span>
+  <span class="kt">S</span><span class="n">2</span> <span class="n">cacheget</span> <span class="vi">p5</span>
   <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
@@ -271,7 +273,7 @@ the input variable</p>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="cacheset.html">cacheset</a></li>
+<li><a href="cacheput.html">cacheput</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -282,7 +284,7 @@ the input variable</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="cacheset.html" class="btn btn-neutral float-right" title="cacheset">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="cachepop.html" class="btn btn-neutral float-right" title="cachepop">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="atstop.html" class="btn btn-neutral" title="atstop"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -314,7 +316,7 @@ the input variable</p>
         <span><a href="atstop.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="cacheset.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="cachepop.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
