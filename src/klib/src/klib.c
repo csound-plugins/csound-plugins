@@ -158,13 +158,15 @@
 
   The following operations are defined:
 
-  * cacheput: put a string in the cache. idx identifies now Ss
+  * cacheput: put a string in the string cache. Return the unique identifier idx
 
     idx cacheput Ss
 
   * cacheget: get a string from the cache
 
     Ss cacheget idx
+
+  * cachepop: the same as cacheget, but remove the string after getting it
 
 */
 
@@ -2193,16 +2195,16 @@ typedef struct {
     MYFLT *idx;
     STRINGDAT *s;
     STRCACHE_GLOBALS *g;
-} CACHESET;
+} CACHEPUT;
 
 static i32
-cacheset_0(CSOUND *csound, CACHESET *p) {
+cacheput_0(CSOUND *csound, CACHEPUT *p) {
     p->g = cache_globals(csound);
     return OK;
 }
 
 static i32
-cacheset_perf(CSOUND *csound, CACHESET *p) {
+cacheput_perf(CSOUND *csound, CACHEPUT *p) {
     STRCACHE_GLOBALS *g = p->g;
     i64 idx;
     i32 ret = cache_putstr(csound, g, p->s, &idx);
@@ -2212,9 +2214,9 @@ cacheset_perf(CSOUND *csound, CACHESET *p) {
 }
 
 static i32
-cacheset_i(CSOUND *csound, CACHESET *p) {
-    cacheset_0(csound, p);
-    return cacheset_perf(csound, p);
+cacheput_i(CSOUND *csound, CACHEPUT *p) {
+    cacheput_0(csound, p);
+    return cacheput_perf(csound, p);
 }
 
 #define S(x) sizeof(x)
@@ -2263,8 +2265,8 @@ static OENTRY localops[] = {
 
     { "dict_size", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
 
-    { "cacheset", S(CACHESET), 0, 3, "k", "S", (SUBR)cacheset_0, (SUBR)cacheset_perf },
-    { "cacheset", S(CACHESET), 0, 1, "i", "S", (SUBR)cacheset_i },
+    { "cacheput", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+    { "cacheput", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
     { "cacheget", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
     { "cacheget", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
     { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },

@@ -6,22 +6,22 @@
 <CsInstruments>
 
 /*
-  Example file for cacheset / cacheget / cachepop
+  Example file for cacheput / cacheget / cachepop
 
-  cacheset and cacheget implement a method to internalize strings,
+  cacheput and cacheget implement a method to internalize strings,
   similar to strset and strget, but without having to take care about
   setting the indices. cachepop is similar to cacheget but removes the
   entry from the cache.
 
-  cacheset puts a strin into the cache and returns an idx identifying 
+  cacheput puts a strin into the cache and returns an idx identifying 
   this string. If a string is put into the cache which already exists,
   we guarantee that the index returned is the same. 
 
  */
 
-; Use cacheset/pop to pass multiple strings between instruments
+; Use cacheput/pop to pass multiple strings between instruments
 instr 1  
-  event_i "i", 2, 0, -1, cacheset:i("foo"), cacheset:i("bar")
+  event_i "i", 2, 0, -1, cacheput:i("foo"), cacheput:i("bar")
   turnoff
 endin
 

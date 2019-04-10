@@ -23,7 +23,7 @@ to survive the current note
 
 ### Arguments
 
-* `idx`: the numeric id representing the string, as returned by `cacheset`
+* `idx`: the numeric id representing the string, as returned by `cacheput`
 
 ### Output
 
@@ -41,7 +41,7 @@ to survive the current note
 
 ## See also
 
-* [cacheset](cacheset.md)
+* [cacheput](cacheput.md)
 * [cacheget](cacheget.md)
 
 

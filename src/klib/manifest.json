@@ -9,7 +9,7 @@
       "dict_query",
       "dict_print",
       "dict_iter",
-      "cacheset",
+      "cacheput",
       "cacheget",
       "cachepop"
     ],

@@ -16,14 +16,14 @@ the same string will return the same index)
 ## Syntax
 
     Sstr cacheget idx
-    Sstr cacheset kdx
+    Sstr cacheget kdx
     
 `cacheget` executes both at **i-time** and **k-time**, depending on the type of
 the input variable
 
 ### Arguments
 
-* `idx` / `kdx`: the numeric id representing the string, as returned by `cacheset`
+* `idx` / `kdx`: the numeric id representing the string, as returned by `cacheput`
 
 ### Output
 
@@ -42,7 +42,7 @@ the input variable
 
 ## See also
 
-* [cacheset](cacheset.md)
+* [cacheput](cacheput.md)
 
 ## Credits
 

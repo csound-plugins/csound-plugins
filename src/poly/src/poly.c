@@ -334,6 +334,7 @@ MYFLT get_default_value(char c) {
     case 'a':
     case 'k':
     case 'i':
+    case 'S':
         return (MYFLT)default_unset;
     case 'o':
     case 'O':
@@ -394,6 +395,9 @@ handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
         case 'a':
             // we can safely point to the input arg. since this will not change
             // handle->state->inargs[col] = p->inargs[col];
+            inargs[col] = p->inargs[col];
+            break;
+        case 's':
             inargs[col] = p->inargs[col];
             break;
         case 'I':
@@ -478,10 +482,10 @@ static i32 poly_signature_check(CSOUND *csound, POLY1 *p) {
     // we only accept arrays as out args, so out sig must be all uppercase
     if(!all_upper(p->out_signature))
         return INITERRF(Str("poly output args must be arrays, got %s"), p->out_signature);
-    if(findchar(p->in_signature, 's') >= 0 || findchar(p->in_signature, 'S') >= 0)
-        return INITERRF(Str("no strings accepted as input (yet), got %s"), p->in_signature);
+    // if(findchar(p->in_signature, 's') >= 0 || findchar(p->in_signature, 'S') >= 0)
+    //     return INITERRF(Str("no strings accepted as input (yet), got %s"), p->in_signature);
     str_for_each(p->opc->intypes, c, {
-        if(c=='[' || c==']' || c=='S')
+        if(c=='[' || c==']') //  || c=='S')
             return INITERRF(Str("opcode's intype %c not supported"), c);
     });
     str_for_each(p->opc->outypes, c, {
@@ -515,6 +519,24 @@ OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
     return optext;
 }
 
+static void
+convert_multiplex_sig_to_single_sig(char *dest, char *src) {
+    ui32 i = 0;
+    char c;
+    for(;;) {
+        c = src[i];
+        if (c == '\0')
+            break;
+        else if (c == 's')
+            dest[i] = 'S';
+        else
+            dest[i] = (char)tolower(c);
+        i++;
+    }
+    dest[i] = 0;
+}
+
+
 static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     OENTRY *opc;
     i32 ret;
@@ -538,10 +560,11 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     if(get_signature(csound, p->args, p->num_output_args, p->out_signature) != OK)
         return INITERR(Str("could not parse output signature"));
 
-    // the target signature is just our signature without any arrays (thus lowercase)
-    str_tolower(opc_insig, p->in_signature);
-    str_tolower(opc_outsig, p->out_signature);
-
+    // the target signature is just our signature without any arrays
+    // str_tolower(opc_insig, p->in_signature);
+    convert_multiplex_sig_to_single_sig(opc_insig, p->in_signature);
+    // str_tolower(opc_outsig, p->out_signature);
+    convert_multiplex_sig_to_single_sig(opc_outsig, p->out_signature);
     if(p->num_input_args != strlen(p->in_signature))
         return INITERRF(Str("arg. count mismatch (num input args: %d, signature: %s"),
                         p->num_input_args, p->in_signature);

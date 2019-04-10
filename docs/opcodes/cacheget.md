@@ -16,14 +16,14 @@ the same string will return the same index)
 ## Syntax
 
     Sstr cacheget idx
-    Sstr cacheset kdx
+    Sstr cacheget kdx
     
 `cacheget` executes both at **i-time** and **k-time**, depending on the type of
 the input variable
 
 ### Arguments
 
-* `idx` / `kdx`: the numeric id representing the string, as returned by `cacheset`
+* `idx` / `kdx`: the numeric id representing the string, as returned by `cacheput`
 
 ### Output
 
@@ -47,18 +47,18 @@ the input variable
 <CsInstruments>
 
 /*
-  Example file for cacheset / cacheget
+  Example file for cacheput / cacheget
 
-  cacheset and cacheget implement a method to internalize strings,
+  cacheput and cacheget implement a method to internalize strings,
   similar to strset and strget, but without having to take care about
   setting the indices
 
-  cacheset puts a strin into the cache and returns an idx identifying 
+  cacheput puts a strin into the cache and returns an idx identifying 
   this string. If a string is put into the cache which already exists,
   we guarantee that the index returned is the same. 
 
-  idx cacheset Sstr          i-time
-  kdx cacheset Sstr          k-time
+  idx cacheput Sstr          i-time
+  kdx cacheput Sstr          k-time
 
   cacheget retrieves a str previously put in the cache. If the index
   does not point to an existing string, a performance error is raised
@@ -69,9 +69,9 @@ the input variable
   Both opcodes work at both i- and k-time, depending on the arguments
 */
 
-; Use cacheset/get to pass multiple strings between instruments
+; Use cacheput/get to pass multiple strings between instruments
 instr 1  
-  event_i "i", 2, 0, -1, cacheset:i("foo"), cacheset:i("bar")
+  event_i "i", 2, 0, -1, cacheput:i("foo"), cacheput:i("bar")
   turnoff
 endin
 
@@ -97,7 +97,7 @@ f 0 1
 
 ## See also
 
-* [cacheset](cacheset.md)
+* [cacheput](cacheput.md)
 
 ## Credits
 

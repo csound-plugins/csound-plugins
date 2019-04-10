@@ -21,7 +21,7 @@ A hashtable for csound
 * [dict_query](opcodes/dict_query.md): Query different properties of a dict 
 * [dict_print](opcodes/dict_print.md): Prints the contents of a dict 
 * [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
-* [cacheset](opcodes/cacheset.md): Put a string inside the cache 
+* [cacheput](opcodes/cacheput.md): Put a string inside the cache 
 * [cacheget](opcodes/cacheget.md): Get a string inside the cache 
 * [cachepop](opcodes/cachepop.md): Get a cached string and remove it from the cache 
 
