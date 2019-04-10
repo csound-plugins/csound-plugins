@@ -19,11 +19,12 @@ pairs
 
 ## Syntax
 
+    isize dict_size idict
     ksize dict_size idict
     
 `dict_size` executes both at **i-time** and **k-time**. 
 
-## Arguments
+### Arguments
 
 * `ìdict`: the handle of the dict, as returned by `dict_new`
 
@@ -31,6 +32,11 @@ pairs
 
 * `ksize`: the number of key:value pairs in the dict
 
+
+### Execution Time
+
+* Init 
+* Performance
 
 ## Examples
 

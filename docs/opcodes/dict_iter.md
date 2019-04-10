@@ -9,23 +9,27 @@ Iterate over the key-value pairs of a dict
 Iterates over the key:value pairs. Whenever kreset is 1, iteration starts over
 If kreset is -1 (the default), iteration is autotriggered when it reaches
 the end of the collection.
-    
-**NB**: This opcode is meant to be used in a loop at k-time
+ 
+ 
+!!! note
+
+    `dict_iter` is meant to be used __in a loop__ at **k-time**
 
 ## Syntax
 
     xkey, xvalue, kidx  dict_iter idict [, kreset = -1]
 
-`dict_loop` executes only at **performance time**. 
-    
-## Arguments
+### Arguments
 
 * `idict`: the handle to the dict as returned by [dict_new](dict_new.md)
 * `kreset`: the reset policy
-  * `kreset = 0`: no reset, iteration stops at the end of the collection is can't start over. 
-                  This makes sure that there will be max. 1 iteration within this note
-  * `kreset = 1` (default): iteration is started over at every k-cycle
-  * `kreset = 2`: Reset at the end of iteration
+
+
+| kreset      | effect                                                                                    |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| 0           | no reset, iteration stops at the end of the collection. There will be at most 1 iteration |
+| 1 (default) | Iteration starts over at every k-cycle                                                    |
+| 2           | Reset at the end of iteration (independent of k-cycle)                                    |
 
 ### Output
 
@@ -33,7 +37,13 @@ the end of the collection.
   this dict, as defined via `dict_new`
 * `kidx`: the index of this pair. It will be 0 for the first pair, 1 for the second, etc.
   When no more pairs, `kidx` will be -1. In this case, xkey and xvalue do not hold valid values
-  
+ 
+
+### Execution time
+
+`dict_loop` executes only at **Performance Time**. 
+
+
 ## Usage
 
 There are two ways to use `dict_iter`, either in a `while` loop, or using gotos

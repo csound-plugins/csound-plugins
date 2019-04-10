@@ -4,6 +4,7 @@ extra_css:
     - css/syntax-highlighting.css
     
 markdown_extensions:
-   - codehilite:
+    - codehilite
+    - admonition
 
 use_directory_urls: false

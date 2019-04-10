@@ -15,20 +15,20 @@ over the `release` opcode is that `atstop` is guaranteed to be run
 after the note has stopped, so there is no danger in deallocating resources
 being used by this note, there are no conflicts with release envelopes, etc.
 
-**NB**: the event is not scheduled at *release* time (see below "Release time vs Deinit time")
-but at the moment the note is freed.
+!!! Note "Release time vs deinit time"
 
-### Release time vs deinit time
+    The event is not scheduled at *release* time (see below "Release time vs Deinit time")
+    but at the moment the note is freed.
 
-**Release time** is when the note is within its *release phase*, which will only happen 
-if the note has an envelope with a release segment (like `linsegr`), or if it has 
-setup extra time with `xtratim`. The opcode `release` can be used to query if the 
-current note is being released. The instrument keeps running in release phase as 
-long as the release part of the envelope is finished or the extra time allocated
-via `xtratim` is through. 
-
-**Deinit time** is the moment the note is actually being freed, so the instrument is
-not running anymore at this point.  
+    **Release time** is when the note is within its *release phase*, which will only happen 
+    if the note has an envelope with a release segment (like `linsegr`), or if it has 
+    setup extra time with `xtratim`. The opcode `release` can be used to query if the 
+    current note is being released. The instrument keeps running in release phase as 
+    long as the release part of the envelope is finished or the extra time allocated
+    via `xtratim` is through. 
+    
+    **Deinit time** is the moment the note is actually being freed, so the instrument is
+    not running anymore at this point.  
 
 ## Syntax
 

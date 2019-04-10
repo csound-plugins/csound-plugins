@@ -180,7 +180,7 @@ typedef uint64_t ui64;
 // #define DEBUG
 
 #ifdef DEBUG
-    #define DBG(fmt, ...) printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);
+    #define DBG(fmt, ...) printf("  "fmt"\n", __VA_ARGS__); fflush(stdout);
     #define DBG_(m) DBG("%s", m)
 #else
     #define DBG(fmt, ...)
@@ -285,7 +285,8 @@ enum {
     khStrFlt = 21,
     khStrStr = 22,
     khIntStr = 12,
-    khIntFlt = 11
+    khIntFlt = 11,
+    khStrInt = 20
 };
 
 // Initialize all possible types
@@ -293,6 +294,9 @@ KHASH_MAP_INIT_STR(khStrFlt, MYFLT)
 KHASH_MAP_INIT_STR(khStrStr, kstring_t)
 KHASH_MAP_INIT_INT(khIntFlt, MYFLT)
 KHASH_MAP_INIT_INT(khIntStr, kstring_t)
+
+// this is used by the cache opcodes
+KHASH_MAP_INIT_STR(khStrInt, i64)
 
 
 typedef struct {
@@ -1992,6 +1996,168 @@ set_many_is(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     return OK;
 }
 
+// Cache opcodes
+
+typedef struct {
+    khash_t(khStrInt) *str2int;
+    khash_t(khIntStr) *int2str;
+} STRCACHE_GLOBALS;
+
+#define STRCACHE_GLOBALS_NAME "__strcache_globals__"
+
+
+static i32 cache_reset(CSOUND *csound, STRCACHE_GLOBALS *g) {
+    khash_t(khIntStr) *h1 = g->int2str;
+    // we need to free all values
+    khiter_t k;
+    kstring_t *ks;
+    for (k = 0; k < kh_end(h1); ++k) {
+        if (kh_exist(h1, k)) {
+            ks = &(kh_val(h1, k));
+            csound->Free(csound, ks->s);
+        }
+    }
+    kh_destroy(khIntStr, h1);
+
+    khash_t(khStrInt) *h2 = g->str2int;
+    // we need to free all keys
+    for (k = 0; k < kh_end(h2); ++k) {
+        if (kh_exist(h2, k))
+            csound->Free(csound, kh_key(h2, k));
+    }
+    kh_destroy(khStrInt, h2);
+
+    return OK;
+}
+
+static STRCACHE_GLOBALS*
+create_cache_globals(CSOUND *csound) {
+    int err = csound->CreateGlobalVariable(csound, STRCACHE_GLOBALS_NAME, sizeof(STRCACHE_GLOBALS));
+    if (err != 0) {
+        INITERR(Str("cachestr: failed to allocate globals"));
+        return NULL;
+    };
+    STRCACHE_GLOBALS *g = (STRCACHE_GLOBALS*)csound->QueryGlobalVariable(csound, STRCACHE_GLOBALS_NAME);
+    g->int2str = kh_init(khIntStr);
+    g->str2int = kh_init(khStrInt);
+    csound->RegisterResetCallback(csound, (void*)g, (i32(*)(CSOUND*, void*))cache_reset);
+    return g;
+}
+
+/**
+ * get the cache globals struct
+ */
+static inline
+STRCACHE_GLOBALS* cache_globals(CSOUND *csound) {
+    STRCACHE_GLOBALS *g = (STRCACHE_GLOBALS*)csound->QueryGlobalVariable(csound, STRCACHE_GLOBALS_NAME);
+    if(LIKELY(g != NULL)) return g;
+    g = create_cache_globals(csound);
+    return g;
+}
+
+static i32
+cache_putstr(CSOUND *csound, STRCACHE_GLOBALS* g, STRINGDAT *s, i64 *out) {
+    int absent;
+    khiter_t k = kh_put(khStrInt, g->str2int, s->data, &absent);
+    if(!absent) {
+        // key is present, just return the idx
+        *out = kh_val(g->str2int, k);
+        return OK;
+    }
+    // key is not present, get a new idx for the str
+    ui32 idx = kh_size(g->str2int);
+    // str2int[s] = idx
+    kh_key(g->str2int, k) = csound->Strdup(csound, s->data);
+    kh_value(g->str2int, k) = idx;
+
+    // int2str[idx] = s
+    k = kh_put(khIntStr, g->int2str, idx, &absent);
+    if(UNLIKELY(!absent)) {
+        return INITERRF("cache: repeated int key, s=%s, idx=%d", s->data, idx);
+    }
+    kh_key(g->int2str, k) = idx;
+    kstring_t *ks = &(g->int2str->vals[k]);
+    kstr_init_from_stringdat(csound, ks, s);
+    *out = idx;
+    return OK;
+}
+
+static kstring_t *
+cache_getstr(STRCACHE_GLOBALS *g, ui32 idx) {
+    // if the key is not present it should be an error
+    khiter_t k = kh_get(khIntStr, g->int2str, idx);
+    if(k == kh_end(g->int2str)) {   // key not found
+        return NULL;
+    }
+    kstring_t *ks = &(kh_val(g->int2str, k));
+    return ks;
+}
+
+typedef struct {
+    OPDS h;
+    // Sstr cacheget kidx / iidx
+    STRINGDAT *out;
+    MYFLT *idx;
+    STRCACHE_GLOBALS *g;
+    int done;
+} CACHEGET;
+
+static i32 cacheget_perf(CSOUND *csound, CACHEGET *p);
+
+static i32
+cacheget_i(CSOUND *csound, CACHEGET *p) {
+    p->g = cache_globals(csound);
+    return cacheget_perf(csound, p);
+}
+
+static i32
+cacheget_0(CSOUND *csound, CACHEGET *p) {
+    p->g = cache_globals(csound);
+    return OK;
+}
+
+static i32
+cacheget_perf(CSOUND *csound, CACHEGET *p) {
+    STRCACHE_GLOBALS *g = p->g;
+    ui32 idx = (ui32) (*p->idx);
+    kstring_t *ks = cache_getstr(g, idx);
+    if(ks == NULL)
+        return INITERR(Str("cacheget: string not found"));
+    i32 ret = stringdat_set(csound, p->out, ks->s, ks->l);
+    return ret;
+}
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *idx;
+    STRINGDAT *s;
+    STRCACHE_GLOBALS *g;
+} CACHESET;
+
+static i32
+cacheset_0(CSOUND *csound, CACHESET *p) {
+    p->g = cache_globals(csound);
+    return OK;
+}
+
+static i32
+cacheset_perf(CSOUND *csound, CACHESET *p) {
+    STRCACHE_GLOBALS *g = p->g;
+    i64 idx;
+    i32 ret = cache_putstr(csound, g, p->s, &idx);
+    if(ret == NOTOK) return NOTOK;
+    *p->idx = (MYFLT) idx;
+    return OK;
+}
+
+static i32
+cacheset_i(CSOUND *csound, CACHESET *p) {
+    cacheset_0(csound, p);
+    return cacheset_perf(csound, p);
+}
+
+
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
@@ -2009,8 +2175,8 @@ static OENTRY localops[] = {
 
 
     { "dict_set", S(DICT_SET_ss), 0, 3, "",  "iSS",  (SUBR)dict_set_ss_0, (SUBR)dict_set_ss },
-    { "dict_set", S(DICT_SET_sf), 0, 3, "",  "iSk",  (SUBR)dict_set_sf_0, (SUBR)dict_set_sf },
     { "dict_set", S(DICT_SET_sf), 0, 1, "",  "iSi",  (SUBR)dict_set_sf_i},
+    { "dict_set", S(DICT_SET_sf), 0, 3, "",  "iSk",  (SUBR)dict_set_sf_0, (SUBR)dict_set_sf },
     { "dict_set", S(DICT_SET_if), 0, 3, "",  "ikk",  (SUBR)dict_set_if_0, (SUBR)dict_set_if },
     { "dict_set", S(DICT_SET_if), 0, 1, "",  "iii",  (SUBR)dict_set_if_i},
     { "dict_set", S(DICT_SET_is), 0, 3, "",  "ikS",  (SUBR)dict_set_is_0, (SUBR)dict_set_is },
@@ -2037,6 +2203,11 @@ static OENTRY localops[] = {
     { "dict_iter", S(DICT_ITER), 0, 3, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf},
 
     { "dict_size", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
+
+    { "cacheset", S(CACHESET), 0, 3, "k", "S", (SUBR)cacheset_0, (SUBR)cacheset_perf },
+    { "cacheset", S(CACHESET), 0, 1, "i", "S", (SUBR)cacheset_i },
+    { "cacheget", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
+    { "cacheget", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
 
 };
 

@@ -17,11 +17,15 @@ pair from the dict.
     dict_set idict, xkey, xvalue
     dict_set idict, xkey
 
-If xvalue is not given, `dict_set` removes the key from the dict    
+!!! note
+
+    If `xvalue` is not given, `dict_set` removes the key from the dict    
   
 `dict_get` executes both at **i-time** and **k-time**. 
 
-**NB**: it is possible to set multiple values at i-time directly with [dict_new](dict_new.md)
+!!! tip
+
+    It is possible to set multiple values at i-time directly with [dict_new](dict_new.md)
 
 ## Arguments
 
