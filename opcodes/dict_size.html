@@ -74,6 +74,14 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="cacheget.html">cacheget</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cacheset.html">cacheset</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="dict_free.html">dict_free</a>
                 </li>
                 <li class="">
@@ -114,8 +122,6 @@
             <li><a class="toctree-l4" href="#description">Description</a></li>
         
             <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
         
             <li><a class="toctree-l4" href="#examples">Examples</a></li>
         
@@ -188,18 +194,24 @@ see <a href="dict_query.html">dict_query</a>)</p>
 <p><code>dict_size</code> can be used together with <a href="dict_iter">dict_iter</a> to iterate over the key:value
 pairs </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>ksize dict_size idict
+<div class="codehilite"><pre><span></span>isize dict_size idict
+ksize dict_size idict
 </pre></div>
 
 
 <p><code>dict_size</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>. </p>
-<h2 id="arguments">Arguments</h2>
+<h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
 <li><code>ksize</code>: the number of key:value pairs in the dict</li>
+</ul>
+<h3 id="execution-time">Execution Time</h3>
+<ul>
+<li>Init </li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>

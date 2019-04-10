@@ -74,6 +74,14 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="cacheget.html">cacheget</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cacheset.html">cacheset</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="dict_free.html">dict_free</a>
                 </li>
                 <li class="">
@@ -94,8 +102,6 @@
             <li><a class="toctree-l4" href="#description">Description</a></li>
         
             <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
         
             <li><a class="toctree-l4" href="#usage">Usage</a></li>
         
@@ -184,22 +190,42 @@
 <p>Iterates over the key:value pairs. Whenever kreset is 1, iteration starts over
 If kreset is -1 (the default), iteration is autotriggered when it reaches
 the end of the collection.</p>
-<p><strong>NB</strong>: This opcode is meant to be used in a loop at k-time</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>dict_iter</code> is meant to be used <strong>in a loop</strong> at <strong>k-time</strong></p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>xkey, xvalue, kidx  dict_iter idict [, kreset = -1]
 </pre></div>
 
 
-<p><code>dict_loop</code> executes only at <strong>performance time</strong>. </p>
-<h2 id="arguments">Arguments</h2>
+<h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>idict</code>: the handle to the dict as returned by <a href="dict_new.html">dict_new</a></li>
 <li><code>kreset</code>: the reset policy</li>
-<li><code>kreset = 0</code>: no reset, iteration stops at the end of the collection is can't start over. 
-                  This makes sure that there will be max. 1 iteration within this note</li>
-<li><code>kreset = 1</code> (default): iteration is started over at every k-cycle</li>
-<li><code>kreset = 2</code>: Reset at the end of iteration</li>
 </ul>
+<table>
+<thead>
+<tr>
+<th>kreset</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>no reset, iteration stops at the end of the collection. There will be at most 1 iteration</td>
+</tr>
+<tr>
+<td>1 (default)</td>
+<td>Iteration starts over at every k-cycle</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Reset at the end of iteration (independent of k-cycle)</td>
+</tr>
+</tbody>
+</table>
 <h3 id="output">Output</h3>
 <ul>
 <li><code>xkey</code> / <code>xvalue</code>: the key and value for this pair. The types are determined by the type of
@@ -207,6 +233,8 @@ the end of the collection.</p>
 <li><code>kidx</code>: the index of this pair. It will be 0 for the first pair, 1 for the second, etc.
   When no more pairs, <code>kidx</code> will be -1. In this case, xkey and xvalue do not hold valid values</li>
 </ul>
+<h3 id="execution-time">Execution time</h3>
+<p><code>dict_loop</code> executes only at <strong>Performance Time</strong>. </p>
 <h2 id="usage">Usage</h2>
 <p>There are two ways to use <code>dict_iter</code>, either in a <code>while</code> loop, or using gotos</p>
 <div class="codehilite"><pre><span></span><span class="c1">; iterate in a while loop</span>

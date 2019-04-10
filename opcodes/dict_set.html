@@ -74,6 +74,14 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="cacheget.html">cacheget</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cacheset.html">cacheset</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="dict_free.html">dict_free</a>
                 </li>
                 <li class="">
@@ -190,9 +198,15 @@ dict_set idict, xkey
 </pre></div>
 
 
-<p>If xvalue is not given, <code>dict_set</code> removes the key from the dict    </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code>xvalue</code> is not given, <code>dict_set</code> removes the key from the dict    </p>
+</div>
 <p><code>dict_get</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>. </p>
-<p><strong>NB</strong>: it is possible to set multiple values at i-time directly with <a href="dict_new.html">dict_new</a></p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>It is possible to set multiple values at i-time directly with <a href="dict_new.html">dict_new</a></p>
+</div>
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>idict</code>: the handle of the dict, as returned by <code>dict_new</code></li>

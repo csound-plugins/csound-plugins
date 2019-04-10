@@ -98,6 +98,14 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="cacheget.html">cacheget</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cacheset.html">cacheset</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="dict_free.html">dict_free</a>
                 </li>
                 <li class="">
@@ -186,9 +194,10 @@ chain of events, free any table or dict allocated, etc. The advantage
 over the <code>release</code> opcode is that <code>atstop</code> is guaranteed to be run 
 after the note has stopped, so there is no danger in deallocating resources
 being used by this note, there are no conflicts with release envelopes, etc.</p>
-<p><strong>NB</strong>: the event is not scheduled at <em>release</em> time (see below "Release time vs Deinit time")
+<div class="admonition note">
+<p class="admonition-title">Release time vs deinit time</p>
+<p>The event is not scheduled at <em>release</em> time (see below "Release time vs Deinit time")
 but at the moment the note is freed.</p>
-<h3 id="release-time-vs-deinit-time">Release time vs deinit time</h3>
 <p><strong>Release time</strong> is when the note is within its <em>release phase</em>, which will only happen 
 if the note has an envelope with a release segment (like <code>linsegr</code>), or if it has 
 setup extra time with <code>xtratim</code>. The opcode <code>release</code> can be used to query if the 
@@ -197,6 +206,7 @@ long as the release part of the envelope is finished or the extra time allocated
 via <code>xtratim</code> is through. </p>
 <p><strong>Deinit time</strong> is the moment the note is actually being freed, so the instrument is
 not running anymore at this point.  </p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>atstop instrnum, idelay, idur [, p4, p5, ...]
 atstop Sinstrname, idelay, idur [, p4, p5, ...]
@@ -341,7 +351,7 @@ atstop Sinstrname, idelay, idur [, p4, p5, ...]
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dict_free.html" class="btn btn-neutral float-right" title="dict_free">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="cacheget.html" class="btn btn-neutral float-right" title="cacheget">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../Installation.html" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -373,7 +383,7 @@ atstop Sinstrname, idelay, idur [, p4, p5, ...]
         <span><a href="../Installation.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="dict_free.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="cacheget.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

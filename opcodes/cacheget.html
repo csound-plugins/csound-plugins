@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>dict_print - Csound Plugins</title>
+  <title>cacheget - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "dict_print";
-    var mkdocs_page_input_path = "opcodes/dict_print.md";
+    var mkdocs_page_name = "cacheget";
+    var mkdocs_page_input_path = "opcodes/cacheget.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -72,9 +72,31 @@
                     
     <a class="" href="atstop.html">atstop</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="cacheget.html">cacheget</a>
+    <a class="current" href="cacheget.html">cacheget</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#cacheget">cacheget</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -96,33 +118,9 @@
                     
     <a class="" href="dict_new.html">dict_new</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="dict_print.html">dict_print</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#dict_print">dict_print</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="dict_print.html">dict_print</a>
                 </li>
                 <li class="">
                     
@@ -173,7 +171,7 @@
         
       
     
-    <li>dict_print</li>
+    <li>cacheget</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -183,67 +181,97 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="dict_print">dict_print</h1>
+                <h1 id="cacheget">cacheget</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Prints the contents of a dict</p>
+<p>Get a string inside the cache</p>
 <h2 id="description">Description</h2>
-<p><code>dict_print</code> can be used to print the contents of a dict, mostly for debugging
-purposes</p>
-<p><code>dict_print</code> can print both at <strong>i-time</strong> or <strong>k-time</strong></p>
+<p>The cache- opcodes implement a global string cache. This can be useful to
+pass multiple strings between instruments using the <code>event</code> opcode. This is
+similar to the <code>strset</code> and <code>strget</code> opcodes but automatically asigns an idx
+to each distints string inside the cache (we guarantee that passing twice 
+the same string will return the same index)</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>dict_print idict [, ktrig=1]
+<div class="codehilite"><pre><span></span>Sstr cacheget idx
+Sstr cacheset kdx
 </pre></div>
 
 
-<h2 id="arguments">Arguments</h2>
+<p><code>cacheget</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>, depending on the type of
+the input variable</p>
+<h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
-<li><code>ktrig</code>: when to print the dict. Printing will take place whenever ktrig is -1 or 
-           if ktrig is a positive and higher than the last trig</li>
+<li><code>idx</code> / <code>kdx</code>: the numeric id representing the string, as returned by <code>cacheset</code></li>
+</ul>
+<h3 id="output">Output</h3>
+<ul>
+<li><code>Sstr</code>: the string inside the cache, corresponding to <code>idx</code></li>
+</ul>
+<h3 id="execution-time">Execution Time</h3>
+<ul>
+<li>Init </li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">--</span><span class="n">nosound</span>
-
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="cm">/*</span>
+<span class="cm">  Example file for cacheset / cacheget</span>
 
-<span class="kd">instr</span> <span class="nf">1</span> 
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">30</span>
-  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>
+<span class="cm">  cacheset and cacheget implement a method to internalize strings,</span>
+<span class="cm">  similar to strset and strget, but without having to take care about</span>
+<span class="cm">  setting the indices</span>
 
-  <span class="c1">; print with a metro</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foofoo&quot;</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="s">&quot;barbar&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazbaz&quot;</span>
+<span class="cm">  cacheset puts a strin into the cache and returns an idx identifying </span>
+<span class="cm">  this string. If a string is put into the cache which already exists,</span>
+<span class="cm">  we guarantee that the index returned is the same. </span>
 
-  <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">2</span>
-  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="kt">k</span><span class="n">trig</span>
+<span class="cm">  idx cacheset Sstr          i-time</span>
+<span class="cm">  kdx cacheset Sstr          k-time</span>
 
+<span class="cm">  cacheget retrieves a str previously put in the cache. If the index</span>
+<span class="cm">  does not point to an existing string, a performance error is raised</span>
+
+<span class="cm">  Sstr cacheget idx          i-time</span>
+<span class="cm">  Sstr cacheget kdx          k-time</span>
+
+<span class="cm">  Both opcodes work at both i- and k-time, depending on the arguments</span>
+<span class="cm">*/</span>
+
+<span class="c1">; Use cacheset/get to pass multiple strings between instruments</span>
+<span class="kd">instr</span> <span class="nf">1</span>  
+  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cacheset</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">cacheset</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">i</span><span class="n">dx2</span> <span class="o">=</span> <span class="vi">p5</span>
+  <span class="kt">S</span><span class="n">1</span> <span class="n">cacheget</span> <span class="kt">i</span><span class="n">dx1</span>
+  <span class="kt">S</span><span class="n">2</span> <span class="n">cacheget</span> <span class="kt">i</span><span class="n">dx2</span>
+  <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
 
+<span class="n">f</span> <span class="mi">0</span> <span class="mi">1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>
 
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="dict_iter.html">dict_iter</a></li>
-<li><a href="dict_set.html">dict_set</a></li>
-<li><a href="dict_query.html">dict_query</a></li>
+<li><a href="cacheset.html">cacheset</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -254,10 +282,10 @@ purposes</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dict_query.html" class="btn btn-neutral float-right" title="dict_query">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="cacheset.html" class="btn btn-neutral float-right" title="cacheset">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="dict_new.html" class="btn btn-neutral" title="dict_new"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="atstop.html" class="btn btn-neutral" title="atstop"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -283,10 +311,10 @@ purposes</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="dict_new.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="atstop.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="dict_query.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="cacheset.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
