@@ -43,7 +43,7 @@ and `poly` can also be used with k-values.
 * `inuminstances`: the number of instances of `Sopcode` to instantiate
 * `Sopcode`: the name of the opcode
 * `xargs`: any number of arguments, either i-, k- or a-rate, either scalar or arrays, 
-           as needed by the given opcode
+           or strings, as needed by the given opcode. String arrays are not yet supported
 
 The number and type of the input arguments depend on the arguments passed to the 
 given opcode. The same applies for the output arguments
