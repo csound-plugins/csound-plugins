@@ -1,0 +1,50 @@
+# cachepop
+
+## Abstract
+
+Get a cached string and remove it from the cache
+
+
+## Description
+
+The cache- opcodes implement a global string cache. This can be useful to
+pass multiple strings between instruments using the `event` opcode. This is
+similar to the `strset` and `strget` opcodes but automatically asigns an idx
+to each distints string inside the cache (we guarantee that passing twice 
+the same string will return the same index). `cachepop` is similar to [cacheget](cacheget.md)
+but after retrievin the value from the cache it is removed. This can be useful 
+for cases where one-of strings are passed between instruments and do not need
+to survive the current note
+
+## Syntax
+
+    Sstr cachepop idx
+
+
+### Arguments
+
+* `idx`: the numeric id representing the string, as returned by `cacheset`
+
+### Output
+
+* `Sstr`: the string inside the cache, corresponding to `idx`
+
+
+### Execution Time
+
+* Init 
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [cacheset](cacheset.md)
+* [cacheget](cacheget.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

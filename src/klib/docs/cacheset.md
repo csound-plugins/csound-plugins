@@ -70,16 +70,15 @@ the out variable
 */
 
 ; Use cacheset/get to pass multiple strings between instruments
-instr 1
-  idx cacheset "foo"
-  event_i "i", 2, 0, -1, idx
+instr 1  
+  event_i "i", 2, 0, -1, cacheset:i("foo"), cacheset:i("bar")
   turnoff
 endin
 
 instr 2
-  idx = p4
-  Sstr cacheget idx
-  prints "Sstr = %s \n", Sstr
+  S1 cacheget p4
+  S2 cacheget p5
+  prints "S1=%s   S2=%s \n", S1, S2
   turnoff
 endin
 

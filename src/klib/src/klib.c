@@ -149,7 +149,23 @@
   All opcodes work at k-time
   The hashtables with int-keys work also at i-time whenever key and value are
   of i-type (for both set and get actions)
-  
+
+  cache opcodes
+  =============
+
+  The cache opcodes implement an efficient string cache, usable to pass string
+  between instruments, as symbols, etc.
+
+  The following operations are defined:
+
+  * cacheput: put a string in the cache. idx identifies now Ss
+
+    idx cacheput Ss
+
+  * cacheget: get a string from the cache
+
+    Ss cacheget idx
+
 */
 
 #include "csdl.h"
@@ -277,6 +293,16 @@ stringdat_set(CSOUND *csound, STRINGDAT *s, char *src, size_t srclen) {
         s->size = (i32) srclen + 1;
     } else
         strcpy(s->data, src);
+    return OK;
+}
+
+// move src to s, s now owns src allocated storage
+static inline i32
+stringdat_move(CSOUND *csound, STRINGDAT *s, char *src, size_t allocatedsize) {
+    if(s->data != NULL)
+        csound->Free(csound, s->data);
+    s->data = src;
+    s->size = (i32) allocatedsize;
     return OK;
 }
 
@@ -1996,15 +2022,18 @@ set_many_is(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     return OK;
 }
 
-// Cache opcodes
+// -----------------------------------------------------------------------------------------
+//                                       Cache opcodes
+// -----------------------------------------------------------------------------------------
 
 typedef struct {
     khash_t(khStrInt) *str2int;
     khash_t(khIntStr) *int2str;
+    ui32 counter;
 } STRCACHE_GLOBALS;
 
 #define STRCACHE_GLOBALS_NAME "__strcache_globals__"
-
+#define CACHE_MINSIZE 64
 
 static i32 cache_reset(CSOUND *csound, STRCACHE_GLOBALS *g) {
     khash_t(khIntStr) *h1 = g->int2str;
@@ -2019,14 +2048,8 @@ static i32 cache_reset(CSOUND *csound, STRCACHE_GLOBALS *g) {
     }
     kh_destroy(khIntStr, h1);
 
-    khash_t(khStrInt) *h2 = g->str2int;
-    // we need to free all keys
-    for (k = 0; k < kh_end(h2); ++k) {
-        if (kh_exist(h2, k))
-            csound->Free(csound, kh_key(h2, k));
-    }
-    kh_destroy(khStrInt, h2);
-
+    // we don't need to free the keys in str2int since they point to the values in i2s
+    kh_destroy(khStrInt, g->str2int);
     return OK;
 }
 
@@ -2040,6 +2063,9 @@ create_cache_globals(CSOUND *csound) {
     STRCACHE_GLOBALS *g = (STRCACHE_GLOBALS*)csound->QueryGlobalVariable(csound, STRCACHE_GLOBALS_NAME);
     g->int2str = kh_init(khIntStr);
     g->str2int = kh_init(khStrInt);
+    g->counter = 0;
+    kh_resize(khIntStr, g->int2str, CACHE_MINSIZE);
+    kh_resize(khStrInt, g->str2int, CACHE_MINSIZE);
     csound->RegisterResetCallback(csound, (void*)g, (i32(*)(CSOUND*, void*))cache_reset);
     return g;
 }
@@ -2065,10 +2091,7 @@ cache_putstr(CSOUND *csound, STRCACHE_GLOBALS* g, STRINGDAT *s, i64 *out) {
         return OK;
     }
     // key is not present, get a new idx for the str
-    ui32 idx = kh_size(g->str2int);
-    // str2int[s] = idx
-    kh_key(g->str2int, k) = csound->Strdup(csound, s->data);
-    kh_value(g->str2int, k) = idx;
+    ui32 idx = (g->counter++);
 
     // int2str[idx] = s
     k = kh_put(khIntStr, g->int2str, idx, &absent);
@@ -2078,6 +2101,10 @@ cache_putstr(CSOUND *csound, STRCACHE_GLOBALS* g, STRINGDAT *s, i64 *out) {
     kh_key(g->int2str, k) = idx;
     kstring_t *ks = &(g->int2str->vals[k]);
     kstr_init_from_stringdat(csound, ks, s);
+    // str2int[s] = idx
+    // we share the storage for the key in s2i and the value in i2s
+    kh_key(g->str2int, k) = ks->s;
+    kh_value(g->str2int, k) = idx;
     *out = idx;
     return OK;
 }
@@ -2093,6 +2120,28 @@ cache_getstr(STRCACHE_GLOBALS *g, ui32 idx) {
     return ks;
 }
 
+// pop returns a c-string and removes the string from the cache
+// the receiver OWNS the received string
+// Returns NULL if idx not found. strsize is set to the str allocated size
+static char *
+cache_popstr(STRCACHE_GLOBALS *g, ui32 idx, ui32 *strsize) {
+    khiter_t k = kh_get(khIntStr, g->int2str, idx);
+    if(k == kh_end(g->int2str)) {   // key not found
+        return NULL;
+    }
+    kstring_t *ks = &(kh_val(g->int2str, k));
+    char *s = ks->s;
+    *strsize = (ui32) ks->m;
+    kh_del(khIntStr, g->int2str, k);
+    // del g->str2int[s]
+    k = kh_get(khStrInt, g->str2int, s);
+    if(k != kh_end(g->str2int)) {
+        kh_del(khStrInt, g->str2int, k);
+    }
+    return s;
+}
+
+
 typedef struct {
     OPDS h;
     // Sstr cacheget kidx / iidx
@@ -2101,6 +2150,7 @@ typedef struct {
     STRCACHE_GLOBALS *g;
     int done;
 } CACHEGET;
+
 
 static i32 cacheget_perf(CSOUND *csound, CACHEGET *p);
 
@@ -2122,11 +2172,21 @@ cacheget_perf(CSOUND *csound, CACHEGET *p) {
     ui32 idx = (ui32) (*p->idx);
     kstring_t *ks = cache_getstr(g, idx);
     if(ks == NULL)
-        return INITERR(Str("cacheget: string not found"));
-    i32 ret = stringdat_set(csound, p->out, ks->s, ks->l);
-    return ret;
+        return PERFERRF(Str("cacheget: string not found (idx: %d)"), idx);
+    return stringdat_set(csound, p->out, ks->s, ks->l);
 }
 
+static i32
+cachepop_i(CSOUND *csound, CACHEGET *p) {
+    STRCACHE_GLOBALS *g = cache_globals(csound);
+    ui32 idx = (ui32) (*p->idx);
+    ui32 ssize;
+    char *s = cache_popstr(g, idx, &ssize);
+    if(s == NULL)
+        return INITERRF(Str("cachepop: string with index %d not in cache"), idx);
+    stringdat_move(csound, p->out, s, ssize);
+    return OK;
+}
 
 typedef struct {
     OPDS h;
@@ -2156,7 +2216,6 @@ cacheset_i(CSOUND *csound, CACHESET *p) {
     cacheset_0(csound, p);
     return cacheset_perf(csound, p);
 }
-
 
 #define S(x) sizeof(x)
 
@@ -2208,7 +2267,7 @@ static OENTRY localops[] = {
     { "cacheset", S(CACHESET), 0, 1, "i", "S", (SUBR)cacheset_i },
     { "cacheget", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
     { "cacheget", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
-
+    { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },
 };
 
 LINKAGE

@@ -1,8 +1,8 @@
-# cacheset
+# cachepop
 
 ## Abstract
 
-Put a string inside the cache
+Get a cached string and remove it from the cache
 
 
 ## Description
@@ -11,29 +11,28 @@ The cache- opcodes implement a global string cache. This can be useful to
 pass multiple strings between instruments using the `event` opcode. This is
 similar to the `strset` and `strget` opcodes but automatically asigns an idx
 to each distints string inside the cache (we guarantee that passing twice 
-the same string will return the same index)
+the same string will return the same index). `cachepop` is similar to [cacheget](cacheget.md)
+but after retrievin the value from the cache it is removed. This can be useful 
+for cases where one-of strings are passed between instruments and do not need
+to survive the current note
 
 ## Syntax
 
-    idx cacheset Sstr
-    kdx cacheset Sstr
-    
-`cacheset` executes both at **i-time** and **k-time**, depending on the type of
-the out variable
+    Sstr cachepop idx
+
 
 ### Arguments
 
-* `Sstr`: the string to be put inside the cache
+* `idx`: the numeric id representing the string, as returned by `cacheset`
 
 ### Output
 
-* `idx` / `kdx`: the numeric id representing the string passed
+* `Sstr`: the string inside the cache, corresponding to `idx`
 
 
 ### Execution Time
 
 * Init 
-* Performance
 
 ## Examples
 
@@ -47,37 +46,29 @@ the out variable
 <CsInstruments>
 
 /*
-  Example file for cacheset / cacheget
+  Example file for cacheset / cacheget / cachepop
 
   cacheset and cacheget implement a method to internalize strings,
   similar to strset and strget, but without having to take care about
-  setting the indices
+  setting the indices. cachepop is similar to cacheget but removes the
+  entry from the cache.
 
   cacheset puts a strin into the cache and returns an idx identifying 
   this string. If a string is put into the cache which already exists,
   we guarantee that the index returned is the same. 
 
-  idx cacheset Sstr          i-time
-  kdx cacheset Sstr          k-time
+ */
 
-  cacheget retrieves a str previously put in the cache. If the index
-  does not point to an existing string, a performance error is raised
-
-  Sstr cacheget idx          i-time
-  Sstr cacheget kdx          k-time
-
-  Both opcodes work at both i- and k-time, depending on the arguments
-*/
-
-; Use cacheset/get to pass multiple strings between instruments
+; Use cacheset/pop to pass multiple strings between instruments
 instr 1  
   event_i "i", 2, 0, -1, cacheset:i("foo"), cacheset:i("bar")
   turnoff
 endin
 
 instr 2
-  S1 cacheget p4
-  S2 cacheget p5
+  S1 cachepop p4
+  S2 cachepop p5
+  ; these strings are no longer in the cache
   prints "S1=%s   S2=%s \n", S1, S2
   turnoff
 endin
@@ -97,7 +88,9 @@ f 0 1
 
 ## See also
 
+* [cacheset](cacheset.md)
 * [cacheget](cacheget.md)
+
 
 ## Credits
 

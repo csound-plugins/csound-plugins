@@ -76,10 +76,8 @@ instr 1
 endin
 
 instr 2
-  idx1 = p4
-  idx2 = p5
-  S1 cacheget idx1
-  S2 cacheget idx2
+  S1 cacheget p4
+  S2 cacheget p5
   prints "S1=%s   S2=%s \n", S1, S2
   turnoff
 endin

@@ -23,6 +23,7 @@ A hashtable for csound
 * [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
 * [cacheset](opcodes/cacheset.md): Put a string inside the cache 
 * [cacheget](opcodes/cacheget.md): Get a string inside the cache 
+* [cachepop](opcodes/cachepop.md): Get a cached string and remove it from the cache 
 
 
 ## poly

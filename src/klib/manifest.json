@@ -10,7 +10,8 @@
       "dict_print",
       "dict_iter",
       "cacheset",
-      "cacheget"
+      "cacheget",
+      "cachepop"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
