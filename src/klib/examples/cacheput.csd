@@ -41,11 +41,27 @@ instr 2
   turnoff
 endin
 
+instr 10
+  ktrig metro 10
+  ki init 0
+  if ktrig == 1 then
+    ki += 1
+    event "i", 20, 0, -1, cacheput:k(sprintfk("key%d", ki))
+  endif
+endin
+
+instr 20
+  S1 cacheget p4
+  prints "S1 = %s \n", S1
+  turnoff
+endin
+
 </CsInstruments>
 
 <CsScore>
 
-i 1 0 0.1
+i 1  0 0.1
+i 10 + 1
 
 f 0 1
 </CsScore>

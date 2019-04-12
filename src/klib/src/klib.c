@@ -184,6 +184,7 @@ typedef uint64_t ui64;
 
 #define KHASH_STRKEY_MAXSIZE 63
 #define HANDLES_INITIAL_SIZE 200
+#define DICT_INITIAL_SIZE 8
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
@@ -314,7 +315,8 @@ enum {
     khStrStr = 22,
     khIntStr = 12,
     khIntFlt = 11,
-    khStrInt = 20
+    khStrInt = 20,  // used by the cache opcodes
+    khStrAny = 23
 };
 
 // Initialize all possible types
@@ -332,6 +334,7 @@ typedef struct {
     int khtype;
     ui64 counter;
     void *hashtab;
+    void *hashtab2;   // used by the "any" type to support both float and string values
     int isglobal;
     void *mutex_;
     spin_lock_t lock;
@@ -466,23 +469,47 @@ dict_getfreeslot(HASH_GLOBALS *g) {
  *           it outlive the instr
  */
 static ui32
-dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal) {
+dict_make_strany(CSOUND *csound, HASH_GLOBALS *g, ui32 idx, int isglobal) {
+    khash_t(khStrFlt) *hsf = kh_init(khStrFlt);
+    khash_t(khStrStr) *hss = kh_init(khStrStr);
+
+    HANDLE *handle = &(g->handles[idx]);
+    handle->hashtab = hsf;
+    handle->hashtab2 = hss;
+    handle->khtype = khStrAny;
+    handle->counter = 0;
+    handle->isglobal = isglobal;
+    handle->mutex_ = csound->Create_Mutex(0);
+    return idx;
+}
+
+
+static ui32
+dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal, ui32 initialsize) {
     ui32 idx = dict_getfreeslot(g);
     if(idx == 0)
         return 0;
     void *hashtab = NULL;
+    if(khtype == khStrAny) {
+        return dict_make_strany(csound, g, idx, isglobal);  // initialsize is not taken into account
+    }
+
     switch(khtype) {
     case khStrFlt:
         hashtab = (void *)kh_init(khStrFlt);
+        if(initialsize > 4) kh_resize(khStrFlt, hashtab, initialsize);
         break;
     case khStrStr:
         hashtab = (void *)kh_init(khStrStr);
+        if(initialsize > 4) kh_resize(khStrStr, hashtab, initialsize);
         break;
     case khIntStr:
         hashtab = (void *)kh_init(khIntStr);
+        if(initialsize > 4) kh_resize(khIntStr, hashtab, initialsize);
         break;
     case khIntFlt:
         hashtab = (void *)kh_init(khIntFlt);
+        if(initialsize > 4) kh_resize(khIntFlt, hashtab, initialsize);
         break;
     }
     HANDLE *handle = &(g->handles[idx]);
@@ -646,6 +673,7 @@ stringdef_to_intdef(STRINGDAT *s) {
         else if(!strcmp("str:float", sdata)) return khStrFlt;
         else if(!strcmp("int:float", sdata)) return khIntFlt;
         else if(!strcmp("int:str", sdata)) return khIntStr;
+        else if(!strcmp("str:any", sdata)) return khStrAny;
         else return -1;
     }
 }
@@ -670,7 +698,7 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
     if(khtype < 0)
         return INITERR(Str("dict: type not understood."
                            ". Expected one of 'sf', 'ss', 'if', 'is'"));
-    ui32 idx = dict_make(csound, p->g, khtype, (i32) *p->isglobal);
+    ui32 idx = dict_make(csound, p->g, khtype, (i32) *p->isglobal, DICT_INITIAL_SIZE);
     if(idx == 0)
         return INITERR(Str("dict: failed to allocate the hashtable"));
     *p->handleidx = (MYFLT)idx;
@@ -891,9 +919,8 @@ dict_set_sf_i(CSOUND *csound, DICT_SET_sf *p) {
 // hashtab_set ihandle, Skey, kvalue
 typedef struct {
     OPDS h;
-    // out
-    MYFLT *handleidx;
     // in
+    MYFLT *handleidx;
     STRINGDAT *outkey;
     STRINGDAT *outval;
     // internal
@@ -916,10 +943,22 @@ dict_set_ss_0(CSOUND *csound, DICT_SET_ss *p) {
 }
 
 static i32
+dict_set_ss_any(CSOUND *csound, DICT_SET_ss *p, HANDLE *handle) {
+    CHECK_HASHTAB_EXISTS(handle->hashtab);
+    // if key is set in the s2f table, remove key
+    // set key and value in the s2s table
+    // TODO
+    return NOTOK;
+}
+
+static i32
 dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
     HASH_GLOBALS *g = p->g;
     i32 idx = (i32)*p->handleidx;
     HANDLE *handle = &(g->handles[idx]);
+    if(handle->khtype == khStrAny) {
+        return dict_set_ss_any(csound, p, handle);
+    }
     khash_t(khStrStr) *h = handle->hashtab;
     khint_t k;
     int absent;
@@ -2206,7 +2245,7 @@ cacheput_0(CSOUND *csound, CACHEPUT *p) {
 static i32
 cacheput_perf(CSOUND *csound, CACHEPUT *p) {
     STRCACHE_GLOBALS *g = p->g;
-    i64 idx;
+    i64 idx = 0;
     i32 ret = cache_putstr(csound, g, p->s, &idx);
     if(ret == NOTOK) return NOTOK;
     *p->idx = (MYFLT) idx;
@@ -2218,6 +2257,7 @@ cacheput_i(CSOUND *csound, CACHEPUT *p) {
     cacheput_0(csound, p);
     return cacheput_perf(csound, p);
 }
+
 
 #define S(x) sizeof(x)
 
@@ -2265,11 +2305,12 @@ static OENTRY localops[] = {
 
     { "dict_size", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
 
-    { "cacheput", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
     { "cacheput", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
+    { "cacheput", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
     { "cacheget", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
     { "cacheget", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
     { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },
+
 };
 
 LINKAGE

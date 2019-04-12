@@ -1,3 +1,5 @@
+project("csound_plugins")
+
 cmake_minimum_required(VERSION 3.8)
 
 set(APIVERSION "6.0")
