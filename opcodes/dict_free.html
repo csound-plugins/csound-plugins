@@ -99,8 +99,6 @@
         
             <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
         
-            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
-        
             <li><a class="toctree-l4" href="#examples">Examples</a></li>
         
             <li><a class="toctree-l4" href="#see-also">See also</a></li>
@@ -197,13 +195,13 @@ To be able to pass a dict between notes, a note can create a global dict and
 pass its handle to another note. When the first note is released, the dict lives
 on (because it is global), and it will be either freed at the end of the performance
 or explicitely by calling <a href="dict_free.html">dict_free</a></p>
+<p><code>dict_free</code> executes only at <strong>init time</strong>. </p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>dict_free idict [, iwhen=0]
 </pre></div>
 
 
-<p><code>dict_free</code> executes only at <strong>init time</strong>. </p>
-<h2 id="arguments">Arguments</h2>
+<h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>idict</code>: the handle of the dict to be freed</li>
 <li><code>iwhen</code>: similar to <code>ftfree</code><ul>
@@ -211,6 +209,10 @@ or explicitely by calling <a href="dict_free.html">dict_free</a></p>
 <li>if <code>iwhen == 1</code> : free the dict at the end of this note</li>
 </ul>
 </li>
+</ul>
+<h3 id="execution-time">Execution Time</h3>
+<ul>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>

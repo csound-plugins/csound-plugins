@@ -194,6 +194,7 @@
 <p>Iterates over the key:value pairs. Whenever kreset is 1, iteration starts over
 If kreset is -1 (the default), iteration is autotriggered when it reaches
 the end of the collection.</p>
+<p><code>dict_loop</code> executes only at <strong>Performance Time</strong>. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code>dict_iter</code> is meant to be used <strong>in a loop</strong> at <strong>k-time</strong></p>
@@ -238,7 +239,9 @@ the end of the collection.</p>
   When no more pairs, <code>kidx</code> will be -1. In this case, xkey and xvalue do not hold valid values</li>
 </ul>
 <h3 id="execution-time">Execution time</h3>
-<p><code>dict_loop</code> executes only at <strong>Performance Time</strong>. </p>
+<ul>
+<li>Performance</li>
+</ul>
 <h2 id="usage">Usage</h2>
 <p>There are two ways to use <code>dict_iter</code>, either in a <code>while</code> loop, or using gotos</p>
 <div class="codehilite"><pre><span></span><span class="c1">; iterate in a while loop</span>
@@ -288,8 +291,9 @@ the end of the collection.</p>
 <span class="cm">           2  -&gt; iteration restarts after stopping   </span>
 <span class="cm">  */</span>
 
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s">&quot;bee&quot;</span><span class="p">,</span> <span class="mi">9</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;str:float&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s">&quot;bee&quot;</span><span class="p">,</span> <span class="mi">9</span>
 
+  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinstk</span>
   <span class="c1">; iterate with a while loop</span>
   <span class="kt">k</span><span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
   <span class="k">while</span> <span class="kt">k</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">do</span> 
@@ -310,7 +314,7 @@ the end of the collection.</p>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="nb">i</span> <span class="mi">3</span> <span class="mi">0</span> <span class="mf">0.05</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.05</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>

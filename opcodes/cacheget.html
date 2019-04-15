@@ -194,14 +194,14 @@ pass multiple strings between instruments using the <code>event</code> opcode. T
 similar to the <code>strset</code> and <code>strget</code> opcodes but automatically asigns an idx
 to each distints string inside the cache (we guarantee that passing twice 
 the same string will return the same index)</p>
+<p><code>cacheget</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>, depending on the type of
+the input variable</p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>Sstr cacheget idx
 Sstr cacheget kdx
 </pre></div>
 
 
-<p><code>cacheget</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>, depending on the type of
-the input variable</p>
 <h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>idx</code> / <code>kdx</code>: the numeric id representing the string, as returned by <code>cacheput</code></li>

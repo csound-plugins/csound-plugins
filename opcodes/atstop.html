@@ -85,6 +85,8 @@
         
             <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
         
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
             <li><a class="toctree-l4" href="#examples">Examples</a></li>
         
             <li><a class="toctree-l4" href="#see-also">See also</a></li>
@@ -212,18 +214,24 @@ via <code>xtratim</code> is through. </p>
 not running anymore at this point.  </p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>atstop instrnum, idelay, idur [, p4, p5, ...]
-atstop Sinstrname, idelay, idur [, p4, p5, ...]
+<div class="codehilite"><pre><span></span>atstop instrnum   [, idelay=0, idur=-1, p4, p5, ...]
+atstop Sinstrname [, idelay=0, idur=-1, p4, p5, ...]
 </pre></div>
 
 
+<blockquote>
 <p><code>atstop</code> executes only at <strong>init time</strong>. </p>
+</blockquote>
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>instrnum</code> / <code>Sintrname</code>: the number or the name of the instr to be scheduled</li>
 <li><code>idelay</code>: the time offset <strong>after</strong> the stop time of this note to start this instrument</li>
 <li><code>idur</code>: the duration of the event</li>
 <li><code>p4</code>, <code>p5</code>, ...: any other p-arguments, as used with similar opcodes like <code>schedule</code>, <code>event</code>, etc.</li>
+</ul>
+<h2 id="execution-time">Execution Time</h2>
+<ul>
+<li>Init </li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -317,11 +325,26 @@ atstop Sinstrname, idelay, idur [, p4, p5, ...]
   <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
 <span class="kd">endin</span>
 
+<span class="c1">; test simple case with optional pargs</span>
+<span class="kd">instr</span> <span class="nf">first</span>
+  <span class="kt">a</span><span class="n">tstop</span> <span class="s">&quot;second&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="kt">a</span><span class="n">tstop</span> <span class="s">&quot;second&quot;</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">200</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">second</span>
+  <span class="nb">printf</span> <span class="s">&quot;second!  p4 =</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p4</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">200</span>
+  <span class="nb">printf</span> <span class="s">&quot;200! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">StopPerformance</span>
   <span class="nb">exitnow</span>
 <span class="kd">endin</span>
-
 
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -330,10 +353,10 @@ atstop Sinstrname, idelay, idur [, p4, p5, ...]
 
 <span class="c1">; i 2 0 0.25 48</span>
 
-<span class="nb">i</span> <span class="mi">10</span> <span class="mi">0</span> <span class="mi">1</span>
-<span class="nb">i</span> <span class="s">&quot;StopPerformance&quot;</span> <span class="mi">10</span> <span class="mi">1</span>
-
-
+<span class="c1">; i 10 0 1</span>
+<span class="c1">; i &quot;StopPerformance&quot; 10 1</span>
+<span class="nb">i</span> <span class="s">&quot;first&quot;</span> <span class="mi">1</span> <span class="mf">0.5</span>
+<span class="n">f</span> <span class="mi">0</span> <span class="mi">5</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>

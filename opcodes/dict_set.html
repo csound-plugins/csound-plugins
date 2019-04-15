@@ -125,6 +125,8 @@
         
             <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
         
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
             <li><a class="toctree-l4" href="#examples">Examples</a></li>
         
             <li><a class="toctree-l4" href="#see-also">See also</a></li>
@@ -194,29 +196,34 @@
 <p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes 
 implement a hashtable mapping either strings or integers to strings or floats. 
 <code>dict_set</code> sets the value corresponding to a key if the key is already present,
-or inserts a key:value pair otherwise. Without a value it deletes the key:value
-pair from the dict.</p>
+or inserts a key:value pair otherwise. </p>
+<p><strong>NB</strong>: Without a value, <code>dict_set</code> deletes the key:value pair from the dict.</p>
+<p><code>dict_set</code> executes can execute at <strong>i-time</strong> and <strong>k-time</strong>. </p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>It is possible to set multiple values at i-time directly with <a href="dict_new.html">dict_new</a></p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>dict_set idict, xkey, xvalue
 dict_set idict, xkey
 </pre></div>
 
 
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If <code>xvalue</code> is not given, <code>dict_set</code> removes the key from the dict    </p>
-</div>
-<p><code>dict_get</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>. </p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>It is possible to set multiple values at i-time directly with <a href="dict_new.html">dict_new</a></p>
-</div>
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>idict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
 <li><code>xkey</code>: the key to set. Its type must match the type definition of the dict.
           (a string or a possitive integer)</li>
 <li><code>xvalue</code>: the value to set. Its type must match the type definition of the dict (a str or a numeric value)</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code>xvalue</code> is not given, <code>dict_set</code> removes the key from the dict    </p>
+</div>
+<h2 id="execution-time">Execution Time</h2>
+<ul>
+<li>Init</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>

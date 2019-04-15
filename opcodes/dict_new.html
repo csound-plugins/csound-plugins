@@ -191,7 +191,13 @@
 <h2 id="abstract">Abstract</h2>
 <p>Create a hashtable </p>
 <h2 id="description">Description</h2>
-<p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes implement a hashtable mapping either strings or integers to strings or floats. A hashtable can be either local, in which case its lifespan is fixed to the lifespan of the note it was created in; or it can be global, in which case it is not deallocated when the note is released and is kept alive until either the end of the performance, or until freed via <code>dict_free</code></p>
+<p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes 
+implement a hashtable mapping either strings or integers to strings or floats. 
+A hashtable can be either local, in which case its lifespan is fixed to the lifespan 
+of the note it was created in; or it can be global, in which case it is not 
+deallocated when the note is released and is kept alive until either the end 
+of the performance, or until freed via <code>dict_free</code></p>
+<p><code>dict_new</code> runs only at <strong>i-time</strong></p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>idict dict_new Stype [, isglobal=0]
 idict dict_new Stype, isglobal, key0, value0, key1, value1, ...
@@ -205,20 +211,27 @@ idict dict_new Stype, isglobal, key0, value0, key1, value1, ...
 <li>
 <p><code>Stype</code>: a string describing the type of the key and the value. Possible values are:</p>
 <ul>
-<li><code>sf</code>: string → float</li>
-<li><code>ss</code>: string → string</li>
-<li><code>is</code>: int → string</li>
-<li><code>if</code>: int → float</li>
+<li>"sf" or "str:float": string → float</li>
+<li>"ss" or "str:str": string → string</li>
+<li>"is" or "ìnt:str": int → string</li>
+<li>"if" or "int:float": int → float</li>
 </ul>
 </li>
 <li>
-<p><code>isglobal</code>: if 1, the dict will outlive the instrument it was created in and will stay active until either the end of the performance or if destroyed via <code>dict_free</code>. Default is 0 (local)</p>
+<p><code>isglobal</code>: if 1, the dict will outlive the instrument it was created in and 
+              will stay active until either the end of the performance or if 
+              destroyed via <code>dict_free</code>. Default is 0 (local)</p>
 </li>
-<li><code>key0</code>, <code>value0</code>, etc: initial pairs can be set at creation time, matching the types declared with <code>Stype</code> </li>
+<li><code>key0</code>, <code>value0</code>, etc: initial pairs can be set at creation time, matching 
+              the types declared with <code>Stype</code> </li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
 <li><code>idict</code>: identifies this dict with an integer. This integer can be passed around to another instrument and will always resolve to the same dict, as long as this dict is still alive. This can be checked via <code>dict_query idict, "exists"</code></li>
+</ul>
+<h3 id="execution-time">Execution Time</h3>
+<ul>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
