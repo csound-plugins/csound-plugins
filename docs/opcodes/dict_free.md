@@ -13,18 +13,23 @@ pass its handle to another note. When the first note is released, the dict lives
 on (because it is global), and it will be either freed at the end of the performance
 or explicitely by calling [dict_free](dict_free.md)
 
+`dict_free` executes only at **init time**. 
+
 ## Syntax
 
     dict_free idict [, iwhen=0] 
 
-`dict_free` executes only at **init time**. 
     
-## Arguments
+### Arguments
 
 * `idict`: the handle of the dict to be freed
 * `iwhen`: similar to `ftfree`
     * if `iwhen == 0` : free the dict now
     * if `iwhen == 1` : free the dict at the end of this note
+
+### Execution Time
+
+* Init
 
 ## Examples
 

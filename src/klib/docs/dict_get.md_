@@ -37,6 +37,11 @@ The type of key and value depend on the type definition of the `dict`, see [dict
 * For dicts with a string value, an empty string is returned when the key is not found.
 * For dicts with a numeric value, a user given default is returned (default=0)
 
+### Execution Time
+
+* Init
+* Performance 
+
 ## Examples
 
 ```csound

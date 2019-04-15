@@ -32,11 +32,11 @@ being used by this note, there are no conflicts with release envelopes, etc.
 
 ## Syntax
 
-    atstop instrnum, idelay, idur [, p4, p5, ...]
-    atstop Sinstrname, idelay, idur [, p4, p5, ...]
+    atstop instrnum   [, idelay=0, idur=-1, p4, p5, ...]
+    atstop Sinstrname [, idelay=0, idur=-1, p4, p5, ...]
           
 
-`atstop` executes only at **init time**. 
+> `atstop` executes only at **init time**. 
     
 ## Arguments
 
@@ -44,6 +44,10 @@ being used by this note, there are no conflicts with release envelopes, etc.
 * `idelay`: the time offset **after** the stop time of this note to start this instrument
 * `idur`: the duration of the event
 * `p4`, `p5`, ...: any other p-arguments, as used with similar opcodes like `schedule`, `event`, etc.
+
+## Execution Time
+
+* Init 
 
 ## Examples
 

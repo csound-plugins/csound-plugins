@@ -89,11 +89,26 @@ instr foo
   outs a0, a0
 endin
 
+; test simple case with optional pargs
+instr first
+  atstop "second", 1, -1, 0.5
+  atstop "second", 0.5
+  atstop 200
+endin
+
+instr second
+  printf "second!  p4 =%f \n", 1, p4
+  turnoff
+endin
+
+instr 200
+  printf "200! \n", 1
+  turnoff
+endin
 
 instr StopPerformance
   exitnow
 endin
-
 
 
 </CsInstruments>
@@ -102,9 +117,9 @@ endin
 
 ; i 2 0 0.25 48
 
-i 10 0 1
-i "StopPerformance" 10 1
-
-
+; i 10 0 1
+; i "StopPerformance" 10 1
+i "first" 1 0.5
+f 0 5
 </CsScore>
 </CsoundSynthesizer>

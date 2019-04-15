@@ -62,6 +62,7 @@
     #define DBG_(m)
 #endif
 
+typedef int16_t i16;
 typedef int32_t i32;
 typedef uint32_t ui32;
 typedef int64_t i64;
@@ -88,7 +89,7 @@ typedef struct {
 
     // inputs
     void *instr;
-    MYFLT *pargs[MAXPARGS];
+    MYFLT *pargs [MAXPARGS];
 
     // internal
     MYFLT instrnum;   // cached instrnum
@@ -106,11 +107,13 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     evt.pinstance = NULL;
     evt.p2orig = *p->pargs[0];
     evt.p3orig = *p->pargs[1];
-    evt.pcnt = p->INOCOUNT;
+    ui32 pcnt = max(3, p->INOCOUNT);
     evt.p[1] = p->instrnum;
-    for(i32 i=0; i < evt.pcnt-1; i++) {
+    for(ui32 i=0; i < pcnt-1; i++) {
+        printf("p %d = %f\n", 2+i, *p->pargs[i]);
         evt.p[2+i] = *p->pargs[i];
     }
+    evt.pcnt = (i16) pcnt;
     csound->insert_score_event_at_sample(csound, &evt, csound->GetCurrentTimeSamples(csound));
     return OK;
 }
@@ -124,6 +127,8 @@ atstop_(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
 
 static i32
 atstop_i(CSOUND *csound, SCHED_DEINIT *p) {
+    printf("atstop_i \n");
+
     MYFLT instrnum = *((MYFLT*)p->instr);
     return atstop_(csound, p, instrnum);
 }
@@ -136,12 +141,16 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
     return atstop_(csound, p, (MYFLT) instrnum);
 }
 
+
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-    {"atstop.s", S(SCHED_DEINIT), 0, 1, "", "Sim", (SUBR)atstop_s },
-    {"atstop.i", S(SCHED_DEINIT), 0, 1, "", "iim", (SUBR)atstop_i }
-    
+    {"atstop.s1", S(SCHED_DEINIT), 0, 1, "", "Soj", (SUBR)atstop_s },
+    {"atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s },
+    {"atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
+    {"atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
+    // special case for a simple instr at end: 'atstop 10' or 'atstop "foo"'
+
 };
 
 LINKAGE

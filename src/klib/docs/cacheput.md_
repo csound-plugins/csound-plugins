@@ -17,9 +17,7 @@ the same string will return the same index)
 
     idx cacheput Sstr
     kdx cacheput Sstr
-    
-`cacheput` executes both at **i-time** and **k-time**, depending on the type of
-the out variable
+
 
 ### Arguments
 

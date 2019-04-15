@@ -13,13 +13,14 @@ similar to the `strset` and `strget` opcodes but automatically asigns an idx
 to each distints string inside the cache (we guarantee that passing twice 
 the same string will return the same index)
 
+`cacheget` executes both at **i-time** and **k-time**, depending on the type of
+the input variable
+
 ## Syntax
 
     Sstr cacheget idx
     Sstr cacheget kdx
     
-`cacheget` executes both at **i-time** and **k-time**, depending on the type of
-the input variable
 
 ### Arguments
 

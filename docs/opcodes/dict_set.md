@@ -9,23 +9,21 @@ Set (or remove) a value from a hashtable
 A hashtable is a mapping from a key to a value. The `dict_` family of opcodes 
 implement a hashtable mapping either strings or integers to strings or floats. 
 `dict_set` sets the value corresponding to a key if the key is already present,
-or inserts a key:value pair otherwise. Without a value it deletes the key:value
-pair from the dict.
+or inserts a key:value pair otherwise. 
+
+**NB**: Without a value, `dict_set` deletes the key:value pair from the dict.
+
+`dict_set` executes can execute at **i-time** and **k-time**. 
+
+!!! tip
+
+    It is possible to set multiple values at i-time directly with [dict_new](dict_new.md)
+
 
 ## Syntax
 
     dict_set idict, xkey, xvalue
     dict_set idict, xkey
-
-!!! note
-
-    If `xvalue` is not given, `dict_set` removes the key from the dict    
-  
-`dict_get` executes both at **i-time** and **k-time**. 
-
-!!! tip
-
-    It is possible to set multiple values at i-time directly with [dict_new](dict_new.md)
 
 ## Arguments
 
@@ -34,6 +32,14 @@ pair from the dict.
           (a string or a possitive integer)
 * `xvalue`: the value to set. Its type must match the type definition of the dict (a str or a numeric value)
 
+!!! note
+
+    If `xvalue` is not given, `dict_set` removes the key from the dict    
+
+## Execution Time
+
+* Init
+* Performance
 
 ## Examples
 

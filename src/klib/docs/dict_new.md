@@ -6,7 +6,14 @@ Create a hashtable
 
 ## Description
 
-A hashtable is a mapping from a key to a value. The `dict_` family of opcodes implement a hashtable mapping either strings or integers to strings or floats. A hashtable can be either local, in which case its lifespan is fixed to the lifespan of the note it was created in; or it can be global, in which case it is not deallocated when the note is released and is kept alive until either the end of the performance, or until freed via `dict_free`
+A hashtable is a mapping from a key to a value. The `dict_` family of opcodes 
+implement a hashtable mapping either strings or integers to strings or floats. 
+A hashtable can be either local, in which case its lifespan is fixed to the lifespan 
+of the note it was created in; or it can be global, in which case it is not 
+deallocated when the note is released and is kept alive until either the end 
+of the performance, or until freed via `dict_free`
+
+`dict_new` runs only at **i-time**
 
 ## Syntax
 
@@ -20,17 +27,25 @@ A hashtable is a mapping from a key to a value. The `dict_` family of opcodes im
 ## Arguments
 
 * `Stype`: a string describing the type of the key and the value. Possible values are:
-    * `sf`: string → float
-    * `ss`: string → string
-    * `is`: int → string
-    * `if`: int → float
+    * "sf" or "str:float": string → float
+    * "ss" or "str:str": string → string
+    * "is" or "ìnt:str": int → string
+    * "if" or "int:float": int → float
      
-* `isglobal`: if 1, the dict will outlive the instrument it was created in and will stay active until either the end of the performance or if destroyed via `dict_free`. Default is 0 (local)
-* `key0`, `value0`, etc: initial pairs can be set at creation time, matching the types declared with `Stype` 
+* `isglobal`: if 1, the dict will outlive the instrument it was created in and 
+              will stay active until either the end of the performance or if 
+              destroyed via `dict_free`. Default is 0 (local)
+* `key0`, `value0`, etc: initial pairs can be set at creation time, matching 
+              the types declared with `Stype` 
 
 ### Output
 
 * `idict`: identifies this dict with an integer. This integer can be passed around to another instrument and will always resolve to the same dict, as long as this dict is still alive. This can be checked via `dict_query idict, "exists"`
+
+### Execution Time
+
+* Init
+
 
 ## Examples
 

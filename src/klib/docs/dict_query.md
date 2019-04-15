@@ -21,6 +21,9 @@ Possible properties are:
 
 **NB**: the order in which keys and values are returned represents the corresponding pairs, so keys[i] and values[i] belong to the same pair.
 
+`dict_query` executes at **k-time**. 
+
+
 ## Syntax
 
     kexists   dict_query idict, "exists"
@@ -31,14 +34,18 @@ Possible properties are:
     kValues[] dict_query idict, "values"
     SValues[] dict_query idict, "values"
     
-**NB**: the arrays returned from keys and values can have either an S- or a k-type, depending on the type definition of the array 
-    
-`dict_query` executes at **k-time**. 
-
 ## Arguments
 
 * `idict`: the handle of the dict, as returned by `dict_new`
 
+## Output
+
+**NB**: the arrays returned from keys and values can have either an S- or a k-type, 
+depending on the type definition of the array 
+
+## Execution Time
+
+* Performance
 
 ## Examples
 

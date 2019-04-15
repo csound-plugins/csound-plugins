@@ -9,13 +9,12 @@ import fnmatch
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--wikirepo",
-                    help="Path to the repository holding the wiki repository"
-                    "If given, files are copied there.")
+parser.add_argument("--action", default="none", choices=["build", "deploy", "none"], 
+                    help="mkdocs action to perform after generating documentation")
 parser.add_argument("--overwrite", action="store_true")
 
-
 args = parser.parse_args()
+overwrite = True
 
 rootfolder = Path(sys.argv[0]).absolute().parent.parent
 assert (rootfolder/"mkdocs.yml").exists()
@@ -79,30 +78,6 @@ def copyall(files, dest):
         print(f"copying {f} to {dest}")
         shutil.copy(f, dest)
 
-def build_wiki(manpages, wikirepo=None):
-    """
-    The wiki structure is flat:
-
-        wikirepo/
-            Home.md
-            { any other .md files in root/wiki }
-            { all markdown manpages }
-
-    All links are also flat, no .md termination necessary:
-
-        [mypage](mypage)
-    """
-    wikibuilddir = rootfolder / ".wiki"
-    wikibuilddir.mkdir(exist_ok=True)
-    origdocsdir = rootfolder/"mkdocs"
-    copyall(list(origdocsdir.glob("*.md")), wikibuilddir)
-    make_indices(destdir=wikibuilddir, mode="wiki")
-    copyall(manpages, wikibuilddir)
-    print(f"Generated files are in {wikibuilddir}")
-    if wikirepo:
-        print(f"Installing all files to {wikirepo}")
-        copyall(wikibuilddir.glob("*.md"), wikirepo)
-
 def copyrec(srcdir, destdir):
     if os.path.exists(destdir):
         shutil.rmtree(destdir)
@@ -131,7 +106,7 @@ def build_mkdocs(manpages):
     for f in build_dir.glob("**/*.md_"):
         os.remove(f)
 
-    if dest_dir.exists() and not args.overwrite:
+    if dest_dir.exists() and not overwrite:
         print()
         print(f"Error: destination dir exists ({str(dest_dir)}).")
         print("Either remove it or use the --overwrite flag")
@@ -139,7 +114,7 @@ def build_mkdocs(manpages):
         return
 
     copyrec(build_dir, dest_dir)
-
+    
     print()
     print("To put decumentation online:")
     print("    mkdocs gh-deploy")
@@ -157,4 +132,9 @@ if __name__ == "__main__":
     manpages = find_manual_pages(opcodes)
     # build_wiki(rootfolder, manpages, wikirepo=args.wikirepo)  
     build_mkdocs(manpages)
+    os.chdir(rootfolder)
+    if args.action == "build":
+        os.system("mkdocs build")
+    elif args.action == "deploy":
+        os.system("mkdocs gh-deploy")
 

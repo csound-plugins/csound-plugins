@@ -9,6 +9,8 @@ Iterate over the key-value pairs of a dict
 Iterates over the key:value pairs. Whenever kreset is 1, iteration starts over
 If kreset is -1 (the default), iteration is autotriggered when it reaches
 the end of the collection.
+
+`dict_loop` executes only at **Performance Time**. 
  
  
 !!! note
@@ -41,7 +43,7 @@ the end of the collection.
 
 ### Execution time
 
-`dict_loop` executes only at **Performance Time**. 
+* Performance
 
 
 ## Usage

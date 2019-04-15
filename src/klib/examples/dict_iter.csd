@@ -27,8 +27,9 @@ instr 1
            2  -> iteration restarts after stopping   
   */
   
-  idict dict_new "sf", 0, "foo", 1, "bar", 2, "baz", 15, "bee", 9
+  idict dict_new "str:float", 0, "foo", 1, "bar", 2, "baz", 15, "bee", 9
 
+  kt timeinstk
   ; iterate with a while loop
   kidx = 0
   while kidx < dict_size(idict) - 1 do 
@@ -49,7 +50,7 @@ endin
 
 </CsInstruments>
 <CsScore>
-i 3 0 0.05
+i 1 0 0.05
 
 </CsScore>
 </CsoundSynthesizer>

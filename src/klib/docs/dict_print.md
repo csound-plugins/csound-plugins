@@ -21,6 +21,11 @@ purposes
 * `ktrig`: when to print the dict. Printing will take place whenever ktrig is -1 or 
            if ktrig is a positive and higher than the last trig
 
+## Execution Time
+
+* Init
+* Performance
+
 ## Examples
 
 ```csound
