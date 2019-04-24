@@ -8,7 +8,8 @@ set(APIVERSION "6.0")
 set(CMAKE_BUILD_TYPE "Release")
 
 # switch RPATH use off
-set(CMAKE_MACOSX_RPATH 0)
+set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # force make to print the command lines
 set(CMAKE_VERBOSE_MAKEFILE on)
@@ -28,6 +29,8 @@ option(CPP11 "c++11" ON)
 # ----------------------------------------------
 
 include(FindCsound)
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
 
 # -----------------------------------------------
 

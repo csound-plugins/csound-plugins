@@ -110,7 +110,7 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     ui32 pcnt = max(3, p->INOCOUNT);
     evt.p[1] = p->instrnum;
     for(ui32 i=0; i < pcnt-1; i++) {
-        printf("p %d = %f\n", 2+i, *p->pargs[i]);
+        // printf("p %d = %f\n", 2+i, *p->pargs[i]);
         evt.p[2+i] = *p->pargs[i];
     }
     evt.pcnt = (i16) pcnt;
@@ -127,8 +127,6 @@ atstop_(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
 
 static i32
 atstop_i(CSOUND *csound, SCHED_DEINIT *p) {
-    printf("atstop_i \n");
-
     MYFLT instrnum = *((MYFLT*)p->instr);
     return atstop_(csound, p, instrnum);
 }
