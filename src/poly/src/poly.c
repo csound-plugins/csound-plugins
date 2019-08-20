@@ -70,6 +70,9 @@
 #define POLY_MAXPARAMS    (POLY_MAXINPARAMS + 2 + POLY_MAXOUTPARAMS)
 
 
+// assume called within a context where csound and p are defined
+#define ARRAY_ENSURESIZE(arr, size) tabcheck(csound, arr, size, &(p->h))
+
 typedef int32_t i32;
 typedef uint32_t ui32;
 
@@ -265,6 +268,7 @@ typedef struct {
     // struct we need to control (the rest is internal storage)
     ui32 opc_numouts;
     ui32 opc_numins;
+    i32 is_parallel;
 
     // this holds the OPTXT created for the opcode, to be freed later (it is shared
     // by all instances, so it needs to be created/freed only once)
@@ -422,6 +426,7 @@ handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
     return OK;
 }
 
+// check that the array is 1D and has at least the given size
 #define CHECKARR1D(arr, minsize) do {                                             \
     if((arr)->dimensions != 1)                                                    \
       return INITERRF(Str("array dimensions (%d) should be 1"),                   \
@@ -550,6 +555,7 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     p->num_instances = (ui32 ) *((MYFLT*)(p->args[p->num_output_args]));
     p->opcode_name = (STRINGDAT*) p->args[p->num_output_args + 1];
     p->inargs = &(p->args[p->num_output_args + 2]);
+    p->is_parallel = 1;
 
     if(str_in_list(p->opcode_name->data, poly_blacklist))
         return INITERRF(Str("Opcode %s not supported"), p->opcode_name->data);
@@ -589,12 +595,14 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     if(poly_signature_check(csound, p) != OK)
         return INITERR(Str("Signature not supported by poly"));
 
+    // initialize output arrays
     for(i=0; i < p->num_output_args; ++i)
-        tabensure(csound, (ARRAYDAT*)p->args[i], (int) p->num_instances);
+        tabinit(csound, (ARRAYDAT*)p->args[i], (int) p->num_instances);
 
     // create handles for each instance. we allocate all handles at once.
     p->handles = (OPCHANDLE*)csound->Calloc(csound, p->num_instances*sizeof(OPCHANDLE));
     CHECKALLOC(p->handles, "handles");
+
     for(i=0; i<p->num_input_args; i++) {
         char c = p->in_signature[i];
         // here we don't check k-arrays, since at this time a k-array is not populated
@@ -677,12 +685,18 @@ static i32 poly1_perf(CSOUND *csound, POLY1 *p) {
         return PERFERRF(Str("opcode %s has no performance callback!"),
                         p->opcode_name->data);
 
-    // check k-arrays, they might have changed size
+    // check input k-arrays, they might have changed size
     for(col=p->firstcol; col < numcols; col++) {
         if(in_signature[col] == 'K') {
             arr = (ARRAYDAT*)p->inargs[col];
             CHECKARR1D(arr, p->num_instances);
         }
+    }
+
+    // if parallel, ensure size of output arrays
+    if(p->is_parallel) {
+        for(i=0; i < p->num_output_args; ++i)
+            ARRAY_ENSURESIZE((ARRAYDAT*)p->args[i], (int) p->num_instances);
     }
 
     for(i=0; i<p->num_instances; i++) {
@@ -783,6 +797,7 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
     p->opcode_name = (STRINGDAT*) p->args[p->num_output_args + 1];
     p->inargs = &(p->args[p->num_output_args + 2]);
     p->firstcol = p->num_output_args;
+    p->is_parallel = 0;
 
     if(str_in_list(p->opcode_name->data, poly_blacklist))
         return INITERRF(Str("Opcode %s not supported"), p->opcode_name->data);
@@ -832,6 +847,7 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
     // create handles for each instance. we allocate all handles at once.
     p->handles = (OPCHANDLE*)csound->Calloc(csound, p->num_instances*sizeof(OPCHANDLE));
     CHECKALLOC(p->handles, "handles");
+    // check size of input arrays
     for(i=0; i<p->num_input_args; i++) {
         char c = p->in_signature[i];
         // here we don't check k-arrays, since at this time a k-array would not

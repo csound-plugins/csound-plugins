@@ -193,6 +193,7 @@ typedef uint64_t ui64;
 #define INITERRF(fmt, ...) (csound->InitError(csound, fmt, __VA_ARGS__))
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
+#define ARRAYCHECK(arr, size) (tabcheck(csound, arr, size, &(p->h)))
 
 #define UI32MAX 0x7FFFFFFF
 
@@ -210,7 +211,10 @@ typedef uint64_t ui64;
 #define GLOBALS_NAME "em.khash_globals"
 
 #define CHECK_HASHTAB_EXISTS(h) {if(UNLIKELY((h)==NULL)) return PERFERR(ERR_NOINSTANCE);}
+
 #define CHECK_HANDLE(handle) {if((handle)->hashtab==NULL) return PERFERR(ERR_NOINSTANCE);}
+#define CHECK_HANDLE_INIT(handle) {if((handle)->hashtab==NULL) return INITERR(ERR_NOINSTANCE);}
+
 
 #define CHECK_HASHTAB_TYPE(handletype, expectedtype)  \
     if(UNLIKELY((handletype) != (expectedtype))) { \
@@ -474,6 +478,7 @@ dict_make_strany(CSOUND *csound, HASH_GLOBALS *g, ui32 idx, int isglobal) {
     khash_t(khStrStr) *hss = kh_init(khStrStr);
 
     HANDLE *handle = &(g->handles[idx]);
+    CHECK_HANDLE_INIT(handle);
     handle->hashtab = hsf;
     handle->hashtab2 = hss;
     handle->khtype = khStrAny;
@@ -1259,7 +1264,6 @@ dict_get_sf(CSOUND *csound, DICT_GET_sf *p) {
         return OK;
     }
     CHECK_HASHTAB_TYPE(handle->khtype, khStrFlt);
-    // CHECK_HANDLE(handle);
     khash_t(khStrFlt) *h = handle->hashtab;
     khiter_t k;
     // test fast path
@@ -1775,7 +1779,7 @@ dict_query_arr(CSOUND *csound, DICT_QUERY_ARR *p) {
     CHECK_HANDLE(handle);
 
     ui32 size = handle_get_hashtable_size(handle);
-    tabensure(csound, p->out, (i32) size);
+    ARRAYCHECK(p->out, (i32) size);
 
     switch(p->cmd) {
     case 0:  // keys, string
@@ -1792,13 +1796,16 @@ dict_query_arr(CSOUND *csound, DICT_QUERY_ARR *p) {
 }
 
 
-// init func for dict_query when expecting an array
+// init func for dict_query when expecting an output array
 static i32
 dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     p->g = dict_globals(csound);
     char *data = p->cmdstr->data;
     HANDLE *handle = get_handle(p);
     char *vartypename = p->out->arrayType->varTypeName;
+    ui32 size = handle_get_hashtable_size(handle);
+    tabinit(csound, p->out, (i32)size);
+    
     if(strcmp(data, "keys")==0) {
         if(handle->khtype == 21 || handle->khtype == 22) {
             // str keys, check output array

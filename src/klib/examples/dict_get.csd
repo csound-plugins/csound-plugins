@@ -333,7 +333,7 @@ endin
 <CsScore>
 ; i 1 0 0.01
 ; i 2 0 0.01
-; i 8 0 0.1
+i 8 0 0.1
 i 100 0 10
 f 0 1
 </CsScore>
