@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>cachepop - Csound Plugins</title>
+  <title>standardchaos - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "cachepop";
-    var mkdocs_page_input_path = "opcodes/cachepop.md";
+    var mkdocs_page_name = "standardchaos";
+    var mkdocs_page_input_path = "opcodes/standardchaos.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -76,31 +76,9 @@
                     
     <a class="" href="cacheget.html">cacheget</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="cachepop.html">cachepop</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#cachepop">cachepop</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="cachepop.html">cachepop</a>
                 </li>
                 <li class="">
                     
@@ -166,9 +144,31 @@
                     
     <a class="" href="sigmdrive.html">sigmdrive</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="standardchaos.html">standardchaos</a>
+    <a class="current" href="standardchaos.html">standardchaos</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#standardchaos">standardchaos</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
     </ul>
 	    </li>
@@ -199,7 +199,7 @@
         
       
     
-    <li>cachepop</li>
+    <li>standardchaos</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -209,78 +209,88 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="cachepop">cachepop</h1>
+                <h1 id="standardchaos">standardchaos</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Get a cached string and remove it from the cache</p>
+<p>Standard map chaotic generator</p>
 <h2 id="description">Description</h2>
-<p>The cache- opcodes implement a global string cache. This can be useful to
-pass multiple strings between instruments using the <code>event</code> opcode. This is
-similar to the <code>strset</code> and <code>strget</code> opcodes but automatically asigns an idx
-to each distints string inside the cache (we guarantee that passing twice 
-the same string will return the same index). <code>cachepop</code> is similar to <a href="cacheget.html">cacheget</a>
-but after retrievin the value from the cache it is removed. This can be useful 
-for cases where one-of strings are passed between instruments and do not need
-to survive the current note</p>
+<p><code>standardchaos</code> is a chaotic generator, the sound is generated with 
+the following difference equations;</p>
+<div class="codehilite"><pre><span></span>y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
+x[n] = (x[n-1] + y[n]) % 2pi;
+out = (x[n] - pi) / pi
+</pre></div>
+
+
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>Sstr cachepop idx
+<div class="codehilite"><pre><span></span>aout standardchaos krate, kk=1, ix=0.5, iy=0
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>idx</code>: the numeric id representing the string, as returned by <code>cacheput</code></li>
+<li><code>krate</code>: from 0 to nyquist</li>
+<li><code>kk</code>: a value for k in the above equation</li>
+<li><code>ix</code>: initial value for x</li>
+<li><code>iy</code>: initial value for y</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>Sstr</code>: the string inside the cache, corresponding to <code>idx</code></li>
+<li><code>aout</code>: audio output of the chaotic generator</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Init </li>
+<li>Performance (audio)</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
+<span class="o">-</span><span class="n">odac</span>           
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="cm">/*</span>
-<span class="cm">  Example file for cacheput / cacheget / cachepop</span>
+<span class="cm">/* Example file for standardchaos opcode</span>
 
-<span class="cm">  cacheput and cacheget implement a method to internalize strings,</span>
-<span class="cm">  similar to strset and strget, but without having to take care about</span>
-<span class="cm">  setting the indices. cachepop is similar to cacheget but removes the</span>
-<span class="cm">  entry from the cache.</span>
+<span class="cm">    aout standardchaos krate, kk, ix=0.5, iy=0</span>
 
-<span class="cm">  cacheput puts a strin into the cache and returns an idx identifying </span>
-<span class="cm">  this string. If a string is put into the cache which already exists,</span>
-<span class="cm">  we guarantee that the index returned is the same. </span>
+<span class="cm">    Standard map chaotic generator, the sound is generated with the difference equations;</span>
+<span class="cm">    y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;</span>
+<span class="cm">    x[n] = (x[n-1] + y[n]) % 2pi;</span>
+<span class="cm">    out = (x[n] - pi) / pi;</span>
 
-<span class="cm"> */</span>
+<span class="cm">*/</span>
 
-<span class="c1">; Use cacheput/pop to pass multiple strings between instruments</span>
-<span class="kd">instr</span> <span class="nf">1</span>  
-  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="nb">FLpanel</span> <span class="s">&quot;standardchaos&quot;</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
+    <span class="kt">i</span><span class="n">disp1</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">522</span><span class="p">,</span> <span class="mi">20</span>
+    <span class="kt">i</span><span class="n">disp2</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">522</span><span class="p">,</span> <span class="mi">80</span>
+    <span class="nb">FLcolor</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">250</span>
+    <span class="kt">gk</span><span class="n">rate</span><span class="p">,</span>   <span class="kt">gi</span><span class="n">h1</span> <span class="nb">FLslider</span> <span class="s">&quot;rate&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp1</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span>
+    <span class="kt">gk</span><span class="n">k</span><span class="p">,</span>      <span class="kt">gi</span><span class="n">h2</span> <span class="nb">FLslider</span> <span class="s">&quot;k&quot;</span><span class="p">,</span>    <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>    <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp2</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">80</span>
+<span class="nb">FLpanelEnd</span>
+<span class="nb">FLrun</span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="n">cachepop</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="n">cachepop</span> <span class="vi">p5</span>
-  <span class="c1">; these strings are no longer in the cache</span>
-  <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
-  <span class="nb">turnoff</span>
+<span class="nb">FLsetVal_i</span> <span class="mi">1618</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span>
+<span class="nb">FLsetVal_i</span> <span class="mi">1</span><span class="p">,</span>    <span class="kt">gi</span><span class="n">h2</span>
+
+<span class="kd">instr</span> <span class="nf">1</span>
+    <span class="kt">i</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="kt">i</span><span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="kt">i</span><span class="n">gain</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+    <span class="kt">a</span><span class="n">out</span> <span class="n">standardchaos</span> <span class="kt">gk</span><span class="n">rate</span><span class="p">,</span> <span class="kt">gk</span><span class="n">k</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span><span class="p">,</span> <span class="kt">i</span><span class="n">y</span>
+    <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="kt">i</span><span class="n">gain</span>
+    <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span> 
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">100</span>
 
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
-
-<span class="n">f</span> <span class="mi">0</span> <span class="mi">1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>
@@ -288,11 +298,13 @@ to survive the current note</p>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="cacheput.html">cacheput</a></li>
-<li><a href="cacheget.html">cacheget</a></li>
+<li><a href="crackle.html">crackle</a></li>
+<li><a href="https://csound.com/docs/manual/chuap.html">chuap</a></li>
+<li><a href="https://csound.com/docs/manual/dust2.html">dust2</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2019
+(based on pd/else's <code>standard~</code> - https://github.com/porres/pd-else)</p>
               
             </div>
           </div>
@@ -300,10 +312,8 @@ to survive the current note</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="cacheput.html" class="btn btn-neutral float-right" title="cacheput">Next <span class="icon icon-circle-arrow-right"></span></a>
       
-      
-        <a href="cacheget.html" class="btn btn-neutral" title="cacheget"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="sigmdrive.html" class="btn btn-neutral" title="sigmdrive"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -329,10 +339,8 @@ to survive the current note</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="cacheget.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="sigmdrive.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
-      
-        <span style="margin-left: 15px"><a href="cacheput.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

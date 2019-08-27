@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>dict_size - Csound Plugins</title>
+  <title>crackle - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "dict_size";
-    var mkdocs_page_input_path = "opcodes/dict_size.md";
+    var mkdocs_page_name = "crackle";
+    var mkdocs_page_input_path = "opcodes/crackle.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -84,9 +84,31 @@
                     
     <a class="" href="cacheput.html">cacheput</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="crackle.html">crackle</a>
+    <a class="current" href="crackle.html">crackle</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#crackle">crackle</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -116,31 +138,9 @@
                     
     <a class="" href="dict_set.html">dict_set</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="dict_size.html">dict_size</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#dict_size">dict_size</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="dict_size.html">dict_size</a>
                 </li>
                 <li class="">
                     
@@ -199,7 +199,7 @@
         
       
     
-    <li>dict_size</li>
+    <li>crackle</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -209,93 +209,92 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="dict_size">dict_size</h1>
+                <h1 id="crackle">crackle</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Returns the number of key:value pairs in a dict</p>
+<p>generates noise based on a chaotic equation</p>
 <h2 id="description">Description</h2>
-<p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes 
-implement a hashtable mapping either strings or integers to strings or floats. </p>
-<p><code>dict_size</code> returns the number of such key:value pairs inside a dict. If the handle
-passed does not point to a valid dict, <code>dict_size</code> returns -1. It is thus possible
-to use it to check that the passed handle is valid (similar to <code>dict_query idict "exists"</code>,
-see <a href="dict_query.html">dict_query</a>)</p>
-<p><code>dict_size</code> can be used together with <a href="dict_iter">dict_iter</a> to iterate over the key:value
-pairs </p>
-<h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>isize dict_size idict
-ksize dict_size idict
+<p><code>crackle</code> is a chaotic generator, the sound is generated with 
+the following equation</p>
+<div class="codehilite"><pre><span></span>y[n] = p * y[n-1]- y[n-2] - 0.05
 </pre></div>
 
 
-<p><code>dict_size</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>. </p>
+<p>Port of supercollider's <a href="http://doc.sccode.org/Classes/Crackle.html">Crackle</a></p>
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span>aout crackle kp
+</pre></div>
+
+
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
+<li><code>kp</code>: the p parameter in the equation, a value between 1.0 and 2.0</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>ksize</code>: the number of key:value pairs in the dict</li>
+<li><code>aout</code>: audio output of the chaotic generator</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Init </li>
-<li>Performance</li>
+<li>Performance (audio)</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
-<span class="o">--</span><span class="n">nosound</span>
-
+<span class="o">-</span><span class="n">odac</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
+<span class="cm">/*</span>
+
+<span class="cm">  # This is the example file for the crackle opcode</span>
+
+<span class="cm">  crackle is a port of supercollider&#39;s crackle (taken from pd/else)</span>
+
+<span class="cm">  crackle is a chaotic noise generator based on the equation:</span>
+
+<span class="cm">  y[n] = p * y[n-1] - y[n-2] - 0.05</span>
+
+<span class="cm">  ## Syntax</span>
+
+<span class="cm">    aout crackle kp=0.5</span>
+
+<span class="cm">  * kp: value for p in the equation (default = 0.5)</span>
+<span class="cm">  * aout: noise signal</span>
+
+<span class="cm">*/</span>
+
 <span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 
-<span class="kd">instr</span> <span class="nf">1</span> 
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
 
-  <span class="c1">; set key a key:value pair</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">k</span><span class="n">P</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">1.35</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.8</span><span class="p">,</span> <span class="mf">1.9</span><span class="p">,</span> <span class="mf">1.97</span><span class="p">,</span> <span class="mf">2.0</span>
+  <span class="kt">k</span><span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">line</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">k</span><span class="n">P</span><span class="p">)))</span>
+  <span class="kt">k</span><span class="n">p</span> <span class="o">=</span> <span class="kt">k</span><span class="n">P</span><span class="p">[</span><span class="kt">k</span><span class="n">idx</span><span class="p">]</span>
+  <span class="nb">printk2</span> <span class="kt">k</span><span class="n">p</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="n">crackle</span> <span class="kt">k</span><span class="n">p</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="mf">0.5</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
 
-  <span class="kt">k</span><span class="n">size</span> <span class="o">=</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span>
-  <span class="nb">printf</span> <span class="s">&quot;size: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">size</span>
-
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">4</span>
-  <span class="kt">k</span><span class="n">size</span> <span class="o">=</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span>
-  <span class="nb">printf</span> <span class="s">&quot;size: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">size</span>
-
-  <span class="c1">; size does not change now</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">10</span>
-  <span class="kt">k</span><span class="n">size</span> <span class="o">=</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span>
-  <span class="nb">printf</span> <span class="s">&quot;size: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">size</span>
-
-  <span class="c1">; we delete a key, size is reduced</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
-  <span class="kt">k</span><span class="n">size</span> <span class="o">=</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span>
-  <span class="nb">printf</span> <span class="s">&quot;size: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">size</span>
-
-  <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">15</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>
 
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="dict_iter.html">dict_iter</a></li>
-<li><a href="dict_set.html">dict_set</a></li>
+<li><a href="standardchaos.html">standardchaos</a></li>
+<li><a href="https://csound.com/docs/manual/chuap.html">chuap</a></li>
+<li><a href="https://csound.com/docs/manual/dust2.html">dust2</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -306,10 +305,10 @@ ksize dict_size idict
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="lfnoise.html" class="btn btn-neutral float-right" title="lfnoise">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="dict_free.html" class="btn btn-neutral float-right" title="dict_free">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="dict_set.html" class="btn btn-neutral" title="dict_set"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="cacheput.html" class="btn btn-neutral" title="cacheput"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -335,10 +334,10 @@ ksize dict_size idict
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="dict_set.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="cacheput.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="lfnoise.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="dict_free.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
