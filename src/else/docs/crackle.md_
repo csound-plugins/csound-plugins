@@ -1,0 +1,45 @@
+# crackle
+
+## Abstract
+
+generates noise based on a chaotic equation
+
+## Description
+
+`crackle` is a chaotic generator, the sound is generated with 
+the following equation
+
+    y[n] = p * y[n-1]- y[n-2] - 0.05
+
+Port of supercollider's [Crackle](http://doc.sccode.org/Classes/Crackle.html)
+
+## Syntax
+
+    aout crackle kp
+    
+### Arguments
+
+* `kp`: the p parameter in the equation, a value between 1.0 and 2.0
+
+### Output
+
+* `aout`: audio output of the chaotic generator
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [standardchaos](standardchaos.md)
+* [chuap](https://csound.com/docs/manual/chuap.html)
+* [dust2](https://csound.com/docs/manual/dust2.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019

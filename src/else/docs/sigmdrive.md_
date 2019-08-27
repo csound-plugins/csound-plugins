@@ -1,0 +1,50 @@
+# sigmdrive
+
+## Abstract
+
+Analog "soft clipping" distortion by applying non-linear transfer functions.
+
+## Description
+
+`sigmdrive` simulates analog "soft clipping" by applying non-linear transfer functions. Two
+different sigmoid equations are implemented.
+
+In mode 0, `out = tanh(in * drivefactor)`
+In mode 1:
+* if in > 0  then `out = 1.0 - pow(1. - in, drivefactor)`
+* if in <= 0 then `out = pow(1. + x, drivefactor) - 1.0`
+
+## Syntax
+
+    aout sigmdrive ain, xdrivefactor, kmode=0
+    
+### Arguments
+
+* `ain`: the input audio signal
+* `xdrivefactor`: a k- or a- value, normally greater than 1. A higher value implies more distortion
+* `kmode`: the distortion mode. 0=tanh, 1=pow (see above)
+
+### Output
+
+* `aout`: the distorted audio
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [distort1](https://csound.com/docs/manual/chuap.html)
+* [tanh](https://csound.com/docs/manual/tanh.html)
+* [powershape](https://csound.com/docs/manual/powershape.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019
+
+(based on pd/else's `drive~` - https://github.com/porres/pd-else)

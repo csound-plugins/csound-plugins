@@ -1,0 +1,105 @@
+# standardchaos
+
+## Abstract
+
+Standard map chaotic generator
+
+## Description
+
+`standardchaos` is a chaotic generator, the sound is generated with 
+the following difference equations;
+
+    y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
+    x[n] = (x[n-1] + y[n]) % 2pi;
+    out = (x[n] - pi) / pi
+    
+
+## Syntax
+
+    aout standardchaos krate, kk=1, ix=0.5, iy=0
+    
+### Arguments
+
+* `krate`: from 0 to nyquist
+* `kk`: a value for k in the above equation
+* `ix`: initial value for x
+* `iy`: initial value for y
+
+### Output
+
+* `aout`: audio output of the chaotic generator
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+```csound 
+
+<CsoundSynthesizer>
+<CsOptions>
+-odac           
+</CsOptions>
+
+<CsInstruments>
+sr     = 44100
+ksmps  = 64
+nchnls = 2
+0dbfs  = 1
+
+/* Example file for standardchaos opcode
+
+	aout standardchaos krate, kk, ix=0.5, iy=0
+	
+	Standard map chaotic generator, the sound is generated with the difference equations;
+    y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
+    x[n] = (x[n-1] + y[n]) % 2pi;
+    out = (x[n] - pi) / pi;
+
+*/
+
+FLpanel "standardchaos", 600, 300, 50, 50
+	idisp1 FLvalue "", 50, 30, 522, 20
+	idisp2 FLvalue "", 50, 30, 522, 80
+	FLcolor 150, 100, 150, 200, 100, 250
+	gkrate,   gih1 FLslider "rate", 0, 20000, 0, 3, idisp1, 500, 30, 20, 20
+	gkk,      gih2 FLslider "k",    0, 10,    0, 3, idisp2, 500, 30, 20, 80
+FLpanelEnd
+FLrun
+
+FLsetVal_i 1618, gih1
+FLsetVal_i 1,    gih2
+
+instr 1
+	ix = 0.5
+	iy = 1
+	igain = 0.3
+	
+	aout standardchaos gkrate, gkk, ix, iy
+	aout *= igain
+	outs aout, aout	
+endin
+
+</CsInstruments>
+
+<CsScore>
+i1 0 100
+
+</CsScore>
+</CsoundSynthesizer>
+
+
+```
+
+
+## See also
+
+* [crackle](crackle.md)
+* [chuap](https://csound.com/docs/manual/chuap.html)
+* [dust2](https://csound.com/docs/manual/dust2.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019
+(based on pd/else's `standard~` - https://github.com/porres/pd-else)

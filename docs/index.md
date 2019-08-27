@@ -41,4 +41,16 @@ Schedule an action when note is stopped
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
 
 
+## else
+
+These opcdes are ports from or based on puredata/else
+
+* [crackle](opcodes/crackle.md): generates noise based on a chaotic equation 
+* [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
+* [rampgate](opcodes/rampgate.md): A triggerable envelope with sustain segment 
+* [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
+* [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
+* [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
+
+
 
