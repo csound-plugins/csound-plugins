@@ -1,0 +1,75 @@
+# jsfx_new
+
+## Abstract
+
+Instantiates a jsfx script 
+
+
+## Description
+
+`jsfx_new` instantiates and compiles a jsfx script (at init time). It returns
+a handle which can be used to modify control values and perform audio io. It
+is also possible to instantiate and play a script with only one opcode
+via `jsfx`.
+
+!!! Note jsfx
+
+    `jsfx` is an audio programming language implemented pritarily as part of the DAW `REAPER`. 
+    It is a scriptiong language with a built-in jit compiler which translates it to 
+    machine code on the fly. It allows the user to operate at the sample level (like 
+    defining an udo with `setksmps 1` but more efficient). It is around 2x to 2.5x slower
+    than hand-coded C.
+    
+!!! Note jsfx input / output
+
+    A jsfx script has a certain number of audio input / output channels, and a series of 
+    "sliders", which are parameters operating at control rate. A script can also use
+    these sliders to send control values, which can be read in csound via [jsfx_getslider]
+    See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
+
+## Syntax
+
+    ihandle jsfx_new Spath
+    
+### Arguments
+
+* **Spath**: the path to the jsfx script. Either an absolute path, a relative path to the 
+  .csd file, or a filename alone, in which case it will be searched first in the current dir
+  and in $SSDIR, if defined.
+
+### Output
+
+* **ihandle**: a handle to the jsfx plugin created, which allows to operate on it later,
+  for instance to perform audio io via [jsfx_play]
+
+### Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [jsfx]
+* [jsfx_play]
+* [jsfx_setslider]
+* [jsfx_getslider]
+
+## Credits
+
+Eduardo Moguillansky, 2019
+
+Uses the open-source implementation of the jsfx language by Pascal Gauthier et al. Based heavily on
+the pd external `jsfx~`.
+
+https://github.com/asb2m10/jsusfx
+
+
+[jsfx_new]: jsfx_new.md
+[jsfx]: jsfx.md
+[jsfx_play]: jsfx_play.md
+[jsfx_getslider]: jsfx_getslider.md
+[jsfx_setslider]: jsfx_setslider.md

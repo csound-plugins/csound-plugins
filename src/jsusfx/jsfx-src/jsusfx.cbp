@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="jsusfx"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\jsfx-src\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/em/dev/csound/jsusfx/jsfx-src"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v all"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="jsusfx">
+				<Option output="/home/em/dev/csound/jsusfx/jsfx-src/libjsusfx.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/em/dev/csound/jsusfx/jsfx-src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DWDL_FFT_REALSIZE=8"/>
+					<Add directory="/home/em/dev/csound/jsusfx/jsfx-src"/>
+					<Add directory="/usr/include/c++/8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/8"/>
+					<Add directory="/usr/include/c++/8/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v jsusfx"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="jsusfx/fast">
+				<Option output="/home/em/dev/csound/jsusfx/jsfx-src/libjsusfx.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/em/dev/csound/jsusfx/jsfx-src"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DWDL_FFT_REALSIZE=8"/>
+					<Add directory="/home/em/dev/csound/jsusfx/jsfx-src"/>
+					<Add directory="/usr/include/c++/8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/8"/>
+					<Add directory="/usr/include/c++/8/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/ninja -v jsusfx/fast"/>
+					<CompileFile command="/usr/bin/ninja -v &quot;$file&quot;"/>
+					<Clean command="/usr/bin/ninja -v clean"/>
+					<DistClean command="/usr/bin/ninja -v clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/assocarray.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/denormal.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/asm-nseel-x64.o">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/asm-nseel-x64.o.rule">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_atomic.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_eval.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_fft.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_files.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_lice.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_mdct.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_misc.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_net.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eel_strings.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/eelscript.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/glue_arm.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/glue_port.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/glue_ppc.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/glue_x86.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/glue_x86_64.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/ns-eel-addfuncs.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/ns-eel-func-ref.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/ns-eel-int.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/ns-eel.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/nseel-cfunc.c">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/nseel-compiler.c">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/nseel-eval.c">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/nseel-ram.c">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/nseel-yylex.c">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/eel2/y.tab.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/fft.c">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/fft.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/heapbuf.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/mutex.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/ptrlist.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/wdlatomic.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/wdlcstring.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/wdlstring.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/WDL/wdltypes.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx.cpp">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx_file.cpp">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx_file.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx_gfx.cpp">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx_gfx.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx_serialize.cpp">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/jsusfx_serialize.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/riff.cpp">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/riff.h">
+			<Option target="jsusfx"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/csound.cmake">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/em/dev/csound/jsusfx/jsfx-src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\jsfx-src\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

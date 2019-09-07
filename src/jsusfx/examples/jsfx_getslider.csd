@@ -1,0 +1,1 @@
+/home/em/dev/csound/plugins/src/jsusfx/examples/jsfx_new.csd

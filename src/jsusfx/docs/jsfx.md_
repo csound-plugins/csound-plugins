@@ -1,0 +1,92 @@
+# jsfx
+
+## Abstract
+
+Instantiates and runs a jsfx script 
+
+
+## Description
+
+`jsfx` allows to instantiate and run a jsfx audio plugin within csound. 
+
+There are two ways to run a jsfx script in csound. The simplest way is implemented
+in this plugin, `jsfx`, which allows to compile and control a jsfx plugin in one
+opcode. As an alternative, it is also possible to decouple these actions, first 
+compiling a script (see [jsfx_new]) and then calling `jsfx_setslider` and `jsfx_play`.
+Afterwords, slider values can be read via `jsfx_getslider`
+
+!!! Note jsfx
+
+    `jsfx` is an audio programming language implemented pritarily as part of the DAW `REAPER`. 
+    It is a scriptiong language with a built-in jit compiler which translates it to 
+    machine code on the fly. It allows the user to operate at the sample level (like 
+    defining an udo with `setksmps 1` but more efficient). It is around 2x to 2.5x slower
+    than hand-coded C.
+
+    
+!!! Note jsfx inputs and outputs
+
+    A jsfx script has a certain number of audio input / output channels, and a series of 
+    "sliders", which are parameters operating at control rate. A script can also use
+    these sliders to send control values, which can be read in csound via [jsfx_getslider]
+    See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
+
+
+## Syntax
+
+    ihandle, aout1 [, aout2, ...]  jsfx Spath, ain1 [, ain2, ...] [, id0, kval1, id1, kval2, ...]
+    
+### Arguments
+
+* **Spath**: the path to the jsfx script. Either an absolute path, a relative path to the 
+  .csd file, or a filename alone, in which case it will be searched first in the current dir
+  and in $SSDIR, if defined.
+* **ain1**, **ain2**, etc: audio input channels. It is recommended that the number of input
+  streams matches the number of channels expected in the plugin. If you pass less that the 
+  expected channels, the rest will be zeroed, and if passing more, only the number of 
+  audio channels expected by the plugin will actually be processed
+* **idx**, **kvalx**: a jsfx script allows to define up to 64 control parameters, which are
+  called `slider`s. Each slider has an idx (starting from 1) and a value. Here you can control
+  as many sliders as you need. Each slider consists of a pair of values, an id (i- value) 
+  identifying the slider (this corresponds to the sliderx value in the jsfx script) and the
+  value itself (a k- value)
+
+### Output
+
+* **ihandle**: a handle to the jsfx plugin created, which allows to operate on it later,
+  for instance to read slider values via [jsfx_getslider]
+* **aout1**, **aout2**: audio output channels. It is recommended that the number of output
+  streams matches the number of channels expected in the plugin. If you pass less that the 
+  expected channels, the rest will be zeroed, and if passing more, only the number of 
+  audio channels expected by the plugin will actually be processed
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [jsfx_new]
+* [jsfx_play]
+* [jsfx_setslider]
+* [jsfx_getslider]
+
+## Credits
+
+Eduardo Moguillansky, 2019
+
+Uses the open-source implementation of the jsfx language by Pascal Gauthier et al. Based heavily on
+the pd external `jsfx~`.
+
+https://github.com/asb2m10/jsusfx
+
+
+[jsfx_new]: jsfx_new.md
+[jsfx_play]: jsfx_play.md
+[jsfx_getslider]: jsfx_getslider.md
+[jsfx_setslider]: jsfx_setslider.md

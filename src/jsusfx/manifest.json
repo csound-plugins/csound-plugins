@@ -1,0 +1,16 @@
+{
+    "name": "jsfx",
+    "opcodes": [
+      "jsfx",
+      "jsfx_new",
+      "jsfx_play",
+      "jsfx_getslider",
+      "jsfx_setslider",
+      "tubeharmonics"
+    ],
+    "author": "Eduardo Moguillansky",
+    "author_email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "description": "A csound interface to the opensource implementation of jsfx",
+    "url": ""
+}

@@ -1,0 +1,52 @@
+# tubeharmonics
+
+## Abstract
+
+A distortion with control for odd/even harmonics
+
+## Description
+
+Simulates the behaviour of a vacuum tube circuit stage. Adds odd and 
+even harmonics to the signal. Has flux and program dependent saturation.
+
+A port of `REAPER`'s "Tube Harmonics" jsfx plugin
+    
+
+## Syntax
+
+    aout tubeharmonics ain, keven, kodd, kfluctuation=0, kindrive=0, koutdrive=0, kgain=0
+
+    
+
+### Arguments
+
+* `ain`: the input signal
+* `keven`: amount of even harmonics (between 0-1)
+* `kodd`: amount of odd harmonics (between 0-1)
+* `kfluctuation`: non linearities (between 0-1, default 0)
+* `kindrive`: amount of input drive (in dB, default=0 dB)
+* `koutdrive`: amount of output drive (in dB, default=0 dB)
+* `koutgain`: output gain, in dB (default=0 dB)
+
+### Output
+
+* `aout`: audio output
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [sigmdrive](sigmdrive.md)
+* [tanh](http://www.csounds.com/manual/html/tanh.html)
+* [distort1](http://www.csounds.com/manual/html/distort1.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019

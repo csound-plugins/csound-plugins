@@ -1,0 +1,84 @@
+# jsfx_setslider
+
+## Abstract
+
+Gets a slider value of a jsfx instance
+
+
+## Description
+
+With `jsfx_getslider` it is possible to get the current values of any slider
+defined in a jsfx script, mostly after calling `jsfx` or `jsfx_play`.
+A jsfx plugin defines a series of up to 64 sliders, which are control parameters
+used by the script. A slider can also be used to output values to the caller, for 
+example to indicate the gain reduction in a compressor plugin, or the frequency
+in a pitch tracking plugin. 
+
+A slider definition in a jsfx script has the form:
+
+    slider7:0<0,20,0.01>Gain Reduction
+    
+This defines a control parameter with default value `0`, between `0` and `20`,
+with a precission (an increment) of `0.01` and a label "Gain Reduction". To read
+the value of that slider:
+
+    kgainreduction = jsfx_getslider(ihandle, 7)
+
+!!! Note jsfx sliders
+
+    Any slider which is not set via jsfx_setslider retains its default value. A value will 
+    always be confined to the range in the slider definition and will also be 
+    quantized to the increment in the slider definition. To disable any quantization,
+    set the increment to 0 in the jsfx script
+
+!!! Note jsfx
+
+    `jsfx` is an audio programming language implemented primarily as part of the DAW `REAPER`. 
+    It is a scripting language with a built-in compiler which translates it to 
+    machine code. It allows to operate at the sample level (like defining an udo with 
+    `setksmps 1` but more efficient). It is around 2x to 2.5x slower than hand-coded C.
+    See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
+
+## Syntax
+
+    kvalue  jsfx_getslider ihandle, kid
+    
+    
+### Arguments
+
+* **ihandle**: the handle created via [jsfx_new] or [jsfx]
+* **kidx**: the slider number (this corresponds to the sliderx value in the jsfx script)
+
+### Output
+
+* **kvalue**: value of the slider
+
+### Execution Time
+
+* Performance
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [jsfx]
+* [jsfx_new]
+* [jsfx_play]
+* [jsfx_setslider]
+
+## Credits
+
+Eduardo Moguillansky, 2019
+
+Uses the open-source implementation of the jsfx language by Pascal Gauthier et al. Based heavily on
+the pd external `jsfx~`.
+
+https://github.com/asb2m10/jsusfx
+
+[jsfx]: jsfx.md
+[jsfx_new]: jsfx_new.md
+[jsfx_play]: jsfx_play.md
+[jsfx_setslider]: jsfx_setslider.md
