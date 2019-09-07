@@ -122,7 +122,35 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="diode_ringmod.html">diode_ringmod</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx.html">jsfx</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_getslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_new.html">jsfx_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_play.html">jsfx_play</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_setslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="lfnoise.html">lfnoise</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="linenv.html">linenv</a>
                 </li>
                 <li class="">
                     
@@ -134,11 +162,11 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="rampgate.html">rampgate</a>
+    <a class="" href="ramptrig.html">ramptrig</a>
                 </li>
                 <li class="">
                     
-    <a class="" href="ramptrig.html">ramptrig</a>
+    <a class="" href="schmitt.html">schmitt</a>
                 </li>
                 <li class=" current">
                     
@@ -169,6 +197,10 @@
                 <li class="">
                     
     <a class="" href="standardchaos.html">standardchaos</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="tubeharmonics.html">tubeharmonics</a>
                 </li>
     </ul>
 	    </li>
@@ -215,10 +247,17 @@
 <h2 id="description">Description</h2>
 <p><code>sigmdrive</code> simulates analog "soft clipping" by applying non-linear transfer functions. Two
 different sigmoid equations are implemented.</p>
-<p>In mode 0, <code>out = tanh(in * drivefactor)</code>
-In mode 1:
-<em> if in &gt; 0  then <code>out = 1.0 - pow(1. - in, drivefactor)</code>
-</em> if in &lt;= 0 then <code>out = pow(1. + x, drivefactor) - 1.0</code></p>
+<h4 id="mode-0">mode 0</h4>
+<div class="codehilite"><pre><span></span>out = tanh(in * drivefactor)
+</pre></div>
+
+
+<h4 id="mode-1">mode 1</h4>
+<div class="codehilite"><pre><span></span>if in &gt; 0    then   out = 1.0 - pow(1. - in, drivefactor)
+if in &lt;= 0   then   out = pow(1. + x, drivefactor) - 1.0
+</pre></div>
+
+
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>aout sigmdrive ain, xdrivefactor, kmode=0
 </pre></div>
@@ -246,6 +285,18 @@ In mode 1:
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="cm">/* </span>
+
+<span class="cm">    sigmdrive: a sigmoid distortion</span>
+
+<span class="cm">    aout sigmdrive ain, kdrive, kmode=0</span>
+
+<span class="cm">    kdrive: how much distortion (range 0-1)</span>
+<span class="cm">    kmode: 0 = tanh, 1 = pow</span>
+
+<span class="cm">*/</span>
+
 <span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
 <span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
@@ -253,10 +304,9 @@ In mode 1:
 
 <span class="nb">FLpanel</span> <span class="s">&quot;sigmdrive&quot;</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
     <span class="kt">i</span><span class="n">disp1</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">322</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="kt">i</span><span class="n">disp2</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">80</span>
     <span class="nb">FLcolor</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">250</span>
     <span class="kt">gk</span><span class="n">drive</span><span class="p">,</span> <span class="kt">i</span><span class="n">drivehandle1</span> <span class="nb">FLslider</span> <span class="s">&quot;drive&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp1</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="kt">gk</span><span class="n">mode</span><span class="p">,</span>  <span class="kt">i</span><span class="n">drivehandle2</span> <span class="nb">FLslider</span> <span class="s">&quot;mode&quot;</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp2</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">80</span>
+    <span class="kt">gk</span><span class="n">mode</span><span class="p">,</span> <span class="kt">i</span><span class="n">drivehandle2</span>  <span class="nb">FLbutton</span> <span class="s">&quot;mode&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 <span class="nb">FLpanelEnd</span>
 <span class="nb">FLrun</span>
 
@@ -279,6 +329,7 @@ In mode 1:
 
 <h2 id="see-also">See also</h2>
 <ul>
+<li><a href="tubeharmonics.html">tubeharmonics</a></li>
 <li><a href="https://csound.com/docs/manual/chuap.html">distort1</a></li>
 <li><a href="https://csound.com/docs/manual/tanh.html">tanh</a></li>
 <li><a href="https://csound.com/docs/manual/powershape.html">powershape</a></li>
@@ -296,7 +347,7 @@ In mode 1:
         <a href="standardchaos.html" class="btn btn-neutral float-right" title="standardchaos">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="ramptrig.html" class="btn btn-neutral" title="ramptrig"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="schmitt.html" class="btn btn-neutral" title="schmitt"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -322,7 +373,7 @@ In mode 1:
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="ramptrig.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="schmitt.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
         <span style="margin-left: 15px"><a href="standardchaos.html" style="color: #fcfcfc">Next &raquo;</a></span>

@@ -65,6 +65,8 @@
         
             <li><a class="toctree-l3" href="#poly">poly</a></li>
         
+            <li><a class="toctree-l3" href="#jsfx">jsfx</a></li>
+        
             <li><a class="toctree-l3" href="#sched">sched</a></li>
         
             <li><a class="toctree-l3" href="#else">else</a></li>
@@ -143,7 +145,35 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="opcodes/diode_ringmod.html">diode_ringmod</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="opcodes/jsfx.html">jsfx</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="opcodes/jsfx_getslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="opcodes/jsfx_new.html">jsfx_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="opcodes/jsfx_play.html">jsfx_play</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="opcodes/jsfx_setslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="opcodes/lfnoise.html">lfnoise</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="opcodes/linenv.html">linenv</a>
                 </li>
                 <li class="">
                     
@@ -155,11 +185,11 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="opcodes/rampgate.html">rampgate</a>
+    <a class="" href="opcodes/ramptrig.html">ramptrig</a>
                 </li>
                 <li class="">
                     
-    <a class="" href="opcodes/ramptrig.html">ramptrig</a>
+    <a class="" href="opcodes/schmitt.html">schmitt</a>
                 </li>
                 <li class="">
                     
@@ -168,6 +198,10 @@
                 <li class="">
                     
     <a class="" href="opcodes/standardchaos.html">standardchaos</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="opcodes/tubeharmonics.html">tubeharmonics</a>
                 </li>
     </ul>
 	    </li>
@@ -230,20 +264,32 @@
 <li><a href="opcodes/poly.html">poly</a>: poly creates and controls multiple parallel version of an opcode </li>
 <li><a href="opcodes/polyseq.html">polyseq</a>: polyseq creates and controls multiple sequential version of an opcode </li>
 </ul>
+<h2 id="jsfx">jsfx</h2>
+<p>A csound interface to the opensource implementation of jsfx</p>
+<ul>
+<li><a href="opcodes/jsfx.html">jsfx</a>: Instantiates and runs a jsfx script </li>
+<li><a href="opcodes/jsfx_new.html">jsfx_new</a>: Instantiates a jsfx script </li>
+<li><a href="opcodes/jsfx_play.html">jsfx_play</a>: Processes audio through a jsfx script </li>
+<li><a href="opcodes/jsfx_getslider.html">jsfx_getslider</a>: Gets a slider value of a jsfx instance </li>
+<li><a href="opcodes/jsfx_setslider.html">jsfx_setslider</a>: Sets the slider values of a jsfx script </li>
+<li><a href="opcodes/tubeharmonics.html">tubeharmonics</a>: A distortion with control for odd/even harmonics </li>
+</ul>
 <h2 id="sched">sched</h2>
 <p>Schedule an action when note is stopped</p>
 <ul>
 <li><a href="opcodes/atstop.html">atstop</a>: Schedule an instrument at the end of the current instrument </li>
 </ul>
 <h2 id="else">else</h2>
-<p>These opcdes are ports from or based on puredata/else</p>
+<p>Collection of miscellaneous plugins, most ports of supercollider, puredata/else or jsfx</p>
 <ul>
 <li><a href="opcodes/crackle.html">crackle</a>: generates noise based on a chaotic equation </li>
 <li><a href="opcodes/ramptrig.html">ramptrig</a>: A triggerable ramp between 0 and 1 </li>
-<li><a href="opcodes/rampgate.html">rampgate</a>: A triggerable envelope with sustain segment </li>
 <li><a href="opcodes/sigmdrive.html">sigmdrive</a>: Analog "soft clipping" distortion by applying non-linear transfer functions. </li>
-<li><a href="opcodes/standardchaos.html">standardchaos</a>: Standard map chaotic generator </li>
 <li><a href="opcodes/lfnoise.html">lfnoise</a>: low frequency, band-limited noise </li>
+<li><a href="opcodes/schmitt.html">schmitt</a>: A schmitt trigger (a comparator with hysteresis). </li>
+<li><a href="opcodes/standardchaos.html">standardchaos</a>: Standard map chaotic generator </li>
+<li><a href="opcodes/linenv.html">linenv</a>: A triggerable linear envelope with sustain segment </li>
+<li><a href="opcodes/diode_ringmod.html">diode_ringmod</a>: A ring modulator with optional non-linearities </li>
 </ul>
               
             </div>
@@ -293,5 +339,5 @@
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2019-08-27 05:24:18
+Build Date UTC : 2019-09-07 15:16:55
 -->

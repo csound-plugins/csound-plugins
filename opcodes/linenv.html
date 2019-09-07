@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>rampgate - Csound Plugins</title>
+  <title>linenv - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "rampgate";
-    var mkdocs_page_input_path = "opcodes/rampgate.md";
+    var mkdocs_page_name = "linenv";
+    var mkdocs_page_input_path = "opcodes/linenv.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -122,22 +122,38 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="diode_ringmod.html">diode_ringmod</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx.html">jsfx</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_getslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_new.html">jsfx_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_play.html">jsfx_play</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_setslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="lfnoise.html">lfnoise</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="poly.html">poly</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="polyseq.html">polyseq</a>
                 </li>
                 <li class=" current">
                     
-    <a class="current" href="rampgate.html">rampgate</a>
+    <a class="current" href="linenv.html">linenv</a>
     <ul class="subnav">
             
-    <li class="toctree-l3"><a href="#rampgate">rampgate</a></li>
+    <li class="toctree-l3"><a href="#linenv">linenv</a></li>
     
         <ul>
         
@@ -160,7 +176,19 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="poly.html">poly</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="polyseq.html">polyseq</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="ramptrig.html">ramptrig</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="schmitt.html">schmitt</a>
                 </li>
                 <li class="">
                     
@@ -169,6 +197,10 @@
                 <li class="">
                     
     <a class="" href="standardchaos.html">standardchaos</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="tubeharmonics.html">tubeharmonics</a>
                 </li>
     </ul>
 	    </li>
@@ -199,7 +231,7 @@
         
       
     
-    <li>rampgate</li>
+    <li>linenv</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -209,17 +241,17 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="rampgate">rampgate</h1>
+                <h1 id="linenv">linenv</h1>
 <h2 id="abstract">Abstract</h2>
-<p>A triggerable envelope with sustain segment </p>
+<p>A triggerable linear envelope with sustain segment </p>
 <h2 id="description">Description</h2>
-<p><code>rampgate</code> is similar to linsegr with an additional gate argument, allowing
+<p><code>linenv</code> is similar to linsegr with an additional gate argument, allowing
 to retrigger it at will. One of the values can be defined as a sustain point,
 meaning that as long as the gate is held, the envelope enters a sustain
 state when reaching this point. When the gate is set to 0, the envelope traverses
 the rest of the defined points.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>xout rampgate kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...], ktimen, kvaln
+<div class="codehilite"><pre><span></span>xout linenv kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...]
 </pre></div>
 
 
@@ -250,11 +282,13 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="cm">/*</span>
-<span class="cm">    This is the example file of rampgate</span>
-<span class="cm">    rampgate is a triggerable envelope with a sustain segment</span>
 
-<span class="cm">    aout rampgate kgate, isustidx, kval0, ktime1, kval1, ..., ktimen, kvaln</span>
+<span class="cm">/*</span>
+<span class="cm">    This is the example file for opcode &quot;linenv&quot;</span>
+
+<span class="cm">    linenv is a triggerable envelope with a sustain segment</span>
+
+<span class="cm">    aout linenv kgate, isustidx, kval0, ktime1, kval1, ..., ktimen, kvaln</span>
 
 <span class="cm">    NB: use isustidx=-1 if no sustain is desired</span>
 <span class="cm">    NB: use xtratim if necessary to allow for release segment </span>
@@ -268,14 +302,14 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 <span class="kt">gk</span><span class="n">gate</span> <span class="nb">init</span> <span class="mi">0</span>
 
-<span class="nb">FLpanel</span> <span class="s">&quot;rampgate&quot;</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span>
-    <span class="kt">gk</span><span class="n">gate</span><span class="p">,</span> <span class="kt">i</span><span class="n">h1</span> <span class="nb">FLbutton</span> <span class="s">&quot; Gate&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>  
+<span class="nb">FLpanel</span> <span class="s">&quot;linenv&quot;</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span>
+    <span class="kt">gk</span><span class="n">gate</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span> <span class="nb">FLbutton</span> <span class="s">&quot; Gate&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>  
 <span class="nb">FLpanelEnd</span>
 <span class="nb">FLrun</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
     <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="nb">sc_trig</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">)</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="n">rampgate</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="kt">k</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
     <span class="nb">printf</span> <span class="s">&quot;t: </span><span class="si">%f</span><span class="s">,  kenv: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">timeinstk</span><span class="p">(),</span> <span class="nb">timeinsts</span><span class="p">(),</span> <span class="kt">k</span><span class="n">env</span>
 
     <span class="kt">k</span><span class="n">env</span> <span class="o">*=</span> <span class="mf">0.2</span>
@@ -287,14 +321,15 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
     <span class="kt">i</span><span class="n">period</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="kt">i</span><span class="n">gatedur</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="nb">sc_trig</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="kt">i</span><span class="n">period</span><span class="p">),</span> <span class="kt">i</span><span class="n">gatedur</span><span class="p">)</span>
-    <span class="kt">a</span><span class="n">env</span> <span class="n">rampgate</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
     <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="kt">a</span><span class="n">env</span>
+    <span class="nb">FLsetVal</span> <span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">gate</span><span class="p">),</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span>
     <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">3</span>
     <span class="kt">a</span><span class="n">sig</span> <span class="nb">pinker</span>
-    <span class="kt">a</span><span class="n">env</span> <span class="n">rampgate</span> <span class="kt">gk</span><span class="n">gate</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">gk</span><span class="n">gate</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span>
     <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">env</span>
     <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
 <span class="kd">endin</span>
@@ -304,8 +339,8 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
 <span class="c1">; i1 0 10</span>
-<span class="c1">; i2 0 10</span>
-<span class="kt">i</span><span class="n">3</span> <span class="mi">0</span> <span class="mi">100</span>
+<span class="kt">i</span><span class="n">2</span> <span class="mi">0</span> <span class="mi">10</span>
+<span class="c1">; i3 0 100</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -328,10 +363,10 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="ramptrig.html" class="btn btn-neutral float-right" title="ramptrig">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="poly.html" class="btn btn-neutral float-right" title="poly">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="polyseq.html" class="btn btn-neutral" title="polyseq"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="lfnoise.html" class="btn btn-neutral" title="lfnoise"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -357,10 +392,10 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="polyseq.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="lfnoise.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="ramptrig.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="poly.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

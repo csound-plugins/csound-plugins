@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>lfnoise - Csound Plugins</title>
+  <title>schmitt - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "lfnoise";
-    var mkdocs_page_input_path = "opcodes/lfnoise.md";
+    var mkdocs_page_name = "schmitt";
+    var mkdocs_page_input_path = "opcodes/schmitt.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -144,12 +144,32 @@
                     
     <a class="" href="jsfx_setslider.html">jsfx_setslider</a>
                 </li>
+                <li class="">
+                    
+    <a class="" href="lfnoise.html">lfnoise</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="linenv.html">linenv</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="poly.html">poly</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="polyseq.html">polyseq</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="ramptrig.html">ramptrig</a>
+                </li>
                 <li class=" current">
                     
-    <a class="current" href="lfnoise.html">lfnoise</a>
+    <a class="current" href="schmitt.html">schmitt</a>
     <ul class="subnav">
             
-    <li class="toctree-l3"><a href="#lfnoise">lfnoise</a></li>
+    <li class="toctree-l3"><a href="#schmitt">schmitt</a></li>
     
         <ul>
         
@@ -169,26 +189,6 @@
     
 
     </ul>
-                </li>
-                <li class="">
-                    
-    <a class="" href="linenv.html">linenv</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="poly.html">poly</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="polyseq.html">polyseq</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="ramptrig.html">ramptrig</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="schmitt.html">schmitt</a>
                 </li>
                 <li class="">
                     
@@ -231,7 +231,7 @@
         
       
     
-    <li>lfnoise</li>
+    <li>schmitt</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -241,70 +241,87 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="lfnoise">lfnoise</h1>
+                <h1 id="schmitt">schmitt</h1>
 <h2 id="abstract">Abstract</h2>
-<p>low frequency, band-limited noise</p>
+<p>A schmitt trigger (a comparator with hysteresis). </p>
 <h2 id="description">Description</h2>
-<p>Generates random values at a rate given by the nearest integer division of the sample rate by the freq argument. If kinterp==0, between generated values 0 is output. Otherwise the output is the result
-of interpolating between the generated values. Output is always band limited.</p>
+<p>Implements a schmitt trigger, which is a comparator with hysteresis. Whenever the 
+input is higher than <code>khigh</code>, output is 1 and stays 1 until input drops beneath
+<code>klow</code>.</p>
+<ul>
+<li>Output is 1 if the input is higher than <code>khigh</code> if signal is increasing</li>
+<li>Output is 0 if the input is lower than <code>klow</code> if signal is decreasing</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>schmitt</code> is particularly useful for implementing effects like a noise gate,
+to avoid fast opening and closing at the threshold. It can be further refined
+together with <code>sc_lagud</code> to add attack / release times to the opening of the gate
+or with <code>sc_trig</code> to assure a minimum open time for the gate</p>
+</div>
+<p>Port of pd/else's <code>schmitt</code></p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>aout lfnoise krate, kinterp=0
+<div class="codehilite"><pre><span></span>xout  schmitt xin, khigh, klow
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>krate</code>: the frequency to generate new values</li>
-<li><code>kinterp</code>: if 1, the output is the result of linear interpolation between the
-generated values</li>
+<li><code>xin</code>: input signal (k- or audio rate). The rate of <code>xin</code> must match the rate of <code>xout</code></li>
+<li><code>khigh</code>: high value of the comparator, output is 1 whenever input is higher than this</li>
+<li><code>klow</code>: low value of the comparator, output is 0 whenever input is lower than this</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>aout</code>: if kinterp==0, then this is the output random values at the given frequency, or 0.
-If kinterp==1, then output is the result of interpolation between two generated values.  </li>
+<li><code>xout</code>: output value of the comparator (0 or 1). Rate of xout is the same as xin</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Performance</li>
+<li>Performance (k or audio)</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">-</span><span class="n">odac</span>           
-
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="cm">/*</span>
-<span class="cm">    Example file for lfnoise</span>
-
-<span class="cm">    lfnoise generates a random value between 0-1 at the given</span>
-<span class="cm">    frequency. If kinterp=1, then values are interpolated; otherwise,</span>
-<span class="cm">    they are held until next value</span>
-
-<span class="cm">*/</span>
-
 <span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
 <span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="nb">FLpanel</span> <span class="s">&quot;lfnoise&quot;</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
-    <span class="kt">i</span><span class="n">disp1</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">322</span><span class="p">,</span> <span class="mi">20</span>
+<span class="cm">/* Example file for schmitt opcode</span>
+
+<span class="cm">    aout schmitt ain, khigh, klow</span>
+<span class="cm">    kout schmitt kin, khigh, klow</span>
+
+<span class="cm">    schmitt is a schmitt trigger (a gate with hysteresis), out is 1 if higher than khigh,</span>
+<span class="cm">    0 if lower than klow</span>
+
+<span class="cm">*/</span>
+
+<span class="nb">FLpanel</span> <span class="s">&quot;schmitt&quot;</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
+    <span class="kt">i</span><span class="n">disp1</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">322</span><span class="p">,</span> <span class="mi">20</span>
+    <span class="kt">i</span><span class="n">disp2</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">322</span><span class="p">,</span> <span class="mi">80</span>
+    <span class="kt">i</span><span class="n">disp3</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">322</span><span class="p">,</span> <span class="mi">140</span> 
     <span class="nb">FLcolor</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">250</span>
-    <span class="kt">gk</span><span class="n">freq</span><span class="p">,</span>   <span class="kt">i</span><span class="n">h1</span> <span class="nb">FLslider</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp1</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="kt">gk</span><span class="n">interp</span><span class="p">,</span> <span class="kt">i</span><span class="n">h2</span> <span class="nb">FLbutton</span> <span class="s">&quot;interpolate&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>   <span class="mi">3</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="kt">gk</span><span class="n">gain</span><span class="p">,</span>   <span class="kt">i</span><span class="n">h3</span> <span class="nb">FLslider</span> <span class="s">&quot;gain&quot;</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>     <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">140</span>
+    <span class="kt">gk</span><span class="n">signal</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span> <span class="nb">FLslider</span> <span class="s">&quot;signal&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp1</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span>
+    <span class="kt">gk</span><span class="n">low</span><span class="p">,</span>    <span class="kt">gi</span><span class="n">h2</span> <span class="nb">FLslider</span> <span class="s">&quot;low&quot;</span><span class="p">,</span>    <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp2</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">80</span>
+    <span class="kt">gk</span><span class="n">high</span><span class="p">,</span>   <span class="kt">gi</span><span class="n">h3</span> <span class="nb">FLslider</span> <span class="s">&quot;high&quot;</span><span class="p">,</span>   <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp3</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">140</span>
+    <span class="kt">k</span><span class="n">schmitt</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h4</span> <span class="nb">FLbutton</span> <span class="s">&quot;out&quot;</span><span class="p">,</span>    <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 <span class="nb">FLpanelEnd</span>
 <span class="nb">FLrun</span>
-<span class="nb">FLsetVal_i</span> <span class="mi">8</span><span class="p">,</span> <span class="kt">i</span><span class="n">h1</span>
-<span class="nb">FLsetVal_i</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kt">i</span><span class="n">h3</span>
+
+<span class="nb">FLsetVal_i</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h2</span>
+<span class="nb">FLsetVal_i</span> <span class="mf">0.5</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h3</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">a</span><span class="n">out</span> <span class="n">lfnoise</span> <span class="kt">gk</span><span class="n">freq</span><span class="p">,</span> <span class="kt">gk</span><span class="n">interp</span>
-    <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">gk</span><span class="n">gain</span><span class="p">)</span>    
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
+    <span class="kt">a</span><span class="n">in</span> <span class="nb">oscili</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.25</span>
+    <span class="kt">a</span><span class="n">out</span> <span class="n">schmitt</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="kt">gk</span><span class="n">high</span><span class="p">,</span> <span class="kt">gk</span><span class="n">low</span>
+    <span class="kt">k</span><span class="n">guitrig</span> <span class="nb">metro</span> <span class="mi">24</span>
+    <span class="nb">FLsetVal</span> <span class="kt">k</span><span class="n">guitrig</span><span class="p">,</span> <span class="nb">k</span><span class="p">(</span><span class="kt">a</span><span class="n">in</span><span class="p">),</span> <span class="kt">gi</span><span class="n">h1</span>
+    <span class="nb">FLsetVal</span> <span class="kt">k</span><span class="n">guitrig</span><span class="p">,</span> <span class="nb">k</span><span class="p">(</span><span class="kt">a</span><span class="n">out</span><span class="p">),</span> <span class="kt">gi</span><span class="n">h4</span>    
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -319,12 +336,11 @@ If kinterp==1, then output is the result of interpolation between two generated 
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="https://csound.com/docs/manual/dust2.html">dust2</a></li>
-<li><a href="crackle.html">crackle</a></li>
+<li><a href="https://csound.com/docs/manual/sc_lagud.html">sc_lagud</a></li>
+<li><a href="https://csound.com/docs/manual/sc_trig.html">sc_trig</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
-<p>(port of pd/else's <code>lfnoise</code>, which is itself a merge of supercollider's <code>LFNoise0</code> and <code>LFNoise1</code>)</p>
               
             </div>
           </div>
@@ -332,10 +348,10 @@ If kinterp==1, then output is the result of interpolation between two generated 
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="linenv.html" class="btn btn-neutral float-right" title="linenv">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="sigmdrive.html" class="btn btn-neutral float-right" title="sigmdrive">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="jsfx_setslider.html" class="btn btn-neutral" title="jsfx_setslider"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="ramptrig.html" class="btn btn-neutral" title="ramptrig"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -361,10 +377,10 @@ If kinterp==1, then output is the result of interpolation between two generated 
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="jsfx_setslider.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="ramptrig.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="linenv.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="sigmdrive.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

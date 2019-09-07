@@ -122,7 +122,35 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="diode_ringmod.html">diode_ringmod</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx.html">jsfx</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_getslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_new.html">jsfx_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_play.html">jsfx_play</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_setslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="lfnoise.html">lfnoise</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="linenv.html">linenv</a>
                 </li>
                 <li class="">
                     
@@ -131,10 +159,6 @@
                 <li class="">
                     
     <a class="" href="polyseq.html">polyseq</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="rampgate.html">rampgate</a>
                 </li>
                 <li class=" current">
                     
@@ -164,11 +188,19 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="schmitt.html">schmitt</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="sigmdrive.html">sigmdrive</a>
                 </li>
                 <li class="">
                     
     <a class="" href="standardchaos.html">standardchaos</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="tubeharmonics.html">tubeharmonics</a>
                 </li>
     </ul>
 	    </li>
@@ -253,6 +285,10 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="c1">; This is the example file of ramptrig</span>
+<span class="c1">; ramptrig is a triggerable ramp from 0 to 1</span>
+<span class="c1">; xout ramptrig xtrig, kdur</span>
+
 <span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
 <span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
@@ -261,7 +297,7 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
 <span class="c1">; Use Case #1: An envelope which can be retriggered</span>
 <span class="kd">instr</span> <span class="nf">1</span>
     <span class="c1">; Duration of envelope</span>
-    <span class="kt">k</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="kt">k</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="c1">; This is the gate, could be any irregular signal, midi, osc, etc.    </span>
     <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mf">0.5</span>
     <span class="c1">; Whenever ktrig is possitive and higher than previous value, </span>
@@ -292,8 +328,8 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="c1">; i1 0 10</span>
-<span class="kt">i</span><span class="n">2</span> <span class="mi">0</span> <span class="mi">12</span>
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">10</span>
+<span class="c1">; i2 0 12</span>
 <span class="c1">; i3 0 20</span>
 <span class="c1">; f0 3600</span>
 
@@ -305,7 +341,7 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="rampgate.html">rampgate</a></li>
+<li><a href="linenv.html">linenv</a></li>
 <li><a href="https://csound.com/docs/manual/sc_phasor.html">sc_phasor</a></li>
 <li><a href="https://csound.com/docs/manual/bpf.html">bpf</a></li>
 </ul>
@@ -318,10 +354,10 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="sigmdrive.html" class="btn btn-neutral float-right" title="sigmdrive">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="schmitt.html" class="btn btn-neutral float-right" title="schmitt">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="rampgate.html" class="btn btn-neutral" title="rampgate"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="polyseq.html" class="btn btn-neutral" title="polyseq"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -347,10 +383,10 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="rampgate.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="polyseq.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="sigmdrive.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="schmitt.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
