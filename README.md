@@ -4,10 +4,22 @@ This is a repository for plugins for [csound](https://csound.com/).
 
 # Plugins in this repo
 
-* `dict` plugins: very efficient hashtables for csound
-* `poly` plugins: parallel and sequential multiplexing opcodes, 
-         they enable to create and control multiple instances of a csound opcode
-* `sched` plugins: schedule an instrument at specific events
+### jsfx
+
+jsfx support in csound, allows any REAPER's jsfx plugin to be loaded and controlled inside csound
+
+### klib
+
+very efficient hashtables for csound
+
+### poly
+
+
+Parallel and sequential multiplexing opcodes, they enable to create and control multiple instances of a csound opcode
+
+### else
+
+A miscellaneous collection of effects (distortion, saturation, ring-modulation), noise generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
 
 
 # Installation
