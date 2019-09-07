@@ -22,13 +22,15 @@ Afterwords, slider values can be read via `jsfx_getslider`
     machine code on the fly. It allows the user to operate at the sample level (like 
     defining an udo with `setksmps 1` but more efficient). It is around 2x to 2.5x slower
     than hand-coded C.
+
     
-!!! Note jsfx input / output
+!!! Note jsfx inputs and outputs
 
     A jsfx script has a certain number of audio input / output channels, and a series of 
     "sliders", which are parameters operating at control rate. A script can also use
     these sliders to send control values, which can be read in csound via [jsfx_getslider]
     See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
+
 
 ## Syntax
 
