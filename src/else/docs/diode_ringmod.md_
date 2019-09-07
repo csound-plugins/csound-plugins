@@ -1,0 +1,58 @@
+# diode_ringmod
+
+## Abstract
+
+A ring modulator with optional non-linearities
+
+## Description
+
+`diode_ringmod` is a ring modulator with optional non-linearities. It implements a
+built-in sinusoidal carrier signal. The carrier is passed through a diode simulation
+prior to being multiplied with the input. This signal passes through a feedback
+stage.
+
+
+    Sinewave : Diode Rect (abs(x)*2-0.2) : _ * Input : Feedback 
+    
+`knonlinearities` controls the amount of jitter in the carrier's freq and feedback amount.
+`diode_ringmod` is a port of Loser's ringmodulator jsfx plugin distributed with `REAPER`
+    
+
+## Syntax
+
+    aout diode_ringmode ain, kfreq, kdiode=0, kfeedback=0, knonlinear=0, koversample=0
+    
+
+### Arguments
+
+* `ain`: the input signal
+* `kfreq`: the carrier's frequency (a sine wave)
+* `kdiode`: if 1, the carrier is passed through a diode rectification stage
+* `kfeedback`: the amount of feedback (between 0 and 1, 0=no feedback)
+* `knonlinear`: the amount of non linearities (between 0 and 1, 0=no non linearities)
+* `koversample`: if 1, oversampling x 2 is performed
+
+### Output
+
+* `aout`: audio output of the ring modulator
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [hilbert](https://csound.com/docs/manual/hilbert.html)
+
+## Reference
+
+* https://en.wikipedia.org/wiki/Ring_modulation
+
+## Credits
+
+Eduardo Moguillansky, 2019

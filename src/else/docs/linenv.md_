@@ -1,13 +1,13 @@
-# rampgate
+# linenv
 
 ## Abstract
 
-A triggerable envelope with sustain segment 
+A triggerable linear envelope with sustain segment 
 
 
 ## Description
 
-`rampgate` is similar to linsegr with an additional gate argument, allowing
+`linenv` is similar to linsegr with an additional gate argument, allowing
 to retrigger it at will. One of the values can be defined as a sustain point,
 meaning that as long as the gate is held, the envelope enters a sustain
 state when reaching this point. When the gate is set to 0, the envelope traverses
@@ -15,7 +15,7 @@ the rest of the defined points.
 
 ## Syntax
 
-    xout rampgate kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...], ktimen, kvaln
+    xout linenv kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...]
     
 ### Arguments
 

@@ -14,7 +14,7 @@ nchnls = 2
 	aout schmitt ain, khigh, klow
 	kout schmitt kin, khigh, klow
 	
-	schmitt is a schmitt trigger, out is 1 if higher than khigh,
+	schmitt is a schmitt trigger (a gate with hysteresis), out is 1 if higher than khigh,
 	0 if lower than klow
 
 */
@@ -25,9 +25,9 @@ FLpanel "schmitt", 400, 300, 50, 50
 	idisp3 FLvalue "", 40, 30, 322, 140	
 	FLcolor 150, 100, 150, 200, 100, 250
 	gksignal, gih1 FLslider "signal", -1, 1, 0, 1, idisp1, 300, 30, 20, 20
-	gklow,    gih2 FLslider "low",    -1, 1, 0, 13, idisp2, 300, 30, 20, 80
+	gklow,    gih2 FLslider "low",    -1, 1, 0, 3, idisp2, 300, 30, 20, 80
 	gkhigh,   gih3 FLslider "high",   -1, 1, 0, 3, idisp3, 300, 30, 20, 140
-	kschmitt, gih4 FLslider "out",    0, 1, 0, 11, -1, 40, 30, 20, 200
+	kschmitt, gih4 FLbutton "out",    1, 0, 3, 50, 50, 20, 200, -1
 FLpanelEnd
 FLrun
 

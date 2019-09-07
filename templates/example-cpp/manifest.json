@@ -1,0 +1,11 @@
+{
+    "name": "example-cpp",
+    "opcodes": [
+      "doppler2"
+    ],
+    "author": "Name Surname",
+    "author_email": "name.surname@mail.com",
+    "license": "LGPL",
+    "description": "An example opcode library in c++",
+    "url": ""
+}

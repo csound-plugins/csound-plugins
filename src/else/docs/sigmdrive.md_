@@ -9,10 +9,15 @@ Analog "soft clipping" distortion by applying non-linear transfer functions.
 `sigmdrive` simulates analog "soft clipping" by applying non-linear transfer functions. Two
 different sigmoid equations are implemented.
 
-In mode 0, `out = tanh(in * drivefactor)`
-In mode 1:
-* if in > 0  then `out = 1.0 - pow(1. - in, drivefactor)`
-* if in <= 0 then `out = pow(1. + x, drivefactor) - 1.0`
+#### mode 0
+
+    out = tanh(in * drivefactor)
+
+#### mode 1
+
+    if in > 0    then   out = 1.0 - pow(1. - in, drivefactor)
+    if in <= 0   then   out = pow(1. + x, drivefactor) - 1.0
+
 
 ## Syntax
 
@@ -39,6 +44,7 @@ In mode 1:
 
 ## See also
 
+* [tubeharmonics](tubeharmonics.md)
 * [distort1](https://csound.com/docs/manual/chuap.html)
 * [tanh](https://csound.com/docs/manual/tanh.html)
 * [powershape](https://csound.com/docs/manual/powershape.html)

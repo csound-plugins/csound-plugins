@@ -34,6 +34,18 @@ Multiple (parallel or sequential) instances of an opcode
 * [polyseq](opcodes/polyseq.md): polyseq creates and controls multiple sequential version of an opcode 
 
 
+## jsfx
+
+A csound interface to the opensource implementation of jsfx
+
+* [jsfx](opcodes/jsfx.md): Instantiates and runs a jsfx script 
+* [jsfx_new](opcodes/jsfx_new.md): Instantiates a jsfx script 
+* [jsfx_play](opcodes/jsfx_play.md): Processes audio through a jsfx script 
+* [jsfx_getslider](opcodes/jsfx_getslider.md): Gets a slider value of a jsfx instance 
+* [jsfx_setslider](opcodes/jsfx_setslider.md): Sets the slider values of a jsfx script 
+* [tubeharmonics](opcodes/tubeharmonics.md): A distortion with control for odd/even harmonics 
+
+
 ## sched
 
 Schedule an action when note is stopped
@@ -43,14 +55,16 @@ Schedule an action when note is stopped
 
 ## else
 
-These opcdes are ports from or based on puredata/else
+Collection of miscellaneous plugins, most ports of supercollider, puredata/else or jsfx
 
 * [crackle](opcodes/crackle.md): generates noise based on a chaotic equation 
 * [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
-* [rampgate](opcodes/rampgate.md): A triggerable envelope with sustain segment 
 * [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
-* [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
+* [schmitt](opcodes/schmitt.md): A schmitt trigger (a comparator with hysteresis). 
+* [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
+* [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
+* [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
 
 
 

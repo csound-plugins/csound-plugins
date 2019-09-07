@@ -4,6 +4,10 @@
 </CsOptions>
 
 <CsInstruments>
+; This is the example file of ramptrig
+; ramptrig is a triggerable ramp from 0 to 1
+; xout ramptrig xtrig, kdur
+
 sr = 44100
 ksmps  = 64
 nchnls = 2
@@ -12,7 +16,7 @@ nchnls = 2
 ; Use Case #1: An envelope which can be retriggered
 instr 1
     ; Duration of envelope
-    kdur = 1
+    kdur = 4
     ; This is the gate, could be any irregular signal, midi, osc, etc.    
     ktrig metro 0.5
     ; Whenever ktrig is possitive and higher than previous value, 
@@ -43,8 +47,8 @@ endin
 
 <CsScore>
 
-; i1 0 10
-i2 0 12
+i1 0 10
+; i2 0 12
 ; i3 0 20
 ; f0 3600
 

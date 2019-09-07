@@ -9,10 +9,15 @@ Analog "soft clipping" distortion by applying non-linear transfer functions.
 `sigmdrive` simulates analog "soft clipping" by applying non-linear transfer functions. Two
 different sigmoid equations are implemented.
 
-In mode 0, `out = tanh(in * drivefactor)`
-In mode 1:
-* if in > 0  then `out = 1.0 - pow(1. - in, drivefactor)`
-* if in <= 0 then `out = pow(1. + x, drivefactor) - 1.0`
+#### mode 0
+
+    out = tanh(in * drivefactor)
+
+#### mode 1
+
+    if in > 0    then   out = 1.0 - pow(1. - in, drivefactor)
+    if in <= 0   then   out = pow(1. + x, drivefactor) - 1.0
+
 
 ## Syntax
 
@@ -43,6 +48,18 @@ In mode 1:
 </CsOptions>
 
 <CsInstruments>
+
+/* 
+
+    sigmdrive: a sigmoid distortion
+
+    aout sigmdrive ain, kdrive, kmode=0
+
+    kdrive: how much distortion (range 0-1)
+    kmode: 0 = tanh, 1 = pow
+    
+*/
+
 sr     = 44100
 ksmps  = 64
 nchnls = 2
@@ -50,10 +67,9 @@ nchnls = 2
 
 FLpanel "sigmdrive", 400, 200, 50, 50
 	idisp1 FLvalue "", 50, 30, 322, 20
-	idisp2 FLvalue "", 30, 30, 52, 80
 	FLcolor 150, 100, 150, 200, 100, 250
 	gkdrive, idrivehandle1 FLslider "drive", 0, 10, 0, 3, idisp1, 300, 30, 20, 20
-	gkmode,  idrivehandle2 FLslider "mode",  0, 1, 0,  3, idisp2, 30, 30, 20, 80
+	gkmode, idrivehandle2  FLbutton "mode", 1, 0, 3, 60, 50, 20, 80, -1
 FLpanelEnd
 FLrun
 
@@ -78,6 +94,7 @@ i1 0 100
 
 ## See also
 
+* [tubeharmonics](tubeharmonics.md)
 * [distort1](https://csound.com/docs/manual/chuap.html)
 * [tanh](https://csound.com/docs/manual/tanh.html)
 * [powershape](https://csound.com/docs/manual/powershape.html)

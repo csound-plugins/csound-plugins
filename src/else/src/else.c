@@ -1,5 +1,5 @@
 /*
-   pdelse.c
+   else.c
 
   Copyright (C) 2019 Eduardo Moguillansky
 
@@ -56,12 +56,16 @@
     kenv bpf kphase * idur, 0, 0, 0.01, 1, idur, 0
     asig = pinker() * interp(kenv)
 
-  # rampgate
+  # ramptrig
 
-    kout rampgate kgate, ival0, iattack, ival1, irel, ival2
+    kout ramptrig ktrig, idur, [ivaloff]
 
-    kramp rampgate kgate, 0, 0.2, 1, 0.5, 2
-    kenv bpf kramp 0, 0, 1, 1, 2, 0
+    A ramp from 0 to 1 in idur seconds. Can be retriggered. Concieved to be used together
+    with bpf to generate trigerrable complex envelopes
+
+    idur = 2
+    kramp ramptrig ktrig, idur
+    aenv bpf kramp*idur, 0, 0, 0.3, 1, 1.7, 1, 2, 0
 
   # sigmdrive  (sigmoid drive)
 
@@ -89,33 +93,44 @@
   # standardchaos
 
     Standard map chaotic generator, the sound is generated with the difference equations;
+
     y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
     x[n] = (x[n-1] + y[n]) % 2pi;
     out = (x[n] - pi) / pi;
 
-    aout standardchaos krate, kx=0.5, ky=0
+    aout standardchaos krate, kk=1, ix=0.5, iy=0
 
-  # rampgate
+    krate: from 0 to nyquist
+    kk: a value for k in the above equation
+    ix: initial value for x
+    iy: initial value for y
+
+  # linenv
 
     an envelope generator similar to linsegr but with retriggerable gate and
     flexible sustain point
 
     aout/kout rampgate kgate, isustidx, kval0, kdel0, kval1, kdel1, ..., kvaln
 
-    when kgate changes from 0 to 1, value follows envelope until isustpoint is reached
-    value stays there until kgate switches to 0, after which it follow the rest
-    of the envelope and stays at the env until a new switch. If kgate switches to 0
-    before reaching isustpoint, then it uses the current value as sustain point and
-    follows the envelope from there. If kgate switches to 1 before reaching the
-    end of the release part, it glides to the beginning and starts attack envelope
-    from there
+    kgate: when kgate changes from 0 to 1, value follows envelope until isustpoint is reached
+        value stays there until kgate switches to 0, after which it follow the rest
+        of the envelope and stays at the env until a new switch. If kgate switches to 0
+        before reaching isustpoint, then it uses the current value as sustain point and
+        follows the envelope from there. If kgate switches to 1 before reaching the
+        end of the release part, it glides to the beginning and starts attack envelope
+        from there
+    isustidx: the idx of the sustaining value. if isustidx is 2, then the value stays
+        at kval2 until kgate is closed (0). Use -1 to disable sustain
+    kdel0, kval0, ...: the points of the envelope, similar to linseg
+
+    If noteoff release is needed, xtratim and release opcodes are needed.
 
     inspired by else's envgen
 
     Example: generate an adsr envelope with attack=0.05, decay=0.1, sust=0.2, rel=0.5
 
     isustidx = 2
-    aout rampgate kgate, isustidx, 0, 0.05, 1, 0.1, 0.2, 0.5, 0
+    aout linenv kgate, isustidx, 0, 0.05, 1, 0.1, 0.2, 0.5, 0
 
     Example 2: emulate ramptrig
 
@@ -123,9 +138,27 @@
             kout ramptrig ktrig, idur
             kout rampgate ktrig, -1, 0, idur, 1
 
+  # sp_peaklim
+
+    aout sp_peaklim ain, ktresh=0, iattack=0.01, irelease=0.1
+
+  # diode_ringmod
+
+    A ring modulator with some dirtyness. Two versions: one where an inbuilt sinus as
+    modulator signal; and a second where the user passed its own signal as modulator. In the
+    second case the effect of nonlinearities is reduced to feedback (in the first, the freq.
+    of the oscillator is also modified)
+
+    (mod -> diode sim -> feedback) * carrier
+
+    aout dioderingmod acarr, kmodfreq, kdiode=0, kfeedback=0, knonlinearities=0.1, koversample=0
+
+    A port of jsfx Loser's ringmodulator
 */
 
 #include "csdl.h"
+#include <math.h>
+
 // #include "arrays.h"
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
@@ -722,7 +755,7 @@ static int32_t rampgate_k_init_common(CSOUND *csound, RAMPGATE *p, MYFLT sr) {
 }
 
 
-static int32_t rampgate_k_init(CSOUND *csound, RAMPGATE *p) {
+static int32_t linenv_k_init(CSOUND *csound, RAMPGATE *p) {
     return rampgate_k_init_common(csound, p, csound->GetKr(csound));
 }
 
@@ -737,7 +770,7 @@ static inline void rampgate_update_segment(RAMPGATE *p, int32_t idx) {
 }
 
 
-static int32_t rampgate_k_k(CSOUND *csound, RAMPGATE *p) {
+static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
     int gate = (int)*p->gate;
     int lastgate = p->lastgate;
     MYFLT val;
@@ -746,9 +779,10 @@ static int32_t rampgate_k_k(CSOUND *csound, RAMPGATE *p) {
             // are we playing?
             if(p->state == Off) {
                 // not playing, just waiting for a gate, so start attack
-                p->state = Attack;
                 p->t = 0;
+                p->state = p->sustain_idx == 0 ? Sustain : Attack;
                 rampgate_update_segment(p, 0);
+                p->val = p->prev_val;
             } else if(p->state == Release) {
                 // still playing release section, enter ramp to beginning state
                 p->t = 0;
@@ -756,12 +790,18 @@ static int32_t rampgate_k_k(CSOUND *csound, RAMPGATE *p) {
                 p->prev_val = p->val;
                 p->next_val = *p->points[0];
                 p->segment_end = p->retrigger_ramptime;
+                p->segment_idx = -1;
             } else {
                 return PERFERRF("This should not happen. state = %d", p->state);
             }
         } else {
-            if(p->state != Off)
+            if(p->state == Off) {
+                p->t = 0;
+                rampgate_update_segment(p, 0);
+            } else
                 p->state = Release;
+            // printf("closing gate, state now is: %d\n", p->state);
+
         }
     }
     p->lastgate = gate;
@@ -783,12 +823,14 @@ static int32_t rampgate_k_k(CSOUND *csound, RAMPGATE *p) {
         // finished retrigger state
         p->t -= p->segment_end;
         rampgate_update_segment(p, 0);
+        p->val = *(p->points[0]);
+        p->state = p->sustain_idx == 0 ? Sustain : Attack;
     } else if(p->segment_idx >= p->numsegments - 1) {
         // end of envelope
+        p->state = Off;
         p->t = 0;
         p->val = p->next_val;
-        rampgate_update_segment(p, 0);
-        p->state = Off;
+        // rampgate_update_segment(p, 0);
         return OK;
     } else {
         // new segment
@@ -804,12 +846,12 @@ static int32_t rampgate_k_k(CSOUND *csound, RAMPGATE *p) {
 }
 
 
-static int32_t rampgate_a_init(CSOUND *csound, RAMPGATE *p) {
+static int32_t linenv_a_init(CSOUND *csound, RAMPGATE *p) {
     return rampgate_k_init_common(csound, p, csound->GetSr(csound));
 }
 
 
-static int32_t rampgate_a_k(CSOUND *csound, RAMPGATE *p) {
+static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
     MYFLT *out = p->out;
 
     SAMPLE_ACCURATE(out);
@@ -925,6 +967,405 @@ static int32_t rampgate_a_k(CSOUND *csound, RAMPGATE *p) {
     return OK;
 }
 
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *in;
+    MYFLT *threshdb;
+    MYFLT *atk;
+    MYFLT *rel;
+
+    MYFLT patk, prel;
+    MYFLT b0_r, a1_r, b0_a, a1_a, level;
+
+} SP_PEAKLIM;
+
+#ifndef dB
+/* if below -100dB, set to -100dB to prevent taking log of zero */
+#define dB(x) 20.0 * ((x) > 0.00001 ? log10(x) : log10(0.00001))
+#endif
+
+#ifndef dB2lin
+#define dB2lin(x)    pow( 10.0, (x) / 20.0 )
+#endif
+
+static int32_t sp_peaklim_init(CSOUND *csound, SP_PEAKLIM *p) {
+    IGN(csound);
+    p->a1_r = 0;
+    p->b0_r = 1;
+    p->a1_a = 0;
+    p->b0_a = 1;
+    p->patk = -100;
+    p->prel = -100;
+    p->level = 0;
+    if(*p->atk < 0)
+        *p->atk = 0.01;
+    if(*p->rel < 0)
+        *p->rel = 0.1;
+    return OK;
+}
+
+static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
+
+    MYFLT *out = p->out;
+    SAMPLE_ACCURATE(out);
+    MYFLT *in = p->in;
+
+    MYFLT gain = 0;
+
+    MYFLT atk = *p->atk;
+    MYFLT rel = *p->rel;
+
+    MYFLT patk = p->patk;
+    MYFLT prel = p->prel;
+    MYFLT a1_a = p->a1_a;
+    MYFLT b0_r = p->b0_r;
+    MYFLT a1_r = p->a1_r;
+    MYFLT b0_a = p->b0_a;
+    MYFLT sr = csound->GetSr(csound);
+    MYFLT level = p->level;
+    MYFLT insamp;
+    MYFLT threshlin = dB2lin(*p->threshdb);
+
+    if(patk != atk) {
+        patk = atk;
+        a1_a = exp( -1.0 / ( atk * sr ) );
+        b0_a = 1 - a1_a;
+    }
+
+    if(prel != rel) {
+        prel = rel;
+        a1_r = exp( -1.0 / ( rel * sr ) );
+        b0_r = 1 - a1_r;
+    }
+
+    /* change coefficients, if needed */
+    n = nsmps - offset;
+
+    while (n--) {
+        insamp = *in++;
+        MYFLT absinsamp = fabs(insamp);
+        if ( absinsamp > level)
+            level += b0_a * ( absinsamp - level);
+        else
+            level += b0_r * ( absinsamp - level);
+
+        gain = min(1.0, threshlin/level);
+        *out++ = insamp * gain;
+    }
+    p->patk = patk;
+    p->prel = prel;
+    p->a1_a = a1_a;
+    p->b0_r = b0_r;
+    p->a1_r = a1_r;
+    p->b0_a = b0_a;
+    p->level = level;
+    return OK;
+}
+
+// #define USE_LOOPUP_SINE 1
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *aout;
+    MYFLT *ain;
+    MYFLT *kmodfreq;
+    MYFLT *kdiodeon;
+    MYFLT *kfeedback;
+    MYFLT *knonlinearities;
+    MYFLT *koversample;
+
+    int started;
+    MYFLT r, c1, c2, c3, fgain, bl_c1, bl_c2, bl_c3;
+    MYFLT src_f;
+    MYFLT sinp, ps_sin_out2;
+    MYFLT sin_bl2_1, sin_bl2_2, sin_bl1_1, sin_bl1_2, o_sin_out2;
+    MYFLT s1, s2;
+    MYFLT ps_fx_out2l;
+    MYFLT bl2_1, bl2_2, bl1_1, bl1_2;
+    MYFLT o_fx_out2l;
+    MYFLT s2l, s1l;
+    MYFLT fp_l_os_1, fp_l_os_2, fp_l;
+    uint32_t seed;
+
+#ifdef USE_LOOPUP_SINE
+    FUNC * ftp;
+    MYFLT cpstoinc;
+    int32_t  phase;
+    int32_t  lomask;
+#endif
+} t_diode_ringmod;
+
+
+static int32_t dioderingmod_init(CSOUND *csound, t_diode_ringmod *p) {
+    //sim resistance
+    p->r = 0.85;
+
+    //fir restoration filter
+    p->c1 = 1;
+    p->c2 = -0.75;
+    p->c3 = 0.17;
+    p->fgain = 4;
+
+    //fir bandlimit
+    p->bl_c1 = 0.52;
+    p->bl_c2 = 0.54;
+    p->bl_c3 = -0.02;
+    p->started = 0;
+    p->seed = csound->GetRandomSeedFromTime();
+    p->sinp = 0;
+#ifdef USE_LOOPUP_SINE
+    MYFLT ifn = -1;
+    p->ftp = csound->FTFind(csound, &ifn);
+    uint32_t tabsize = p->ftp->flen;
+    MYFLT sampledur = 1 / csound->GetSr(csound);
+    p->cpstoinc = tabsize * sampledur * 65536;
+    p->lomask   = (tabsize - 1) << 3;
+    p->phase = 0;
+#endif
+    return OK;
+}
+
+
+// uniform noise, taken from csoundRand31, returns floats between 0-1
+static inline MYFLT randflt(uint32_t *seedptr) {
+    uint64_t tmp1;
+    uint32_t tmp2;
+    /* x = (742938285 * x) % 0x7FFFFFFF */
+    tmp1  = (uint64_t) ((int32_t) (*seedptr) * (int64_t) 742938285);
+    tmp2  = (uint32_t) tmp1 & (uint32_t) 0x7FFFFFFF;
+    tmp2 += (uint32_t) (tmp1 >> 31);
+    tmp2  = (tmp2 & (uint32_t) 0x7FFFFFFF) + (tmp2 >> 31);
+    (*seedptr) = tmp2;
+    return (MYFLT)(tmp2 - 1) / FL(2147483648.0);
+}
+
+
+static inline float
+PhaseFrac(uint32_t inPhase) {
+    union { uint32_t itemp; float ftemp; } u;
+    u.itemp = 0x3F800000 | (0x007FFF80 & ((inPhase)<<7));
+    return u.ftemp - 1.f;
+}
+
+#define M_PI 3.14159265358979323846
+#define pi2 2*M_PI
+
+#define xlobits 14
+#define xlobits1 13
+
+
+static inline MYFLT
+lookupi1(const MYFLT* table0, const MYFLT* table1,
+         int32_t pphase, int32_t lomask) {
+    MYFLT pfrac    = PhaseFrac(pphase);
+    uint32_t index = ((pphase >> xlobits1) & lomask);
+    MYFLT val1 = *(const MYFLT*)((const char*)table0 + index);
+    MYFLT val2 = *(const MYFLT*)((const char*)table1 + index);
+    MYFLT out  = val1 + (val2 - val1) * pfrac;
+    return out;
+}
+
+
+// from https://www.gamedev.net/forums/topic/621589-extremely-fast-sin-approximation/
+double fast_sin(double x) {
+    int k;
+    double y, z;
+    z  = x;
+    z *= 0.3183098861837907;
+    z += 6755399441055744.0;
+    k  = *((int *) &z);
+    z  = k;
+    z *= 3.1415926535897932;
+    x -= z;
+    y  = x;
+    y *= x;
+    z  = 0.0073524681968701;
+    z *= y;
+    z -= 0.1652891139701474;
+    z *= y;
+    z += 0.9996919862959676;
+    x *= z;
+    k &= 1;
+    k += k;
+    z  = k;
+    z *= x;
+    x -= z;
+    return x;
+}
+
+static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
+    int os = (int)*p->koversample;
+    MYFLT tgt_f = *p->kmodfreq;
+
+    // sx = 16+slider3*1.20103;
+    // tgt_f = floor(exp(sx*log(1.059))*8.17742);
+
+    MYFLT fb = *p->kfeedback;
+    int diode = (int)*p->kdiodeon;
+    MYFLT nl = *p->knonlinearities * 100;
+    MYFLT outgain = 1;
+
+    MYFLT *ain = p->ain;
+    MYFLT *aout = p->aout;
+
+    if(! p->started) {
+        p->src_f = tgt_f;
+        p->started = 1;
+    }
+
+    MYFLT samplesblock = p->h.insdshead->ksmps;
+    MYFLT srate = csound->GetSr(csound);
+
+    //interpolate 'f'
+    MYFLT d_f = (tgt_f - p->src_f) / samplesblock;
+    MYFLT tf = p->src_f;
+    p->src_f = tgt_f;
+
+    int nsmps = p->h.insdshead->ksmps;
+    uint32_t seed = p->seed;
+    MYFLT pi2_over_srate = pi2 / srate;
+    MYFLT sinp = p->sinp;
+
+#ifdef USE_LOOPUP_SINE
+    MYFLT *table0 = p->ftp->ftable;
+    MYFLT *table1 = table0 + 1;
+    int32_t intphase = p->phase;
+    MYFLT cpstoinc = p->cpstoinc;
+#endif
+
+    for(int i=0; i < nsmps; i++) {
+        MYFLT nl_f = nl == 0 ? 0 : randflt(&seed) * 4*nl - 2*nl;
+        MYFLT nl_fb = fb == 0 | nl == 0 ? 0 :  (randflt(&seed) * 2*nl - nl)*0.001;
+
+        //interpolate 'f'
+        tf += d_f;
+
+        // mod signal gen
+#ifdef USE_LOOPUP_SINE
+        int32_t phaseinc = (int32_t)(cpstoinc * (tf - nl_f));
+        MYFLT sinout = lookupi1(table0, table1, intphase, p->lomask);
+        intphase += phaseinc;
+#else
+        MYFLT sina = (tf - nl_f) * pi2_over_srate;
+        // MYFLT sinout = sin(sinp);
+        MYFLT sinout = fast_sin(sinp);
+        // MYFLT sinout = sinf(sinp);
+        sinp += sina;
+        if(sinp >= pi2)
+            sinp -= pi2;
+#endif
+        //diode - positive semi-periods
+        MYFLT m_out;
+        if (diode == 0) {
+            m_out = sinout;
+        } else {
+            //os - diode-ed signal?
+            MYFLT d_sin;
+            if(os == 0) {
+              d_sin = fabs(sinout)*2-0.20260;
+            } else {
+                //power series in
+                MYFLT ps_sin_out1 = 0.5*(sinout + p->ps_sin_out2);
+                p->ps_sin_out2 = 0.5 * ps_sin_out1;
+                //abs()
+                MYFLT ps_d_sin1 = fabs(ps_sin_out1)*2-0.20260;
+                MYFLT ps_d_sin2 = fabs(p->ps_sin_out2)*2-0.20260;
+                //bandlimit
+                MYFLT sin_bl3_1 = p->sin_bl2_1;
+                MYFLT sin_bl3_2 = p->sin_bl2_2;
+                p->sin_bl2_1 = p->sin_bl1_1;
+                p->sin_bl2_2 = p->sin_bl1_2;
+                p->sin_bl1_1 = ps_d_sin1;
+                p->sin_bl1_2 = ps_d_sin2;
+                MYFLT sin_bl_out1 = (p->sin_bl1_1*p->bl_c1 + p->sin_bl2_1*p->bl_c2 + sin_bl3_1*p->bl_c3);
+                MYFLT sin_bl_out2 = (p->sin_bl1_2*p->bl_c1 + p->sin_bl2_2*p->bl_c2 + sin_bl3_2*p->bl_c3);
+                //power series out
+                MYFLT o_sin_out1 = 0.5*(sin_bl_out1+p->o_sin_out2);
+                p->o_sin_out2 = 0.5*(sin_bl_out2+o_sin_out1);
+                //fir restoration
+                MYFLT s3 = p->s2;
+                p->s2 = p->s1;
+                p->s1 = o_sin_out1;
+                d_sin = (p->s1*p->c1+p->s2*p->c2+s3*p->c3) * p->fgain;
+            }
+            m_out = d_sin;
+        }
+
+        //-------------------------------------------------
+        //input
+        //-------------------------------------------------
+        MYFLT in_l = ain[i];
+        MYFLT fx_outl;
+        if(os == 0) {   // No oversampling
+            //feedback ala Paul Kellet
+            p->fp_l = (in_l+(fb-nl_fb)*p->fp_l)*sinout*p->r;
+            //multiply carrier with mod
+            MYFLT s_out_l = m_out*in_l;
+            //apply feedback
+            s_out_l += p->fp_l;
+
+            fx_outl = s_out_l;
+
+
+        } else {      // Yes oversampling
+            //power series in
+            MYFLT ps_fx_out1l = 0.5*(in_l+p->ps_fx_out2l);
+            p->ps_fx_out2l = 0.5*ps_fx_out1l;
+
+            //------------------------
+            //fx
+            //------------------------
+            p->fp_l_os_1 = (ps_fx_out1l+(fb-nl_fb)*p->fp_l_os_1)*sinout*p->r;
+            MYFLT s_out_l_os_1 = m_out*ps_fx_out1l;
+            s_out_l_os_1 += p->fp_l_os_1;
+
+            p->fp_l_os_2 = (p->ps_fx_out2l+(fb-nl_fb)*p->fp_l_os_2)*sinout*p->r;
+            MYFLT s_out_l_os_2 = m_out*p->ps_fx_out2l;
+            s_out_l_os_2 += p->fp_l_os_2;
+
+            //------------------------
+            //bandlimit
+            //------------------------
+            MYFLT bl3_1 = p->bl2_1;
+            MYFLT bl3_2 = p->bl2_2;
+
+            p->bl2_1 = p->bl1_1;
+            p->bl2_2 = p->bl1_2;
+
+            p->bl1_1 = s_out_l_os_1;
+            p->bl1_2 = s_out_l_os_2;
+
+            MYFLT bl_out1 = (p->bl1_1*p->bl_c1 + p->bl2_1*p->bl_c2 + bl3_1*p->bl_c3);
+            MYFLT bl_out2 = (p->bl1_2*p->bl_c1 + p->bl2_2*p->bl_c2 + bl3_2*p->bl_c3);
+
+            //------------------------
+            //power series out
+            //------------------------
+            MYFLT o_fx_out1l = 0.5*(bl_out1+p->o_fx_out2l);
+            p->o_fx_out2l = 0.5*(bl_out2+o_fx_out1l);
+
+            //fir restoration
+            MYFLT s3l = p->s2l;
+            p->s2l = p->s1l;
+            p->s1l = o_fx_out1l;
+
+            fx_outl = (p->s1l*p->c1+p->s2l*p->c2+s3l*p->c3)*p->fgain;
+        }
+
+        aout[i] = fx_outl * p->r * outgain;
+    }
+    p->seed = seed;
+    p->sinp = sinp;
+#ifdef USE_LOOPUP_SINE
+    p->phase = intphase;
+#endif
+    return OK;
+}
+
+
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
@@ -939,8 +1380,12 @@ static OENTRY localops[] = {
     { "schmitt.a", S(SCHMITT), 0, 3, "a", "akk", (SUBR)schmitt_k_init, (SUBR)schmitt_a_perf},
     { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kkio", (SUBR)standardchaos_init, (SUBR)standardchaos_perf},
     { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kP", (SUBR)standardchaos_init_x, (SUBR)standardchaos_perf},
-    { "rampgate.k_k", S(RAMPGATE), 0, 3, "k", "kiM", (SUBR)rampgate_k_init, (SUBR)rampgate_k_k},
-    { "rampgate.a_k", S(RAMPGATE), 0, 3, "a", "kiM", (SUBR)rampgate_a_init, (SUBR)rampgate_a_k}
+    { "linenv.k_k", S(RAMPGATE), 0, 3, "k", "kiM", (SUBR)linenv_k_init, (SUBR)linenv_k_k},
+    { "linenv.a_k", S(RAMPGATE), 0, 3, "a", "kiM", (SUBR)linenv_a_init, (SUBR)linenv_a_k},
+
+    // aout dioderingmod ain, kfreq, kdiodeon=1, kfeedback=0, knonlinear=0, ioversample=0
+    { "diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO", (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf},
+
 
 };
 

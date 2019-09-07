@@ -26,6 +26,8 @@ option(USE_LIB64 "Set to on to set installation dir for libs to lib64" OFF)
 option(USE_DOUBLE "Use doubles for audio calculations" ON)
 option(CPP11 "c++11" ON)
 
+set(BUILDING_CSOUND_PLUGINS ON)
+
 # ----------------------------------------------
 
 include(FindCsound)
@@ -42,7 +44,7 @@ function(addflag flag flagname)
   endif()
   check_cxx_compiler_flag(${flag} CXX_${flagname})
   if (CXX_${flagname})
-    set(CMAKE_CXX_FLAGS "{CMAKE_CXX_FLAGS} ${flag}" PARENT_SCOPE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}" PARENT_SCOPE)
   endif()
 endfunction(addflag)
 
@@ -110,7 +112,7 @@ addflag(-fomit-frame-pointer HAS_OMIT_FRAME_POINTER)
 
 # -------------------------------------------------------------------
 
-set(CS_FRAMEWORK_DEST "~/Library/Framworks")
+set(CS_FRAMEWORK_DEST "~/Library/Frameworks")
 
 
 if(USE_LIB64)
@@ -159,8 +161,10 @@ if(NOT CSOUND_FOUND)
   message(FATAL_ERROR "Csound installation not found")
 endif()
 
-
+# pluginlib: name of the plugin
+# srcs: sources of the plugin
 function(make_plugin pluginlib srcs)
+  message(STATUS "make_plugin: ${pluginlib}")
   if(APPLE)
     add_library(${pluginlib} SHARED ${srcs})
   else()

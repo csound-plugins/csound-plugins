@@ -51,7 +51,7 @@ A trigger detected whenever the value is possitive and higher than the previous 
 
 ## See also
 
-* [rampgate](rampgate.md)
+* [linenv](linenv.md)
 * [sc_phasor](https://csound.com/docs/manual/sc_phasor.html)
 * [bpf](https://csound.com/docs/manual/bpf.html)
 
