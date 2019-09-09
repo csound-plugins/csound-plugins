@@ -19,7 +19,8 @@ Parallel and sequential multiplexing opcodes, they enable to create and control 
 
 ### else
 
-A miscellaneous collection of effects (distortion, saturation, ring-modulation), noise generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
+A miscellaneous collection of effects (distortion, saturation, ring-modulation), noise 
+generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
 
 
 # Installation
@@ -31,6 +32,18 @@ A miscellaneous collection of effects (distortion, saturation, ring-modulation),
     cmake ..
     make
     sudo make install
+
+
+## macOS
+
+In order to build the jsfx plugins, an assembler compiler called `nasm` is needed. XCode provides such a compiler, 
+but its version is very old and does not support 64 bits. To solve that, it is necessary to install a recent version
+of `nasm`. This can be easily done via `homebrew`:
+
+    brew install nasm
+
+If you have a default installation of homebrew, the build process will detect this version (`/usr/local/bin/nasm`) and 
+will use that instead of the older one. After solving this, procede with the normal installation process above.
 
 
 # Documentation of all plugins
@@ -46,16 +59,6 @@ FIrst install [mkdocs](https://www.mkdocs.org/):
 
 At the root folder of the project, do: 
 
-    mkdocs build
+    mkdocs build && mkdocs serve
 
-The documentation can then be browsed at `site/index.html`
-
-
-## Generate the documentation
-
-    ./scripts/generate-docs
-
-
-# Contributing 
-
-See [Contributing](https://github.com/csound-plugins/csound-plugins/wiki/contributing)
+The documentation can then be browsed at htpp://127.0.0.1:8080
