@@ -553,7 +553,6 @@ jsfx_handler *make_handler(CSOUND *csound, STRINGDAT *Spath, int ksmps) {
     x->bypass = true;
     x->user_bypass = false;
     x->nxt = nullptr;
-    printf("//////////////////// 10 \n");
 
     // default number of input / output channels
     x->pinIn = 2;
@@ -563,11 +562,9 @@ jsfx_handler *make_handler(CSOUND *csound, STRINGDAT *Spath, int ksmps) {
 
     x->max_input_channels = numins;
     x->max_output_channels = numouts;
-    printf("//////////////////// 20 \n");
 
     csound->strNcpy(x->scriptpath, Spath->data, Spath->size);
     int ret = compile_handler(csound, ksmps, x, x->scriptpath);
-    printf("//////////////////// 25\n");
 
     if(ret == NOTOK || x->bypass == true) {
         MSGF("Failed to compile script %s", x->scriptpath);
@@ -575,7 +572,6 @@ jsfx_handler *make_handler(CSOUND *csound, STRINGDAT *Spath, int ksmps) {
         destroy_handler(csound, x);
         return nullptr;
     }
-    printf("//////////////////// 30\n");
 
     // compile will permantly set the number of pins for this instance
     x->pinIn = x->fx->numInputs;
@@ -602,7 +598,6 @@ jsfx_handler *make_handler(CSOUND *csound, STRINGDAT *Spath, int ksmps) {
 
     jsfx_handler_describe(csound, x);
 
-    // x->midiout = outlet_new(&x->x_obj, &s_float);
     return x;
 }
 
@@ -619,15 +614,10 @@ static int register_handler(CSOUND *csound, jsfx_handler *handler) {
     handler->id = ++(globals->id_count);
     if(handler->id <= 0)
         return INITERRF("register_handler: could not assign an id, got %u", handler->id);
+    // prepend handler
     jsfx_handler *h = globals->handlers_list;
-    if(h == nullptr) {
-        globals->handlers_list = handler;
-        return OK;
-    }
-    while(h->nxt != nullptr)
-        h = h->nxt;
-    // now h is the last handler
-    h->nxt = handler;
+    globals->handlers_list = handler;
+    handler->nxt = h;
     return OK;
 }
 
