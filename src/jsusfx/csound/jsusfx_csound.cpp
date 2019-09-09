@@ -1173,6 +1173,39 @@ static int32_t tubeharmonics_stereo_init(CSOUND *csound, t_tubeharmonics_stereo 
     return OK;
 }
 
+#ifdef USE_DOUBLE
+// from https://www.gamedev.net/forums/topic/621589-extremely-fast-sin-approximation/
+static inline double fast_sin(double x) {
+    int k;
+    double y, z;
+    z  = x;
+    z *= 0.3183098861837907;
+    z += 6755399441055744.0;
+    k  = *((int *) &z);
+    z  = k;
+    z *= 3.1415926535897932;
+    x -= z;
+    y  = x;
+    y *= x;
+    z  = 0.0073524681968701;
+    z *= y;
+    z -= 0.1652891139701474;
+    z *= y;
+    z += 0.9996919862959676;
+    x *= z;
+    k &= 1;
+    k += k;
+    z  = k;
+    z *= x;
+    x -= z;
+    return x;
+}
+#else
+float fast_sin(float floatx) {
+    return (float)fast_sin((double)floatx);
+}
+#endif
+
 static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo *p) {
     MYFLT *a1 = p->a1;
     MYFLT *a2 = p->a2;
@@ -1216,6 +1249,7 @@ static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo 
     MYFLT abs1 = p->src_abs1;
     p->src_abs1 = tgt_abs1;
     MYFLT ch0 = 1, ch1 = 1;
+    MYFLT minflt = std::numeric_limits<MYFLT>::min();
 
     for(int n=0; n<samplesblock; n++) {
         ch0 = a1[n] * ingain;
@@ -1236,11 +1270,11 @@ static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo 
 
         //apply harmonics
         if(ch0 == 0)
-            ch0 = std::numeric_limits<MYFLT>::min();
+            ch0 = minflt;
         if(ch1 == 0)
-            ch1 = std::numeric_limits<MYFLT>::min();
-        MYFLT h0 = sin(ch0)/sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
-        MYFLT h1 = sin(ch1)/sin(ch1*2)*drve_rnd1+(ch1-tan(ch1))*drvo_rnd1;
+            ch1 = minflt;
+        MYFLT h0 = fast_sin(ch0)/fast_sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
+        MYFLT h1 = fast_sin(ch1)/fast_sin(ch1*2)*drve_rnd1+(ch1-tan(ch1))*drvo_rnd1;
 
         //dc filter i
         p->dcf00 = h0 * p->kb + p->dcf00 * p->ka;
@@ -1370,7 +1404,7 @@ static int32_t tubeharmonics_mono_perf(CSOUND *csound, t_tubeharmonics_mono *p) 
         //apply harmonics
         if(ch0 == 0)
             ch0 = std::numeric_limits<MYFLT>::min();
-        MYFLT h0 = sin(ch0)/sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
+        MYFLT h0 = fast_sin(ch0)/fast_sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
 
         //dc filter i
         p->dcf00 = h0 * p->kb + p->dcf00 * p->ka;

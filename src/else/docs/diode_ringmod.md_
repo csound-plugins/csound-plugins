@@ -20,7 +20,7 @@ stage.
 
 ## Syntax
 
-    aout diode_ringmode ain, kfreq, kdiode=0, kfeedback=0, knonlinear=0, koversample=0
+    aout diode_ringmod ain, kfreq, kdiode=0, kfeedback=0, knonlinear=0, koversample=0
     
 
 ### Arguments

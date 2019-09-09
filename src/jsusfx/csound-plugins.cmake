@@ -1,3 +1,5 @@
+# This is used for building inside of the csound-plugins project
+
 
 # The path to this file.
 set(CSOUND_CMAKE_PATH ${CMAKE_CURRENT_LIST_DIR})

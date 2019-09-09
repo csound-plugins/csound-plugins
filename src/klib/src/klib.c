@@ -2314,8 +2314,10 @@ static OENTRY localops[] = {
 
     { "cacheput", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
     { "cacheput", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+
     { "cacheget", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
     { "cacheget", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
+
     { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },
 
 };

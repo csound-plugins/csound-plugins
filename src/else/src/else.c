@@ -195,6 +195,39 @@
     }                                                                \
 
 
+#ifdef USE_DOUBLE
+// from https://www.gamedev.net/forums/topic/621589-extremely-fast-sin-approximation/
+static inline double fast_sin(double x) {
+    int k;
+    double y, z;
+    z  = x;
+    z *= 0.3183098861837907;
+    z += 6755399441055744.0;
+    k  = *((int *) &z);
+    z  = k;
+    z *= 3.1415926535897932;
+    x -= z;
+    y  = x;
+    y *= x;
+    z  = 0.0073524681968701;
+    z *= y;
+    z -= 0.1652891139701474;
+    z *= y;
+    z += 0.9996919862959676;
+    x *= z;
+    k &= 1;
+    k += k;
+    z  = k;
+    z *= x;
+    x -= z;
+    return x;
+}
+#else
+float fast_sin(float floatx) {
+    return (float)fast_sin((double)floatx);
+}
+#endif
+
 
 // ----------------- opcode A ------------------
 
@@ -649,6 +682,12 @@ static int32_t standardchaos_init_x(CSOUND *csound, STANDARDCHAOS *p) {
     return standardchaos_init(csound, p);
 }
 
+MYFLT mfmod(MYFLT x, MYFLT y) {
+    // double mfmod(double x,double y) { double a; return ((a=x/y)-(int)a)*y; }
+    MYFLT a = x/y;
+    return a - (int)a * y;
+}
+
 static int32_t standardchaos_perf(CSOUND *csound, STANDARDCHAOS *p) {
     IGN(csound);
 
@@ -676,8 +715,8 @@ static int32_t standardchaos_perf(CSOUND *csound, STANDARDCHAOS *p) {
             if (phase <= 0.) phase = phase + 1.;
         }
         if (trig) {
-            yn = fmod(yn + k * sin(xn), TWOPI);
-            xn = fmod(xn + yn, TWOPI);
+            yn = mfmod(yn + k * fast_sin(xn), TWOPI);
+            xn = mfmod(xn + yn, TWOPI);
             if (xn < 0) xn = xn + TWOPI;
             output = lastout = (xn - PI) * ONE_OVER_PI;
         }
@@ -1168,33 +1207,6 @@ lookupi1(const MYFLT* table0, const MYFLT* table1,
     return out;
 }
 
-
-// from https://www.gamedev.net/forums/topic/621589-extremely-fast-sin-approximation/
-double fast_sin(double x) {
-    int k;
-    double y, z;
-    z  = x;
-    z *= 0.3183098861837907;
-    z += 6755399441055744.0;
-    k  = *((int *) &z);
-    z  = k;
-    z *= 3.1415926535897932;
-    x -= z;
-    y  = x;
-    y *= x;
-    z  = 0.0073524681968701;
-    z *= y;
-    z -= 0.1652891139701474;
-    z *= y;
-    z += 0.9996919862959676;
-    x *= z;
-    k &= 1;
-    k += k;
-    z  = k;
-    z *= x;
-    x -= z;
-    return x;
-}
 
 static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
     int os = (int)*p->koversample;
