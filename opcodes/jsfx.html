@@ -259,14 +259,13 @@ machine code on the fly. It allows the user to operate at the sample level (like
 defining an udo with <code>setksmps 1</code> but more efficient). It is around 2x to 2.5x slower
 than hand-coded C.</p>
 </div>
-<p>!!! Note jsfx input / output</p>
-<div class="codehilite"><pre><span></span>A jsfx script has a certain number of audio input / output channels, and a series of 
-&quot;sliders&quot;, which are parameters operating at control rate. A script can also use
-these sliders to send control values, which can be read in csound via [jsfx_getslider]
-See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
-</pre></div>
-
-
+<div class="admonition note jsfx inputs and outputs">
+<p class="admonition-title">Note</p>
+<p>A jsfx script has a certain number of audio input / output channels, and a series of 
+"sliders", which are parameters operating at control rate. A script can also use
+these sliders to send control values, which can be read in csound via <a href="jsfx_getslider.html">jsfx_getslider</a>
+See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.</p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>ihandle, aout1 [, aout2, ...]  jsfx Spath, ain1 [, ain2, ...] [, id0, kval1, id1, kval2, ...]
 </pre></div>
