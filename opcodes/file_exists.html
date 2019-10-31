@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>sigmdrive - Csound Plugins</title>
+  <title>file_exists - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "sigmdrive";
-    var mkdocs_page_input_path = "opcodes/sigmdrive.md";
+    var mkdocs_page_name = "file_exists";
+    var mkdocs_page_input_path = "opcodes/file_exists.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -124,9 +124,31 @@
                     
     <a class="" href="diode_ringmod.html">diode_ringmod</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="file_exists.html">file_exists</a>
+    <a class="current" href="file_exists.html">file_exists</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#file_exists">file_exists</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -172,31 +194,9 @@
                     
     <a class="" href="schmitt.html">schmitt</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="sigmdrive.html">sigmdrive</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#sigmdrive">sigmdrive</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="sigmdrive.html">sigmdrive</a>
                 </li>
                 <li class="">
                     
@@ -235,7 +235,7 @@
         
       
     
-    <li>sigmdrive</li>
+    <li>file_exists</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -245,86 +245,57 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="sigmdrive">sigmdrive</h1>
+                <h1 id="file_exists">file_exists</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Analog "soft clipping" distortion by applying non-linear transfer functions.</p>
+<p>Returns 1 if a file exists and can be read</p>
 <h2 id="description">Description</h2>
-<p><code>sigmdrive</code> simulates analog "soft clipping" by applying non-linear transfer functions. Two
-different sigmoid equations are implemented.</p>
-<h4 id="mode-0">mode 0</h4>
-<div class="codehilite"><pre><span></span>out = tanh(in * drivefactor)
-</pre></div>
-
-
-<h4 id="mode-1">mode 1</h4>
-<div class="codehilite"><pre><span></span>if in &gt; 0    then   out = 1.0 - pow(1. - in, drivefactor)
-if in &lt;= 0   then   out = pow(1. + x, drivefactor) - 1.0
-</pre></div>
-
-
+<p><code>file_exists</code> checks if a given file path exists and returns 1 if it does, 0 otherwise</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>aout sigmdrive ain, xdrivefactor, kmode=0
+<div class="codehilite"><pre><span></span>iexists  file_exists  Spath
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>ain</code>: the input audio signal</li>
-<li><code>xdrivefactor</code>: a k- or a- value, normally greater than 1. A higher value implies more distortion</li>
-<li><code>kmode</code>: the distortion mode. 0=tanh, 1=pow (see above)</li>
+<li><code>Spath</code>: the path to check</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>aout</code>: the distorted audio</li>
+<li><code>iexists</code>: 1 if the file exists, 0 otherwise</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Performance (audio)</li>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>           
 
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
-<span class="cm">/* </span>
+<span class="cm">/*</span>
+<span class="cm">    Example file for file_exists</span>
 
-<span class="cm">    sigmdrive: a sigmoid distortion</span>
-
-<span class="cm">    aout sigmdrive ain, kdrive, kmode=0</span>
-
-<span class="cm">    kdrive: how much distortion (range 0-1)</span>
-<span class="cm">    kmode: 0 = tanh, 1 = pow</span>
+<span class="cm">    file_exists returns 1 if a given path refers to an existing file</span>
 
 <span class="cm">*/</span>
 
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
 <span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="nb">FLpanel</span> <span class="s">&quot;sigmdrive&quot;</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
-    <span class="kt">i</span><span class="n">disp1</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">322</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="nb">FLcolor</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">250</span>
-    <span class="kt">gk</span><span class="n">drive</span><span class="p">,</span> <span class="kt">i</span><span class="n">drivehandle1</span> <span class="nb">FLslider</span> <span class="s">&quot;drive&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp1</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="kt">gk</span><span class="n">mode</span><span class="p">,</span> <span class="kt">i</span><span class="n">drivehandle2</span>  <span class="nb">FLbutton</span> <span class="s">&quot;mode&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-<span class="nb">FLpanelEnd</span>
-<span class="nb">FLrun</span>
-
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">a</span><span class="n">in</span> <span class="nb">oscili</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">440</span>
-    <span class="kt">a</span><span class="n">out</span> <span class="n">sigmdrive</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="nb">port</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">gk</span><span class="n">drive</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="kt">gk</span><span class="n">mode</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
+    <span class="kt">i</span><span class="n">exists</span> <span class="kt">f</span><span class="n">ile_exists</span> <span class="s">&quot;file_exists.csd&quot;</span>
+    <span class="nb">print</span> <span class="kt">i</span><span class="n">exists</span>
+    <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">100</span>
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -333,14 +304,11 @@ if in &lt;= 0   then   out = pow(1. + x, drivefactor) - 1.0
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="tubeharmonics.html">tubeharmonics</a></li>
-<li><a href="https://csound.com/docs/manual/chuap.html">distort1</a></li>
-<li><a href="https://csound.com/docs/manual/tanh.html">tanh</a></li>
-<li><a href="https://csound.com/docs/manual/powershape.html">powershape</a></li>
+<li><a href="https://csound.com/docs/manual/filevalid.html">filevalid</a></li>
+<li><a href="https://csound.com/docs/manual/system.html">system</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
-<p>(based on pd/else's <code>drive~</code> - https://github.com/porres/pd-else)</p>
               
             </div>
           </div>
@@ -348,10 +316,10 @@ if in &lt;= 0   then   out = pow(1. + x, drivefactor) - 1.0
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="standardchaos.html" class="btn btn-neutral float-right" title="standardchaos">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="jsfx.html" class="btn btn-neutral float-right" title="jsfx">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="schmitt.html" class="btn btn-neutral" title="schmitt"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="diode_ringmod.html" class="btn btn-neutral" title="diode_ringmod"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -377,10 +345,10 @@ if in &lt;= 0   then   out = pow(1. + x, drivefactor) - 1.0
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="schmitt.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="diode_ringmod.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="standardchaos.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="jsfx.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
