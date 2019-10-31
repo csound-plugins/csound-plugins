@@ -158,6 +158,7 @@
 
 #include "csdl.h"
 #include <math.h>
+#include <unistd.h>
 
 // #include "arrays.h"
 
@@ -1103,7 +1104,28 @@ static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
     return OK;
 }
 
-// #define USE_LOOPUP_SINE 1
+// check if a file exists
+// taken from https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    STRINGDAT *path;
+} FILE_EXISTS;
+
+static int32_t file_exists_init(CSOUND *cs, FILE_EXISTS *p) {
+    char *path = p->path->data;
+    if(access(path, F_OK) != -1 ) {
+        // file exists
+        *p->out = 1;
+    } else {
+        *p->out = 0;
+    }
+    return OK;
+}
+
+// #define USE_LOOKUP_SINE 1
 
 
 typedef struct {
@@ -1129,7 +1151,7 @@ typedef struct {
     MYFLT fp_l_os_1, fp_l_os_2, fp_l;
     uint32_t seed;
 
-#ifdef USE_LOOPUP_SINE
+#ifdef USE_LOOKUP_SINE
     FUNC * ftp;
     MYFLT cpstoinc;
     int32_t  phase;
@@ -1155,7 +1177,7 @@ static int32_t dioderingmod_init(CSOUND *csound, t_diode_ringmod *p) {
     p->started = 0;
     p->seed = csound->GetRandomSeedFromTime();
     p->sinp = 0;
-#ifdef USE_LOOPUP_SINE
+#ifdef USE_LOOKUP_SINE
     MYFLT ifn = -1;
     p->ftp = csound->FTFind(csound, &ifn);
     uint32_t tabsize = p->ftp->flen;
@@ -1381,7 +1403,7 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-	{ "crackle", S(CRACKLE), 0, 3, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf },
+    { "crackle", S(CRACKLE), 0, 3, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf },
     { "ramptrig.k_kk", S(RAMPTRIGK), 0, 3, "k", "kkP", (SUBR)ramptrig_k_kk_init, (SUBR)ramptrig_k_kk },
     { "ramptrig.a_kk", S(RAMPTRIGK), 0, 3, "a", "kkP", (SUBR)ramptrig_a_kk_init, (SUBR)ramptrig_a_kk },
     { "ramptrig.sync_kk_kk", S(RAMPTRIGSYNC), 0, 3, "kk", "kkPO", (SUBR)ramptrigsync_kk_kk_init, (SUBR)ramptrigsync_kk_kk},
@@ -1397,7 +1419,7 @@ static OENTRY localops[] = {
 
     // aout dioderingmod ain, kfreq, kdiodeon=1, kfeedback=0, knonlinear=0, ioversample=0
     { "diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO", (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf},
-
+    { "file_exists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init}
 
 };
 

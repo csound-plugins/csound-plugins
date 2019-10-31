@@ -8,7 +8,8 @@
       "schmitt",
       "standardchaos",
       "linenv",
-      "diode_ringmod"
+      "diode_ringmod",
+      "file_exists"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
