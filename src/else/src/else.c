@@ -1378,7 +1378,7 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
             //------------------------
             //power series out
             //------------------------
-            MYFLT o_fx_out1l = 0.5*(bl_out1+p->o_fx_out2l);
+             MYFLT o_fx_out1l = 0.5*(bl_out1+p->o_fx_out2l);
             p->o_fx_out2l = 0.5*(bl_out2+o_fx_out1l);
 
             //fir restoration
