@@ -14,7 +14,6 @@ very efficient hashtables for csound
 
 ### poly
 
-
 Parallel and sequential multiplexing opcodes, they enable to create and control multiple instances of a csound opcode
 
 ### else
@@ -51,14 +50,16 @@ will use that instead of the older one. After solving this, procede with the nor
 Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
 
 
-## Use the offline documentation
+## Offline Documentation
 
-FIrst install [mkdocs](https://www.mkdocs.org/):
+Static documentation can be browsed by opening site/index.html in your browser. To be able to
+use the search function you need to:
 
+
+    # install [mkdocs](https://www.mkdocs.org/):
     pip3 install mkdocs --user
 
-At the root folder of the project, do: 
-
+    # generate the documentation and serveit
     mkdocs build && mkdocs serve
 
 The documentation can then be browsed at htpp://127.0.0.1:8080
