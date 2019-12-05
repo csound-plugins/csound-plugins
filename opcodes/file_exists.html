@@ -249,7 +249,9 @@
 <h2 id="abstract">Abstract</h2>
 <p>Returns 1 if a file exists and can be read</p>
 <h2 id="description">Description</h2>
-<p><code>file_exists</code> checks if a given file path exists and returns 1 if it does, 0 otherwise</p>
+<p><code>file_exists</code> checks if a given file path exists and returns 1 if it does, 0 otherwise.
+It doesn't check any search path of csound and does not expand any variables 
+(like "~" in unix). </p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>iexists  file_exists  Spath
 </pre></div>
