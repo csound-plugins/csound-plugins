@@ -309,13 +309,16 @@ Writing to a parg which has not been set as the instance was scheduled
 <span class="cm">*/</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
+    <span class="nb">pset</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span>
     <span class="kt">k</span><span class="n">4</span> <span class="o">=</span> <span class="vi">p4</span>
-    <span class="nb">printf</span> <span class="s">&quot;instance: </span><span class="si">%.3f</span><span class="s">, p4: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="vi">p1</span><span class="p">,</span> <span class="kt">k</span><span class="n">4</span>
+    <span class="kt">k</span><span class="n">5</span> <span class="o">=</span> <span class="vi">p5</span>
+    <span class="nb">printf</span> <span class="s">&quot;instance: </span><span class="si">%.3f</span><span class="s">, p4: </span><span class="si">%f</span><span class="s">, p5: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="vi">p1</span><span class="p">,</span> <span class="kt">k</span><span class="n">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">5</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
     <span class="kt">k</span><span class="n">val</span> <span class="nb">line</span> <span class="mi">10</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">20</span>
     <span class="n">pargwrite</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span>
+    <span class="n">pargwrite</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span><span class="o">*</span><span class="mi">2</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
