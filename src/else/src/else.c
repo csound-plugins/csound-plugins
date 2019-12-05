@@ -1378,7 +1378,7 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
             //------------------------
             //power series out
             //------------------------
-             MYFLT o_fx_out1l = 0.5*(bl_out1+p->o_fx_out2l);
+            MYFLT o_fx_out1l = 0.5*(bl_out1+p->o_fx_out2l);
             p->o_fx_out2l = 0.5*(bl_out2+o_fx_out1l);
 
             //fir restoration
@@ -1399,6 +1399,111 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
     return OK;
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+typedef struct {
+    OPDS h;
+    MYFLT *outval, *instrnum, *pindex, *inotfound;
+    INSDS *instr;
+} PREAD;
+
+/*
+ * ivalue pread 100.104, 4, -1         ; read p4 from instr 100.104, return -1 if instr not found
+ *
+ * 
+ */
+
+static int32_t
+pargread_init(CSOUND *csound, PREAD *p) {
+    IGN(csound);
+    MYFLT p1 = *p->instrnum;
+    INSDS *instr = p->h.insdshead;
+    int found = 0;
+    while (1) {
+        instr = instr->nxtact;
+        if(instr == NULL)
+            break;
+        if(instr->p1.value == p1) {
+            found = 1;
+            break;
+        }
+    }
+    if (!found) {
+        instr = p->h.insdshead;
+        while (1) {
+            instr = instr->prvact;
+            if(instr == NULL)
+                break;
+            if(instr->p1.value == p1) {
+                found = 1;
+                break;
+            }
+        }    
+    }
+    if (!found) {
+        *p->outval = *p->inotfound;
+        return OK;
+    }
+    p->instr = instr;
+    CS_VAR_MEM *pargs = &(instr->p0);
+    int idx = (int)*p->pindex;
+    MYFLT value = pargs[idx].value;
+    *p->outval = value;
+    return OK;
+}
+
+// pargwrite instrnum, indx, kvalue
+typedef struct {
+    OPDS h;
+    MYFLT *instrnum, *indx, *kvalue;
+    INSDS *instr;
+    CS_VAR_MEM *pargs;
+} PWRITE;
+
+static int32_t
+pargwrite_init(CSOUND *csound, PWRITE *p) {
+    IGN(csound);
+    MYFLT p1 = *p->instrnum;
+    INSDS *instr = p->h.insdshead;
+    int found = 0;
+    while (1) {
+        instr = instr->nxtact;
+        if(instr == NULL)
+            break;
+        if(instr->p1.value == p1) {
+            found = 1;
+            break;
+        }
+    }
+    if (!found) {
+        instr = p->h.insdshead;
+        while (1) {
+            instr = instr->prvact;
+            if(instr == NULL)
+                break;
+            if(instr->p1.value == p1) {
+                found = 1;
+                break;
+            }
+        }
+    }
+    if (!found) {
+        return INITERRF("No instance found for instrument number %f", p1);
+    }
+    p->instr = instr;
+    CS_VAR_MEM *pargs = &(instr->p0);
+    p->pargs = pargs;
+    int idx = (int)*p->indx;
+    pargs[idx].value = *p->kvalue;
+    return OK;
+}
+
+static int32_t
+pargwrite_perf(CSOUND *csound, PWRITE *p) {
+    int idx = (int)*p->indx;
+    p->pargs[idx].value = *p->kvalue;
+    return OK;
+}
 
 #define S(x) sizeof(x)
 
@@ -1419,7 +1524,12 @@ static OENTRY localops[] = {
 
     // aout dioderingmod ain, kfreq, kdiodeon=1, kfeedback=0, knonlinear=0, ioversample=0
     { "diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO", (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf},
-    { "file_exists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init}
+    { "file_exists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init},
+    { "pargread", S(PREAD), 0, 1, "i", "iij", (SUBR)pargread_init},
+    { "pargwrite", S(PWRITE), 0, 1, "", "iii", (SUBR)pargwrite_init},
+    { "pargwrite.k", S(PWRITE), 0, 3, "", "ikk", (SUBR)pargwrite_init, (SUBR)pargwrite_perf},
+
+
 
 };
 

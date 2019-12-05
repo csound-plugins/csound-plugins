@@ -6,7 +6,9 @@ Returns 1 if a file exists and can be read
 
 ## Description
 
-`file_exists` checks if a given file path exists and returns 1 if it does, 0 otherwise
+`file_exists` checks if a given file path exists and returns 1 if it does, 0 otherwise.
+It doesn't check any search path of csound and does not expand any variables 
+(like "~" in unix). 
 
 ## Syntax
 

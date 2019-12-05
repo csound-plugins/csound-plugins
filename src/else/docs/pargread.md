@@ -1,0 +1,98 @@
+# pargread
+
+## Abstract
+
+Read parg values from any active instrument instance
+
+## Description
+
+`pargread` can be used to query parg vales of a running instance (possibly a 
+fractional instrument number) of an instrument. Together with 
+`pargwrite` it can be used to establish a two-way communication
+between two running instances of any two instruments.
+
+It no instance is found that matches the given instrument number,
+the output value is set to `inotfound`. 
+
+Reading a parg which has not been set as the instance was scheduled
+(either in the score or via the multiple scheduling opcodes, like "event",
+"schedule", etc) will result in *undefined behaviour*.
+
+## Syntax
+
+    output:i|k pargread instrnum, index:i|k [, inotfound=-1] 
+    
+### Arguments
+
+* `instrnum` (i):  the (fractional) instrument number to modify
+* `index` (i or k): the index of the parg to read. If kindex is 4, then p4 will be 
+  modified
+* `inotfound`: the value to return if instrnum is not found (should be different from 
+  any expected value)
+
+### Output
+
+* `output` (i or k): the current value of the given parg
+
+### Execution Time
+
+* Init (if output is of i-type)
+* Performance (if output is of k-type)
+
+## Examples
+
+```csound 
+
+<CsoundSynthesizer>
+<CsOptions>
+
+--nosound
+-m0
+
+</CsOptions>
+
+<CsInstruments>
+
+/*
+    Example file for pargread
+
+    ivalue pargread instrnum, indx [, inotfound=-1]
+
+    pargread reads a parg value from an active instrument
+    Returns inotfound if instrnum is not active
+   
+*/
+
+instr 1
+    print p4
+endin
+
+instr 2
+    ip4 pargread 1.01, 4
+    printf "<<<< p4 for instr 1.01 is %f >>>>\n", 1, ip4
+    turnoff
+endin
+
+</CsInstruments>
+
+<CsScore>
+i 1.01 0 2 95
+i 2 1 0.1
+
+</CsScore>
+</CsoundSynthesizer>
+
+
+```
+
+
+## See also
+
+* [pargwrite](pargread.md)
+* [pset](https://csound.com/docs/manual/pset.html)
+* [p](https://csound.com/docs/manual/p.html))
+* [passign](https://csound.com/docs/manual/passign.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019
