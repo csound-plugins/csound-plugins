@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>ramptrig - Csound Plugins</title>
+  <title>pargread - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "ramptrig";
-    var mkdocs_page_input_path = "opcodes/ramptrig.md";
+    var mkdocs_page_name = "pargread";
+    var mkdocs_page_input_path = "opcodes/pargread.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -156,28 +156,12 @@
                     
     <a class="" href="linenv.html">linenv</a>
                 </li>
-                <li class="">
-                    
-    <a class="" href="pargread.html">pargread</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="pargwrite.html">pargwrite</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="poly.html">poly</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="polyseq.html">polyseq</a>
-                </li>
                 <li class=" current">
                     
-    <a class="current" href="ramptrig.html">ramptrig</a>
+    <a class="current" href="pargread.html">pargread</a>
     <ul class="subnav">
             
-    <li class="toctree-l3"><a href="#ramptrig">ramptrig</a></li>
+    <li class="toctree-l3"><a href="#pargread">pargread</a></li>
     
         <ul>
         
@@ -197,6 +181,22 @@
     
 
     </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pargwrite.html">pargwrite</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="poly.html">poly</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="polyseq.html">polyseq</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="ramptrig.html">ramptrig</a>
                 </li>
                 <li class="">
                     
@@ -243,7 +243,7 @@
         
       
     
-    <li>ramptrig</li>
+    <li>pargread</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -253,98 +253,77 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="ramptrig">ramptrig</h1>
+                <h1 id="pargread">pargread</h1>
 <h2 id="abstract">Abstract</h2>
-<p>A triggerable ramp between 0 and 1</p>
+<p>Read parg values from any active instrument instance</p>
 <h2 id="description">Description</h2>
-<p><code>ramptrig</code> is a phasor between 0 and 1, with the difference that it stops after
-reaching its end point. Whenever it is triggered it rewinds to 0 and starts
-ramping to 1 in the given duration. </p>
-<p>A trigger detected whenever the value is possitive and higher than the previous value.</p>
-<div class="admonition note">
-<p class="admonition-title">Usage as envelope generator</p>
-<p>Together with <code>bpf</code> this can be used to emulate supercollider's <code>Env</code> and <code>EnvGen</code>,
-where <code>ramptrig</code> is used as a triggerable phasor, passed as an argument to <code>bpf</code>,
-which generates the envelope. See examples</p>
-</div>
+<p><code>pargread</code> can be used to query parg vales of a running instance (possibly a 
+fractional instrument number) of an instrument. Together with 
+<code>pargwrite</code> it can be used to establish a two-way communication
+between two running instances of any two instruments.</p>
+<p>It no instance is found that matches the given instrument number,
+the output value is set to <code>inotfound</code>. </p>
+<p>Reading a parg which has not been set as the instance was scheduled
+(either in the score or via the multiple scheduling opcodes, like "event",
+"schedule", etc) will result in <em>undefined behaviour</em>.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>kout ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
-kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
+<div class="codehilite"><pre><span></span><span class="n">output</span><span class="o">:</span><span class="n">i</span><span class="o">|</span><span class="n">k</span> <span class="n">pargread</span> <span class="n">instrnum</span><span class="o">,</span> <span class="n">index</span><span class="o">:</span><span class="n">i</span><span class="o">|</span><span class="n">k</span> <span class="o">[,</span> <span class="n">inotfound</span><span class="o">=-</span><span class="mi">1</span><span class="o">]</span>
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>ktrig</code>: whenever this is possitive and higher than last value, kout is rewinded to 0</li>
-<li><code>kdur</code>: the duration of the ramp</li>
-<li><code>ivaluepost</code>: value when ramp reaches its end (default=1)</li>
-<li><code>ivaluepre</code>: value previous to any trigger (default=0)</li>
+<li><code>instrnum</code> (i):  the (fractional) instrument number to modify</li>
+<li><code>index</code> (i or k): the index of the parg to read. If kindex is 4, then p4 will be 
+  modified</li>
+<li><code>inotfound</code>: the value to return if instrnum is not found (should be different from 
+  any expected value)</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>kout</code>: value of the ramp, between 0 and 1. It can also be <code>ivaluepost</code> or <code>ivaluepre</code> if 
-          these are set to any other value than the default</li>
-<li><code>kfinished</code>: will be one whenever the ramp reaches its end value. </li>
+<li><code>output</code> (i or k): the current value of the given parg</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Performance</li>
+<li>Init (if output is of i-type)</li>
+<li>Performance (if output is of k-type)</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
+<span class="o">--</span><span class="n">nosound</span>
+<span class="o">-</span><span class="n">m0</span>
+
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="c1">; This is the example file of ramptrig</span>
-<span class="c1">; ramptrig is a triggerable ramp from 0 to 1</span>
-<span class="c1">; xout ramptrig xtrig, kdur</span>
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="cm">/*</span>
+<span class="cm">    Example file for pargread</span>
 
-<span class="c1">; Use Case #1: An envelope which can be retriggered</span>
+<span class="cm">    ivalue pargread instrnum, indx [, inotfound=-1]</span>
+
+<span class="cm">    pargread reads a parg value from an active instrument</span>
+<span class="cm">    Returns inotfound if instrnum is not active</span>
+
+<span class="cm">*/</span>
+
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="c1">; Duration of envelope</span>
-    <span class="kt">k</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="c1">; This is the gate, could be any irregular signal, midi, osc, etc.    </span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mf">0.5</span>
-    <span class="c1">; Whenever ktrig is possitive and higher than previous value, </span>
-    <span class="c1">; kx ramps from 0 to 1 in kdur seconds</span>
-    <span class="kt">k</span><span class="n">x</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span>
-    <span class="c1">; actual envelope</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">x</span><span class="o">*</span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="nb">oscili</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span>
-    <span class="c1">; asig pinker</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+    <span class="nb">print</span> <span class="vi">p4</span>
 <span class="kd">endin</span>
 
-<span class="c1">; Use Case #2: Use finished trigger to signal something</span>
 <span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">1</span><span class="o">/</span><span class="mi">4</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">delayk</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mf">0.5</span>
-    <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="kt">k</span><span class="n">phase</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mi">2</span>
-    <span class="nb">printf</span> <span class="s">&quot;finished! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">phase</span> <span class="o">*</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+    <span class="kt">i</span><span class="n">p4</span> <span class="n">pargread</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">4</span>
+    <span class="nb">printf</span> <span class="s">&quot;&lt;&lt;&lt;&lt; p4 for instr 1.01 is </span><span class="si">%f</span><span class="s"> &gt;&gt;&gt;&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">p4</span>
+    <span class="nb">turnoff</span>
 <span class="kd">endin</span>
-
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">10</span>
-<span class="c1">; i2 0 12</span>
-<span class="c1">; i3 0 20</span>
-<span class="c1">; f0 3600</span>
-
+<span class="nb">i</span> <span class="mf">1.01</span> <span class="mi">0</span> <span class="mi">2</span> <span class="mi">95</span>
+<span class="nb">i</span> <span class="mi">2</span> <span class="mi">1</span> <span class="mf">0.1</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -353,9 +332,10 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="linenv.html">linenv</a></li>
-<li><a href="https://csound.com/docs/manual/sc_phasor.html">sc_phasor</a></li>
-<li><a href="https://csound.com/docs/manual/bpf.html">bpf</a></li>
+<li><a href="pargread.html">pargwrite</a></li>
+<li><a href="https://csound.com/docs/manual/pset.html">pset</a></li>
+<li><a href="https://csound.com/docs/manual/p.html">p</a>)</li>
+<li><a href="https://csound.com/docs/manual/passign.html">passign</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -366,10 +346,10 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="schmitt.html" class="btn btn-neutral float-right" title="schmitt">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="pargwrite.html" class="btn btn-neutral float-right" title="pargwrite">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="polyseq.html" class="btn btn-neutral" title="polyseq"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="linenv.html" class="btn btn-neutral" title="linenv"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -395,10 +375,10 @@ kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="polyseq.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="linenv.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="schmitt.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="pargwrite.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
