@@ -9,7 +9,9 @@
       "standardchaos",
       "linenv",
       "diode_ringmod",
-      "file_exists"
+      "file_exists",
+      "pargwrite",
+      "pargread"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
