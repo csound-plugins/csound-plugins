@@ -62,13 +62,16 @@ Writing to a parg which has not been set as the instance was scheduled
 */
 
 instr 1
+    pset 0, 0, 0, 40, 50, 60
     k4 = p4
-    printf "instance: %.3f, p4: %f \n", metro(10), p1, k4
+    k5 = p5
+    printf "instance: %.3f, p4: %f, p5: %f \n", metro(20), p1, k4, k5
 endin
 
 instr 2
     kval line 10, p3, 20
     pargwrite 1.01, 4, kval
+    pargwrite 1.02, 5, kval*2
 endin
 
 </CsInstruments>
