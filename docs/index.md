@@ -66,8 +66,9 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
-* [pargwrite](opcodes/pargwrite.md): Modify parg values of an active instrument instance 
-* [pargread](opcodes/pargread.md): Read parg values from any active instrument instance 
+* [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
+* [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
+* [uniqinstance](opcodes/uniqinstance.md): Modify pfield values of an active instrument instance 
 
 
 

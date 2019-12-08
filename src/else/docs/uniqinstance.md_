@@ -1,0 +1,53 @@
+# uniqinstance
+
+## Abstract
+
+Modify pfield values of an active instrument instance
+
+## Description
+
+Given an integer instrument number, `uniqinstance` a fractional 
+instrument number which is not active now and can be used as p1
+for `event`, `schedule` or similar opcodes to create a unique 
+instance of the given instrument
+
+
+!!! Note
+
+    This opcode **DOES NOT** create a new instance. It just returns
+    an instr number which can be used to create one
+    
+
+## Syntax
+
+    instrnum  uniqinstrance integer_instrnum
+    
+### Arguments
+
+* `integer_instrnum`: the integer instrument number
+
+### Output
+
+* `instrnum`: a fractional instrument number which is guaranteed
+  not to be active at the moment
+
+### Execution Time
+
+* Init (if index and value are i-values)
+* Performance (if either index or value are k-variables)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [pread](pread.md)
+* [pset](https://csound.com/docs/manual/pset.html)
+* [p](https://csound.com/docs/manual/p.html)
+* [passign](https://csound.com/docs/manual/passign.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019

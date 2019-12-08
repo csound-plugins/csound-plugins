@@ -10,8 +10,9 @@
       "linenv",
       "diode_ringmod",
       "file_exists",
-      "pargwrite",
-      "pargread"
+      "pwrite",
+      "pread",
+      "uniqinstance"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

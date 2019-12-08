@@ -165,6 +165,7 @@
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
+#define MSGF(fmt, ...) (csound->Message(csound, fmt, __VA_ARGS__))
 #define INITERR(m) (csound->InitError(csound, "%s", m))
 #define INITERRF(fmt, ...) (csound->InitError(csound, fmt, __VA_ARGS__))
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
@@ -1399,138 +1400,368 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
     return OK;
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+/*
+ * pread / pwrite
+ *
+ * Communicate between notes via p-fields
+ *
+ */
+
+INSTRTXT *find_instrdef(INSDS *insdshead, int instrnum) {
+    INSDS *instr = insdshead->nxtact;
+    while (instr) {
+        if(instr->insno == instrnum)
+            return instr->instr;
+        instr = instr->nxtact;
+    }
+    // not found yet, search backwards
+    instr = insdshead->prvact;
+    while (instr) {
+        if(instr->insno == instrnum)
+            return instr->instr;
+        instr = instr->prvact;
+    }
+    return NULL;
+}
+
+INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum) {
+    INSDS *instance = instrdef->instance;
+    while(instance) {
+        if (instance->actflg && instance->p1.value == instrnum) {
+            return instance;
+        }
+        instance = instance->nxtinstance;
+    }
+    return NULL;
+}
+
+
+/*
+ * pread
+ *
+ * read p-fields from a different instrument
+ *
+ * iout pread instrnum, index  [, inotfound=-1]
+ * kout pread instrnum, index  [, inotfound=-1]
+ * kout pread instrnum, kindex [, inotfound=-1]
+ *
+ */
 typedef struct {
     OPDS h;
     MYFLT *outval, *instrnum, *pindex, *inotfound;
-    INSDS *instr;
+
+    CS_VAR_MEM *pfields;    // points to instr's pfields
+    int maxpfield;         // max readable pfield
+    INSDS *instr;         // found instr
+    int retry;            // should we retry when not found?
+    int found;            // -1 if not yet searched, 0 if not found, 1 if found
+    INSTRTXT *instrtxt;   // instrument definition
 } PREAD;
 
-/*
- * ivalue pread 100.104, 4, -1         ; read p4 from instr 100.104, return -1 if instr not found
- *
- * 
- */
 
-static int32_t
-pargread_init(CSOUND *csound, PREAD *p) {
+int32_t pread_search(CSOUND *csound, PREAD *p) {
     IGN(csound);
     MYFLT p1 = *p->instrnum;
-    INSDS *instr = p->h.insdshead;
-    int found = 0;
-    while (1) {
-        instr = instr->nxtact;
-        if(instr == NULL)
-            break;
-        if(instr->p1.value == p1) {
-            found = 1;
-            break;
+    INSDS *instr;
+    p->found = 0;
+    if(!p->instrtxt)
+        p->instrtxt = find_instrdef(p->h.insdshead, (int)p1);
+    if(!p->instrtxt)
+        return 0;
+    // found an instrument definition
+    p->maxpfield = p->instrtxt->pmax;
+
+    if(p1 != floor(p1)) {
+        // fractional instrnum
+        instr = find_instance_exact(p->instrtxt, p1);
+    } else {
+        // find first instance of this instr
+        instr = p->instrtxt->instance;
+        while(instr) {
+            if(instr->actflg)
+                break;
+            instr = instr->nxtinstance;
         }
     }
-    if (!found) {
-        instr = p->h.insdshead;
-        while (1) {
-            instr = instr->prvact;
-            if(instr == NULL)
-                break;
-            if(instr->p1.value == p1) {
-                found = 1;
-                break;
-            }
-        }    
+    if(!instr)
+        return 0;
+    p->found = 1;
+    p->instr = instr;
+    p->pfields = &(instr->p0);
+    return 1;
+}
+
+static int32_t
+pread_init(CSOUND *csound, PREAD *p) {
+    IGN(csound);
+    MYFLT p1 = *p->instrnum;
+    p->found = -1;
+    // a negative instr. number indicates NOT to search again after failed to
+    // find the given instance
+    if(p1 < 0) {
+        p->retry = 0;
+        *p->instrnum = p1 = -p1;
+    } else {
+        p->retry = 1;
     }
-    if (!found) {
-        *p->outval = *p->inotfound;
+    *p->outval = *p->inotfound;
+    return OK;
+}
+
+static int32_t
+pread_perf(CSOUND *csound, PREAD *p) {
+    int idx = (int)*p->pindex;
+    if(p->found == -1 || (p->found==0 && p->retry)) {
+        int found = pread_search(csound, p);
+        if (!found) {
+            return OK;
+        }
+    }
+    if(!p->instr->actflg) {
         return OK;
     }
-    p->instr = instr;
-    CS_VAR_MEM *pargs = &(instr->p0);
-    int idx = (int)*p->pindex;
-    MYFLT value = pargs[idx].value;
+    if(idx > p->maxpfield) {
+        return PERFERRF(Str("pread: can't read p%d (max index = %d)"), idx, p->maxpfield);
+    }
+    MYFLT value = p->pfields[idx].value;
     *p->outval = value;
     return OK;
 }
 
-// pargwrite instrnum, indx, kvalue
+static int32_t
+pread_i(CSOUND *csound, PREAD *p) {
+    int ans = pread_init(csound, p);
+    if(ans == NOTOK)
+        return NOTOK;
+    return pread_perf(csound, p);
+}
+
+#define PWRITE_MAXINPUTS 40
+
+// pwrite instrnum, indx, kvalue [, indx2, kvalue2, ...]
+/*
+ * pwrite
+ *
+ * Modifies the p-fields of another instrument
+ *
+ * pwrite instrnum, index1, value1 [, index2, value2, ...]
+ *
+ * instrnum (i): the instrument number.
+ *      * If a fractional number is given, only the instance with this
+ *        exact number is modified.
+ *      * If an integer number is given, ALL instances of this instrument are modified
+ *      * Matching instances are searched at performance, and search is retried
+ *        if no matching instances were found. If a negative instrnum is given,
+ *        search is attempted only once and the opcode becomes a NOOP if no instances
+ *        were found
+ */
 typedef struct {
     OPDS h;
-    MYFLT *instrnum, *indx, *kvalue;
-    INSDS *instr;
-    CS_VAR_MEM *pargs;
+    // inputs
+    MYFLT *instrnum;
+    MYFLT *inputs[PWRITE_MAXINPUTS];
+
+    MYFLT p1;            // cached instrnum, will always be positive
+    int numpairs;        // number of index:value pairs
+    int retry;           // should we retry when no instance matched?
+    INSDS *instr;        // a pointer to the found instance, when matching exact number
+    INSTRTXT *instrtxt;  // used in broadcasting mode, a pointer to the instrument template
+    int maxpfield;        // max pfield accepted by the instrument
+    int broadcasting;    // are we broadcasting?
+    int found;           // have we found any matching instances?
+    CS_VAR_MEM *pfields;   // a pointer to the insance pfield, when doing exact matching
 } PWRITE;
 
+
+inline void pwrite_writevalues(CSOUND *csound, PWRITE *p, CS_VAR_MEM *pfields) {
+    for(int pair=0; pair < p->numpairs; pair++) {
+        int indx = (int)*(p->inputs[pair*2]);
+        MYFLT value = *(p->inputs[pair*2+1]);
+        if(indx > p->maxpfield)
+            MSGF("pwrite: can't write to p%d (max index=%d)", indx, p->maxpfield);
+        else
+            pfields[indx].value = value;
+    }
+}
+
+
 static int32_t
-pargwrite_init(CSOUND *csound, PWRITE *p) {
+pwrite_search(CSOUND *csound, PWRITE *p) {
+    IGN(csound);
+    MYFLT p1 = p->p1;
+    if(p->instrtxt == NULL) {
+        INSTRTXT *instrdef = find_instrdef(p->h.insdshead, (int)p1);
+        if(!instrdef) {
+            return 0;
+        }
+        p->instrtxt = instrdef;
+        p->maxpfield = instrdef->pmax;
+    }
+    // if we are not broadcasting, search the exact match
+    if (!(p->broadcasting)) {
+        INSDS *instr = find_instance_exact(p->instrtxt, p1);
+        if(!instr) {
+            return 0;
+        }
+        p->instr = instr;
+        p->pfields = &(instr->p0);
+    }
+    return 1;
+}
+
+
+static int32_t
+pwrite_initcommon(CSOUND *csound, PWRITE *p) {
     IGN(csound);
     MYFLT p1 = *p->instrnum;
-    INSDS *instr = p->h.insdshead;
-    int found = 0;
-    while (1) {
-        instr = instr->nxtact;
-        if(instr == NULL)
-            break;
-        if(instr->p1.value == p1) {
-            found = 1;
-            break;
-        }
+    if (p1 < 0) {
+        p1 = -p1;
+        p->retry = 0;
+    } else {
+        p->retry = 1;
     }
-    if (!found) {
-        instr = p->h.insdshead;
-        while (1) {
-            instr = instr->prvact;
-            if(instr == NULL)
-                break;
-            if(instr->p1.value == p1) {
-                found = 1;
-                break;
-            }
-        }
-    }
-    if (!found) {
-        return INITERRF("No instance found for instrument number %f", p1);
-    }
-    p->instr = instr;
-    CS_VAR_MEM *pargs = &(instr->p0);
-    p->pargs = pargs;
-    int idx = (int)*p->indx;
-    pargs[idx].value = *p->kvalue;
+    p->p1 = p1;
+    p->broadcasting = floor(p1) == p1;
+    p->numpairs = (csound->GetInputArgCnt(p) - 1) / 2;
+    p->found = -1;
+    p->instrtxt = NULL;
     return OK;
 }
 
+
 static int32_t
-pargwrite_perf(CSOUND *csound, PWRITE *p) {
-    int idx = (int)*p->indx;
-    p->pargs[idx].value = *p->kvalue;
+pwrite_perf(CSOUND *csound, PWRITE *p) {
+    if(p->found == -1 || (p->found == 0 && p->retry))
+        p->found = pwrite_search(csound, p);
+    if(!p->found)
+        return OK;
+
+    if (!p->broadcasting) {
+        pwrite_writevalues(csound, p, p->pfields);
+        return OK;
+    }
+    // broadcasting mode
+    INSDS *instance = p->instrtxt->instance;
+    while(instance) {
+        if (instance->actflg) {  // is this instance active?
+            pwrite_writevalues(csound, p, &(instance->p0));
+        }
+        instance = instance->nxtinstance;
+    }
     return OK;
 }
+
+
+static int32_t
+pwrite_i(CSOUND *csound, PWRITE *p) {
+    int32_t ans = pwrite_initcommon(csound, p);
+    if(ans == NOTOK) return NOTOK;
+    return pwrite_perf(csound, p);
+}
+
+
+/* uniqinstance
+ *
+ * given an integer instrument number, return a fractional instr. number
+ * which is not active now and can be used as p1 for "event" or similar
+ * opcodes to create a unique instance of an instrument
+ *
+ * instrnum  uniqinstrance integer_instrnum
+ *
+ */
+
+typedef struct {
+    OPDS h;
+    MYFLT *out, *int_instrnum;
+} UNIQINSTANCE;
+
+#define UNIQ_NUMSLOTS 1000
+
+static int32_t
+uniqueinstance_init(CSOUND *csound, UNIQINSTANCE *p) {
+    IGN(csound);
+    int p1 = (int)(*p->int_instrnum);
+    char slots[UNIQ_NUMSLOTS] = {0};
+    int idx;
+    MYFLT fractional_part, integral_part;
+    INSTRTXT *instrtxt = find_instrdef(p->h.insdshead, (int)p1);
+    if(!instrtxt || instrtxt->instance == NULL) {
+        // no instances of this instrument, so pick first index
+        *p->out = p1 + FL(1)/UNIQ_NUMSLOTS;
+        return OK;
+    }
+    INSDS *instance = instrtxt->instance;
+    while(instance) {
+        if(instance->actflg) {
+            if(instance->p1.value == instance->insno)
+                continue;
+            fractional_part = modf(instance->p1.value, &integral_part);
+            idx = (int)(fractional_part * UNIQ_NUMSLOTS + 0.5);
+            slots[idx] = 1;
+        }
+        instance = instance->nxtinstance;
+    }
+    for(int i=1; i < UNIQ_NUMSLOTS; i++) {
+        if(slots[i] == 0) {
+            *p->out = p1 + i / FL(UNIQ_NUMSLOTS);
+            return OK;
+        }
+    }
+    *p->out = -1;
+    return OK;
+}
+
+/*
+
+instr 100  ; generator
+    pset 0,0,0, 440, 0.5, 4000
+    kfreq, kamp, kcutoff passign 4
+    a0 ... ; do something with this params
+endin
+
+instr 200  ; controls
+    inst uniqinstance 100
+    event_i inst, 0, -1
+    kfreq line 440, p3, 880
+    kcutoff line 4000, p3, 400
+    pwrite inst, 4, kfreq, 6, kcutoff
+endin
+
+ */
 
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
     { "crackle", S(CRACKLE), 0, 3, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf },
-    { "ramptrig.k_kk", S(RAMPTRIGK), 0, 3, "k", "kkP", (SUBR)ramptrig_k_kk_init, (SUBR)ramptrig_k_kk },
-    { "ramptrig.a_kk", S(RAMPTRIGK), 0, 3, "a", "kkP", (SUBR)ramptrig_a_kk_init, (SUBR)ramptrig_a_kk },
-    { "ramptrig.sync_kk_kk", S(RAMPTRIGSYNC), 0, 3, "kk", "kkPO", (SUBR)ramptrigsync_kk_kk_init, (SUBR)ramptrigsync_kk_kk},
+    { "ramptrig.k_kk", S(RAMPTRIGK), 0, 3, "k", "kkP", (SUBR)ramptrig_k_kk_init,
+      (SUBR)ramptrig_k_kk },
+    { "ramptrig.a_kk", S(RAMPTRIGK), 0, 3, "a", "kkP", (SUBR)ramptrig_a_kk_init,
+      (SUBR)ramptrig_a_kk },
+    { "ramptrig.sync_kk_kk", S(RAMPTRIGSYNC), 0, 3, "kk", "kkPO",
+      (SUBR)ramptrigsync_kk_kk_init, (SUBR)ramptrigsync_kk_kk},
     { "sigmdrive.a_ak",S(SIGMDRIVE), 0, 2, "a", "akO", NULL, (SUBR)sigmdrive_a_ak},
     { "sigmdrive.a_aa",S(SIGMDRIVE), 0, 2, "a", "aaO", NULL, (SUBR)sigmdrive_a_aa},
     { "lfnoise", S(LFNOISE), 0, 3, "a", "kO", (SUBR)lfnoise_init, (SUBR)lfnoise_perf},
     { "schmitt.k", S(SCHMITT), 0, 3, "k", "kkk", (SUBR)schmitt_k_init, (SUBR)schmitt_k_perf},
     { "schmitt.a", S(SCHMITT), 0, 3, "a", "akk", (SUBR)schmitt_k_init, (SUBR)schmitt_a_perf},
-    { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kkio", (SUBR)standardchaos_init, (SUBR)standardchaos_perf},
-    { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kP", (SUBR)standardchaos_init_x, (SUBR)standardchaos_perf},
+    { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kkio",
+      (SUBR)standardchaos_init, (SUBR)standardchaos_perf},
+    { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kP",
+      (SUBR)standardchaos_init_x, (SUBR)standardchaos_perf},
     { "linenv.k_k", S(RAMPGATE), 0, 3, "k", "kiM", (SUBR)linenv_k_init, (SUBR)linenv_k_k},
     { "linenv.a_k", S(RAMPGATE), 0, 3, "a", "kiM", (SUBR)linenv_a_init, (SUBR)linenv_a_k},
 
     // aout dioderingmod ain, kfreq, kdiodeon=1, kfeedback=0, knonlinear=0, ioversample=0
-    { "diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO", (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf},
+    { "diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO",
+      (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf},
     { "file_exists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init},
-    { "pargread", S(PREAD), 0, 1, "i", "iij", (SUBR)pargread_init},
-    { "pargwrite", S(PWRITE), 0, 1, "", "iii", (SUBR)pargwrite_init},
-    { "pargwrite.k", S(PWRITE), 0, 3, "", "ikk", (SUBR)pargwrite_init, (SUBR)pargwrite_perf},
-
-
-
+    { "pread.i", S(PREAD), 0, 1, "i", "iij", (SUBR)pread_i},
+    { "pread.k", S(PREAD), 0, 3, "k", "ikJ", (SUBR)pread_init, (SUBR)pread_perf},
+    { "pwrite.i", S(PWRITE), 0, 1, "", "im", (SUBR)pwrite_i},
+    { "pwrite.k", S(PWRITE), 0, 3, "", "i*",
+      (SUBR)pwrite_initcommon, (SUBR)pwrite_perf},
+    { "uniqinstance", S(UNIQINSTANCE), 0, 1, "i", "i", (SUBR)uniqueinstance_init},
 };
 
 LINKAGE
