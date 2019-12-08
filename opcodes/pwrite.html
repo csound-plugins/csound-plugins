@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>pwrite - Csound Plugins</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../css/syntax-highlighting.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "pwrite";
+    var mkdocs_page_input_path = "opcodes/pwrite.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="icon icon-home"> Csound Plugins</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../index.html">Csound Plugins</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../Contributing.html">Contributing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../Installation.html">Installation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Opcodes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="atstop.html">atstop</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cacheget.html">cacheget</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cachepop.html">cachepop</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="cacheput.html">cacheput</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="crackle.html">crackle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_free.html">dict_free</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_get.html">dict_get</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_iter.html">dict_iter</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_new.html">dict_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_print.html">dict_print</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_query.html">dict_query</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_set.html">dict_set</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_size.html">dict_size</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="diode_ringmod.html">diode_ringmod</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="file_exists.html">file_exists</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx.html">jsfx</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_getslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_new.html">jsfx_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_play.html">jsfx_play</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="jsfx_setslider.html">jsfx_setslider</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="lfnoise.html">lfnoise</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="linenv.html">linenv</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="poly.html">poly</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="polyseq.html">polyseq</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pread.html">pread</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="pwrite.html">pwrite</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#pwrite">pwrite</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="ramptrig.html">ramptrig</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="schmitt.html">schmitt</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="sigmdrive.html">sigmdrive</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="standardchaos.html">standardchaos</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="tubeharmonics.html">tubeharmonics</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="uniqinstance.html">uniqinstance</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Csound Plugins</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Opcodes &raquo;</li>
+        
+      
+    
+    <li>pwrite</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="pwrite">pwrite</h1>
+<h2 id="abstract">Abstract</h2>
+<p>Modify pfield values of an active instrument instance</p>
+<h2 id="description">Description</h2>
+<p><code>pwrite</code> can be used to modify the value of a pfield of a running instance 
+(possibly a fractional instrument number).</p>
+<p>A matching instance is searched at performance time, so that its
+behaviour can be controlled via <code>if</code> or <code>timout</code> statements.</p>
+<p>If no active instance is found, search is retried until a matching
+instance is found. To avoid retrying, set <code>instrnum</code> to a negative value.</p>
+<p>If the instance ceases to exist during another instrument is modifying
+its pfield values, nothing happens. <code>pwrite</code> notices that the instance
+is not active anymore and becomes a <code>NOOP</code>.</p>
+<h3 id="exact-instance-vs-broadcasting">Exact instance vs Broadcasting</h3>
+<p>If <code>instrnum</code> is a fractional instrument number, pwrite will only affect
+the first instance matching this exact number.</p>
+<p>If <code>instrnum</code> is set to an integer number, <code>pwrite</code> will <strong>broadcast</strong> the
+changes to <strong>ALL</strong> instruments with the same integer number.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Setting a value of a pfield out of range will result in a 
+performance error. </p>
+</div>
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span>pwrite instrnum:i, index:i|k, value:i|k
+</pre></div>
+
+
+<h3 id="arguments">Arguments</h3>
+<ul>
+<li><code>instrnum</code>: the (fractional) instrument number to modify</li>
+<li><code>iindex</code> / <code>kindex</code>: the index of the pfield to modify. 
+  If kindex is 4, then p4 will be modified</li>
+<li><code>ivalue</code> / <code>kvalue</code>: the new value of the given pfield</li>
+</ul>
+<h3 id="execution-time">Execution Time</h3>
+<ul>
+<li>Init (if index and value are i-values)</li>
+<li>Performance (if either index or value are k-variables)</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">-</span><span class="n">odac</span>
+<span class="o">-</span><span class="n">m0</span>
+
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="kd">instr</span> <span class="nf">exit</span>
+  <span class="nb">exitnow</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; Example 1. instr 2 creates and controls instr 1</span>
+
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="nb">pset</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span>
+  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinsts</span>
+  <span class="kt">k</span><span class="n">4</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">5</span> <span class="o">=</span> <span class="vi">p5</span>
+  <span class="nb">printf</span> <span class="s">&quot;time: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s">instance: </span><span class="si">%.3f</span><span class="se">\t</span><span class="s">p4: </span><span class="si">%f</span><span class="se">\t</span><span class="s">p5: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="vi">p1</span><span class="p">,</span> <span class="kt">k</span><span class="n">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">5</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">k</span><span class="n">val</span> <span class="nb">line</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="n">pwrite</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span>
+  <span class="n">pwrite</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span><span class="o">*</span><span class="mi">2</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example1</span>
+  <span class="nb">schedule</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">schedule</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span>    <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;-----------------------------</span>
+<span class="c1">; Example 2, one instrument modulates another</span>
+
+<span class="kd">instr</span> <span class="nf">ex2_generator</span>
+  <span class="nb">pset</span> <span class="vi">p1</span><span class="p">,</span> <span class="vi">p2</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">,</span> <span class="mf">0.1</span>
+  <span class="kt">k</span><span class="n">amp</span>       <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">freq</span>      <span class="o">=</span> <span class="vi">p5</span>
+  <span class="kt">k</span><span class="n">cutoff</span>    <span class="o">=</span> <span class="vi">p6</span>
+  <span class="kt">k</span><span class="n">resonance</span> <span class="o">=</span> <span class="vi">p7</span>
+  <span class="kt">a</span><span class="n">saw</span> <span class="nb">vco2</span><span class="p">,</span> <span class="kt">k</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="nb">moogladder2</span><span class="p">,</span> <span class="kt">a</span><span class="n">saw</span><span class="p">,</span> <span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span> <span class="kt">k</span><span class="n">resonance</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>  
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">ex2_control</span>
+  <span class="kt">i</span><span class="n">glissdur</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">num1</span> <span class="o">=</span> <span class="kt">i</span><span class="n">num</span> <span class="o">+</span> <span class="mf">0.001</span>
+  <span class="kt">i</span><span class="n">num2</span> <span class="o">=</span> <span class="kt">i</span><span class="n">num</span> <span class="o">+</span> <span class="mf">0.002</span>
+  <span class="kt">k</span><span class="n">freq1</span> <span class="nb">linseg</span> <span class="n">ntof</span><span class="p">(</span><span class="s">&quot;4A&quot;</span><span class="p">),</span> <span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span> <span class="n">ntof</span><span class="p">(</span><span class="s">&quot;3A&quot;</span><span class="p">)</span>
+  <span class="kt">k</span><span class="n">freq2</span> <span class="nb">linseg</span> <span class="n">ntof</span><span class="p">(</span><span class="s">&quot;4F&quot;</span><span class="p">),</span> <span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span> <span class="n">ntof</span><span class="p">(</span><span class="s">&quot;3F&quot;</span><span class="p">)</span>
+  <span class="c1">;                      amp</span>
+  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.2</span> 
+  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.2</span>
+  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">num1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq1</span>
+  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">num2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq2</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">ex2_broadcast</span>
+  <span class="nb">printf</span> <span class="s">&quot;filter start</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">)</span>
+  <span class="kt">k</span><span class="n">cutoff</span>    <span class="nb">linseg</span> <span class="mi">4000</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">400</span>
+  <span class="kt">k</span><span class="n">resonance</span> <span class="nb">linseg</span> <span class="mf">0.1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.9</span>
+  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="kt">k</span><span class="n">resonance</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example2</span>
+  <span class="nb">schedule</span> <span class="s">&quot;ex2_control&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span>
+  <span class="nb">schedule</span> <span class="s">&quot;ex2_broadcast&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span>
+  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; Uncomment as needed</span>
+
+<span class="c1">; schedule &quot;example1&quot;, 0, 1</span>
+<span class="nb">schedule</span> <span class="s">&quot;example2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="pread.html">pread</a></li>
+<li><a href="https://csound.com/docs/manual/pset.html">pset</a></li>
+<li><a href="https://csound.com/docs/manual/p.html">p</a></li>
+<li><a href="https://csound.com/docs/manual/passign.html">passign</a></li>
+<li><a href="uniqinstance.html">uniqinstance</a></li>
+</ul>
+<h2 id="credits">Credits</h2>
+<p>Eduardo Moguillansky, 2019</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ramptrig.html" class="btn btn-neutral float-right" title="ramptrig">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="pread.html" class="btn btn-neutral" title="pread"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+        <span><a href="pread.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="ramptrig.html" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>

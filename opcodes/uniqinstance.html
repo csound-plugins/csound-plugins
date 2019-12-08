@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>pargwrite - Csound Plugins</title>
+  <title>uniqinstance - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "pargwrite";
-    var mkdocs_page_input_path = "opcodes/pargwrite.md";
+    var mkdocs_page_name = "uniqinstance";
+    var mkdocs_page_input_path = "opcodes/uniqinstance.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -158,41 +158,19 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="pargread.html">pargread</a>
-                </li>
-                <li class=" current">
-                    
-    <a class="current" href="pargwrite.html">pargwrite</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#pargwrite">pargwrite</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
-                </li>
-                <li class="">
-                    
     <a class="" href="poly.html">poly</a>
                 </li>
                 <li class="">
                     
     <a class="" href="polyseq.html">polyseq</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pread.html">pread</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pwrite.html">pwrite</a>
                 </li>
                 <li class="">
                     
@@ -213,6 +191,32 @@
                 <li class="">
                     
     <a class="" href="tubeharmonics.html">tubeharmonics</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="uniqinstance.html">uniqinstance</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#uniqinstance">uniqinstance</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
     </ul>
 	    </li>
@@ -243,7 +247,7 @@
         
       
     
-    <li>pargwrite</li>
+    <li>uniqinstance</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -253,35 +257,33 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="pargwrite">pargwrite</h1>
+                <h1 id="uniqinstance">uniqinstance</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Modify parg values of an active instrument instance</p>
+<p>Modify pfield values of an active instrument instance</p>
 <h2 id="description">Description</h2>
-<p><code>pargwrite</code> can be used to modify a running instance (possibly a 
-fractional instrument number) of an instrument,
-modifying parg values also after the instance has been started.
-It no instance is found that matches the given instrument number,
-a warning will be printed to the console and this opcode will fail
-silently.
-If the instance ceases to exist during another instrument is modifying
-its parg values, nothing happens. 
-At the moment there is no bounds checking regarding the parg index. 
-Writing to a parg which has not been set as the instance was scheduled
-(either in the score or via the multiple scheduling opcodes, like "event",
-"schedule", etc) will result in <em>undefined behaviour</em>.</p>
+<p>Given an integer instrument number, <code>uniqinstance</code> a fractional 
+instrument number which is not active now and can be used as p1
+for <code>event</code>, <code>schedule</code> or similar opcodes to create a unique 
+instance of the given instrument</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This opcode <strong>DOES NOT</strong> create a new instance. It just returns
+an instr number which can be used to create one</p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>pargwrite instrnum, i/kindex, i/kvalue
+<div class="codehilite"><pre><span></span>instrnum  uniqinstrance integer_instrnum
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>instrnum</code>: the (fractional) instrument number to modify</li>
-<li><code>iindex</code> / <code>kindex</code>: the index of the parg to modify. If kindex is 4, then p4 will be 
-  modified</li>
-<li><code>ivalue</code> / <code>kvalue</code>: the new value of the given parg</li>
+<li><code>integer_instrnum</code>: the integer instrument number</li>
 </ul>
 <h3 id="output">Output</h3>
+<ul>
+<li><code>instrnum</code>: a fractional instrument number which is guaranteed
+  not to be active at the moment</li>
+</ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
 <li>Init (if index and value are i-values)</li>
@@ -299,34 +301,49 @@ Writing to a parg which has not been set as the instance was scheduled
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">    Example file for pargread</span>
+<span class="cm">    Example file for uniqinstance</span>
 
-<span class="cm">    ivalue pargread instrnum, indx [, inotfound=-1]</span>
+<span class="cm">    instrnum  uniqinstance intinstr</span>
 
-<span class="cm">    pargread reads a parg value from an active instrument</span>
-<span class="cm">    Returns inotfound if instrnum is not active</span>
+<span class="cm">    Returns a unique fractional instrument number which is not</span>
+<span class="cm">    in active at the moment.</span>
 
 <span class="cm">*/</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="nb">pset</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span>
-    <span class="kt">k</span><span class="n">4</span> <span class="o">=</span> <span class="vi">p4</span>
-    <span class="kt">k</span><span class="n">5</span> <span class="o">=</span> <span class="vi">p5</span>
-    <span class="nb">printf</span> <span class="s">&quot;instance: </span><span class="si">%.3f</span><span class="s">, p4: </span><span class="si">%f</span><span class="s">, p5: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="vi">p1</span><span class="p">,</span> <span class="kt">k</span><span class="n">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">5</span>
+    <span class="kt">k</span><span class="n">counter</span> <span class="nb">init</span> <span class="mi">0</span>
+    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">20</span>
+    <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+        <span class="kt">k</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="kt">k</span><span class="n">instr</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="kt">k</span><span class="n">counter</span><span class="o">/</span><span class="mi">1000</span>
+        <span class="nb">printk2</span> <span class="kt">k</span><span class="n">instr</span>
+        <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">instr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">endif</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">k</span><span class="n">val</span> <span class="nb">line</span> <span class="mi">10</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="n">pargwrite</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span>
-    <span class="n">pargwrite</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span><span class="o">*</span><span class="mi">2</span>
+    <span class="kt">i</span><span class="n">nstrnum10</span> <span class="n">uniqinstance</span> <span class="mi">10</span>
+    <span class="nb">printf</span> <span class="s">&quot;Unique instance of instr 10: </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum10</span>
+    <span class="kt">i</span><span class="n">nstrnum11</span> <span class="n">uniqinstance</span> <span class="mi">11</span>
+    <span class="nb">printf</span> <span class="s">&quot;Unique instance of instr 11: </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum11</span>
+    <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">10</span>
+    <span class="nb">print</span> <span class="vi">p1</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">11</span>
+    <span class="nb">print</span> <span class="vi">p1</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="nb">i</span> <span class="mf">1.01</span> <span class="mi">0</span> <span class="mi">2</span> <span class="mi">101</span>
-<span class="nb">i</span> <span class="mf">1.02</span> <span class="mi">0</span> <span class="mi">2</span> <span class="mi">102</span>
-<span class="nb">i</span> <span class="mi">2</span> <span class="mi">1</span> <span class="mf">0.5</span>
+<span class="nb">i</span> <span class="mf">10.150</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="nb">i</span> <span class="mi">11</span> <span class="mi">0</span> <span class="mi">2</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.5</span>
+<span class="nb">i</span> <span class="mi">2</span> <span class="mf">0.5</span> <span class="mf">0.1</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -335,9 +352,9 @@ Writing to a parg which has not been set as the instance was scheduled
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="pargread.html">pargread</a></li>
+<li><a href="pread.html">pread</a></li>
 <li><a href="https://csound.com/docs/manual/pset.html">pset</a></li>
-<li><a href="https://csound.com/docs/manual/p.html">p</a>)</li>
+<li><a href="https://csound.com/docs/manual/p.html">p</a></li>
 <li><a href="https://csound.com/docs/manual/passign.html">passign</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
@@ -349,10 +366,8 @@ Writing to a parg which has not been set as the instance was scheduled
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="poly.html" class="btn btn-neutral float-right" title="poly">Next <span class="icon icon-circle-arrow-right"></span></a>
       
-      
-        <a href="pargread.html" class="btn btn-neutral" title="pargread"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="tubeharmonics.html" class="btn btn-neutral" title="tubeharmonics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -378,10 +393,8 @@ Writing to a parg which has not been set as the instance was scheduled
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="pargread.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="tubeharmonics.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
-      
-        <span style="margin-left: 15px"><a href="poly.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
