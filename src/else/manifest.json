@@ -12,7 +12,8 @@
       "file_exists",
       "pwrite",
       "pread",
-      "uniqinstance"
+      "uniqinstance",
+      "atstop"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

@@ -151,9 +151,21 @@
 
     (mod -> diode sim -> feedback) * carrier
 
-    aout dioderingmod acarr, kmodfreq, kdiode=0, kfeedback=0, knonlinearities=0.1, koversample=0
+    aout dioderingmod acarr, kmodfreq, kdiode=0, kfeedback=0,
+                      knonlinearities=0.1, koversample=0
 
     A port of jsfx Loser's ringmodulator
+
+  # atstop
+
+    schedule an instrument when the note stops
+
+    NB: this is scheduled not at release start, but when the
+    note is deallocated
+
+    atstop Sintr, idelay, idur, pfields...
+    atstop instrnum, idelay, idur, pfields...
+
 */
 
 #include "csdl.h"
@@ -171,7 +183,7 @@
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
 
-#define UI32MAX 0x7FFFFFFF
+#define Uint32_tMAX 0x7FFFFFFF
 
 #define ONE_OVER_PI 0.3183098861837907
 
@@ -1671,25 +1683,22 @@ pwrite_i(CSOUND *csound, PWRITE *p) {
  *
  */
 
+#define UNIQ_NUMSLOTS 1000
+
 typedef struct {
     OPDS h;
     MYFLT *out, *int_instrnum;
 } UNIQINSTANCE;
 
-#define UNIQ_NUMSLOTS 1000
-
-static int32_t
-uniqueinstance_init(CSOUND *csound, UNIQINSTANCE *p) {
-    IGN(csound);
-    int p1 = (int)(*p->int_instrnum);
+static MYFLT
+uniqueinstance_(int p1, OPDS *h) {
     char slots[UNIQ_NUMSLOTS] = {0};
     int idx;
     MYFLT fractional_part, integral_part;
-    INSTRTXT *instrtxt = find_instrdef(p->h.insdshead, (int)p1);
+    INSTRTXT *instrtxt = find_instrdef(h->insdshead, p1);
     if(!instrtxt || instrtxt->instance == NULL) {
         // no instances of this instrument, so pick first index
-        *p->out = p1 + FL(1)/UNIQ_NUMSLOTS;
-        return OK;
+        return p1 + FL(1)/UNIQ_NUMSLOTS;
     }
     INSDS *instance = instrtxt->instance;
     while(instance) {
@@ -1704,13 +1713,39 @@ uniqueinstance_init(CSOUND *csound, UNIQINSTANCE *p) {
     }
     for(int i=1; i < UNIQ_NUMSLOTS; i++) {
         if(slots[i] == 0) {
-            *p->out = p1 + i / FL(UNIQ_NUMSLOTS);
-            return OK;
+            return p1 + i / FL(UNIQ_NUMSLOTS);
         }
     }
-    *p->out = -1;
+    return -1;
+}
+
+static int32_t
+uniqueinstance_init(CSOUND *csound, UNIQINSTANCE *p) {
+    IGN(csound);
+    int p1 = (int)(*p->int_instrnum);
+    MYFLT instrnum = uniqueinstance_(p1, &(p->h));
+    *p->out = instrnum;
     return OK;
 }
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    STRINGDAT *instrname;
+} UNIQINSTANCE_S;
+
+
+static int32_t
+uniqueinstance_S_init(CSOUND *csound, UNIQINSTANCE_S *p) {
+    int p1 = csound->strarg2insno(csound, p->instrname->data, 1);
+    if (UNLIKELY(p1 == NOT_AN_INSTRUMENT))
+        return NOTOK;
+    MYFLT fractional_p1 = uniqueinstance_(p1, &(p->h));
+    *p->out = fractional_p1;
+    return OK;
+}
+
 
 /*
 
@@ -1730,38 +1765,129 @@ endin
 
  */
 
+
+/** ----------------- atstop ---------------
+
+  schedule an instrument when the note stops
+
+  NB: this is scheduled not at release start, but when the
+  note is deallocated
+
+  atstop Sintr, idelay, idur, pfields...
+  atstop instrnum, idelay, idur, pfields...
+
+*/
+
+#define MAXPARGS 31
+
+typedef struct {
+    OPDS h;
+    // outputs
+
+    // inputs
+    void *instr;
+    MYFLT *pargs [MAXPARGS];
+
+    // internal
+    MYFLT instrnum;   // cached instrnum
+
+} SCHED_DEINIT;
+
+
+static int32_t
+atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
+    EVTBLK evt;
+    memset(&evt, 0, sizeof(EVTBLK));
+    evt.opcod = 'i';
+    evt.strarg = NULL;
+    evt.scnt = 0;
+    evt.pinstance = NULL;
+    evt.p2orig = *p->pargs[0];
+    evt.p3orig = *p->pargs[1];
+    uint32_t pcnt = max(3, p->INOCOUNT);
+    evt.p[1] = p->instrnum;
+    for(uint32_t i=0; i < pcnt-1; i++) {
+        evt.p[2+i] = *p->pargs[i];
+    }
+    evt.pcnt = (int16_t) pcnt;
+    csound->insert_score_event_at_sample(csound, &evt,
+                                         csound->GetCurrentTimeSamples(csound));
+    return OK;
+}
+
+#define register_deinit(csound, p, func) \
+    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
+
+static int32_t
+atstop_(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
+    p->instrnum = instrnum;
+    register_deinit(csound, p, atstop_deinit);
+    return OK;
+}
+
+static int32_t
+atstop_i(CSOUND *csound, SCHED_DEINIT *p) {
+    MYFLT instrnum = *((MYFLT*)p->instr);
+    return atstop_(csound, p, instrnum);
+}
+
+static int32_t
+atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
+    STRINGDAT *instrname = (STRINGDAT*) p->instr;
+    int32_t instrnum = csound->strarg2insno(csound, instrname->data, 1);
+    if (UNLIKELY(instrnum == NOT_AN_INSTRUMENT)) return NOTOK;
+    return atstop_(csound, p, (MYFLT) instrnum);
+}
+
+
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
     { "crackle", S(CRACKLE), 0, 3, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf },
+
     { "ramptrig.k_kk", S(RAMPTRIGK), 0, 3, "k", "kkP", (SUBR)ramptrig_k_kk_init,
       (SUBR)ramptrig_k_kk },
     { "ramptrig.a_kk", S(RAMPTRIGK), 0, 3, "a", "kkP", (SUBR)ramptrig_a_kk_init,
       (SUBR)ramptrig_a_kk },
     { "ramptrig.sync_kk_kk", S(RAMPTRIGSYNC), 0, 3, "kk", "kkPO",
       (SUBR)ramptrigsync_kk_kk_init, (SUBR)ramptrigsync_kk_kk},
+
     { "sigmdrive.a_ak",S(SIGMDRIVE), 0, 2, "a", "akO", NULL, (SUBR)sigmdrive_a_ak},
     { "sigmdrive.a_aa",S(SIGMDRIVE), 0, 2, "a", "aaO", NULL, (SUBR)sigmdrive_a_aa},
+
     { "lfnoise", S(LFNOISE), 0, 3, "a", "kO", (SUBR)lfnoise_init, (SUBR)lfnoise_perf},
+
     { "schmitt.k", S(SCHMITT), 0, 3, "k", "kkk", (SUBR)schmitt_k_init, (SUBR)schmitt_k_perf},
     { "schmitt.a", S(SCHMITT), 0, 3, "a", "akk", (SUBR)schmitt_k_init, (SUBR)schmitt_a_perf},
+
     { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kkio",
       (SUBR)standardchaos_init, (SUBR)standardchaos_perf},
     { "standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kP",
       (SUBR)standardchaos_init_x, (SUBR)standardchaos_perf},
+
     { "linenv.k_k", S(RAMPGATE), 0, 3, "k", "kiM", (SUBR)linenv_k_init, (SUBR)linenv_k_k},
     { "linenv.a_k", S(RAMPGATE), 0, 3, "a", "kiM", (SUBR)linenv_a_init, (SUBR)linenv_a_k},
 
     // aout dioderingmod ain, kfreq, kdiodeon=1, kfeedback=0, knonlinear=0, ioversample=0
     { "diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO",
       (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf},
+
     { "file_exists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init},
+
     { "pread.i", S(PREAD), 0, 1, "i", "iij", (SUBR)pread_i},
     { "pread.k", S(PREAD), 0, 3, "k", "ikJ", (SUBR)pread_init, (SUBR)pread_perf},
     { "pwrite.i", S(PWRITE), 0, 1, "", "im", (SUBR)pwrite_i},
     { "pwrite.k", S(PWRITE), 0, 3, "", "i*",
       (SUBR)pwrite_initcommon, (SUBR)pwrite_perf},
-    { "uniqinstance", S(UNIQINSTANCE), 0, 1, "i", "i", (SUBR)uniqueinstance_init},
+
+    { "uniqinstance", S(UNIQINSTANCE),   0, 1, "i", "i", (SUBR)uniqueinstance_init},
+    { "uniqinstance.S", S(UNIQINSTANCE), 0, 1, "i", "S", (SUBR)uniqueinstance_S_init},
+
+    {"atstop.s1", S(SCHED_DEINIT), 0, 1, "", "Soj", (SUBR)atstop_s },
+    {"atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s },
+    {"atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
+    {"atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
+
 };
 
 LINKAGE

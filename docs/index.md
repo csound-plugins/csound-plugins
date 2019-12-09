@@ -68,7 +68,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
-* [uniqinstance](opcodes/uniqinstance.md): Modify pfield values of an active instrument instance 
+* [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
 
 
 

@@ -2,7 +2,7 @@
 
 ## Abstract
 
-Modify pfield values of an active instrument instance
+Return an fractional instrument number which is not in use
 
 ## Description
 
@@ -56,7 +56,7 @@ instance of the given instrument
     instrnum  uniqinstance intinstr
 
     Returns a unique fractional instrument number which is not
-    in active at the moment.
+    active at the moment and can be assigned to a new instance
     
 */
 
