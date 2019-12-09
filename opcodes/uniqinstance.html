@@ -271,13 +271,15 @@ instance of the given instrument</p>
 an instr number which can be used to create one</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>instrnum  uniqinstrance integer_instrnum
+<div class="codehilite"><pre><span></span>instrnum  uniqinstance integer_instrnum
+instrnum  uniqinstance Sinstrname
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>integer_instrnum</code>: the integer instrument number</li>
+<li><code>Sinstrname</code>: the name of a named instrument</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
@@ -286,8 +288,7 @@ an instr number which can be used to create one</p>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Init (if index and value are i-values)</li>
-<li>Performance (if either index or value are k-variables)</li>
+<li>Init </li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -356,6 +357,7 @@ an instr number which can be used to create one</p>
 <li><a href="https://csound.com/docs/manual/pset.html">pset</a></li>
 <li><a href="https://csound.com/docs/manual/p.html">p</a></li>
 <li><a href="https://csound.com/docs/manual/passign.html">passign</a></li>
+<li><a href="https://csound.com/docs/manual/nstrnum.html">nstrnum</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
