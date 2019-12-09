@@ -51,7 +51,7 @@ instr ex2_generator
   kresonance = p7
   asaw vco2, kamp, kfreq
   aout moogladder2, asaw, kcutoff, kresonance
-  aout *= linsegr(0, 0.05, 1, 0.05, 0)
+  aout *= linsegr(0, 0.1, 1, 0.1, 0)
   outs aout, aout  
 endin
 
@@ -73,7 +73,7 @@ instr ex2_broadcast
   printf "filter start\n", 1
   inum = nstrnum("ex2_generator")
   kcutoff    linseg 4000, p3, 400
-  kresonance linseg 0.1, p3*0.5, 0.9
+  kresonance linseg 0.1, p3*0.5, 0.8
   pwrite inum, 6, kcutoff, 7, kresonance
 endin
 

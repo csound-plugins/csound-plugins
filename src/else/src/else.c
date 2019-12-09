@@ -172,8 +172,6 @@
 #include <math.h>
 #include <unistd.h>
 
-// #include "arrays.h"
-
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -641,6 +639,7 @@ static int32_t schmitt_k_perf (CSOUND *csound, SCHMITT *p) {
 }
 
 static int32_t schmitt_a_perf (CSOUND *csound, SCHMITT *p) {
+    IGN(csound);
     MYFLT *out = p->out;
     MYFLT x;
     SAMPLE_ACCURATE(out);
@@ -1127,7 +1126,8 @@ typedef struct {
     STRINGDAT *path;
 } FILE_EXISTS;
 
-static int32_t file_exists_init(CSOUND *cs, FILE_EXISTS *p) {
+static int32_t file_exists_init(CSOUND *csound, FILE_EXISTS *p) {
+    IGN(csound);
     char *path = p->path->data;
     if(access(path, F_OK) != -1 ) {
         // file exists
@@ -1413,7 +1413,7 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
 }
 
 
-/*
+/**
  * pread / pwrite
  *
  * Communicate between notes via p-fields
@@ -1449,7 +1449,7 @@ INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum) {
 }
 
 
-/*
+/**
  * pread
  *
  * read p-fields from a different instrument
@@ -1459,6 +1459,7 @@ INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum) {
  * kout pread instrnum, kindex [, inotfound=-1]
  *
  */
+
 typedef struct {
     OPDS h;
     MYFLT *outval, *instrnum, *pindex, *inotfound;
@@ -1478,7 +1479,8 @@ int32_t pread_search(CSOUND *csound, PREAD *p) {
     INSDS *instr;
     p->found = 0;
     if(!p->instrtxt)
-        p->instrtxt = find_instrdef(p->h.insdshead, (int)p1);
+        // p->instrtxt = find_instrdef(p->h.insdshead, (int)p1);
+        p->instrtxt = csound->GetInstrument(csound, (int)p1, NULL);
     if(!p->instrtxt)
         return 0;
     // found an instrument definition
@@ -1551,8 +1553,8 @@ pread_i(CSOUND *csound, PREAD *p) {
 
 #define PWRITE_MAXINPUTS 40
 
-// pwrite instrnum, indx, kvalue [, indx2, kvalue2, ...]
-/*
+
+/**
  * pwrite
  *
  * Modifies the p-fields of another instrument
@@ -1568,6 +1570,7 @@ pread_i(CSOUND *csound, PREAD *p) {
  *        search is attempted only once and the opcode becomes a NOOP if no instances
  *        were found
  */
+
 typedef struct {
     OPDS h;
     // inputs
@@ -1603,7 +1606,8 @@ pwrite_search(CSOUND *csound, PWRITE *p) {
     IGN(csound);
     MYFLT p1 = p->p1;
     if(p->instrtxt == NULL) {
-        INSTRTXT *instrdef = find_instrdef(p->h.insdshead, (int)p1);
+        // INSTRTXT *instrdef = find_instrdef(p->h.insdshead, (int)p1);
+        INSTRTXT *instrdef = csound->GetInstrument(csound, (int)p1, NULL);
         if(!instrdef) {
             return 0;
         }
@@ -1621,6 +1625,7 @@ pwrite_search(CSOUND *csound, PWRITE *p) {
     }
     return 1;
 }
+
 
 
 static int32_t
@@ -1673,7 +1678,7 @@ pwrite_i(CSOUND *csound, PWRITE *p) {
 }
 
 
-/* uniqinstance
+/** uniqinstance
  *
  * given an integer instrument number, return a fractional instr. number
  * which is not active now and can be used as p1 for "event" or similar
@@ -1691,20 +1696,19 @@ typedef struct {
 } UNIQINSTANCE;
 
 static MYFLT
-uniqueinstance_(int p1, OPDS *h) {
+uniqueinstance_(CSOUND *csound, int p1) {
     char slots[UNIQ_NUMSLOTS] = {0};
     int idx;
     MYFLT fractional_part, integral_part;
-    INSTRTXT *instrtxt = find_instrdef(h->insdshead, p1);
+    INSTRTXT *instrtxt = csound->GetInstrument(csound, p1, NULL);
     if(!instrtxt || instrtxt->instance == NULL) {
         // no instances of this instrument, so pick first index
         return p1 + FL(1)/UNIQ_NUMSLOTS;
     }
+
     INSDS *instance = instrtxt->instance;
     while(instance) {
-        if(instance->actflg) {
-            if(instance->p1.value == instance->insno)
-                continue;
+        if(instance->actflg && instance->p1.value != instance->insno) {
             fractional_part = modf(instance->p1.value, &integral_part);
             idx = (int)(fractional_part * UNIQ_NUMSLOTS + 0.5);
             slots[idx] = 1;
@@ -1723,7 +1727,7 @@ static int32_t
 uniqueinstance_init(CSOUND *csound, UNIQINSTANCE *p) {
     IGN(csound);
     int p1 = (int)(*p->int_instrnum);
-    MYFLT instrnum = uniqueinstance_(p1, &(p->h));
+    MYFLT instrnum = uniqueinstance_(csound, p1);
     *p->out = instrnum;
     return OK;
 }
@@ -1741,7 +1745,7 @@ uniqueinstance_S_init(CSOUND *csound, UNIQINSTANCE_S *p) {
     int p1 = csound->strarg2insno(csound, p->instrname->data, 1);
     if (UNLIKELY(p1 == NOT_AN_INSTRUMENT))
         return NOTOK;
-    MYFLT fractional_p1 = uniqueinstance_(p1, &(p->h));
+    MYFLT fractional_p1 = uniqueinstance_(csound, p1);
     *p->out = fractional_p1;
     return OK;
 }
@@ -1840,6 +1844,9 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
 }
 
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
@@ -1883,10 +1890,10 @@ static OENTRY localops[] = {
     { "uniqinstance", S(UNIQINSTANCE),   0, 1, "i", "i", (SUBR)uniqueinstance_init},
     { "uniqinstance.S", S(UNIQINSTANCE), 0, 1, "i", "S", (SUBR)uniqueinstance_S_init},
 
-    {"atstop.s1", S(SCHED_DEINIT), 0, 1, "", "Soj", (SUBR)atstop_s },
-    {"atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s },
-    {"atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
-    {"atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
+    { "atstop.s1", S(SCHED_DEINIT), 0, 1, "", "Soj", (SUBR)atstop_s },
+    { "atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s },
+    { "atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
+    { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
 
 };
 

@@ -46,13 +46,6 @@ A csound interface to the opensource implementation of jsfx
 * [tubeharmonics](opcodes/tubeharmonics.md): A distortion with control for odd/even harmonics 
 
 
-## sched
-
-Schedule an action when note is stopped
-
-* [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
-
-
 ## else
 
 Collection of miscellaneous plugins, most ports of supercollider, puredata/else or jsfx
@@ -69,6 +62,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
+* [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
 
 
 

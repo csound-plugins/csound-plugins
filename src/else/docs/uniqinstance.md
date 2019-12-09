@@ -20,11 +20,13 @@ instance of the given instrument
 
 ## Syntax
 
-    instrnum  uniqinstrance integer_instrnum
+    instrnum  uniqinstance integer_instrnum
+    instrnum  uniqinstance Sinstrname
     
 ### Arguments
 
 * `integer_instrnum`: the integer instrument number
+* `Sinstrname`: the name of a named instrument
 
 ### Output
 
@@ -33,8 +35,8 @@ instance of the given instrument
 
 ### Execution Time
 
-* Init (if index and value are i-values)
-* Performance (if either index or value are k-variables)
+* Init 
+
 
 ## Examples
 
@@ -108,6 +110,7 @@ i 2 0.5 0.1
 * [pset](https://csound.com/docs/manual/pset.html)
 * [p](https://csound.com/docs/manual/p.html)
 * [passign](https://csound.com/docs/manual/passign.html)
+* [nstrnum](https://csound.com/docs/manual/nstrnum.html)
 
 ## Credits
 
