@@ -28,7 +28,7 @@
   ## dict_new
 
 
-      ihandle dict_new Stype [, iglobal=0, key, value, key, value, ...]
+      ihandle dict_new Stype [, key, value, key, value, ...]
 
   Creates a new dictionary, either local to the instr or global
 
@@ -38,10 +38,6 @@
       "sf"  :  string -> float
       "is"  :  int    -> string
       "if"  :  int    -> float
-
-  iglobal: if 1, the dict is global and lives until the end
-           of the performance, or until explicitely destroyed
-           by dict_free
 
   Optionally the dict can be populated at creation time with
   a series of key:value pairs
@@ -230,7 +226,7 @@ instr 5
   if timeinstk() > 1 goto perf
 
   ; create a dict which survives this note
-  idict1 dict_new "sf", 1
+  idict1 dict_new "*sf"
 
   ; set some initial values once 
   dict_set idict1, "foo", 1
@@ -261,7 +257,7 @@ endin
 instr 7
   ; it is possible to create a new dict and set initial
   ; values at once. This is only executed at i-time
-  idict dict_new "sf", 0, "foo", 10, "bar", 20, "baz", 30
+  idict dict_new "sf", "foo", 10, "bar", 20, "baz", 30
   kbaz dict_get idict, "baz"
   kbar dict_get idict, "bar"
   kxx dict_get idict, "xx", 99
@@ -271,16 +267,16 @@ endin
 
 instr 8
   ; get all the keys as an array
-  idict1 dict_new "sf", 0, "keyA", 1, "keyB", 2, "keyC", 3
+  idict1 dict_new "sf", "keyA", 1, "keyB", 2, "keyC", 3
   SKeys[] dict_query idict1, "keys"
   printarray SKeys
 
-  idict2 dict_new "if", 0, 1,100, 10,1000, 2,200
+  idict2 dict_new "if", 1,100, 10,1000, 2,200
   kKeys[] dict_query idict2, "keys"
   printarray kKeys, 1, "%.0f"
 
   ; get values as an array
-  idict3 dict_new "is", 0, 10, "foo", 20, "bar", 30, "baz"
+  idict3 dict_new "is", 10, "foo", 20, "bar", 30, "baz"
   Svals[] dict_query idict3, "values"
   printarray Svals
 
@@ -293,7 +289,7 @@ endin
 ; One convenient use of dicts is to pass arguments to an instr
 instr 100
   ; create our communication dict, set initial values
-  idict dict_new "sf", 0, "amp", 0.1, "freq", 1000
+  idict dict_new "sf", "amp", 0.1, "freq", 1000
   ; the launched instr will last longer, so will have to deal with
   ; this dict ceasing to exist
   event_i "i", 101, 0, p3+1, idict
