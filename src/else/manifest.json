@@ -13,7 +13,8 @@
       "pwrite",
       "pread",
       "uniqinstance",
-      "atstop"
+      "atstop",
+      "accum"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

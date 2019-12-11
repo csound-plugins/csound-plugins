@@ -64,6 +64,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
+* [accum](opcodes/accum.md): Simple accumulator of scalar values 
 
 
 
