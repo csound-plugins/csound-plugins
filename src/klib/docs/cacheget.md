@@ -20,7 +20,8 @@ the input variable
 
     Sstr cacheget idx
     Sstr cacheget kdx
-    
+    Sstr cache idx
+    Sstr cache kdx    
 
 ### Arguments
 

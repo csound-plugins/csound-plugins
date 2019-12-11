@@ -42,7 +42,7 @@ A port of `REAPER`'s "Tube Harmonics" jsfx plugin
 
 <CsoundSynthesizer>
 <CsOptions>
-; -odac 
+-odac 
 
 </CsOptions>
 
@@ -52,12 +52,12 @@ ksmps  = 64
 nchnls = 2
 0dbfs  = 1
 
-;; This is the example file for jsfx opcode
+;; This is the example file for tubeharmonics opcode
 
 gisnd ftgen 0, 0, 0, -1, "snd/bourre-fragment-1.flac", 0, 0, 1
 
 
-FLpanel "jsfx", 400, 500, 50, 50
+FLpanel "tubeharmonics", 400, 500, 50, 50
 FLcolor 150, 100, 150, 200, 100, 250
 
 iw, ih = 300, 30
@@ -112,7 +112,7 @@ endop
 
 instr 1
   a1 loopsamp gisnd
-  a3 vco2 0.5, ntof:i("3C")
+  a3 vco2 0.5, ntof("3C")
   a2 oscili 0.5, 1000
   asig select3 gkwhich, a1, a2, a3
   igain = 0

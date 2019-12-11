@@ -14,15 +14,18 @@ for number values)
 
 ## Syntax
 
-    kvalue dict_get idict, Skeym [idefault=0]
-    kvalue dict_get idict, kkey, [idefault=0]
+    kvalue dict_get idict, Skeym, idefault=0
+    kvalue dict_get idict, kkey, idefault=0
     Svalue dict_get idict, Skey
     Svalue dict_get idict, kkey
     
 The type of key and value depend on the type definition of the `dict`, see [dict_new](dict_new)
 
-  
 `dict_get` executes both at **i-time** and **k-time**. 
+
+!!! Note
+
+    In the case of a dict of type "str:str", dict_get returns an empty string if the key is not found
 
 ## Arguments
 
@@ -113,69 +116,7 @@ i 1 0 2
 
 /*
 
-  # Example file for the dict_ opcode family
-
-  A dict is a hashtable, mapping a string or an integer
-  key to a string or float value. The type of the key and
-  value are set at creation time and can't be modified 
-  later on
-
-  The lifespan of a dict can be attached to the instr it
-  was created in, or it can be global, in which case it 
-  lives until the end of the performance, or until it is 
-  explicitely destroyed (see dict_free)
-
-  A dict is identified by a handler, which is an integer
-  value, and thus can be passed around between intruments,
-  the handlers can be part of other structures, like
-  arrays or other dicts, etc.
-
-  # Opcodes
-  
-  ## dict_new
-
-
-      ihandle dict_new Stype [, iglobal=0, key, value, key, value, ...]
-
-  Creates a new dictionary, either local to the instr or global
-
-  Stype: a string identifying the types of key and value.
-
-      "ss"  :  string -> string
-      "sf"  :  string -> float
-      "is"  :  int    -> string
-      "if"  :  int    -> float
-
-  iglobal: if 1, the dict is global and lives until the end
-           of the performance, or until explicitely destroyed
-           by dict_free
-
-  Optionally the dict can be populated at creation time with
-  a series of key:value pairs
-
-  ## dict_free
-
-      dict_free idict [, iwhen=0]
-
-  frees the hashtable either at init time or at the end of the note
-  (similar to ftfree)
-  This is needed when passing a dict from one instrument to another
-
-  * iwhen = 0, free now
-  * iwhen = 1, free at the end of this note
-
-  ## dict_set
-
-    dict_set idict, Skey, kvalue        ; k-time
-    dict_set idict, kkey, kvalue        ; k-time
-    dict_set idict, ikey, ivalue        ; i-time
-
-  Set a key:value pair
-
-    idict dict_new "sf"
-    dict_set idict, "key", kvalue
-
-  Without a value, deletes the key:value pair
+  # Example file for dict_get
 
   ## dict_get
 
@@ -185,20 +126,7 @@ i 1 0 2
   Get the value at a given key. For string values, an empty string
   is returned when the key is not found. For int values, a default 
   value given by the user is returned when the key is not found.
-
-    
-  ## dict_print
   
-    dict_print ihandle, [ktrig]
-    
-  Prints the contents of the dict, either at i-time if no trigger
-  is given, or at k-time whenever ktrig is possitive and different
-  from the last value. Use -1 to print at every k-cycle.
-
-  NB: All opcodes work at k-tim. The hashtables with int-keys work 
-      also at i-time whenever key and value are of i-type (for both 
-      set and get actions)
-
 */
 
 ksmps = 64
@@ -400,7 +328,7 @@ endin
 ; One convenient use of dicts is to pass arguments to an instr
 instr 100
   ; create our communication dict, set initial values
-  idict dict_new "sf", 0, "amp", 0.1, "freq", 1000
+  idict dict_new "sf", "amp", 0.1, "freq", 1000
   ; the launched instr will last longer, so will have to deal with
   ; this dict ceasing to exist
   event_i "i", 101, 0, p3+1, idict
@@ -416,7 +344,7 @@ endin
 ; or the last value, if the dict does not exist
 opcode dict_receive, k,iSi 
   idict, Skey, ival0 xin
-  klast init ival0 
+  klast init ival0
   if (dict_size(idict) > 0 ) then
     kval dict_get idict, Skey, ival0
     klast = kval
@@ -436,12 +364,27 @@ instr 101
   outch 2, a0
 endin
 
+instr 200
+  idict dict_new "str:any", "foo", "fooval", "bar", 10
+  dict_print idict
+  Sfoo dict_get idict, "foo"
+  kbar dict_get idict, "bar"
+  printf "foo=%s, bar=%f \n", 1, Sfoo, kbar
+  dict_set idict, "baz", 0.5
+  ibaz dict_get idict, "baz"
+  Smoo = "moo!"
+  dict_set idict, "moo", Smoo
+  printf "baz=%f,  moo=%s \n", 1, ibaz, Smoo
+  turnoff
+endin  
+
 </CsInstruments>
 <CsScore>
 ; i 1 0 0.01
 ; i 2 0 0.01
-i 8 0 0.1
-i 100 0 10
+; i 8 0 0.1
+; i 100 0 10
+i 200 0 1
 f 0 1
 </CsScore>
 </CsoundSynthesizer>
