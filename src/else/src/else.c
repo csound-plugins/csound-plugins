@@ -1843,6 +1843,38 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
     return atstop_(csound, p, (MYFLT) instrnum);
 }
 
+/*
+ * accum
+ *
+ * a simple accumulator
+ *
+ * kout accum kstep, initial=0
+ *
+ * Can be used together with changed for all opcodes which need an increasing
+ * trigger (printf, for example)
+ *
+ * printf "kvar=%f \n", accum(changed(kvar)), kvar
+ *
+ */
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *step, *initial_value;
+    MYFLT value;
+} ACCUM;
+
+static int32_t
+accum_init(CSOUND *csound, ACCUM *p) {
+    p->value = *p->initial_value;
+    return OK;
+}
+
+static int32_t
+accum_perf(CSOUND *csound, ACCUM *p) {
+    p->value += *p->step;
+    *p->out = p->value;
+    return OK;
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1895,6 +1927,7 @@ static OENTRY localops[] = {
     { "atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
     { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
 
+    { "accum", S(ACCUM), 0, 3, "k", "ko", (SUBR)accum_init, (SUBR)accum_perf},
 };
 
 LINKAGE

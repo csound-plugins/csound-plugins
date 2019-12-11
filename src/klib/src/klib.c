@@ -216,6 +216,7 @@ typedef uint64_t ui64;
 #define CHECK_HANDLE(handle) {if((handle)->hashtab==NULL) return PERFERR(ERR_NOINSTANCE);}
 #define CHECK_HANDLE_INIT(handle) {if((handle)->hashtab==NULL) return INITERR(ERR_NOINSTANCE);}
 
+#define CHECK_INDEX(idx, globals) {if((idx) < 0 || (idx) >= (globals->maxhandles)) return INITERRF("Handle index invalid: %d", (idx));  }
 
 #define CHECK_HASHTAB_TYPE(handletype, expectedtype)                                       \
     if(UNLIKELY((handletype) != (expectedtype))) {                                         \
@@ -1285,7 +1286,10 @@ typedef struct {
     i32 lastkey_size;
     ui64 counter;
     char lastkey_data[KHASH_STRKEY_MAXSIZE+1];
+    HANDLE *handle;
+    int constant_key;
 } DICT_GET_sf;
+
 
 static i32
 dict_get_sf_0(CSOUND *csound, DICT_GET_sf *p) {
@@ -1295,28 +1299,49 @@ dict_get_sf_0(CSOUND *csound, DICT_GET_sf *p) {
     p->lastidx = 0;
     p->counter = 0;
     p->_handleidx = idx = (ui32)*p->handleidx;
+    p->handle = NULL;
+    p->constant_key = 0;
+    // check if the argument NAME is a constant
+    char *key = p->h.optext->t.inlist->arg[1];
+    if(key != NULL && key[0] == '"') {
+        p->constant_key = 1;
+    }
     return OK;
 }
 
 
-
-static inline i32 dict_get_sf_(CSOUND *csound, DICT_GET_sf *p, HANDLE *handle, khash_t(khStrFlt) *h) {
-    khiter_t k;
-    // test fast path
-    if(p->counter == handle->counter &&         \
-       p->outkey->size == p->lastkey_size &&       \
-       memcmp(p->outkey->data, p->lastkey_data, (size_t)p->lastkey_size)==0) {
-       // strcmp(p->key->data, p->lastkey_data)==0) {
-        k = p->lastidx;
+static inline i32
+dict_get_sf_(CSOUND *csound, DICT_GET_sf *p, HANDLE *handle, khash_t(khStrFlt) *h) {
+    int fastpath = 0;
+    if(p->outkey->size == 0) {
+        return PERFERR("dict_get: not valid key (size=0)");
+    }
+    if(p->counter == handle->counter) {
+        if(p->constant_key && p->lastkey_size > 0)
+            fastpath = 1;
+        else if (p->outkey->size == p->lastkey_size &&
+                 memcmp(p->outkey->data, p->lastkey_data, p->lastkey_size)==0){
+            fastpath = 2;
+        }
+    }
+    if(fastpath) {
+        khiter_t k = p->lastidx;
         *p->kout = k != kh_end(h) ? kh_val(h, k) : *p->defaultval;
         return OK;
     }
+    // slow path
     CHECK_KEY_SIZE(p->outkey);
-    p->lastidx = k = kh_get(khStrFlt, h, p->outkey->data);
-    DBG("slow path: k=%d", k);
-    p->lastkey_size = p->outkey->size;
-    strncpy0(p->lastkey_data, p->outkey->data, (size_t)(p->outkey->size-1));
-    *p->kout = k != kh_end(h) ? kh_val(h, k) : *p->defaultval;
+    khiter_t k = kh_get(khStrFlt, h, p->outkey->data);
+    if(k != kh_end(h)) {
+        // key found
+        p->lastidx = k;
+        p->lastkey_size = p->outkey->size;  // save size, mark key as valid
+        strncpy0(p->lastkey_data, p->outkey->data, (size_t)(p->outkey->size-1));
+        *p->kout = kh_val(h, k);
+    } else {
+        *p->kout = *p->defaultval;  // return default value
+        p->lastkey_size = 0;        // mark last key as not usable
+    }
     p->counter = handle->counter;
     return OK;
 }
@@ -1711,6 +1736,19 @@ typedef struct {
     i32 cmd;
 } DICT_QUERY1;
 
+
+static i32 dict_exists(CSOUND *csound, DICT_QUERY1 *p) {
+    p->g = dict_globals(csound);
+    int idx = (int)*p->handleidx;
+    if(idx < 0 || idx >= p->g->maxhandles) {
+        *p->out = 0;
+        return OK;
+    }
+    HANDLE *handle = get_handle(p);
+    *p->out = handle != NULL || handle->hashtab != NULL;
+    return OK;
+}
+
 static i32 dict_size(CSOUND *csound, DICT_QUERY1 *p);
 
 static i32 dict_query(CSOUND *csound, DICT_QUERY1 *p) {
@@ -1751,7 +1789,7 @@ static i32 dict_query_0(CSOUND *csound, DICT_QUERY1 *p) {
 static i32 dict_size(CSOUND *csound, DICT_QUERY1 *p) {
     IGN(csound);
     HANDLE *handle = get_handle(p);
-    if(handle->hashtab == NULL) {
+    if(handle == NULL || handle->hashtab == NULL) {
         *p->out = -1;
         return OK;
     }
@@ -2201,6 +2239,7 @@ set_many_is(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     return OK;
 }
 
+
 // -----------------------------------------------------------------------------------------
 //                                       Cache opcodes
 // -----------------------------------------------------------------------------------------
@@ -2396,7 +2435,6 @@ cacheput_i(CSOUND *csound, CACHEPUT *p) {
     return cacheput_perf(csound, p);
 }
 
-
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
@@ -2405,55 +2443,66 @@ static OENTRY localops[] = {
 
     { "dict_free",S(DICT_FREE),   0, 1, "", "io",   (SUBR)dict_free},
     
-    { "dict_get", S(DICT_GET_sf), 0, 3, "k", "iSO", (SUBR)dict_get_sf_0, (SUBR)dict_get_sf },
-    { "dict_get", S(DICT_GET_ss), 0, 3, "S", "iS",  (SUBR)dict_get_ss_0, (SUBR)dict_get_ss },
+    { "dict_get", S(DICT_GET_sf), 0, 3, "k", "iSO",
+      (SUBR)dict_get_sf_0, (SUBR)dict_get_sf },
+    { "dict_get", S(DICT_GET_ss), 0, 3, "S", "iS",
+      (SUBR)dict_get_ss_0, (SUBR)dict_get_ss },
     { "dict_get", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
-    { "dict_get", S(DICT_GET_if), 0, 3, "k", "ikO", (SUBR)dict_get_if_0, (SUBR)dict_get_if },
-    { "dict_get", S(DICT_GET_is), 0, 3, "S", "ik",  (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is },
+    { "dict_get", S(DICT_GET_if), 0, 3, "k", "ikO",
+      (SUBR)dict_get_if_0, (SUBR)dict_get_if },
+    { "dict_get", S(DICT_GET_is), 0, 3, "S", "ik",
+      (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is },
     { "dict_get", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i},
 
 
-    { "dict_set", S(DICT_SET_ss), 0, 3, "",  "iSS",  (SUBR)dict_set_ss_0, (SUBR)dict_set_ss },
-    { "dict_set", S(DICT_SET_sf), 0, 1, "",  "iSi",  (SUBR)dict_set_sf_i},
-    { "dict_set", S(DICT_SET_sf), 0, 3, "",  "iSk",  (SUBR)dict_set_sf_0, (SUBR)dict_set_sf },
-    { "dict_set", S(DICT_SET_if), 0, 3, "",  "ikk",  (SUBR)dict_set_if_0, (SUBR)dict_set_if },
+    { "dict_set", S(DICT_SET_ss), 0, 3, "",  "iSS",
+      (SUBR)dict_set_ss_0, (SUBR)dict_set_ss },
+    { "dict_set", S(DICT_SET_sf), 0, 1, "",  "iSi",
+      (SUBR)dict_set_sf_i},
+    { "dict_set", S(DICT_SET_sf), 0, 3, "",  "iSk",
+      (SUBR)dict_set_sf_0, (SUBR)dict_set_sf },
+    { "dict_set", S(DICT_SET_if), 0, 3, "",  "ikk",
+      (SUBR)dict_set_if_0, (SUBR)dict_set_if },
     { "dict_set", S(DICT_SET_if), 0, 1, "",  "iii",  (SUBR)dict_set_if_i},
-    { "dict_set", S(DICT_SET_is), 0, 3, "",  "ikS",  (SUBR)dict_set_is_0, (SUBR)dict_set_is },
+    { "dict_set", S(DICT_SET_is), 0, 3, "",  "ikS",
+      (SUBR)dict_set_is_0, (SUBR)dict_set_is },
 
-    // { "dict_del", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
     { "dict_set", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
-    // { "dict_del", S(DICT_DEL_i),   0, 1, "", "ii", (SUBR)dict_del_i },
     { "dict_set", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i },
-    // { "dict_del", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
     { "dict_set", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
 
-
     { "dict_print", S(DICT_PRINT), 0, 1, "", "i",  (SUBR)dict_print_i},
-    { "dict_print", S(DICT_PRINT), 0, 3, "", "ik", (SUBR)dict_print_k_0, (SUBR)dict_print_k},
+    { "dict_print", S(DICT_PRINT), 0, 3, "", "ik",
+      (SUBR)dict_print_k_0, (SUBR)dict_print_k},
 
-    { "dict_query", S(DICT_QUERY1), 0, 3, "k", "iS", (SUBR)dict_query_0, (SUBR)dict_query },
-    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, 3, "k[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr},
-    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, 3, "S[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr},
+    { "dict_query.k", S(DICT_QUERY1), 0, 3, "k", "iS",
+      (SUBR)dict_query_0, (SUBR)dict_query },
+    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, 3, "k[]", "iS",
+      (SUBR)dict_query_arr_0, (SUBR)dict_query_arr},
+    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, 3, "S[]", "iS",
+      (SUBR)dict_query_arr_0, (SUBR)dict_query_arr},
 
-
-    { "dict_iter", S(DICT_ITER), 0, 3, "SSk", "iP", (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf},
-    { "dict_iter", S(DICT_ITER), 0, 3, "Skk", "iP", (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf},
-    { "dict_iter", S(DICT_ITER), 0, 3, "kSk", "iP", (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf},
-    { "dict_iter", S(DICT_ITER), 0, 3, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf},
+    { "dict_iter", S(DICT_ITER), 0, 3, "SSk", "iP",
+      (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf},
+    { "dict_iter", S(DICT_ITER), 0, 3, "Skk", "iP",
+      (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf},
+    { "dict_iter", S(DICT_ITER), 0, 3, "kSk", "iP",
+      (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf},
+    { "dict_iter", S(DICT_ITER), 0, 3, "kkk", "iP",
+      (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf},
 
     { "dict_size", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
+    { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists },
 
-    { "cacheput", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
-    { "cacheput", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
-    { "cache", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
-    { "cache", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+    { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
+    { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+    { "cache.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
+    { "cache.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
 
-
-    { "cacheget", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
-    { "cacheget", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
-    { "cache", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
-    { "cache", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
-
+    { "cacheget.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
+    { "cacheget.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
+    { "cache.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
+    { "cache.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
 
     { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },
 

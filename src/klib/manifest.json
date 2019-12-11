@@ -7,6 +7,7 @@
       "dict_set",
       "dict_size",
       "dict_query",
+      "dict_exists",
       "dict_print",
       "dict_iter",
       "cacheput",
