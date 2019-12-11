@@ -70,6 +70,10 @@
     <ul class="subnav">
                 <li class="">
                     
+    <a class="" href="accum.html">accum</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="atstop.html">atstop</a>
                 </li>
                 <li class="">
@@ -87,6 +91,10 @@
                 <li class="">
                     
     <a class="" href="crackle.html">crackle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_exists.html">dict_exists</a>
                 </li>
                 <li class="">
                     
@@ -290,7 +298,7 @@ even harmonics to the signal. Has flux and program dependent saturation.</p>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="c1">; -odac </span>
+<span class="o">-</span><span class="n">odac</span> 
 
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
@@ -300,12 +308,12 @@ even harmonics to the signal. Has flux and program dependent saturation.</p>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="c1">;; This is the example file for jsfx opcode</span>
+<span class="c1">;; This is the example file for tubeharmonics opcode</span>
 
 <span class="kt">gi</span><span class="n">snd</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;snd/bourre-fragment-1.flac&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
 
 
-<span class="nb">FLpanel</span> <span class="s">&quot;jsfx&quot;</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
+<span class="nb">FLpanel</span> <span class="s">&quot;tubeharmonics&quot;</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
 <span class="nb">FLcolor</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">250</span>
 
 <span class="kt">i</span><span class="n">w</span><span class="p">,</span> <span class="kt">i</span><span class="n">h</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">30</span>
@@ -360,7 +368,7 @@ even harmonics to the signal. Has flux and program dependent saturation.</p>
 
 <span class="kd">instr</span> <span class="nf">1</span>
   <span class="kt">a</span><span class="n">1</span> <span class="nf">loopsamp</span> <span class="kt">gi</span><span class="n">snd</span>
-  <span class="kt">a</span><span class="n">3</span> <span class="nb">vco2</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">ntof</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;3C&quot;</span><span class="p">)</span>
+  <span class="kt">a</span><span class="n">3</span> <span class="nb">vco2</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">ntof</span><span class="p">(</span><span class="s">&quot;3C&quot;</span><span class="p">)</span>
   <span class="kt">a</span><span class="n">2</span> <span class="nb">oscili</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span>
   <span class="kt">a</span><span class="n">sig</span> <span class="nf">select3</span> <span class="kt">gk</span><span class="n">which</span><span class="p">,</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">3</span>
   <span class="kt">i</span><span class="n">gain</span> <span class="o">=</span> <span class="mi">0</span>

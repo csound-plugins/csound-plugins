@@ -70,6 +70,10 @@
     <ul class="subnav">
                 <li class="">
                     
+    <a class="" href="accum.html">accum</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="atstop.html">atstop</a>
                 </li>
                 <li class="">
@@ -87,6 +91,10 @@
                 <li class="">
                     
     <a class="" href="crackle.html">crackle</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="dict_exists.html">dict_exists</a>
                 </li>
                 <li class="">
                     
@@ -269,8 +277,8 @@ implement a hashtable mapping either strings or integers to strings or floats.
 value is returned (the empty string for string values, or an user given default 
 for number values)</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>kvalue dict_get idict, Skeym [idefault=0]
-kvalue dict_get idict, kkey, [idefault=0]
+<div class="codehilite"><pre><span></span>kvalue dict_get idict, Skeym, idefault=0
+kvalue dict_get idict, kkey, idefault=0
 Svalue dict_get idict, Skey
 Svalue dict_get idict, kkey
 </pre></div>
@@ -278,6 +286,10 @@ Svalue dict_get idict, kkey
 
 <p>The type of key and value depend on the type definition of the <code>dict</code>, see <a href="dict_new">dict_new</a></p>
 <p><code>dict_get</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the case of a dict of type "str:str", dict_get returns an empty string if the key is not found</p>
+</div>
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
@@ -366,69 +378,7 @@ Svalue dict_get idict, kkey
 
 <span class="cm">/*</span>
 
-<span class="cm">  # Example file for the dict_ opcode family</span>
-
-<span class="cm">  A dict is a hashtable, mapping a string or an integer</span>
-<span class="cm">  key to a string or float value. The type of the key and</span>
-<span class="cm">  value are set at creation time and can&#39;t be modified </span>
-<span class="cm">  later on</span>
-
-<span class="cm">  The lifespan of a dict can be attached to the instr it</span>
-<span class="cm">  was created in, or it can be global, in which case it </span>
-<span class="cm">  lives until the end of the performance, or until it is </span>
-<span class="cm">  explicitely destroyed (see dict_free)</span>
-
-<span class="cm">  A dict is identified by a handler, which is an integer</span>
-<span class="cm">  value, and thus can be passed around between intruments,</span>
-<span class="cm">  the handlers can be part of other structures, like</span>
-<span class="cm">  arrays or other dicts, etc.</span>
-
-<span class="cm">  # Opcodes</span>
-
-<span class="cm">  ## dict_new</span>
-
-
-<span class="cm">      ihandle dict_new Stype [, iglobal=0, key, value, key, value, ...]</span>
-
-<span class="cm">  Creates a new dictionary, either local to the instr or global</span>
-
-<span class="cm">  Stype: a string identifying the types of key and value.</span>
-
-<span class="cm">      &quot;ss&quot;  :  string -&gt; string</span>
-<span class="cm">      &quot;sf&quot;  :  string -&gt; float</span>
-<span class="cm">      &quot;is&quot;  :  int    -&gt; string</span>
-<span class="cm">      &quot;if&quot;  :  int    -&gt; float</span>
-
-<span class="cm">  iglobal: if 1, the dict is global and lives until the end</span>
-<span class="cm">           of the performance, or until explicitely destroyed</span>
-<span class="cm">           by dict_free</span>
-
-<span class="cm">  Optionally the dict can be populated at creation time with</span>
-<span class="cm">  a series of key:value pairs</span>
-
-<span class="cm">  ## dict_free</span>
-
-<span class="cm">      dict_free idict [, iwhen=0]</span>
-
-<span class="cm">  frees the hashtable either at init time or at the end of the note</span>
-<span class="cm">  (similar to ftfree)</span>
-<span class="cm">  This is needed when passing a dict from one instrument to another</span>
-
-<span class="cm">  * iwhen = 0, free now</span>
-<span class="cm">  * iwhen = 1, free at the end of this note</span>
-
-<span class="cm">  ## dict_set</span>
-
-<span class="cm">    dict_set idict, Skey, kvalue        ; k-time</span>
-<span class="cm">    dict_set idict, kkey, kvalue        ; k-time</span>
-<span class="cm">    dict_set idict, ikey, ivalue        ; i-time</span>
-
-<span class="cm">  Set a key:value pair</span>
-
-<span class="cm">    idict dict_new &quot;sf&quot;</span>
-<span class="cm">    dict_set idict, &quot;key&quot;, kvalue</span>
-
-<span class="cm">  Without a value, deletes the key:value pair</span>
+<span class="cm">  # Example file for dict_get</span>
 
 <span class="cm">  ## dict_get</span>
 
@@ -438,19 +388,6 @@ Svalue dict_get idict, kkey
 <span class="cm">  Get the value at a given key. For string values, an empty string</span>
 <span class="cm">  is returned when the key is not found. For int values, a default </span>
 <span class="cm">  value given by the user is returned when the key is not found.</span>
-
-
-<span class="cm">  ## dict_print</span>
-
-<span class="cm">    dict_print ihandle, [ktrig]</span>
-
-<span class="cm">  Prints the contents of the dict, either at i-time if no trigger</span>
-<span class="cm">  is given, or at k-time whenever ktrig is possitive and different</span>
-<span class="cm">  from the last value. Use -1 to print at every k-cycle.</span>
-
-<span class="cm">  NB: All opcodes work at k-tim. The hashtables with int-keys work </span>
-<span class="cm">      also at i-time whenever key and value are of i-type (for both </span>
-<span class="cm">      set and get actions)</span>
 
 <span class="cm">*/</span>
 
@@ -653,7 +590,7 @@ Svalue dict_get idict, kkey
 <span class="c1">; One convenient use of dicts is to pass arguments to an instr</span>
 <span class="kd">instr</span> <span class="nf">100</span>
   <span class="c1">; create our communication dict, set initial values</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span>
   <span class="c1">; the launched instr will last longer, so will have to deal with</span>
   <span class="c1">; this dict ceasing to exist</span>
   <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict</span>
@@ -669,7 +606,7 @@ Svalue dict_get idict, kkey
 <span class="c1">; or the last value, if the dict does not exist</span>
 <span class="kd">opcode</span> <span class="nf">dict_receive</span><span class="p">,</span> <span class="kt">k</span><span class="p">,</span><span class="kt">iSi</span> 
   <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">i</span><span class="n">val0</span> <span class="nb">xin</span>
-  <span class="kt">k</span><span class="n">last</span> <span class="nb">init</span> <span class="kt">i</span><span class="n">val0</span> 
+  <span class="kt">k</span><span class="n">last</span> <span class="nb">init</span> <span class="kt">i</span><span class="n">val0</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
     <span class="kt">k</span><span class="n">val</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">i</span><span class="n">val0</span>
     <span class="kt">k</span><span class="n">last</span> <span class="o">=</span> <span class="kt">k</span><span class="n">val</span>
@@ -689,12 +626,27 @@ Svalue dict_get idict, kkey
   <span class="nb">outch</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
 <span class="kd">endin</span>
 
+<span class="kd">instr</span> <span class="nf">200</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;str:any&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;fooval&quot;</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">10</span>
+  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
+  <span class="kt">S</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
+  <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
+  <span class="nb">printf</span> <span class="s">&quot;foo=</span><span class="si">%s</span><span class="s">, bar=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">foo</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span>
+  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="kt">i</span><span class="n">baz</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span>
+  <span class="kt">S</span><span class="n">moo</span> <span class="o">=</span> <span class="s">&quot;moo!&quot;</span>
+  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;moo&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">moo</span>
+  <span class="nb">printf</span> <span class="s">&quot;baz=</span><span class="si">%f</span><span class="s">,  moo=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">baz</span><span class="p">,</span> <span class="kt">S</span><span class="n">moo</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>  
+
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="c1">; i 1 0 0.01</span>
 <span class="c1">; i 2 0 0.01</span>
-<span class="nb">i</span> <span class="mi">8</span> <span class="mi">0</span> <span class="mf">0.1</span>
-<span class="nb">i</span> <span class="mi">100</span> <span class="mi">0</span> <span class="mi">10</span>
+<span class="c1">; i 8 0 0.1</span>
+<span class="c1">; i 100 0 10</span>
+<span class="nb">i</span> <span class="mi">200</span> <span class="mi">0</span> <span class="mi">1</span>
 <span class="n">f</span> <span class="mi">0</span> <span class="mi">1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
