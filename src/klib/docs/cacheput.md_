@@ -13,6 +13,7 @@ similar to the `strset` and `strget` opcodes but automatically asigns an idx
 to each distints string inside the cache (we guarantee that passing twice 
 the same string will return the same index)
 
+
 ## Syntax
 
     idx cacheput Sstr

@@ -2884,8 +2884,8 @@ static OENTRY localops[] = {
     { "dict_set.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
     { "dict_set.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i },
     { "dict_set.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
-    { "dict_del", S(DICT_DEL_s), 0, 1, "", "iS", (SUBR)dict_del_s_atstop},
-    { "dict_del", S(DICT_DEL_s), 0, 1, "", "ii", (SUBR)dict_del_i_atstop},
+    // { "dict_del", S(DICT_DEL_s), 0, 1, "", "iS", (SUBR)dict_del_s_atstop},
+    // { "dict_del", S(DICT_DEL_s), 0, 1, "", "ii", (SUBR)dict_del_i_atstop},
 
     { "dict_print", S(DICT_PRINT), 0, 1, "", "i",  (SUBR)dict_print_i},
     { "dict_print", S(DICT_PRINT), 0, 3, "", "ik",

@@ -22,7 +22,8 @@ opcode argget, k, Si
   Skey sprintf "%.4f:%s", p1, Sparam
   kout dict_get gidict, Skey, idefault
   xout kout
-  dict_del gidict, Sparam 
+  ;; delete key at end of event
+  defer "dict_set", gidict, Sparam 
 endop
 
 instr exit
@@ -66,7 +67,8 @@ instr 11
   Skey sprintf "%f_freq", p1
   printf "p1=%.6f \n", 1,  p1
   kfreq dict_get gidict, Skey, 1000
-  dict_del gidict, Skey
+  ;; delete key at end of event
+  defer "dict_set", gidict, Skey
   a0 oscili 0.02, kfreq
   a0 *= linsegr:a(0, p3*0.1, 1, p3*0.9, 0)
   outs a0, a0

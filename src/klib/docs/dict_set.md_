@@ -6,19 +6,22 @@ Set (or remove) a value from a hashtable
 
 ## Description
 
-A hashtable is a mapping from a key to a value. The `dict_` family of opcodes 
-implement a hashtable mapping either strings or integers to strings or floats. 
+A hashtable is a mapping from a key to a value. The `dict_` family of opcodes
+implement a hashtable mapping either strings or integers to strings or floats.
 `dict_set` sets the value corresponding to a key if the key is already present,
-or inserts a key:value pair otherwise. 
+or inserts a key:value pair otherwise.
 
 **NB**: Without a value, `dict_set` deletes the key:value pair from the dict.
 
-`dict_set` executes can execute at **i-time** and **k-time**. 
+`dict_set` executes can execute at **i-time** and **k-time**.
 
-!!! tip
+!!! Tip
 
     It is possible to set multiple values at i-time directly with [dict_new](dict_new.md)
 
+!!! Note
+
+    If `xvalue` is not given, `dict_set` removes the key from the dict
 
 ## Syntax
 
@@ -30,11 +33,9 @@ or inserts a key:value pair otherwise.
 * `idict`: the handle of the dict, as returned by `dict_new`
 * `xkey`: the key to set. Its type must match the type definition of the dict.
           (a string or a possitive integer)
-* `xvalue`: the value to set. Its type must match the type definition of the dict (a str or a numeric value)
+* `xvalue`: the value to set. Its type must match the type definition of the
+  dict (a str or a numeric value)
 
-!!! note
-
-    If `xvalue` is not given, `dict_set` removes the key from the dict    
 
 ## Execution Time
 
@@ -56,38 +57,42 @@ sr = 44100
 ksmps = 32
 nchnls = 2
 
-instr 1	
+instr 1
   ; create a local dict, mapping strings to numbers
   idict dict_new "sf"
-  
+
   ; set key a key:value pair
   dict_set idict, "bar", 123
 
   ; retrieve the value
   kbar dict_get idict, "bar"
-  
-  ; get a non-existent key, will output the default
-  kfoo dict_get idict, "foo", -1 
 
-  printf ">>>> bar: %f,  foo: %f \n", 1, kbar, kfoo 
+  ; get a non-existent key, will output the default
+  kfoo dict_get idict, "foo", -1
+
+  printf ">>>> bar: %f,  foo: %f \n", 1, kbar, kfoo
 
   ; now create another dict, this one will outlive this note
-  idict2 dict_new "ss", 1, "baz", "bazvalue", "foo", "foovalue"
-  
+  idict2 dict_new "*str:str", "baz", "bazvalue", "foo", "foovalue"
+
+  ; Remove a key
+  dict_set idict2, "foo"
   ; schedule another inst, pass this dict
   event "i", 2, 0, 1, idict2
-  
+
   turnoff
 
 endin
 
 instr 2
   idict = p4
+  print_dict idict
+
   Sbaz = dict_get(idict, "baz")
   printf "instr 2, kbaz = %s \n", 1, Sbaz
-  
+
   ; free dict at the end of this note
-  dict_free idict, 1  
+  dict_free idict, 1
   turnoff
 endin
 
@@ -99,13 +104,17 @@ endin
 i 1 0 2
 
 </CsScore>
-</CsoundSynthesizer> 
+</CsoundSynthesizer>
 ```
+
+{example}
 
 ## See also
 
 * [dict_new](dict_new.md)
 * [dict_get](dict_get.md)
+* [defer](defer.md)
+* [dict_free](dict_free.md)
 
 ## Credits
 
