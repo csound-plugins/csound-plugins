@@ -1,0 +1,51 @@
+# pool_push
+
+## Abstract
+
+Push an item into a pool
+
+
+## Description
+
+A pool is actually a stack of numbers, based on an array.
+
+The pool_ opcodes implement a stack of numbers. This is useful when assigning
+ids to resources, like assigning fractional numbers to instrument instances to
+access them individually. To get a value, call `pool_pop` and when finished
+using it the value is returned to the pool with `pool_push`.
+
+## Syntax
+
+    pool_push ipool, ivalue, iwhen=0
+    pool_push ipool, kvalue
+
+### Arguments
+
+* `ipool`: the pool to push the value to
+* `ivalue` / `kvalue`: the value to push
+* `iwhen`: if 0, the value is pushed at init time, if 1 the value is pushed at
+  release time. This argument can only be used when calling the opcode at init
+  time
+
+### Output
+
+
+### Execution Time
+
+* Init
+* Performance
+
+## Examples
+
+{example}
+
+## See also
+
+* [pool_pop](pool_pop.md)
+* [pool_new](pool_new.md)
+* [pool_gen](pool_gen.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

@@ -70,14 +70,14 @@
   dict_free
   =========
 
-    dict_free idict [, iwhen]
+    dict_free idict [, iwhen=1]
 
     frees the hashtable either at init time or at the end of the note
     (similar to ftfree)
     This is needed when passing a hashtable from one instrument to another
 
     iwhen = 0  -> free now
-    iwhen = 1  -> free at the end of this note
+    iwhen = 1  -> (default) free at the end of this note
 
   dict_set
   ========
@@ -92,6 +92,8 @@
     dict_set idict, "key", kvalue
 
     If a value is not given, the key:value pair is deleted (if it exists)
+
+    NB: to delete a value at stop, use dict_del
 
   dict_get
   ========
@@ -150,6 +152,14 @@
   All opcodes work at k-time
   The hashtables with int-keys work also at i-time whenever key and value are
   of i-type (for both set and get actions)
+
+  dict_del
+  ========
+
+    dict_del idict, Skey
+    dict_del idict, ikey
+
+    Delete the key:pair at the end of this note
 
   cache opcodes
   =============
@@ -709,6 +719,7 @@ strdef_to_intdef(STRINGDAT *s) {
         if(!strncmp("any", sdata, 3))   return khStrAny;
         return -1;
     } else if (!strncmp("int:", sdata, 4)) {
+        sdata = &(sdata[4]);
         if(!strncmp("str", sdata, 3))   return khIntStr;
         if(!strncmp("float", sdata, 5)) return khIntFlt;
         return -1;
@@ -739,7 +750,12 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
     if(khtype < 0)
         return INITERR(Str("dict: type not understood."
                            ". Expected one of 'sf', 'ss', 'if', 'is'"));
-    ui32 idx = dict_make(csound, p->g, khtype, (i32) p->global, DICT_INITIAL_SIZE);
+    int capacity = DICT_INITIAL_SIZE;
+    if(csound->GetInputArgCnt(p) == 2) {
+        // called as idict dict_new "*sf", icapacity
+        capacity = (int)*(MYFLT*)p->inargs[0];
+    }
+    ui32 idx = dict_make(csound, p->g, khtype, (i32) p->global, capacity);
     if(idx == 0)
         return INITERR(Str("dict: failed to allocate the hashtable"));
     *p->handleidx = (MYFLT)idx;
@@ -749,6 +765,7 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
         csound->RegisterDeinitCallback(csound, p,
                                        (i32 (*)(CSOUND*, void*))dict_deinit_callback);
     }
+
     return OK;
 }
 
@@ -1117,6 +1134,9 @@ dict_set_is(CSOUND *csound, DICT_SET_is *p) {
  * This removes a key:value pair from a dict. It is called
  * as dict_set without a value
  *
+ * called as dict_del idict, Skey removes the key at the end
+ * of the note
+ *
  */
 
 typedef struct {
@@ -1126,48 +1146,72 @@ typedef struct {
 } DICT_DEL_s;
 
 static i32
+_hashtab_del_ss(CSOUND *csound, khash_t(khStrStr) *h, STRINGDAT *key) {
+    khiter_t k = kh_get(khStrStr, h, key->data);
+    if(k == kh_end(h))
+        return 0;
+    LOCK(handle);
+    csound->Free(csound, kh_key(h, k));
+    kstring_t *ks = &(h->vals[k]);
+    csound->Free(csound, ks->s);
+    kh_del(khStrStr, h, k);
+    UNLOCK(handle);
+    return 1;
+}
+
+static i32
+_hashtab_del_sf(CSOUND *csound, khash_t(khStrFlt) *h, STRINGDAT *key) {
+    khiter_t k = kh_get(khStrFlt, h, key->data);
+    if(k == kh_end(h))
+        return 0;
+    LOCK(handle);
+    csound->Free(csound, kh_key(h, k));
+    kh_del(khStrFlt, h, k);
+    UNLOCK(handle);
+    return 1;
+}
+
+static i32
 dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
     HASH_GLOBALS *g = dict_globals(csound);
     i32 idx = (i32)*p->handleidx;
     HANDLE *handle = &(g->handles[idx]);
     i32 khtype = handle->khtype;
-    khiter_t k;
-    kstring_t *ks;
+    int found = 0;
     if(khtype == khStrFlt) {
         khash_t(khStrFlt) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
-        k = kh_get(khStrFlt, h, p->outkey->data);
-        if(k != kh_end(h)) {
-            // key exists, free key str and remove item
-            LOCK(handle);
-            csound->Free(csound, kh_key(h, k));
-            kh_del(khStrFlt, h, k);
-            handle->counter++;
-            UNLOCK(handle);
-        }
+        found = _hashtab_del_sf(csound, h, p->outkey);
     } else if(khtype == khStrStr) {
         khash_t(khStrStr) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
-        k = kh_get(khStrStr, h, p->outkey->data);
-        if(k != kh_end(h)) {
-            // key exists, free key str and value, remove item
-            LOCK(handle);
-            csound->Free(csound, kh_key(h, k));
-            ks = &(h->vals[k]);
-            csound->Free(csound, ks->s);
-            kh_del(khStrStr, h, k);
-            handle->counter++;
-            UNLOCK(handle);
-        }
+        found = _hashtab_del_ss(csound, h, p->outkey);
+    } else if(khtype == khStrAny) {
+        found = _hashtab_del_sf(csound, handle->hashtab2, p->outkey);
+        if(!found)
+            found = _hashtab_del_ss(csound, handle->hashtab, p->outkey);
     }
+    if(found)
+        handle->counter++;
     return OK;
 }
+
+#define register_deinit(csound, p, func) \
+    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
+
+static i32
+dict_del_s_atstop(CSOUND *csound, DICT_DEL_s *p) {
+    register_deinit(csound, p, dict_del_s);
+    return OK;
+}
+
 
 typedef struct {
     OPDS h;
     MYFLT *handleidx;
     MYFLT *outkey;
 } DICT_DEL_i;
+
 
 static i32
 dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
@@ -1205,6 +1249,14 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
                         intdef_to_strdef(khtype));
     return OK;
 }
+
+
+static i32
+dict_del_i_atstop(CSOUND *csound, DICT_DEL_s *p) {
+    register_deinit(csound, p, dict_del_i);
+    return OK;
+}
+
 
 // ------------------------------------------------------
 //                         GET
@@ -1627,17 +1679,29 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
     // linelength could be changed dynamically in the future
     const i32 linelength = 80;
     char line[256];
+    int itemlength;
+
+    // one item should be 000: 45.12345
+    //                    1234567890123
+    int item_maxlength = 15;
+    csound->MessageS(csound, CSOUNDMSG_ORCH, "{\n");
+    memset(line, ' ', 4);
+    chars = 4;
     if(khtype == khIntFlt) {
         khash_t(khIntFlt) *h = handle->hashtab;
         for(k = kh_begin(h); k != kh_end(h); ++k) {
-            if(!kh_exist(h, k)) continue;            
-            chars += sprintf(line+chars, "%d: %.5f", kh_key(h, k), kh_value(h, k));
-            if(chars < linelength) {
-                line[chars++] = '\t';
+            if(!kh_exist(h, k)) continue;
+            itemlength = sprintf(line+chars, "%d: %.5f", kh_key(h, k), kh_value(h, k));
+            chars += itemlength;
+            if(chars + (item_maxlength - itemlength) <= linelength) {
+                for(int i=itemlength; i<item_maxlength; i++) {
+                    line[chars++] = ' ';
+                }
             } else {
                 line[chars+1] = '\0';
                 csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
-                chars = 0;
+                memset(line, ' ', 4);
+                chars = 4;
             }
         }
         // last line
@@ -1672,6 +1736,7 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
         print_hashtab_sf(csound, handle->hashtab2);
     } else
         return PERFERR(Str("dict: format not supported"));
+    csound->MessageS(csound, CSOUNDMSG_ORCH, "}\n");
 
     return OK;
 }
@@ -1727,7 +1792,7 @@ dict_print_k(CSOUND *csound, DICT_PRINT *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    MYFLT *item;
 
     MYFLT *handleidx;
     STRINGDAT *cmdstr;
@@ -1741,11 +1806,11 @@ static i32 dict_exists(CSOUND *csound, DICT_QUERY1 *p) {
     p->g = dict_globals(csound);
     int idx = (int)*p->handleidx;
     if(idx < 0 || idx >= p->g->maxhandles) {
-        *p->out = 0;
+        *p->item = 0;
         return OK;
     }
     HANDLE *handle = get_handle(p);
-    *p->out = handle != NULL || handle->hashtab != NULL;
+    *p->item = handle != NULL || handle->hashtab != NULL;
     return OK;
 }
 
@@ -1758,11 +1823,11 @@ static i32 dict_query(CSOUND *csound, DICT_QUERY1 *p) {
         return dict_size(csound, p);
     case 1:  // type
         handle = get_handle_check(p);
-        *p->out = (handle == NULL || handle->hashtab == NULL) ? 0 : handle->khtype;
+        *p->item = (handle == NULL || handle->hashtab == NULL) ? 0 : handle->khtype;
         return OK;
     case 2:  // exists
         handle = get_handle_check(p);
-        *p->out = (handle == NULL || handle->hashtab == NULL) ? 0 : 1;
+        *p->item = (handle == NULL || handle->hashtab == NULL) ? 0 : 1;
         return OK;
     }
     return OK;
@@ -1790,11 +1855,11 @@ static i32 dict_size(CSOUND *csound, DICT_QUERY1 *p) {
     IGN(csound);
     HANDLE *handle = get_handle(p);
     if(handle == NULL || handle->hashtab == NULL) {
-        *p->out = -1;
+        *p->item = -1;
         return OK;
     }
     with_hashtable(handle, {
-        *p->out = kh_size(h);
+        *p->item = kh_size(h);
     })
     return OK;
 }
@@ -1808,7 +1873,7 @@ static i32 dict_size_0(CSOUND *csound, DICT_QUERY1 *p) {
 // used for queries which return an array: "keys", "values"
 typedef struct {
     OPDS h;
-    ARRAYDAT *out;
+    ARRAYDAT *item;
 
     MYFLT *handleidx;
     STRINGDAT *cmdstr;
@@ -1913,17 +1978,17 @@ dict_query_arr(CSOUND *csound, DICT_QUERY_ARR *p) {
     CHECK_HANDLE(handle);
 
     ui32 size = handle_get_hashtable_size(handle);
-    ARRAYCHECK(p->out, (i32) size);
+    ARRAYCHECK(p->item, (i32) size);
 
     switch(p->cmd) {
     case 0:  // keys, string
-        return dict_query_arr_keys_s(csound, handle, p->out);
+        return dict_query_arr_keys_s(csound, handle, p->item);
     case 1:  // keys, numeric
-        return dict_query_arr_keys_i(csound, handle, p->out);
+        return dict_query_arr_keys_i(csound, handle, p->item);
     case 2:  // values, string
-        return dict_query_arr_values_s(csound, handle, p->out);
+        return dict_query_arr_values_s(csound, handle, p->item);
     case 3:  // values, numeric
-        return dict_query_arr_values_f(csound, handle, p->out);
+        return dict_query_arr_values_f(csound, handle, p->item);
     default:
         return PERFERRF("internal error: invalid cmd (%d)", p->cmd);
     }
@@ -1936,9 +2001,9 @@ dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     p->g = dict_globals(csound);
     char *data = p->cmdstr->data;
     HANDLE *handle = get_handle(p);
-    char *vartypename = p->out->arrayType->varTypeName;
+    char *vartypename = p->item->arrayType->varTypeName;
     ui32 size = handle_get_hashtable_size(handle);
-    tabinit(csound, p->out, (i32)size);
+    tabinit(csound, p->item, (i32)size);
     
     if(strcmp(data, "keys")==0) {
         if(handle->khtype == 21 || handle->khtype == 22) {
@@ -2363,7 +2428,7 @@ cache_popstr(STRCACHE_GLOBALS *g, ui32 idx, ui32 *strsize) {
 typedef struct {
     OPDS h;
     // Sstr cacheget kidx / iidx
-    STRINGDAT *out;
+    STRINGDAT *item;
     MYFLT *idx;
     STRCACHE_GLOBALS *g;
     int done;
@@ -2391,7 +2456,7 @@ cacheget_perf(CSOUND *csound, CACHEGET *p) {
     kstring_t *ks = cache_getstr(g, idx);
     if(ks == NULL)
         return PERFERRF(Str("cacheget: string not found (idx: %d)"), idx);
-    return stringdat_set(csound, p->out, ks->s, ks->l);
+    return stringdat_set(csound, p->item, ks->s, ks->l);
 }
 
 static i32
@@ -2402,7 +2467,7 @@ cachepop_i(CSOUND *csound, CACHEGET *p) {
     char *s = cache_popstr(g, idx, &ssize);
     if(s == NULL)
         return INITERRF(Str("cachepop: string with index %d not in cache"), idx);
-    stringdat_move(csound, p->out, s, ssize);
+    stringdat_move(csound, p->item, s, ssize);
     return OK;
 }
 
@@ -2435,41 +2500,392 @@ cacheput_i(CSOUND *csound, CACHEPUT *p) {
     return cacheput_perf(csound, p);
 }
 
+/** pool opcodes
+ *
+ * a pool is a stack of integers.
+ *
+ * when a pool is generated, it contains a vector of integers, from 0 to size-1
+ *
+ * pool_pop will get one of those items
+ * pool_push returns that item to the pool
+ *
+ * Use case is:
+ *
+ * gipool pool_gen 1000
+ *
+ * instr 1
+ *   inum pool_get gipool
+ *   schedule 2+inum/1000, ...
+ *   ...
+ * endin
+ *
+ * instr 2
+ *   ; push the id back to the pool, at release time
+ *   pool_push gipool, frac2int(p1), 1
+ *   ;; or defer "pool_push", gipool, frac2int(p1)
+ * endin
+ *
+ *
+ *
+ *
+ */
+
+typedef struct {
+    int active;
+    int size;
+    int allocated;
+    int cangrow;
+    MYFLT *data;
+} POOL_HANDLE;
+
+typedef struct {
+    CSOUND *csound;
+    int numhandles;
+    POOL_HANDLE *handles;
+} POOL_GLOBALS;
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *handleidx;
+    MYFLT *arg1;
+    MYFLT *arg2;
+} POOL_NEW;
+
+static i32 pool_reset(CSOUND *csound, POOL_GLOBALS *g);
+
+#define POOL_VARNAME "__pool_globals__"
+
+static POOL_GLOBALS * pool_globals(CSOUND *csound) {
+    POOL_GLOBALS *g = csound->QueryGlobalVariable(csound, POOL_VARNAME);
+    if(g != NULL) return g;
+
+    int err = csound->CreateGlobalVariable(csound, POOL_VARNAME, sizeof(POOL_GLOBALS));
+    if(err != 0) {
+        INITERR("failed to create globals for pool");
+        return NULL;
+    }
+    g = csound->QueryGlobalVariable(csound, POOL_VARNAME);
+    g->csound = csound;
+    g->handles = csound->Calloc(csound, sizeof(POOL_HANDLE) * 10);
+    g->numhandles = 10;
+    csound->RegisterResetCallback(csound, (void *)g, (i32(*)(CSOUND*, void*))pool_reset);
+    return g;
+}
+
+static inline i32
+pool_getfreeslot(POOL_GLOBALS *g) {
+    POOL_HANDLE *handles = g->handles;
+    for(int i=0; i<g->numhandles; i++) {
+        if(handles[i].active == 0)
+            return i;
+    }
+    // no free slots, time to grow
+    int idx = g->numhandles;
+    CSOUND *csound = g->csound;
+    g->numhandles *= 2;
+    g->handles = csound->ReAlloc(csound, g->handles, sizeof(POOL_HANDLE)*g->numhandles);
+    return idx;
+}
+
+static i32
+pool_fill(POOL_HANDLE *handle, MYFLT start, MYFLT stop, MYFLT step) {
+    int numitems = (int)((stop - start) / step);
+    if (numitems <= 0 || numitems > handle->size || numitems > handle->allocated)
+        return NOTOK;
+    MYFLT x = start;
+    for(int i=numitems-1; i >= 0; i--) {
+        // printf("idx: %d  x:%f\n", i, x);
+        handle->data[i] = x;
+        x += step;
+    }
+    return OK;
+}
+
+static i32
+pool_create(CSOUND *csound, POOL_GLOBALS *g, int allocated, int cangrow) {
+    if(allocated < 0)
+        return INITERR("Allocation size must be positive");
+    int slot = pool_getfreeslot(g);
+    POOL_HANDLE *handle = &(g->handles[slot]);
+    handle->active = 1;
+    handle->data = csound->Malloc(csound, sizeof(MYFLT) * allocated);
+    if(handle->data == NULL)
+        return INITERR("Allocation error when creating pool");
+    handle->allocated = allocated;
+    handle->size = 0;
+    handle->cangrow = cangrow;
+    return slot;
+}
+
+
+/** pool_gen
+ *
+ * ipool pool_gen isize
+ * ipool pool_gen istart, iend
+ *
+ * In its first form, it will generate a pool of the given size
+ * filled with integers between 0 and size
+ * In the second form, it will generate a pool filled with numbers from
+ * istart to iend (inclusive)
+ *
+ * The pool can't be resized
+ *
+ * pool_gen 1, 100 -> 1 .. 100 (inclusive)
+ *
+ */
+
+static i32
+pool_gen(CSOUND *csound, POOL_NEW *p) {
+    int a = (int)*p->arg1;
+    int b = (int)*p->arg2;
+    int start, end;
+    int step = 1;
+    if(b == 0) {
+        start = 0;
+        end = a;
+    } else {
+        start = a;
+        step = a<b?1:-1;
+        end = b+step;
+    }
+    int size = end - start;
+    if(size < 0) {
+        size = -size;
+    }
+    if(size <= 0)
+        return INITERRF("Size must be positive (size=%d)", size);
+    int allocated = size;
+    int cangrow = 0;
+    POOL_GLOBALS *g = pool_globals(csound);
+    int slot = pool_create(csound, g, allocated, cangrow);
+    POOL_HANDLE *handle = &(g->handles[slot]);
+    handle->size = size;
+    if(size > 0)
+        pool_fill(handle, start, end, step);
+    *p->handleidx = slot;
+    return OK;
+}
+
+/**
+ * pool_new: create an empty pool
+ *
+ * ipool pool_new [capacity=0]
+ *
+ * capacity: if not given, the pool is resizable
+ *
+ *
+ */
+
+
+static i32
+pool_empty(CSOUND *csound, POOL_NEW *p) {
+    int allocated = (int)*p->arg1;
+    int cangrow = 0;
+    if(allocated == 0) {
+        allocated = 64;
+        cangrow = 1;
+    }
+    POOL_GLOBALS *g = pool_globals(csound);
+    int slot = pool_create(csound, g, allocated, cangrow);
+    *p->handleidx = slot;
+    return OK;
+}
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *handleidx, *arg1, *arg2, *arg3, *arg4;
+    POOL_HANDLE *handle;
+    POOL_GLOBALS *g;
+} POOL_1;
+
+static inline POOL_HANDLE *pool_get_handle(POOL_GLOBALS *g, int idx) {
+    if(idx >= g->numhandles)
+        return NULL;
+    return &(g->handles[idx]);
+}
+
+static i32
+pool_1_init(CSOUND *csound, POOL_1 *p) {
+    p->g = pool_globals(csound);
+    int handleidx = (int)*p->handleidx;
+    p->handle = pool_get_handle(p->g, handleidx);
+    if(p->handle == NULL)
+        return INITERRF("Handle with idx %d does not exist", handleidx);
+    return OK;
+}
+
+
+static i32
+pool_pop_perf(CSOUND *csound, POOL_1 *p) {
+    int size = p->handle->size;
+    if(size == 0)
+        return PERFERR("pool empty");
+    MYFLT item = p->handle->data[size -1];
+    p->handle->size--;
+    *p->out = item;
+    return OK;
+}
+
+static i32
+pool_pop_i(CSOUND *csound, POOL_1 *p) {
+    int ans = pool_1_init(csound, p);
+    if (ans == NOTOK)
+        return NOTOK;
+    return pool_pop_perf(csound, p);
+}
+
+static i32
+pool_capacity_perf(CSOUND *csound, POOL_1 *p) {
+    *p->out = p->handle->allocated;
+    return OK;
+}
+
+static i32
+pool_capacity_i(CSOUND *csound, POOL_1 *p) {
+    pool_1_init(csound, p);
+    pool_capacity_perf(csound, p);
+    return OK;
+}
+
+static i32
+pool_size_perf(CSOUND *csound, POOL_1 *p) {
+    *p->out = p->handle->size;
+    return OK;
+}
+
+static i32
+pool_size_i(CSOUND *csound, POOL_1 *p) {
+    pool_1_init(csound, p);
+    pool_size_perf(csound, p);
+    return OK;
+}
+
+
+// pool_put ipool, item, when=0 (0=at init, 1=at stop)
+typedef struct {
+    OPDS h;
+    MYFLT *handleidx;
+    MYFLT *item;
+    MYFLT *when;
+    POOL_GLOBALS *g;
+    POOL_HANDLE *handle;
+} POOL_PUSH;
+
+static i32
+pool_push_init(CSOUND *csound, POOL_PUSH *p) {
+    p->g = pool_globals(csound);
+    p->handle = pool_get_handle(p->g, (int)*p->handleidx);
+    if(p->handle == NULL)
+        return INITERRF("Invalid handle for idx: %d", (int)*p->handleidx);
+    return OK;
+}
+
+void pool_resize(CSOUND *csound, POOL_HANDLE *handle, int minsize) {
+    int allocated = handle->allocated;
+    while(allocated < minsize) {
+        allocated *= 2;
+    }
+    handle->data = csound->ReAlloc(csound, handle->data, sizeof(MYFLT)*allocated);
+    handle->allocated = allocated;
+}
+
+static i32
+pool_push_perf(CSOUND *csound, POOL_PUSH *p) {
+    if(p->handle->size >= p->handle->allocated) {
+        if(p->handle->cangrow) {
+            pool_resize(csound, p->handle, p->handle->allocated*2);
+        } else {
+            return PERFERR("Pool is full!");
+        }
+    }
+    p->handle->data[p->handle->size] = *p->item;
+    p->handle->size++;
+    return OK;
+}
+
+static i32
+pool_push_i(CSOUND *csound, POOL_PUSH *p) {
+    pool_push_init(csound, p);
+    if(*p->when == 1) {
+        register_deinit(csound, p, pool_push_perf);
+        return OK;
+    }
+    return pool_push_perf(csound, p);
+}
+
+// this is called when reseting csound.
+static i32
+pool_reset(CSOUND *csound, POOL_GLOBALS *g) {
+    for(int handleidx=0; handleidx < g->numhandles; handleidx++) {
+        POOL_HANDLE *handle = pool_get_handle(g, handleidx);
+        if(handle->active) {
+            csound->Free(csound, handle->data);
+        }
+    }
+    csound->Free(csound, g->handles);
+    csound->DestroyGlobalVariable(csound, POOL_VARNAME);
+    return OK;
+}
+
+
+
+static i32
+pool_at_perf(CSOUND *csound, POOL_1 *p) {
+    int itemidx = (int)*p->arg1;
+    if(itemidx >= p->handle->size)
+        return PERFERRF("Index out of bounds: %d (size=%d)", itemidx, p->handle->size);
+    *p->out = p->handle->data[itemidx];
+    return OK;
+}
+
+static i32
+pool_at_i(CSOUND *csound, POOL_1 *p) {
+    pool_1_init(csound, p);
+    return pool_at_perf(csound, p);
+}
+
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-    { "dict_new", S(DICT_NEW), 0, 1, "i", "S", (SUBR)dict_new },
-    { "dict_new", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many },
+    { "dict_new.size", S(DICT_NEW), 0, 1, "i", "Sj", (SUBR)dict_new },
+    { "dict_new.many", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many },
 
-    { "dict_free",S(DICT_FREE),   0, 1, "", "io",   (SUBR)dict_free},
+    { "dict_free",S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free},
     
-    { "dict_get", S(DICT_GET_sf), 0, 3, "k", "iSO",
+    { "dict_get.ss_k", S(DICT_GET_sf), 0, 3, "k", "iSO",
       (SUBR)dict_get_sf_0, (SUBR)dict_get_sf },
-    { "dict_get", S(DICT_GET_ss), 0, 3, "S", "iS",
+    { "dict_get.ss_k", S(DICT_GET_ss), 0, 3, "S", "iS",
       (SUBR)dict_get_ss_0, (SUBR)dict_get_ss },
-    { "dict_get", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
-    { "dict_get", S(DICT_GET_if), 0, 3, "k", "ikO",
+    { "dict_get.sf_k", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
+    { "dict_get.if_k", S(DICT_GET_if), 0, 3, "k", "ikO",
       (SUBR)dict_get_if_0, (SUBR)dict_get_if },
-    { "dict_get", S(DICT_GET_is), 0, 3, "S", "ik",
+    { "dict_get.is_k", S(DICT_GET_is), 0, 3, "S", "ik",
       (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is },
-    { "dict_get", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i},
+    { "dict_get.if_i", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i},
 
 
-    { "dict_set", S(DICT_SET_ss), 0, 3, "",  "iSS",
+    { "dict_set.ss_k", S(DICT_SET_ss), 0, 3, "",  "iSS",
       (SUBR)dict_set_ss_0, (SUBR)dict_set_ss },
-    { "dict_set", S(DICT_SET_sf), 0, 1, "",  "iSi",
+    { "dict_set.sf_i", S(DICT_SET_sf), 0, 1, "",  "iSi",
       (SUBR)dict_set_sf_i},
-    { "dict_set", S(DICT_SET_sf), 0, 3, "",  "iSk",
+    { "dict_set.sf_k", S(DICT_SET_sf), 0, 3, "",  "iSk",
       (SUBR)dict_set_sf_0, (SUBR)dict_set_sf },
-    { "dict_set", S(DICT_SET_if), 0, 3, "",  "ikk",
+    { "dict_set.if_i", S(DICT_SET_if), 0, 1, "",  "iii",
+      (SUBR)dict_set_if_i},
+
+    { "dict_set.if_k", S(DICT_SET_if), 0, 3, "",  "ikk",
       (SUBR)dict_set_if_0, (SUBR)dict_set_if },
-    { "dict_set", S(DICT_SET_if), 0, 1, "",  "iii",  (SUBR)dict_set_if_i},
-    { "dict_set", S(DICT_SET_is), 0, 3, "",  "ikS",
+    { "dict_set.is_k", S(DICT_SET_is), 0, 3, "",  "ikS",
       (SUBR)dict_set_is_0, (SUBR)dict_set_is },
 
-    { "dict_set", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
-    { "dict_set", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i },
-    { "dict_set", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
+    { "dict_set.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
+    { "dict_set.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i },
+    { "dict_set.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
+    { "dict_del", S(DICT_DEL_s), 0, 1, "", "iS", (SUBR)dict_del_s_atstop},
+    { "dict_del", S(DICT_DEL_s), 0, 1, "", "ii", (SUBR)dict_del_i_atstop},
 
     { "dict_print", S(DICT_PRINT), 0, 1, "", "i",  (SUBR)dict_print_i},
     { "dict_print", S(DICT_PRINT), 0, 3, "", "ik",
@@ -2492,6 +2908,8 @@ static OENTRY localops[] = {
       (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf},
 
     { "dict_size", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
+    { "dict_size", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_size_0},
+
     { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists },
 
     { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
@@ -2505,6 +2923,23 @@ static OENTRY localops[] = {
     { "cache.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
 
     { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },
+
+    { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen},
+    { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty},
+
+    { "pool_pop.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_pop_i},
+    { "pool_pop.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_pop_perf},
+
+    { "pool_push.i", S(POOL_PUSH), 0, 1, "", "iio", (SUBR)pool_push_i},
+    { "pool_push.k", S(POOL_PUSH), 0, 3, "", "ik", (SUBR)pool_push_init, (SUBR)pool_push_perf},
+
+    { "pool_capacity.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_capacity_i},
+    { "pool_capacity.k", S(POOL_1), 0, 3, "k", "i",
+      (SUBR)pool_1_init, (SUBR)pool_capacity_perf},
+    { "pool_size.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_size_i},
+    { "pool_size.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf},
+    { "pool_at.i", S(POOL_1), 0, 1, "i", "ii", (SUBR)pool_at_i},
+    { "pool_at.k", S(POOL_1), 0, 3, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf},
 
 };
 

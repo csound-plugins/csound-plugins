@@ -7,12 +7,12 @@
 ## Description
 
 `poly` creates a user given number of instances of an opcode, each with its own state,
-inputs and outputs. The resulting output is an array where each element holds the 
-output of the corresponding instance. 
+inputs and outputs. The resulting output is an array where each element holds the
+output of the corresponding instance.
 
 In general, an opcode has a signature, given by the number and types of its output and
 input arguments. For example, the opcode `oscili` as used like `aout oscili kamp, kfreq`
-has a signature `a / kk` (`a` as output, `kk` as input). 
+has a signature `a / kk` (`a` as output, `kk` as input).
 
 To follow this example, to create 10 parallel versions of this opcode (an oscillator bank)
 it is possible to use `poly` like this:
@@ -22,17 +22,25 @@ it is possible to use `poly` like this:
 kFreqs[] fillarray 100, 110, 200, 220, 300, 330, 400, 440, 500, 550
 aOut[] poly 10, "oscili", 0.1, kFreqs
 
-``` 
+```
 
 Notice that it is possible to set one value for each instance, as given by `kFreqs`, or
 one value to be shared by all instances, as given by the amplitude `0.1`. By changing
 the array `kFreqs` it is possible to modify the frequency of each oscillator.
 
 It is of course possible to chain multiple `poly`s to generate complex effect chains,
-and `poly` can also be used with k-values. 
+and `poly` can also be used with k-values.
 
-**NB**: At the moment `poly` works **only** with **builtin opcodes**. This might change
-        in the future
+!!! Note
+
+    At the moment `poly` works **only** with **builtin opcodes**. This might change
+    in the future
+
+!!! Note
+
+    for limitations in the type system of csound, `poly` works with all opcodes
+    which have at least one output. For opcodes with no outputs (like `outch`,
+    for example), use [poly0](poly0.md)
 
 ## Syntax
 
@@ -42,10 +50,10 @@ and `poly` can also be used with k-values.
 
 * `inuminstances`: the number of instances of `Sopcode` to instantiate
 * `Sopcode`: the name of the opcode
-* `xargs`: any number of arguments, either i-, k- or a-rate, either scalar or arrays, 
+* `xargs`: any number of arguments, either i-, k- or a-rate, either scalar or arrays,
            or strings, as needed by the given opcode. String arrays are not yet supported
 
-The number and type of the input arguments depend on the arguments passed to the 
+The number and type of the input arguments depend on the arguments passed to the
 given opcode. The same applies for the output arguments
 
 **NB**: output arguments are always arrays, input arguments can be arrays, in which
@@ -203,6 +211,7 @@ i 2 9 50
 
 ## See also
 
+* [poly0](poly0.md)
 * [maparray](http://www.csounds.com/manual/html/maparray.html)
 * [polyseq](polyseq.md)
 

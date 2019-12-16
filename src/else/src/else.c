@@ -207,6 +207,10 @@
     }                                                                \
 
 
+#define register_deinit(csound, p, func) \
+    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
+
+
 #ifdef USE_DOUBLE
 // from https://www.gamedev.net/forums/topic/621589-extremely-fast-sin-approximation/
 static inline double fast_sin(double x) {
@@ -1479,7 +1483,6 @@ int32_t pread_search(CSOUND *csound, PREAD *p) {
     INSDS *instr;
     p->found = 0;
     if(!p->instrtxt)
-        // p->instrtxt = find_instrdef(p->h.insdshead, (int)p1);
         p->instrtxt = csound->GetInstrument(csound, (int)p1, NULL);
     if(!p->instrtxt)
         return 0;
@@ -1577,15 +1580,15 @@ typedef struct {
     MYFLT *instrnum;
     MYFLT *inputs[PWRITE_MAXINPUTS];
 
-    MYFLT p1;            // cached instrnum, will always be positive
-    int numpairs;        // number of index:value pairs
-    int retry;           // should we retry when no instance matched?
-    INSDS *instr;        // a pointer to the found instance, when matching exact number
-    INSTRTXT *instrtxt;  // used in broadcasting mode, a pointer to the instrument template
+    MYFLT p1;             // cached instrnum, will always be positive
+    int numpairs;         // number of index:value pairs
+    int retry;            // should we retry when no instance matched?
+    INSDS *instr;         // a pointer to the found instance, when matching exact number
+    INSTRTXT *instrtxt;   // used in broadcasting mode, a pointer to the instrument template
     int maxpfield;        // max pfield accepted by the instrument
-    int broadcasting;    // are we broadcasting?
-    int found;           // have we found any matching instances?
-    CS_VAR_MEM *pfields;   // a pointer to the insance pfield, when doing exact matching
+    int broadcasting;     // are we broadcasting?
+    int found;            // have we found any matching instances?
+    CS_VAR_MEM *pfields;  // a pointer to the insance pfield, when doing exact matching
 } PWRITE;
 
 
@@ -1594,7 +1597,7 @@ inline void pwrite_writevalues(CSOUND *csound, PWRITE *p, CS_VAR_MEM *pfields) {
         int indx = (int)*(p->inputs[pair*2]);
         MYFLT value = *(p->inputs[pair*2+1]);
         if(indx > p->maxpfield)
-            MSGF("pwrite: can't write to p%d (max index=%d)", indx, p->maxpfield);
+            MSGF("pwrite: can't write to p%d (max index=%d)\n", indx, p->maxpfield);
         else
             pfields[indx].value = value;
     }
@@ -1625,7 +1628,6 @@ pwrite_search(CSOUND *csound, PWRITE *p) {
     }
     return 1;
 }
-
 
 
 static int32_t
@@ -1688,66 +1690,96 @@ pwrite_i(CSOUND *csound, PWRITE *p) {
  *
  */
 
-#define UNIQ_NUMSLOTS 1000
+#define UNIQ_NUMSLOTS 10000
 
 typedef struct {
     OPDS h;
-    MYFLT *out, *int_instrnum;
+    MYFLT *out, *int_instrnum, *max_instances;
+    int p1;
+    int numslots;
+    char slots[UNIQ_NUMSLOTS];
 } UNIQINSTANCE;
 
 static MYFLT
-uniqueinstance_(CSOUND *csound, int p1) {
-    char slots[UNIQ_NUMSLOTS] = {0};
+uniqueinstance_(CSOUND *csound, UNIQINSTANCE *p) {
+    // char slots[UNIQ_NUMSLOTS] = {0};
+    char *slots = p->slots;
+    int numslots = p->numslots;
+    memset(slots, 0, numslots);
+    int p1 = p->p1;
     int idx;
+    int maxidx = 0;
+    int minidx = numslots;
     MYFLT fractional_part, integral_part;
+
     INSTRTXT *instrtxt = csound->GetInstrument(csound, p1, NULL);
     if(!instrtxt || instrtxt->instance == NULL) {
         // no instances of this instrument, so pick first index
-        return p1 + FL(1)/UNIQ_NUMSLOTS;
+        return p1 + FL(1)/numslots;
     }
 
     INSDS *instance = instrtxt->instance;
     while(instance) {
         if(instance->actflg && instance->p1.value != instance->insno) {
             fractional_part = modf(instance->p1.value, &integral_part);
-            idx = (int)(fractional_part * UNIQ_NUMSLOTS + 0.5);
+            idx = (int)(fractional_part * numslots + 0.5);
+            if(idx > maxidx)
+                maxidx = idx;
+            else if(idx < minidx)
+                minidx = idx;
             slots[idx] = 1;
         }
         instance = instance->nxtinstance;
     }
-    for(int i=1; i < UNIQ_NUMSLOTS; i++) {
+    if(maxidx + 1 < numslots) {
+        return p1 + (maxidx+1)/FL(numslots);
+    }
+    if(minidx > 2) {
+        return p1 + (minidx-1)/FL(numslots);
+    }
+    for(int i=1; i < numslots; i++) {
         if(slots[i] == 0) {
-            return p1 + i / FL(UNIQ_NUMSLOTS);
+            return p1 + i / FL(numslots);
         }
     }
     return -1;
 }
 
 static int32_t
-uniqueinstance_init(CSOUND *csound, UNIQINSTANCE *p) {
+uniqueinstance_dealloc(CSOUND *csound, UNIQINSTANCE *p) {
+    csound->Free(csound, p->slots);
+    return OK;
+}
+
+static int32_t
+uniqueinstance_initcommon(CSOUND *csound, UNIQINSTANCE *p) {
     IGN(csound);
-    int p1 = (int)(*p->int_instrnum);
-    MYFLT instrnum = uniqueinstance_(csound, p1);
+    p->numslots = (int)*p->max_instances;
+    if(p->numslots == 0)
+        p->numslots = UNIQ_NUMSLOTS;
+    else if(p->numslots > UNIQ_NUMSLOTS)
+        p->numslots = UNIQ_NUMSLOTS;
+    // p->slots = csound->Malloc(csound, p->numslots * sizeof(char));
+    // register_deinit(csound, p, uniqueinstance_dealloc);
+    MYFLT instrnum = uniqueinstance_(csound, p);
+
     *p->out = instrnum;
     return OK;
 }
 
-
-typedef struct {
-    OPDS h;
-    MYFLT *out;
-    STRINGDAT *instrname;
-} UNIQINSTANCE_S;
-
+static int32_t
+uniqueinstance_i(CSOUND *csound, UNIQINSTANCE *p) {
+    p->p1 = (int)*p->int_instrnum;
+    return uniqueinstance_initcommon(csound, p);
+}
 
 static int32_t
-uniqueinstance_S_init(CSOUND *csound, UNIQINSTANCE_S *p) {
-    int p1 = csound->strarg2insno(csound, p->instrname->data, 1);
-    if (UNLIKELY(p1 == NOT_AN_INSTRUMENT))
+uniqueinstance_S_init(CSOUND *csound, UNIQINSTANCE *p) {
+    STRINGDAT *instrname = (STRINGDAT *)p->int_instrnum;
+    p->p1 = csound->strarg2insno(csound, instrname->data, 1);
+    if (UNLIKELY(p->p1 == NOT_AN_INSTRUMENT))
         return NOTOK;
-    MYFLT fractional_p1 = uniqueinstance_(csound, p1);
-    *p->out = fractional_p1;
-    return OK;
+    return uniqueinstance_initcommon(csound, p);
 }
 
 
@@ -1819,8 +1851,6 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     return OK;
 }
 
-#define register_deinit(csound, p, func) \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
 
 static int32_t
 atstop_(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
@@ -1876,6 +1906,46 @@ accum_perf(CSOUND *csound, ACCUM *p) {
     return OK;
 }
 
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *in1;
+    MYFLT *in2;
+} FUNC12;
+
+/** frac2int
+ *
+ * convert the fractional part to an integer by extracting
+ * the fractional part and multiplying by a factor
+ *
+ * thourght to be used together with fractional p1
+ *
+ * schedule 10 + inum/1000, ...
+ *
+ * in instr 10
+ * inum = frac2int(p1, 1000)  ; this should result in the original inum if the same factor
+ *                            ; (in this case 1000) is used
+ *
+ * NB: the integral part is discarded
+ *
+ * The inverse is not necessary, as it is simply inum/ifactor
+ */
+
+// frac2int(10.456, 1000) -> 456
+// frac2int(0.134, 100)   -> 13
+
+
+static int32_t
+frac2int(CSOUND *csound, FUNC12 *p) {
+    IGN(csound);
+    double integ;
+    double fract = modf(*p->in1, &integ);
+    MYFLT mul = *p->in2;
+    *p->out = floor(fract * mul + 0.5);
+    return OK;
+}
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -1919,8 +1989,8 @@ static OENTRY localops[] = {
     { "pwrite.k", S(PWRITE), 0, 3, "", "i*",
       (SUBR)pwrite_initcommon, (SUBR)pwrite_perf},
 
-    { "uniqinstance", S(UNIQINSTANCE),   0, 1, "i", "i", (SUBR)uniqueinstance_init},
-    { "uniqinstance.S", S(UNIQINSTANCE), 0, 1, "i", "S", (SUBR)uniqueinstance_S_init},
+    { "uniqinstance.i", S(UNIQINSTANCE),   0, 1, "i", "io", (SUBR)uniqueinstance_i},
+    { "uniqinstance.S_i", S(UNIQINSTANCE), 0, 1, "i", "So", (SUBR)uniqueinstance_S_init},
 
     { "atstop.s1", S(SCHED_DEINIT), 0, 1, "", "Soj", (SUBR)atstop_s },
     { "atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s },
@@ -1928,6 +1998,8 @@ static OENTRY localops[] = {
     { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
 
     { "accum", S(ACCUM), 0, 3, "k", "ko", (SUBR)accum_init, (SUBR)accum_perf},
+    { "frac2int", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
+    { "frac2int", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int}
 };
 
 LINKAGE

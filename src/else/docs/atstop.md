@@ -185,6 +185,7 @@ f 0 5
 
 ## See also
 
+* [defer](defer.md)
 * [schedule](http://www.csounds.com/manual/html/schedule.html)
 * [event](http://www.csounds.com/manual/html/event.html)
 * [release](http://www.csounds.com/manual/html/release.html)

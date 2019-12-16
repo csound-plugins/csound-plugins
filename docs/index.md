@@ -25,6 +25,13 @@ A hashtable for csound
 * [cacheput](opcodes/cacheput.md): Put a string inside the cache 
 * [cacheget](opcodes/cacheget.md): Get a string inside the cache 
 * [cachepop](opcodes/cachepop.md): Get a cached string and remove it from the cache 
+* [pool_new](opcodes/pool_new.md): Create an empty  pool 
+* [pool_gen](opcodes/pool_gen.md): Create a pool and fill it with values 
+* [pool_pop](opcodes/pool_pop.md): Pop (get) an item from a pool 
+* [pool_push](opcodes/pool_push.md): Push an item into a pool 
+* [pool_size](opcodes/pool_size.md): Returns the size of a pool 
+* [pool_capacity](opcodes/pool_capacity.md): Returns the capacity of a pool 
+* [pool_at](opcodes/pool_at.md): ? 
 
 
 ## poly
@@ -33,6 +40,8 @@ Multiple (parallel or sequential) instances of an opcode
 
 * [poly](opcodes/poly.md): poly creates and controls multiple parallel version of an opcode 
 * [polyseq](opcodes/polyseq.md): polyseq creates and controls multiple sequential version of an opcode 
+* [poly0](opcodes/poly0.md): poly0 creates and controls multiple parallel version of an opcode with no outputs 
+* [defer](opcodes/defer.md): Run an opcode at the end of current event 
 
 
 ## jsfx
@@ -65,6 +74,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
 * [accum](opcodes/accum.md): Simple accumulator of scalar values 
+* [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
 
 
 

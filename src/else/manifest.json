@@ -14,7 +14,8 @@
       "pread",
       "uniqinstance",
       "atstop",
-      "accum"
+      "accum",
+      "frac2int"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
