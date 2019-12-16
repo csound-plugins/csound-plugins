@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>uniqinstance - Csound Plugins</title>
+  <title>pool_at - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "uniqinstance";
-    var mkdocs_page_input_path = "opcodes/uniqinstance.md";
+    var mkdocs_page_name = "pool_at";
+    var mkdocs_page_input_path = "opcodes/pool_at.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -184,9 +184,31 @@
                     
     <a class="" href="polyseq.html">polyseq</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="pool_at.html">pool_at</a>
+    <a class="current" href="pool_at.html">pool_at</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#pool_at">pool_at</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -240,31 +262,9 @@
                     
     <a class="" href="tubeharmonics.html">tubeharmonics</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="uniqinstance.html">uniqinstance</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#uniqinstance">uniqinstance</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="uniqinstance.html">uniqinstance</a>
                 </li>
     </ul>
 	    </li>
@@ -295,7 +295,7 @@
         
       
     
-    <li>uniqinstance</li>
+    <li>pool_at</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -305,140 +305,81 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="uniqinstance">uniqinstance</h1>
+                <h1 id="pool_at">pool_at</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Return an fractional instrument number which is not in use</p>
+<p>Returns the item of a pool at a given index</p>
 <h2 id="description">Description</h2>
-<p>Given an integer instrument number, <code>uniqinstance</code> a fractional 
-instrument number which is not active now and can be used as p1
-for <code>event</code>, <code>schedule</code> or similar opcodes to create a unique 
-instance of the given instrument</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This opcode <strong>DOES NOT</strong> create a new instance. It just returns
-an instr number which can be used to create one</p>
-</div>
+<p>A pool is actually a stack of numbers, based on an array.</p>
+<p>The pool_ opcodes implement a stack of numbers. This is useful when assigning
+ids to resources, like assigning fractional numbers to instrument instances to
+access them individually. To get a value, call <code>pool_pop</code> and when finished
+using it the value is returned to the pool with <code>pool_push</code>. <code>pool_size</code> returns
+the size of the pool (the number of items in it, not the capacity, see
+<code>pool_capacity</code> for that)</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>instrnum  uniqinstance integer_instrnum
-instrnum  uniqinstance Sinstrname
+<div class="codehilite"><pre><span></span>item  pool_at ipool, index
+kitem pool_at ipool, kindex
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>integer_instrnum</code>: the integer instrument number</li>
-<li><code>Sinstrname</code>: the name of a named instrument</li>
+<li><code>ipool</code>: the pool to push the value to</li>
+<li><code>index</code> / <code>kindex</code>: the index to query</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>instrnum</code>: a fractional instrument number which is guaranteed
-  not to be active at the moment</li>
+<li><code>item</code> / <code>kitem</code>: the item at the given index</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Init </li>
+<li>Init</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">--</span><span class="n">nosound</span>
-<span class="o">-</span><span class="n">m0</span>
-
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">Example file for uniqinstance</span>
+<span class="cm">   Example file for pool_at</span>
 
-<span class="cm">instrnum  uniqinstance intinstr</span>
+<span class="cm">   pool_at returns the item of a pool at a given index</span>
 
-<span class="cm">Returns a unique fractional instrument number which is not</span>
-<span class="cm">active at the moment and can be assigned to a new instance</span>
+<span class="cm">   item pool_at ipool, idx</span>
+<span class="cm">   ktem pool_at ipool, kidx</span>
 
 <span class="cm">*/</span>
 
-<span class="kd">instr</span> <span class="nf">exit</span>
-  <span class="nb">exitnow</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">counter</span> <span class="nb">init</span> <span class="mi">0</span>
-  <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">20</span>
-
-  <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="kt">k</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="kt">k</span><span class="n">inst</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="kt">k</span><span class="n">counter</span><span class="o">/</span><span class="mi">100</span>
-    <span class="nb">printf</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
-    <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="k">endif</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">nstrnum10</span> <span class="n">uniqinstance</span> <span class="mi">10</span>
-  <span class="nb">printf</span> <span class="s">&quot;Unique instance of 10= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum10</span>
-  <span class="kt">i</span><span class="n">nstrnum11</span> <span class="n">uniqinstance</span> <span class="mi">11</span>
-  <span class="nb">printf</span> <span class="s">&quot;Unique instance of 11= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum11</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">10</span>
-  <span class="nb">print</span> <span class="vi">p1</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">11</span>
-  <span class="nb">print</span> <span class="vi">p1</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">example1</span>
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; example1 </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span>
-  <span class="nb">schedule</span> <span class="mf">10.150</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
-  <span class="nb">schedule</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="c1">; --------------------------------------</span>
-<span class="c1">; Test that instances get recycled</span>
-<span class="kd">instr</span> <span class="nf">example2</span>
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; example2 </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
+<span class="kd">opcode</span> <span class="nf">print_pool</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">i</span>
+  <span class="kt">i</span><span class="n">pool</span> <span class="nb">xin</span>
   <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="kt">i</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.01</span>
-  <span class="kt">i</span><span class="n">dur</span>  <span class="o">=</span> <span class="mf">1.0</span>   <span class="c1">; 100 simultaneous instances</span>
-  <span class="c1">; idur  = 2.0   ; 200 simultaneous instances</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="mi">1000</span> <span class="k">do</span>
-    <span class="nb">schedule</span> <span class="s">&quot;scheduniq&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span><span class="o">*</span><span class="kt">i</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">20</span>
+  <span class="kt">i</span><span class="n">size</span> <span class="o">=</span> <span class="n">pool_size</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
+  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">size</span> <span class="k">do</span>
+    <span class="kt">i</span><span class="n">tem</span> <span class="o">=</span> <span class="n">pool_at</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="kt">i</span><span class="n">tem</span>
     <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
   <span class="k">od</span>
-  <span class="kt">i</span><span class="n">maxdur</span> <span class="o">=</span> <span class="mi">2000</span> <span class="o">*</span> <span class="kt">i</span><span class="n">step</span> <span class="o">+</span> <span class="kt">i</span><span class="n">dur</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">endop</span>
 
-<span class="kd">instr</span> <span class="nf">scheduniq</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">i</span><span class="n">num2</span> <span class="o">=</span> <span class="n">uniqinstance</span><span class="p">(</span><span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-  <span class="k">if</span> <span class="kt">i</span><span class="n">num2</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">then</span>
-    <span class="nb">prints</span> <span class="s">&quot;&lt;&lt;&lt;&lt;&lt; Could not find unique instance &gt;&gt;&gt;&gt;&gt;</span><span class="se">\n</span><span class="s">&quot;</span>
-  <span class="k">else</span>
-    <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span>
-    <span class="nb">prints</span> <span class="s">&quot;active now=</span><span class="si">%d</span><span class="s">, inum=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">active</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="kt">i</span><span class="n">num2</span>
-  <span class="k">endif</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">i</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">10</span>
+  <span class="kt">i</span><span class="n">1</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
+  <span class="kt">i</span><span class="n">2</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&lt;&lt;&lt; pool size: </span><span class="si">%d</span><span class="s">, pool capacity: </span><span class="si">%d</span><span class="s"> &gt;&gt;&gt; </span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="w">\</span>
+         <span class="n">pool_size</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">),</span> <span class="n">pool_capacity</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
+  <span class="nf">print_pool</span> <span class="kt">i</span><span class="n">pool</span>
   <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">20</span>
-  <span class="nb">printf</span> <span class="s">&quot;started </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p1</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;finished </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="c1">; i &quot;example1&quot; 0 10 </span>
-<span class="nb">i</span> <span class="s">&quot;example2&quot;</span> <span class="mi">0</span> <span class="mi">10</span>
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -447,11 +388,10 @@ instrnum  uniqinstance Sinstrname
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="pread.html">pread</a></li>
-<li><a href="https://csound.com/docs/manual/pset.html">pset</a></li>
-<li><a href="https://csound.com/docs/manual/p.html">p</a></li>
-<li><a href="https://csound.com/docs/manual/passign.html">passign</a></li>
-<li><a href="https://csound.com/docs/manual/nstrnum.html">nstrnum</a></li>
+<li><a href="pool_capacity.html">pool_capacity</a></li>
+<li><a href="pool_pop.html">pool_pop</a></li>
+<li><a href="pool_new.html">pool_new</a></li>
+<li><a href="pool_gen.html">pool_gen</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -462,8 +402,10 @@ instrnum  uniqinstance Sinstrname
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="pool_capacity.html" class="btn btn-neutral float-right" title="pool_capacity">Next <span class="icon icon-circle-arrow-right"></span></a>
       
-        <a href="tubeharmonics.html" class="btn btn-neutral" title="tubeharmonics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+        <a href="polyseq.html" class="btn btn-neutral" title="polyseq"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -489,8 +431,10 @@ instrnum  uniqinstance Sinstrname
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="tubeharmonics.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="polyseq.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
+      
+        <span style="margin-left: 15px"><a href="pool_capacity.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
