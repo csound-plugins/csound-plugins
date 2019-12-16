@@ -31,7 +31,7 @@ A hashtable for csound
 * [pool_push](opcodes/pool_push.md): Push an item into a pool 
 * [pool_size](opcodes/pool_size.md): Returns the size of a pool 
 * [pool_capacity](opcodes/pool_capacity.md): Returns the capacity of a pool 
-* [pool_at](opcodes/pool_at.md): ? 
+* [pool_at](opcodes/pool_at.md): Returns the item of a pool at a given index 
 
 
 ## poly

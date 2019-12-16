@@ -17,10 +17,14 @@ filling the pool with values from 1 to the given size
 ## Syntax
 
     ipool pool_gen isize
+    ipool pool_gen istart, iend
+
 
 ### Arguments
 
 * `isize`: the size of the pool.
+* `istart`: the start item
+* `iend`: the end item (inclusive)
 
 ### Output
 
