@@ -94,6 +94,10 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="defer.html">defer</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="dict_exists.html">dict_exists</a>
                 </li>
                 <li class="">
@@ -135,6 +139,10 @@
                 <li class="">
                     
     <a class="" href="file_exists.html">file_exists</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="frac2int.html">frac2int</a>
                 </li>
                 <li class="">
                     
@@ -194,7 +202,35 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="poly0.html">poly0</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="polyseq.html">polyseq</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pool_capacity.html">pool_capacity</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pool_gen.html">pool_gen</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pool_new.html">pool_new</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pool_pop.html">pool_push</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pool_push.html">pool_push</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pool_size.html">pool_size</a>
                 </li>
                 <li class="">
                     
@@ -272,11 +308,11 @@
 <p><code>poly</code> creates and controls multiple parallel version of an opcode</p>
 <h2 id="description">Description</h2>
 <p><code>poly</code> creates a user given number of instances of an opcode, each with its own state,
-inputs and outputs. The resulting output is an array where each element holds the 
-output of the corresponding instance. </p>
+inputs and outputs. The resulting output is an array where each element holds the
+output of the corresponding instance.</p>
 <p>In general, an opcode has a signature, given by the number and types of its output and
 input arguments. For example, the opcode <code>oscili</code> as used like <code>aout oscili kamp, kfreq</code>
-has a signature <code>a / kk</code> (<code>a</code> as output, <code>kk</code> as input). </p>
+has a signature <code>a / kk</code> (<code>a</code> as output, <code>kk</code> as input).</p>
 <p>To follow this example, to create 10 parallel versions of this opcode (an oscillator bank)
 it is possible to use <code>poly</code> like this:</p>
 <div class="codehilite"><pre><span></span><span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">220</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">330</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">440</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">550</span>
@@ -288,9 +324,18 @@ it is possible to use <code>poly</code> like this:</p>
 one value to be shared by all instances, as given by the amplitude <code>0.1</code>. By changing
 the array <code>kFreqs</code> it is possible to modify the frequency of each oscillator.</p>
 <p>It is of course possible to chain multiple <code>poly</code>s to generate complex effect chains,
-and <code>poly</code> can also be used with k-values. </p>
-<p><strong>NB</strong>: At the moment <code>poly</code> works <strong>only</strong> with <strong>builtin opcodes</strong>. This might change
-        in the future</p>
+and <code>poly</code> can also be used with k-values.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At the moment <code>poly</code> works <strong>only</strong> with <strong>builtin opcodes</strong>. This might change
+in the future</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>for limitations in the type system of csound, <code>poly</code> works with all opcodes
+which have at least one output. For opcodes with no outputs (like <code>outch</code>,
+for example), use <a href="poly0.html">poly0</a></p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>out1[], [ out2[], ... ] poly inuminstances, Sopcode, xarg0, [xarg1, ...]
 </pre></div>
@@ -300,10 +345,10 @@ and <code>poly</code> can also be used with k-values. </p>
 <ul>
 <li><code>inuminstances</code>: the number of instances of <code>Sopcode</code> to instantiate</li>
 <li><code>Sopcode</code>: the name of the opcode</li>
-<li><code>xargs</code>: any number of arguments, either i-, k- or a-rate, either scalar or arrays, 
+<li><code>xargs</code>: any number of arguments, either i-, k- or a-rate, either scalar or arrays,
            or strings, as needed by the given opcode. String arrays are not yet supported</li>
 </ul>
-<p>The number and type of the input arguments depend on the arguments passed to the 
+<p>The number and type of the input arguments depend on the arguments passed to the
 given opcode. The same applies for the output arguments</p>
 <p><strong>NB</strong>: output arguments are always arrays, input arguments can be arrays, in which
 case they must be at least the size of <code>inuminstances</code>, or scalars, in which case
@@ -452,6 +497,7 @@ an opcode like <code>aout oscili 0.1, kfreq</code> will output an array of audio
 
 <h2 id="see-also">See also</h2>
 <ul>
+<li><a href="poly0.html">poly0</a></li>
 <li><a href="http://www.csounds.com/manual/html/maparray.html">maparray</a></li>
 <li><a href="polyseq.html">polyseq</a></li>
 </ul>
@@ -464,7 +510,7 @@ an opcode like <code>aout oscili 0.1, kfreq</code> will output an array of audio
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="polyseq.html" class="btn btn-neutral float-right" title="polyseq">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="poly0.html" class="btn btn-neutral float-right" title="poly0">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="linenv.html" class="btn btn-neutral" title="linenv"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -496,7 +542,7 @@ an opcode like <code>aout oscili 0.1, kfreq</code> will output an array of audio
         <span><a href="linenv.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="polyseq.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="poly0.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

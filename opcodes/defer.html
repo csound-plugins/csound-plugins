@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>file_exists - Csound Plugins</title>
+  <title>defer - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "file_exists";
-    var mkdocs_page_input_path = "opcodes/file_exists.md";
+    var mkdocs_page_name = "defer";
+    var mkdocs_page_input_path = "opcodes/defer.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -92,9 +92,35 @@
                     
     <a class="" href="crackle.html">crackle</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="defer.html">defer</a>
+    <a class="current" href="defer.html">defer</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#defer">defer</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -136,31 +162,9 @@
                     
     <a class="" href="diode_ringmod.html">diode_ringmod</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="file_exists.html">file_exists</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#file_exists">file_exists</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="file_exists.html">file_exists</a>
                 </li>
                 <li class="">
                     
@@ -291,7 +295,7 @@
         
       
     
-    <li>file_exists</li>
+    <li>defer</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -301,59 +305,115 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="file_exists">file_exists</h1>
+                <h1 id="defer">defer</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Returns 1 if a file exists and can be read</p>
+<p>Run an opcode at the end of current event</p>
 <h2 id="description">Description</h2>
-<p><code>file_exists</code> checks if a given file path exists and returns 1 if it does, 0 otherwise.
-It doesn't check any search path of csound and does not expand any variables 
-(like "~" in unix). </p>
+<p><code>defer</code> runs an opcode as the last action of a given event, during the process
+of being deallocated. This can be used together with opcodes which release
+resources back which are being used during the event. At the moment <code>defer</code>
+works only with builtin opcodes. For complex release actions, it is nonetheless
+possible to bundle the actions in a separate instrument and use <code>schedule</code>
+together with defer (or simpler, use <code>atstop</code> instead).</p>
+<div class="admonition note">
+<p class="admonition-title">Release time vs deinit time</p>
+<p>The event is not scheduled at <em>release</em> time (see below "Release time vs Deinit time")
+but at the moment the note is freed.</p>
+<p><strong>Release time</strong> is when the note is within its <em>release phase</em>, which will only happen
+if the note has an envelope with a release segment (like <code>linsegr</code>), or if it has
+setup extra time with <code>xtratim</code>. The opcode <code>release</code> can be used to query if the
+current note is being released. The instrument keeps running in release phase as
+long as the release part of the envelope is finished or the extra time allocated
+via <code>xtratim</code> is through.</p>
+<p><strong>Deinit time</strong> is the moment the note is actually being freed, so the instrument is
+not running anymore at this point.</p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>iexists  file_exists  Spath
+<div class="codehilite"><pre><span></span>defer Sopcode, [arg1, arg2, ...]
 </pre></div>
 
 
-<h3 id="arguments">Arguments</h3>
+<p>Any arguments passed after the name of the opcode (which must be within
+quotations) are passed directly to the opcode itself. Notice that only opcodes
+without output make sense in this context. Useful opcodes are <code>print</code>, <code>prints</code>,
+<a href="pool_push.html">pool_push</a>, <a href="dict_free.html">dict_free</a>, etc</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>defer</code> evaluates at init time but acts at deacllocation time. The arguments
+passed are evaluated at deallocation time</p>
+</div>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>Spath</code>: the path to check</li>
+<li><code>Sopcode</code>: the name of the opcode to defer</li>
+<li><code>args</code>: any args (i, k, S) are passed to the opcodes. They are evaluated at
+  deallocation time.</li>
 </ul>
-<h3 id="output">Output</h3>
-<ul>
-<li><code>iexists</code>: 1 if the file exists, 0 otherwise</li>
-</ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Init</li>
+<li>Deallocation</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">-</span><span class="n">odac</span>           
 
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="cm">/*</span>
-<span class="cm">    Example file for file_exists</span>
-
-<span class="cm">    file_exists returns 1 if a given path refers to an existing file</span>
-
-<span class="cm">*/</span>
-
+<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
 <span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
+<span class="c1">;; Example 1</span>
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">i</span><span class="n">exists</span> <span class="kt">f</span><span class="n">ile_exists</span> <span class="s">&quot;file_exists.csd&quot;</span>
-    <span class="nb">print</span> <span class="kt">i</span><span class="n">exists</span>
-    <span class="nb">turnoff</span>
+  <span class="nb">printk2</span> <span class="nb">timeinsts</span><span class="p">()</span>
+  <span class="c1">;; this will be called at the end of this instrument</span>
+  <span class="n">defer</span> <span class="s">&quot;event_i&quot;</span><span class="p">,</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">93</span>
 <span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="nb">print</span> <span class="vi">p4</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example1</span>
+  <span class="nb">schedule</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; -------------------------------------------</span>
+<span class="c1">;; Example 2</span>
+
+<span class="kd">instr</span> <span class="nf">10</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;*sf&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">200</span>
+  <span class="c1">;; delete this key at the end of the note</span>
+  <span class="n">defer</span> <span class="s">&quot;dict_set&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
+  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
+  <span class="nb">schedule</span> <span class="mi">11</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span> 
+
+<span class="kd">instr</span> <span class="nf">11</span>
+<span class="nb">printf</span> <span class="s">&quot;Instr 11 </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="c1">;; by now the dict should have deleted the key &quot;foo&quot;</span>
+  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example2</span>
+  <span class="nb">schedule</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+<span class="kd">endin</span>
+
+<span class="nb">schedule</span> <span class="s">&quot;example2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="n">e</span> <span class="mi">3</span>
+<span class="c1">; f0 3600</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -362,8 +422,11 @@ It doesn't check any search path of csound and does not expand any variables
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="https://csound.com/docs/manual/filevalid.html">filevalid</a></li>
-<li><a href="https://csound.com/docs/manual/system.html">system</a></li>
+<li><a href="atstop.html">atstop</a></li>
+<li><a href="http://www.csounds.com/manual/html/schedule.html">schedule</a></li>
+<li><a href="http://www.csounds.com/manual/html/event.html">event</a></li>
+<li><a href="http://www.csounds.com/manual/html/release.html">release</a></li>
+<li><a href="http://www.csounds.com/manual/html/xtratim.html">xtratim</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -374,10 +437,10 @@ It doesn't check any search path of csound and does not expand any variables
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="frac2int.html" class="btn btn-neutral float-right" title="frac2int">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="dict_exists.html" class="btn btn-neutral float-right" title="dict_exists">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="diode_ringmod.html" class="btn btn-neutral" title="diode_ringmod"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="crackle.html" class="btn btn-neutral" title="crackle"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -403,10 +466,10 @@ It doesn't check any search path of csound and does not expand any variables
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="diode_ringmod.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="crackle.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="frac2int.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="dict_exists.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

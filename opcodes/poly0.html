@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>file_exists - Csound Plugins</title>
+  <title>poly0 - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "file_exists";
-    var mkdocs_page_input_path = "opcodes/file_exists.md";
+    var mkdocs_page_name = "poly0";
+    var mkdocs_page_input_path = "opcodes/poly0.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -136,31 +136,9 @@
                     
     <a class="" href="diode_ringmod.html">diode_ringmod</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="file_exists.html">file_exists</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#file_exists">file_exists</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="file_exists.html">file_exists</a>
                 </li>
                 <li class="">
                     
@@ -198,9 +176,33 @@
                     
     <a class="" href="poly.html">poly</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="poly0.html">poly0</a>
+    <a class="current" href="poly0.html">poly0</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#poly0">poly0</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -291,7 +293,7 @@
         
       
     
-    <li>file_exists</li>
+    <li>poly0</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -301,69 +303,68 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="file_exists">file_exists</h1>
+                <h1 id="poly0">poly0</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Returns 1 if a file exists and can be read</p>
+<p><code>poly0</code> creates and controls multiple parallel version of an opcode with no outputs</p>
 <h2 id="description">Description</h2>
-<p><code>file_exists</code> checks if a given file path exists and returns 1 if it does, 0 otherwise.
-It doesn't check any search path of csound and does not expand any variables 
-(like "~" in unix). </p>
+<p><code>poly0</code> creates a user given number of instances of an opcode, each with its own state,
+inputs and outputs. The resulting output is an array where each element holds the
+output of the corresponding instance.</p>
+<p>In general, an opcode has a signature, given by the number and types of its output and
+input arguments. For example, the opcode <code>oscili</code> as used like <code>aout oscili kamp, kfreq</code>
+has a signature <code>a / kk</code> (<code>a</code> as output, <code>kk</code> as input).</p>
+<p>To follow this example, to create 10 parallel versions of this opcode (an oscillator bank)
+it is possible to use <code>poly0</code> like this:</p>
+<div class="codehilite"><pre><span></span><span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">220</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">330</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">440</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">550</span>
+<span class="kt">i</span><span class="n">Pans</span><span class="p">[]</span>   <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.8</span>
+<span class="kt">a</span><span class="n">Sigs</span><span class="p">[]</span> <span class="n">poly</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;oscili&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span>
+<span class="kt">a</span><span class="n">Ls</span><span class="p">[],</span> <span class="kt">a</span><span class="n">Rs</span><span class="p">[]</span> <span class="n">poly</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;pan2&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">Sigs</span><span class="p">,</span> <span class="kt">i</span><span class="n">Pans</span>
+<span class="n">poly0</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;outch&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">Ls</span>
+<span class="n">poly0</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;outch&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">Rs</span>
+</pre></div>
+
+
+<p>Notice that it is possible to set one value for each instance, as given by <code>kFreqs</code>, or
+one value to be shared by all instances, as given by the amplitude <code>0.1</code>. By changing
+the array <code>kFreqs</code> it is possible to modify the frequency of each oscillator.</p>
+<p>It is of course possible to chain multiple <code>poly0</code>s to generate complex effect chains,
+and <code>poly0</code> can also be used with k-values.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At the moment <code>poly0</code> works <strong>only</strong> with <strong>builtin opcodes</strong>. This might change
+in the future</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>for limitations in the type system of csound, <code>poly0</code> works with all opcodes
+which have at least one output. For opcodes with no outputs (like <code>outch</code>,
+for example), use <a href="poly0.html">poly0</a></p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>iexists  file_exists  Spath
+<div class="codehilite"><pre><span></span>poly0 inuminstances, Sopcode, xarg0, [xarg1, ...]
 </pre></div>
 
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>Spath</code>: the path to check</li>
+<li><code>inuminstances</code>: the number of instances of <code>Sopcode</code> to instantiate</li>
+<li><code>Sopcode</code>: the name of the opcode</li>
+<li><code>xargs</code>: any number of arguments, either i-, k- or a-rate, either scalar or arrays,
+           or strings, as needed by the given opcode. String arrays are not yet supported</li>
 </ul>
+<p>The number and type of the input arguments depend on the arguments passed to the
+given opcode. The same applies for the output arguments</p>
+<p><strong>NB</strong>: output arguments are always arrays, input arguments can be arrays, in which
+case they must be at least the size of <code>inuminstances</code>, or scalars, in which case
+the same value is shared by multiple instances</p>
 <h3 id="output">Output</h3>
-<ul>
-<li><code>iexists</code>: 1 if the file exists, 0 otherwise</li>
-</ul>
-<h3 id="execution-time">Execution Time</h3>
-<ul>
-<li>Init</li>
-</ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="cm">/*</span>
-<span class="cm">    Example file for file_exists</span>
-
-<span class="cm">    file_exists returns 1 if a given path refers to an existing file</span>
-
-<span class="cm">*/</span>
-
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
-
-<span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">i</span><span class="n">exists</span> <span class="kt">f</span><span class="n">ile_exists</span> <span class="s">&quot;file_exists.csd&quot;</span>
-    <span class="nb">print</span> <span class="kt">i</span><span class="n">exists</span>
-    <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
-
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-</pre></div>
-
-
+<p>See <a href="poly.html">poly</a> for examples</p>
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="https://csound.com/docs/manual/filevalid.html">filevalid</a></li>
-<li><a href="https://csound.com/docs/manual/system.html">system</a></li>
+<li><a href="poly.html">poly</a></li>
+<li><a href="http://www.csounds.com/manual/html/maparray.html">maparray</a></li>
+<li><a href="polyseq.html">polyseq</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -374,10 +375,10 @@ It doesn't check any search path of csound and does not expand any variables
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="frac2int.html" class="btn btn-neutral float-right" title="frac2int">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="polyseq.html" class="btn btn-neutral float-right" title="polyseq">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="diode_ringmod.html" class="btn btn-neutral" title="diode_ringmod"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="poly.html" class="btn btn-neutral" title="poly"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -403,10 +404,10 @@ It doesn't check any search path of csound and does not expand any variables
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="diode_ringmod.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="poly.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="frac2int.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="polyseq.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

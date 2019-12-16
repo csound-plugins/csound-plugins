@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>file_exists - Csound Plugins</title>
+  <title>pool_size - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "file_exists";
-    var mkdocs_page_input_path = "opcodes/file_exists.md";
+    var mkdocs_page_name = "pool_size";
+    var mkdocs_page_input_path = "opcodes/pool_size.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -136,31 +136,9 @@
                     
     <a class="" href="diode_ringmod.html">diode_ringmod</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="file_exists.html">file_exists</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#file_exists">file_exists</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="file_exists.html">file_exists</a>
                 </li>
                 <li class="">
                     
@@ -226,9 +204,31 @@
                     
     <a class="" href="pool_push.html">pool_push</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="pool_size.html">pool_size</a>
+    <a class="current" href="pool_size.html">pool_size</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#pool_size">pool_size</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -291,7 +291,7 @@
         
       
     
-    <li>file_exists</li>
+    <li>pool_size</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -301,58 +301,85 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="file_exists">file_exists</h1>
+                <h1 id="pool_size">pool_size</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Returns 1 if a file exists and can be read</p>
+<p>Returns the size of a pool</p>
 <h2 id="description">Description</h2>
-<p><code>file_exists</code> checks if a given file path exists and returns 1 if it does, 0 otherwise.
-It doesn't check any search path of csound and does not expand any variables 
-(like "~" in unix). </p>
+<p>A pool is actually a stack of numbers, based on an array.</p>
+<p>The pool_ opcodes implement a stack of numbers. This is useful when assigning
+ids to resources, like assigning fractional numbers to instrument instances to
+access them individually. To get a value, call <code>pool_pop</code> and when finished
+using it the value is returned to the pool with <code>pool_push</code>. <code>pool_size</code> returns
+the size of the pool (the number of items in it, not the capacity, see
+<code>pool_capacity</code> for that)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To differenciate between the opcode being called at init- or at performance
+time, use the functional style <code>pool_size:i(ipool)</code> or <code>pool_size:k(ipool)</code></p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>iexists  file_exists  Spath
+<div class="codehilite"><pre><span></span>isize pool_size ipool
+ksize pool_size kpool
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>Spath</code>: the path to check</li>
+<li><code>ipool</code>: the pool to push the value to</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>iexists</code>: 1 if the file exists, 0 otherwise</li>
+<li><code>isize</code> / <code>ksize</code>: the number of items in the pool</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
 <li>Init</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
+<span class="o">--</span><span class="n">nosound</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">    Example file for file_exists</span>
+<span class="cm">   Example file for pool_size</span>
 
-<span class="cm">    file_exists returns 1 if a given path refers to an existing file</span>
+<span class="cm">   pool_size returns the size of the pool, either at </span>
+<span class="cm">   init or at performance time</span>
+
+<span class="cm">   The size of a pool is the number of items actually inside</span>
+<span class="cm">   the pool (see also pool_capacity)</span>
 
 <span class="cm">*/</span>
 
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="kd">opcode</span> <span class="nf">print_pool</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">i</span>
+  <span class="kt">i</span><span class="n">pool</span> <span class="nb">xin</span>
+  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kt">i</span><span class="n">size</span> <span class="o">=</span> <span class="n">pool_size</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
+  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">size</span> <span class="k">do</span>
+    <span class="kt">i</span><span class="n">tem</span> <span class="o">=</span> <span class="n">pool_at</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="kt">i</span><span class="n">tem</span>
+    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="k">od</span>
+<span class="kd">endop</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">i</span><span class="n">exists</span> <span class="kt">f</span><span class="n">ile_exists</span> <span class="s">&quot;file_exists.csd&quot;</span>
-    <span class="nb">print</span> <span class="kt">i</span><span class="n">exists</span>
-    <span class="nb">turnoff</span>
+  <span class="kt">i</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">10</span>
+  <span class="kt">i</span><span class="n">1</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
+  <span class="kt">i</span><span class="n">2</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&lt;&lt;&lt; pool size: </span><span class="si">%d</span><span class="s">, pool capacity: </span><span class="si">%d</span><span class="s"> &gt;&gt;&gt; </span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="w">\</span>
+         <span class="n">pool_size</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">),</span> <span class="n">pool_capacity</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
+  <span class="nf">print_pool</span> <span class="kt">i</span><span class="n">pool</span>
+  <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
 <span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
@@ -362,8 +389,10 @@ It doesn't check any search path of csound and does not expand any variables
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="https://csound.com/docs/manual/filevalid.html">filevalid</a></li>
-<li><a href="https://csound.com/docs/manual/system.html">system</a></li>
+<li><a href="pool_capacity.html">pool_capacity</a></li>
+<li><a href="pool_pop.html">pool_pop</a></li>
+<li><a href="pool_new.html">pool_new</a></li>
+<li><a href="pool_gen.html">pool_gen</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -374,10 +403,10 @@ It doesn't check any search path of csound and does not expand any variables
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="frac2int.html" class="btn btn-neutral float-right" title="frac2int">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="pread.html" class="btn btn-neutral float-right" title="pread">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="diode_ringmod.html" class="btn btn-neutral" title="diode_ringmod"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="pool_push.html" class="btn btn-neutral" title="pool_push"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -403,10 +432,10 @@ It doesn't check any search path of csound and does not expand any variables
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="diode_ringmod.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="pool_push.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="frac2int.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="pread.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
