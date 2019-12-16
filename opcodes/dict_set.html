@@ -313,15 +313,19 @@
 <h2 id="abstract">Abstract</h2>
 <p>Set (or remove) a value from a hashtable</p>
 <h2 id="description">Description</h2>
-<p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes 
-implement a hashtable mapping either strings or integers to strings or floats. 
+<p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes
+implement a hashtable mapping either strings or integers to strings or floats.
 <code>dict_set</code> sets the value corresponding to a key if the key is already present,
-or inserts a key:value pair otherwise. </p>
+or inserts a key:value pair otherwise.</p>
 <p><strong>NB</strong>: Without a value, <code>dict_set</code> deletes the key:value pair from the dict.</p>
-<p><code>dict_set</code> executes can execute at <strong>i-time</strong> and <strong>k-time</strong>. </p>
+<p><code>dict_set</code> executes can execute at <strong>i-time</strong> and <strong>k-time</strong>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>It is possible to set multiple values at i-time directly with <a href="dict_new.html">dict_new</a></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code>xvalue</code> is not given, <code>dict_set</code> removes the key from the dict</p>
 </div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>dict_set idict, xkey, xvalue
@@ -334,12 +338,9 @@ dict_set idict, xkey
 <li><code>idict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
 <li><code>xkey</code>: the key to set. Its type must match the type definition of the dict.
           (a string or a possitive integer)</li>
-<li><code>xvalue</code>: the value to set. Its type must match the type definition of the dict (a str or a numeric value)</li>
+<li><code>xvalue</code>: the value to set. Its type must match the type definition of the
+  dict (a str or a numeric value)</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If <code>xvalue</code> is not given, <code>dict_set</code> removes the key from the dict    </p>
-</div>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Init</li>
@@ -357,7 +358,7 @@ dict_set idict, xkey
 <span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 
-<span class="kd">instr</span> <span class="nf">1</span> 
+<span class="kd">instr</span> <span class="nf">1</span>
   <span class="c1">; create a local dict, mapping strings to numbers</span>
   <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
 
@@ -368,13 +369,15 @@ dict_set idict, xkey
   <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
 
   <span class="c1">; get a non-existent key, will output the default</span>
-  <span class="kt">k</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> 
+  <span class="kt">k</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span> 
+  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span>
 
   <span class="c1">; now create another dict, this one will outlive this note</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
+  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;*str:str&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
 
+  <span class="c1">; Remove a key</span>
+  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
   <span class="c1">; schedule another inst, pass this dict</span>
   <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict2</span>
 
@@ -384,11 +387,13 @@ dict_set idict, xkey
 
 <span class="kd">instr</span> <span class="nf">2</span>
   <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict</span>
+
   <span class="kt">S</span><span class="n">baz</span> <span class="o">=</span> <span class="n">dict_get</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">)</span>
   <span class="nb">printf</span> <span class="s">&quot;instr 2, kbaz = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">baz</span>
 
   <span class="c1">; free dict at the end of this note</span>
-  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>  
+  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
@@ -400,7 +405,153 @@ dict_set idict, xkey
 <span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">2</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">-</span><span class="n">m0</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+
+<span class="kt">gi</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;*sf&quot;</span>
+
+<span class="kd">opcode</span> <span class="nf">argset</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">iSk</span>
+  <span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="kt">S</span><span class="n">param</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span> <span class="nb">xin</span>
+  <span class="kt">S</span><span class="n">key</span> <span class="nb">sprintf</span> <span class="s">&quot;</span><span class="si">%.4f</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="kt">S</span><span class="n">param</span>
+  <span class="n">dict_set</span> <span class="kt">gi</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span>
+<span class="kd">endop</span>
+
+<span class="kd">opcode</span> <span class="nf">argget</span><span class="p">,</span> <span class="kt">k</span><span class="p">,</span> <span class="kt">Si</span>
+  <span class="kt">S</span><span class="n">param</span><span class="p">,</span> <span class="kt">i</span><span class="n">default</span> <span class="nb">xin</span>
+  <span class="kt">S</span><span class="n">key</span> <span class="nb">sprintf</span> <span class="s">&quot;</span><span class="si">%.4f</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span><span class="p">,</span> <span class="kt">S</span><span class="n">param</span>
+  <span class="kt">k</span><span class="n">out</span> <span class="n">dict_get</span> <span class="kt">gi</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">i</span><span class="n">default</span>
+  <span class="nb">xout</span> <span class="kt">k</span><span class="n">out</span>
+  <span class="c1">;; delete key at end of event</span>
+  <span class="n">defer</span> <span class="s">&quot;dict_set&quot;</span><span class="p">,</span> <span class="kt">gi</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">param</span> 
+<span class="kd">endop</span>
+
+<span class="kd">instr</span> <span class="nf">exit</span>
+  <span class="nb">exitnow</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">i</span><span class="n">num</span> <span class="n">uniqinstance</span> <span class="mi">2</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="nb">linseg</span><span class="p">(</span><span class="nb">random</span><span class="p">(</span><span class="mi">4000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="vi">p3</span><span class="p">,</span> <span class="nb">random</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">350</span><span class="p">))</span>
+  <span class="nf">argset</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+  <span class="kt">k</span><span class="n">size</span> <span class="n">dict_size</span> <span class="kt">gi</span><span class="n">dict</span>
+  <span class="nb">printk2</span> <span class="kt">k</span><span class="n">size</span>
+  <span class="kt">a</span><span class="n">tstop</span> <span class="vi">p1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="nf">argget</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span> 
+  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.02</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example_dict</span>
+  <span class="nb">schedule</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span>
+  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="kd">instr</span> <span class="nf">10</span>
+  <span class="kt">i</span><span class="n">num</span> <span class="n">uniqinstance</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10000</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="nb">linseg</span><span class="p">(</span><span class="mi">4000</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="nb">random</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">350</span><span class="p">))</span>
+  <span class="kt">S</span><span class="n">chan</span> <span class="o">=</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%f</span><span class="s">_freq&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span><span class="p">)</span>
+  <span class="n">dict_set</span> <span class="kt">gi</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">chan</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">11</span>
+  <span class="kt">S</span><span class="n">key</span> <span class="nb">sprintf</span> <span class="s">&quot;</span><span class="si">%f</span><span class="s">_freq&quot;</span><span class="p">,</span> <span class="vi">p1</span>
+  <span class="nb">printf</span> <span class="s">&quot;p1=</span><span class="si">%.6f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="vi">p1</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="n">dict_get</span> <span class="kt">gi</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="mi">1000</span>
+  <span class="c1">;; delete key at end of event</span>
+  <span class="n">defer</span> <span class="s">&quot;dict_set&quot;</span><span class="p">,</span> <span class="kt">gi</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.02</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">dictsize</span>
+  <span class="kt">i</span><span class="n">size</span> <span class="o">=</span> <span class="n">dict_size</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">gi</span><span class="n">dict</span><span class="p">)</span>
+  <span class="nb">print</span> <span class="kt">i</span><span class="n">size</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example2</span>
+  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kt">i</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.01</span>
+  <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mf">0.3</span>
+  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="mi">10000</span> <span class="k">do</span> 
+    <span class="nb">schedule</span> <span class="mi">10</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span> <span class="o">*</span> <span class="kt">i</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span>
+    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span> <span class="kt">i</span><span class="n">0</span>
+  <span class="k">od</span>
+  <span class="kt">i</span><span class="n">endtime</span> <span class="o">=</span> <span class="p">(</span><span class="kt">i</span><span class="n">0</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="kt">i</span><span class="n">step</span> <span class="o">+</span> <span class="kt">i</span><span class="n">dur</span>
+  <span class="nb">schedule</span> <span class="s">&quot;dictsize&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">endtime</span><span class="o">-</span><span class="mf">0.005</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">endtime</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="kd">instr</span> <span class="nf">20</span>
+  <span class="kt">i</span><span class="n">num</span> <span class="n">uniqinstance</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">10000</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="nb">linseg</span><span class="p">(</span><span class="mi">4000</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="nb">random</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">350</span><span class="p">))</span>
+  <span class="kt">S</span><span class="n">chan</span> <span class="o">=</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%f</span><span class="s">_freq&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span><span class="p">)</span>
+  <span class="c1">; printf &quot;%s \n&quot;, 1, Schan</span>
+  <span class="nb">chnset</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="kt">S</span><span class="n">chan</span>
+  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">21</span>
+  <span class="kt">S</span><span class="n">key</span> <span class="nb">sprintf</span> <span class="s">&quot;</span><span class="si">%f</span><span class="s">_freq&quot;</span><span class="p">,</span> <span class="vi">p1</span>
+  <span class="nb">printf</span> <span class="s">&quot;p1=</span><span class="si">%.6f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="vi">p1</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="nb">chnget</span> <span class="kt">S</span><span class="n">key</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.02</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.9</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example3</span>
+  <span class="c1">; the same as example2 but with channels</span>
+  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="kt">i</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.</span> <span class="mi">01</span>
+  <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mf">0.3</span>
+  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="mi">10000</span> <span class="k">do</span> 
+    <span class="nb">schedule</span> <span class="mi">20</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span> <span class="o">*</span> <span class="kt">i</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span>
+    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nb">print</span> <span class="kt">i</span><span class="n">0</span>
+
+  <span class="k">od</span>
+  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kt">i</span><span class="n">0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="kt">i</span><span class="n">step</span> <span class="o">+</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">; schedule &quot;example_dict&quot;, 0, 1</span>
+<span class="nb">schedule</span> <span class="s">&quot;example2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+<span class="c1">; schedule &quot;example3&quot;, 0, 1</span>
+
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="n">e</span> <span class="mi">10</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>
 
 
@@ -408,6 +559,8 @@ dict_set idict, xkey
 <ul>
 <li><a href="dict_new.html">dict_new</a></li>
 <li><a href="dict_get.html">dict_get</a></li>
+<li><a href="defer.html">defer</a></li>
+<li><a href="dict_free.html">dict_free</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
