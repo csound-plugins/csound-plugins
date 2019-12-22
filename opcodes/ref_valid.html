@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>accum - Csound Plugins</title>
+  <title>ref_valid - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "accum";
-    var mkdocs_page_input_path = "opcodes/accum.md";
+    var mkdocs_page_name = "ref_valid";
+    var mkdocs_page_input_path = "opcodes/ref_valid.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -68,37 +68,9 @@
 		
     <span class="caption-text">Opcodes</span>
     <ul class="subnav">
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="accum.html">accum</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#accum">accum</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
-        
-            <li><a class="toctree-l4" href="#output">Output</a></li>
-        
-            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="accum.html">accum</a>
                 </li>
                 <li class="">
                     
@@ -260,9 +232,37 @@
                     
     <a class="" href="ref.html">ref</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="ref_valid.html">ref_valid</a>
+    <a class="current" href="ref_valid.html">ref_valid</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#ref_valid">ref_valid</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#output">Output</a></li>
+        
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -313,7 +313,7 @@
         
       
     
-    <li>accum</li>
+    <li>ref_valid</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -323,64 +323,83 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="accum">accum</h1>
+                <h1 id="ref_valid">ref_valid</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Simple accumulator of scalar values</p>
+<p>Queries if a reference is valid</p>
 <h2 id="description">Description</h2>
-<p><code>accum</code> can be used together with <code>changed</code>, <code>changed2</code>, <code>metro</code>, etc, 
-to convert a binary trigger to an incremental one. Incremental triggers
-are used by many opcodes (<code>printf</code>, for example), so by doing <code>accum(changed(kvar))</code>
-it is possible to use binary triggers wherever an incremental trigger is expected.</p>
+<p><code>ref</code> and <code>deref</code> implement a mechanism to pass a reference to any object,
+allowing to share a variable across instruments, with opcodes, etc. A reference
+is a proxy to an axisting variable / array. A reference is reference counted and
+deallocates itself when it falls out of scope without being referenced by any
+object. Since a reference is just an integer, <code>ref_valid</code> can be used to check if
+the given reference index corresponds to a valid reference</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>kout accum kin, initial=0
+<div class="codehilite"><pre><span></span>iout ref_valid iref
+kout ref_valid kref
 </pre></div>
 
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li>`kin': the step to add. This value will be added each k-cycle</li>
-<li><code>initial</code>: initial value of the accumulator</li>
+<li><code>iref</code> / <code>kout</code>: an integer identifying the reference handle, as passed via <a href="ref.html">ref</a></li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
-<li><code>kout</code>: accumulated value</li>
+<li><code>ìout</code> / <code>kout</code>: 1 if the reference is valid, 0 otherwise</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init </li>
+<li>Init</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
+<span class="o">-</span><span class="n">m0</span>
+<span class="o">-</span><span class="n">d</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">x</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">printf</span> <span class="s">&quot;kx=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">ccum</span><span class="p">(</span><span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">x</span><span class="p">)),</span> <span class="kt">k</span><span class="n">x</span>
-  <span class="c1">; the same without accum would only print the first time,</span>
-  <span class="c1">; since changed would return always 1 but printf expects an ever</span>
-  <span class="c1">; increasing trigger</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">freq</span><span class="p">)</span>
 <span class="kd">endin</span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="k">if</span> <span class="n">ref_valid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="n">deref</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span>
+  <span class="k">else</span>
+    <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="mi">1000</span>
+  <span class="k">endif</span>
+  <span class="kt">a</span><span class="n">sig</span> <span class="nb">vco2</span> <span class="mf">0.2</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="nb">schedule</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">)</span>
+<span class="kd">endin</span>
 
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
-
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="kd">instr</span> <span class="nf">3</span>
+  <span class="k">if</span> <span class="n">ref_valid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="kt">a</span><span class="n">in</span> <span class="n">deref</span> <span class="vi">p4</span>
+  <span class="k">else</span>
+    <span class="kt">a</span><span class="n">in</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">endif</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="nb">lpf18</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.2</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
+<span class="kd">endin</span>
 </pre></div>
 
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="http://www.csounds.com/manual/html/metro.html">metro</a></li>
-<li><a href="http://www.csounds.com/manual/html/changed.html">changed</a></li>
-<li><a href="http://www.csounds.com/manual/html/sc_trig.html">sc_trig</a></li>
-<li><a href="http://www.csounds.com/manual/html/printf.html">printf</a></li>
+<li><a href="deref.html">deref</a></li>
+<li><a href="ref.html">ref</a></li>
+<li><a href="defer.html">defer</a></li>
+<li><a href="http://www.csounds.com/manual/html/schedule.html">schedule</a></li>
+<li><a href="http://www.csounds.com/manual/html/event.html">event</a></li>
+<li><a href="http://www.csounds.com/manual/html/release.html">release</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -391,10 +410,10 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="atstop.html" class="btn btn-neutral float-right" title="atstop">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="schmitt.html" class="btn btn-neutral float-right" title="schmitt">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../Installation.html" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="ref.html" class="btn btn-neutral" title="ref"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -420,10 +439,10 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../Installation.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="ref.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="atstop.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="schmitt.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
