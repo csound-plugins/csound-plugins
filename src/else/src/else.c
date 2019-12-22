@@ -1948,6 +1948,508 @@ frac2int(CSOUND *csound, FUNC12 *p) {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+/*
+
+  iout[]  vecview ifn, istart, iend
+
+  An array view into a function table. The returned array does not
+  own the memory, it is just a view (an alias) into the memory
+  allocated by the function table
+
+ */
+
+// init array 'arr' to point to data
+
+
+static void _init_array_view(CSOUND *csound, ARRAYDAT *outarr, MYFLT *sourcedata,
+                             int sourcesize, size_t allocated) {
+    if(outarr->data != NULL) {
+        printf("$$$ freeing original data (size=%d, allocated=%ld) \n",
+               outarr->sizes[0], outarr->allocated);
+        csound->Free(csound, outarr->data);
+    } else {
+        CS_VARIABLE* var = outarr->arrayType->createVariable(csound, NULL);
+        outarr->arrayMemberSize = var->memBlockSize;
+    }
+    size_t minallocated = outarr->arrayMemberSize * sourcesize;
+    outarr->allocated = minallocated > allocated ? minallocated : allocated;
+    outarr->data = sourcedata;
+    outarr->dimensions = 1;
+    if(outarr->sizes == NULL)
+        outarr->sizes = csound->Malloc(csound, sizeof(int));
+    outarr->sizes[0] = sourcesize;
+    // _mark_array_as_view(csound, outarr);
+}
+
+
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *out;
+    MYFLT *ifn, *istart, *iend;
+    FUNC * ftp;
+    int size;
+} TABALIAS;
+
+static int
+tabalias_deinit(CSOUND *csound, TABALIAS *p) {
+    IGN(csound);
+    p->out->data = NULL;
+    p->out->sizes[0] = 0;
+    return OK;
+}
+
+static int
+tabalias_init(CSOUND *csound, TABALIAS *p) {
+    FUNC *ftp;
+    ftp = csound->FTnp2Find(csound, p->ifn);
+    if (UNLIKELY(ftp == NULL))
+        return NOTOK;
+    int tabsize = ftp->flen;
+    int start = (int)*p->istart;
+    int end   = (int)*p->iend;
+    if(end == 0)
+        end = tabsize;
+    p->size = end - start;
+    p->ftp = ftp;
+
+    if (tabsize < end)
+        return INITERR("end is bigger than the length of the table");
+
+    _init_array_view(csound, p->out, &(ftp->ftable[start]), end-start,
+                     sizeof(MYFLT)*(tabsize-start));
+    register_deinit(csound, p, tabalias_deinit);
+    return OK;
+}
+
+
+/*
+
+  iout[]  vecview  in[],  istart, iend=0
+  kout[]  vecview  kin[], istart, iend=0
+
+  An array view into another array, useful to operate on a row
+  of a large 2D array.
+
+  Works only on
+
+ */
+
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *out, *in;
+    MYFLT *istart, *iend;
+    MYFLT *dataptr;
+    int size;
+} ARRAYVIEW;
+
+static void _array_view_deinit(ARRAYDAT *arr) {
+    arr->data = NULL;
+    arr->sizes[0] = 0;
+}
+
+
+static int
+arrayview_deinit(CSOUND *csound, ARRAYVIEW *p) {
+    IGN(csound);
+    _array_view_deinit(p->out);
+    return OK;
+}
+
+
+static int32_t
+arrayview_init(CSOUND *csound, ARRAYVIEW *p) {
+    if(p->in->data == NULL)
+        return INITERR("source array has not been initialized");
+    if(p->in->dimensions > 1)
+        return INITERR(Str("A view can only be taken from a 1D array"));
+
+    int end   = (int)*p->iend;
+    int start = (int)*p->istart;
+    if(end == 0)
+        end = p->in->sizes[0];
+    _init_array_view(csound, p->out, &(p->in->data[start]), end - start,
+                     p->in->allocated - start);
+    register_deinit(csound, p, arrayview_deinit);
+    return OK;
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*
+ * ref
+ *
+ * iref ref iArray
+ * iArray deref iref
+ *
+ * iref ref kscalar
+ * kscalar deref iref
+ *
+ */
+
+
+enum RefType { RefScalar, RefAudio, RefArrayScalar };
+
+
+typedef struct {
+    int active;
+    MYFLT *data;
+    enum RefType type;
+    int size;
+    size_t allocated;
+    int refcount;
+    int ownsdata;
+    int isglobal;
+} REF_HANDLE;
+
+typedef struct {
+    CSOUND *csound;
+    int numhandles;
+    REF_HANDLE *handles;
+} REF_GLOBALS;
+
+// static int32_t ref_reset(CSOUND *csound, REF_GLOBALS *g);
+
+#define REF_GLOBALS_VARNAME "__ref_globals__"
+
+static REF_GLOBALS *ref_globals(CSOUND *csound) {
+    REF_GLOBALS *g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
+    if(g != NULL) return g;
+
+    int err = csound->CreateGlobalVariable(csound, REF_GLOBALS_VARNAME, sizeof(REF_GLOBALS));
+    if(err != 0) {
+        INITERR("failed to create globals for ref");
+        return NULL;
+    }
+    g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
+    g->csound = csound;
+    g->handles = csound->Calloc(csound, sizeof(REF_HANDLE) * 8);
+    g->numhandles = 8;
+    // csound->RegisterResetCallback(csound, (void *)g, (int32_t(*)(CSOUND*, void*))ref_reset);
+    return g;
+}
+
+static inline void ref_init_handle(REF_HANDLE *h) {
+    h->refcount = 0;
+    h->size = 0;
+    h->allocated = 0;
+    h->data = NULL;
+}
+
+static inline int32_t
+ref_getslot(REF_GLOBALS *g) {
+    REF_HANDLE *handles = g->handles;
+    for(int i=0; i<g->numhandles; i++) {
+        REF_HANDLE *h = &(handles[i]);
+        if(h->active == 0 && h->ownsdata == 0) {
+            ref_init_handle(h);
+            return i;
+        }
+    }
+    // no free slots, time to grow
+    int idx = g->numhandles;
+    CSOUND *csound = g->csound;
+    g->numhandles *= 2;
+    g->handles = csound->ReAlloc(csound, g->handles, sizeof(REF_HANDLE)*g->numhandles);
+    ref_init_handle(&(g->handles[idx]));
+    return idx;
+}
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *idx;
+    ARRAYDAT *arr;
+    MYFLT *move;
+    int slot;
+    REF_GLOBALS *g;
+} REF_NEW_ARRAY;
+
+
+static int32_t ref_new_dealloc(CSOUND *csound, REF_NEW_ARRAY *p);
+
+static int32_t
+ref_new_array(CSOUND *csound, REF_NEW_ARRAY *p) {
+    if(p->arr->data == NULL || p->arr->allocated == 0) {
+        return INITERR("Cannot take a reference from uninitialized array");
+    }
+    if(p->arr->dimensions != 1) {
+        return INITERRF("Only 1D arrays supported (array has %d dims)", p->arr->dimensions);
+    }
+    REF_GLOBALS *g = ref_globals(csound);
+    int slot = ref_getslot(g);
+    REF_HANDLE *h = &(g->handles[slot]);
+    char *argname = csound->GetInputArgName(p, 0);
+    h->isglobal = argname[0] == 'g' ? 1 : 0;
+    h->active = 1;
+    h->type = RefArrayScalar;  // todo: detect type
+    h->data = p->arr->data;
+    h->size = p->arr->sizes[0];
+    h->allocated = p->arr->allocated;
+    h->refcount = 0;
+    int move = (int)*p->move;
+    if(move) {
+        if(h->isglobal)
+            return INITERR("Can't move a global array");
+        h->ownsdata = 1;
+    } else {
+        h->ownsdata = 0;
+    }
+    p->g = g;
+    *p->idx = slot;
+    p->slot = slot;
+    register_deinit(csound, p, ref_new_dealloc);
+    return OK;
+}
+
+static void _handle_release(CSOUND *csound, REF_HANDLE *h) {
+    printf(">>>>> Releasing handle\n");
+    if(h->data != NULL && h->ownsdata) {
+        printf(">>>>>>>>>>>>>> Deallocating handle memory\n");
+        csound->Free(csound, h->data);
+    }
+    h->data = NULL;
+    h->size = 0;
+    h->allocated = 0;
+    h->ownsdata = 0;
+}
+
+
+static int32_t
+ref_new_dealloc(CSOUND *csound, REF_NEW_ARRAY *p) {
+    REF_HANDLE *h = &(p->g->handles[p->slot]);
+    h->active = 0;
+    if(h->refcount > 0 || h->ownsdata) {
+        // there are clients of this data!
+        // fake deallocation of the data, mark data as owned by the handle
+        p->arr->data = NULL;
+        p->arr->sizes[0] = 0;
+        p->arr->allocated = 0;
+        if(h->isglobal == 0) {
+            // original memory is not global, we should own it
+            h->ownsdata = 1;
+        }
+    } else {
+        // no clients
+        _handle_release(csound, h);
+    }
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *arr;
+    MYFLT *idx;
+    REF_HANDLE *handle;
+} DEREF_ARRAY;
+
+
+
+static int32_t ref_handle_decref(CSOUND *csound, REF_HANDLE *h) {
+    if(h->refcount <= 0) {
+        return INITERRF("Can not decrease refcount (refcount=%d)", h->refcount);
+    }
+    h->refcount -= 1;
+    printf("             handle refcount was %d, now %d\n", h->refcount+1, h->refcount);
+    if(h->refcount == 0 && h->active == 0) {
+        _handle_release(csound, h);
+    }
+    return OK;
+}
+
+static int32_t
+deref_array_deinit(CSOUND *csound, DEREF_ARRAY *p) {
+    ref_handle_decref(csound, p->handle);
+    p->arr->data = NULL;
+    p->arr->sizes[0] = 0;
+    p->arr->dimensions = 0;
+    return OK;
+}
+
+static int32_t
+deref_array(CSOUND *csound, DEREF_ARRAY *p) {
+    int slot = (int)*p->idx;
+    REF_GLOBALS *g = ref_globals(csound);
+    REF_HANDLE *h = &(g->handles[slot]);
+    if(h->active == 0 && h->ownsdata == 0)
+        return INITERR("Handle not active");
+
+    if(h->allocated == 0)
+        return INITERR("Array has no elements allocated");
+
+    _init_array_view(csound, p->arr, h->data, h->size, h->allocated);
+
+    h->refcount += 1;
+    p->handle = h;
+    register_deinit(csound, p, deref_array_deinit);
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *ins[10];
+    REF_GLOBALS *g;
+    REF_HANDLE *handle;
+} REF1;
+
+
+static int32_t
+ref1_init(CSOUND *csound, REF1 *p) {
+    p->g = ref_globals(csound);
+    return OK;
+}
+
+static int32_t ref_handle_valid(REF_GLOBALS *g, int slot) {
+    // array out of bounds
+    if(slot < 0 || slot >= g->numhandles)
+        return 0;
+    REF_HANDLE *h = &(g->handles[slot]);
+    // an active handle is always valid
+    if(h->active == 1)
+        return 1;
+    // an inactive array handle can also be valid as a deref if it owns data
+    if(h->type == RefArrayScalar && h->ownsdata)
+        return 1;
+    return 0;
+}
+
+static int32_t
+ref_valid_perf(CSOUND *csound, REF1 *p) {
+    IGN(csound);
+    int slot = (int)*p->ins[0];
+    *p->out = ref_handle_valid(p->g, slot);
+    return OK;
+}
+
+static int32_t
+ref_valid_i(CSOUND *csound, REF1 *p) {
+    ref1_init(csound, p);
+    return ref_valid_perf(csound, p);
+}
+
+// irFreq, irAmp refk 2000, 0.5
+// schedule 20, 0, 10, irFreq, irAmp
+// kFreq deref p4
+// kAmp deref p5
+//
+
+static int32_t
+ref_scalar_deinit(CSOUND *csound, REF1 *p) {
+    p->handle->refcount -= 1;
+    if(p->handle->refcount == 0)
+        _handle_release(csound, p->handle);
+    return OK;
+}
+
+static int32_t
+ref_scalar_init(CSOUND *csound, REF1 *p) {
+    REF_GLOBALS *g = ref_globals(csound);
+    p->g = g;
+    int slot = ref_getslot(g);
+    REF_HANDLE *h = &(g->handles[slot]);
+    h->isglobal = csound->GetInputArgName(p, 0)[0] == 'g' ? 1 : 0;
+    h->active = 1;
+    h->type = RefScalar;
+    h->data = csound->Malloc(csound, sizeof(MYFLT));
+    h->size = 1;
+    h->allocated = 1*sizeof(MYFLT);
+    p->handle = h;
+    h->refcount = 1;
+    h->ownsdata = 1;
+    h->data[0] = *(p->ins[0]);
+    register_deinit(csound, p, ref_scalar_deinit);
+    return OK;
+}
+
+static int32_t
+ref_scalar_perf(CSOUND *csound, REF1 *p) {
+    p->handle->data[0] = *(p->ins[0]);
+    return OK;
+}
+
+// kval deref iref
+static int32_t
+deref_scalar_init(CSOUND *csound, REF1 *p) {
+    ref1_init(csound, p);
+    int slot = (int)*p->ins[0];
+    if(!ref_handle_valid(p->g, slot)) {
+        return INITERR("Handle is not valid");
+    }
+    REF_HANDLE *h = &(p->g->handles[slot]);
+    if(h->type != RefScalar)
+        return INITERRF("Expected a ref of scalar type (got %d)", h->type);
+    p->handle = h;
+    h->refcount += 1;
+    *p->out = h->data[0];
+    register_deinit(csound, p, ref_scalar_deinit);
+    return OK;
+}
+
+static int32_t
+deref_scalar_perf(CSOUND *csound, REF1 *p) {
+    *p->out = p->handle->data[0];
+    return OK;
+}
+
+static int32_t
+ref_audio_init(CSOUND *csound, REF1 *p) {
+    REF_GLOBALS *g = ref_globals(csound);
+    p->g = g;
+    int slot = ref_getslot(g);
+    REF_HANDLE *h = &(g->handles[slot]);
+    h->isglobal = csound->GetInputArgName(p, 0)[0] == 'g' ? 1 : 0;
+    h->active = 1;
+    h->type = RefAudio;
+    h->size = p->h.insdshead->ksmps;
+    h->allocated = h->size * sizeof(MYFLT);
+    h->data = csound->Malloc(csound, h->allocated);
+    p->handle = h;
+    h->refcount = 1;
+    h->ownsdata = 1;
+    register_deinit(csound, p, ref_scalar_deinit);
+    return OK;
+}
+
+static int32_t
+ref_audio_perf(CSOUND *csound, REF1 *p) {
+    int ksmps = p->h.insdshead->ksmps;
+    MYFLT *in = p->ins[0];
+    MYFLT *out = p->handle->data;
+    memcpy(out, in, ksmps*sizeof(MYFLT));
+    return OK;
+}
+
+static int32_t
+deref_audio_init(CSOUND *csound, REF1 *p) {
+    REF_GLOBALS *g = ref_globals(csound);
+    p->g = g;
+    int slot = (int)*p->ins[0];
+    if(!ref_handle_valid(p->g, slot)) {
+        return INITERR("Handle is not valid");
+    }
+    REF_HANDLE *h = &(p->g->handles[slot]);
+    if(h->type != RefAudio)
+        return INITERRF("Expected a ref of scalar type (got %d)", h->type);
+    p->handle = h;
+    h->refcount += 1;
+    register_deinit(csound, p, ref_scalar_deinit);
+    return OK;
+}
+
+static int32_t
+deref_audio_perf(CSOUND *csound, REF1 *p) {
+    int ksmps = p->h.insdshead->ksmps;
+    MYFLT *in = p->handle->data;
+    MYFLT *out = p->out;
+    memcpy(out, in, ksmps*sizeof(MYFLT));
+    return OK;
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 #define S(x) sizeof(x)
 
@@ -1999,7 +2501,27 @@ static OENTRY localops[] = {
 
     { "accum", S(ACCUM), 0, 3, "k", "ko", (SUBR)accum_init, (SUBR)accum_perf},
     { "frac2int", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
-    { "frac2int", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int}
+    { "frac2int", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int},
+
+    { "vecview.i_table", S(TABALIAS),  0, 1, "i[]", "ioo", (SUBR)tabalias_init},
+    { "vecview.k_table", S(TABALIAS),  0, 1, "k[]", "ioo", (SUBR)tabalias_init},
+    { "vecview.k", S(ARRAYVIEW), 0, 1, "k[]", ".[]oo", (SUBR)arrayview_init},
+    { "vecview.i", S(ARRAYVIEW), 0, 1, "i[]", ".[]oo", (SUBR)arrayview_init},
+
+    { "ref.arr", S(REF_NEW_ARRAY), 0, 1, "i", ".[]o", (SUBR)ref_new_array},
+    { "ref.i", S(REF1), 0, 1, "i", "i", (SUBR)ref_scalar_init},
+    { "ref.k", S(REF1), 0, 3, "i", "k", (SUBR)ref_scalar_init, (SUBR)ref_scalar_perf},
+    { "ref.a", S(REF1), 0, 3, "i", "a", (SUBR)ref_audio_init, (SUBR)ref_audio_perf},
+
+
+    { "deref.arr_i", S(DEREF_ARRAY), 0, 1, "i[]", "i", (SUBR)deref_array},
+    { "deref.arr_k", S(DEREF_ARRAY), 0, 1, "k[]", "i", (SUBR)deref_array},
+    { "deref.k", S(REF1), 0, 3, "k", "i", (SUBR)deref_scalar_init, (SUBR)deref_scalar_perf},
+    { "deref.a", S(REF1), 0, 3, "a", "i", (SUBR)deref_audio_init, (SUBR)deref_audio_perf},
+
+    { "ref_valid.i", S(REF1), 0, 1, "i", "i", (SUBR)ref_valid_i},
+    { "ref_valid.k", S(REF1), 0, 3, "k", "k", (SUBR)ref1_init, (SUBR)ref_valid_perf},
+
 };
 
 LINKAGE

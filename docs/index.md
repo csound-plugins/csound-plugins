@@ -75,6 +75,9 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
 * [accum](opcodes/accum.md): Simple accumulator of scalar values 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
+* [ref](opcodes/ref.md): Get a reference to a variable 
+* [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
+* [ref_valid](opcodes/ref_valid.md): Queries if a reference is valid 
 
 
 

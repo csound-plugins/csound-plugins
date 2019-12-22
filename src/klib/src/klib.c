@@ -2847,6 +2847,7 @@ pool_at_i(CSOUND *csound, POOL_1 *p) {
     return pool_at_perf(csound, p);
 }
 
+
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
@@ -2919,8 +2920,6 @@ static OENTRY localops[] = {
 
     { "cacheget.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
     { "cacheget.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
-    { "cache.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
-    { "cache.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
 
     { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },
 

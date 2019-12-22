@@ -1,0 +1,57 @@
+# ref
+
+## Abstract
+
+Get a reference to a variable
+
+## Description
+
+
+`ref` and `deref` implement a mechanism to pass a reference to any object,
+allowing to share a variable across instruments, with opcodes, etc. A reference
+is a proxy to an axisting variable / array. A reference is reference counted and
+deallocates itself when it falls out of scope without being referenced by any
+object. It makes it possible to pass arrays by reference to user defined
+opcodes, allowing to modify an array inplace, to skip copying memory, etc. With
+a reference it is possible also to control an event from another event.
+
+## Syntax
+
+    iref ref xArray [, move=0]
+    iref ref avar
+    iref ref kvar
+    iref ref ivar
+
+
+## Arguments
+
+* `xArray` / `xvar`: any csound object can be referenced
+* `move`: for arrays, it is possible to specify that the reference owns the
+  memory. This is useful for the *niche* case where a reference for an array is
+  scheduled and needs to be passed to an instrument which is scheduled at a
+  point in time later that the end of the current event.
+
+## Output
+
+* `iref`: an integer identifying the reference handle.
+
+## Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [deref](deref.md)
+* [defer](defer.md)
+* [schedule](http://www.csounds.com/manual/html/schedule.html)
+* [event](http://www.csounds.com/manual/html/event.html)
+* [release](http://www.csounds.com/manual/html/release.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019

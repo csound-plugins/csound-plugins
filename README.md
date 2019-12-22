@@ -22,27 +22,36 @@ A miscellaneous collection of effects (distortion, saturation, ring-modulation),
 generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
 
 
-# Installation
+# Installation from source
 
+## Dependencies
 
-    git clone https://github.com/csound-plugins/csound-plugins
-    cd csound-plugins
-    mkdir build & cd build
-    cmake ..
-    make
-    sudo make install
+* `nasm`: an assembler compiler needed by `jsusfx`
 
+#### macOS
 
-## macOS
-
-In order to build the jsfx plugins, an assembler compiler called `nasm` is needed. XCode provides such a compiler, 
-but its version is very old and does not support 64 bits. To solve that, it is necessary to install a recent version
+The `nasm` version provided by XCode is too old. To solve that, it is necessary to install a recent version
 of `nasm`. This can be easily done via `homebrew`:
 
     brew install nasm
 
 If you have a default installation of homebrew, the build process will detect this version (`/usr/local/bin/nasm`) and 
-will use that instead of the older one. After solving this, procede with the normal installation process above.
+will use that instead of the older one.
+
+### Windows
+
+    choco install nasm
+
+### Linux
+
+    sudo apt install nasm
+
+## After installing dependencies
+
+    mkdir build & cd build
+    cmake ..
+    make
+    sudo make install
 
 
 # Documentation of all plugins

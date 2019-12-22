@@ -15,7 +15,10 @@
       "uniqinstance",
       "atstop",
       "accum",
-      "frac2int"
+      "frac2int",
+      "ref",
+      "deref",
+      "ref_valid"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
