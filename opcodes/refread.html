@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>deref - Csound Plugins</title>
+  <title>refread - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "deref";
-    var mkdocs_page_input_path = "opcodes/deref.md";
+    var mkdocs_page_name = "refread";
+    var mkdocs_page_input_path = "opcodes/refread.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -96,33 +96,9 @@
                     
     <a class="" href="defer.html">defer</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="deref.html">deref</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#deref">deref</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="deref.html">deref</a>
                 </li>
                 <li class="">
                     
@@ -256,9 +232,33 @@
                     
     <a class="" href="ref.html">ref</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="refread.html">refread</a>
+    <a class="current" href="refread.html">refread</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#refread">refread</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -313,7 +313,7 @@
         
       
     
-    <li>deref</li>
+    <li>refread</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -323,20 +323,40 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="deref">deref</h1>
+                <h1 id="refread">refread</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Dereference a previously created reference to a variable</p>
+<p>Create a <strong>read-only</strong> view on the original object</p>
 <h2 id="description">Description</h2>
-<p><code>ref</code> and <code>deref</code> implement a mechanism to pass a reference to any object,
-allowing to share a variable across instruments, with opcodes, etc. A reference
-is a proxy to an axisting variable / array. A reference is reference counted and
-deallocates itself when it falls out of scope without being referenced by any
-object. It makes it possible to pass arrays by reference to user defined
-opcodes, allowing to modify an array inplace, to skip copying memory, etc. With
-a reference it is possible also to control an event from another event.</p>
+<p><code>ref</code> and <code>refread</code> implement a mechanism to forward an object across events,
+to reference objects inside other objects, etc. A <code>ref</code> generates a handle
+wrapping the given object and returns an integer which maps to this handle. This
+handle index can then be passed to any event, placed inside a collection (array,
+dict, channel, etc.).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>deref</code>, <code>refread</code> <strong>does not</strong> create an alias of the original object
+but generates a <strong>read only</strong> <em>copy</em> of it.</p>
+</div>
+<div class="codehilite"><pre><span></span><span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">a</span><span class="n">sig</span> <span class="nb">vco2</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span>
+  <span class="kt">k</span><span class="n">cutoff</span> <span class="nb">linseg</span> <span class="mi">4000</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">200</span>
+  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">),</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">cutoff</span><span class="p">)</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">a</span><span class="n">in</span>     <span class="n">refread</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">cutoff</span> <span class="n">refread</span> <span class="vi">p5</span>
+  <span class="kt">i</span><span class="n">Q</span> <span class="o">=</span> <span class="mf">0.8</span>
+  <span class="kt">a</span><span class="n">sig</span> <span class="nb">K35_lpf</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span> <span class="kt">i</span><span class="n">Q</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+  <span class="c1">; the references will be deallocated after this event finishes</span>
+<span class="kd">endin</span>
+</pre></div>
+
+
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>xArray deref iref
-xvar   deref iref
+<div class="codehilite"><pre><span></span>kvar refread iref
+avar refread iref
 </pre></div>
 
 
@@ -346,11 +366,12 @@ xvar   deref iref
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>xArray</code> / <code>xvar</code>: are created as a view of the object originally passed to <code>ref</code></li>
+<li><code>xvar</code>: a read-only view over the object originally passed to <code>ref</code></li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Init</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -606,7 +627,7 @@ xvar   deref iref
 <span class="kd">instr</span> <span class="nf">11</span>
   <span class="kt">k</span><span class="n">In</span><span class="p">[]</span> <span class="n">deref</span> <span class="vi">p4</span>
   <span class="kt">k</span><span class="n">1</span> <span class="o">=</span> <span class="kt">k</span><span class="n">In</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-  <span class="nb">printf</span> <span class="s">&quot;time: </span><span class="si">%f</span><span class="s">, k1: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">ccum</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span> <span class="nb">timeinsts</span><span class="p">(),</span> <span class="kt">k</span><span class="n">1</span>
+  <span class="nb">printf</span> <span class="s">&quot;time: </span><span class="si">%f</span><span class="s">, k1: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nf">accum</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span> <span class="nb">timeinsts</span><span class="p">(),</span> <span class="kt">k</span><span class="n">1</span>
 <span class="kd">endin</span>
 
 <span class="c1">; ref / refread</span>
@@ -621,7 +642,7 @@ xvar   deref iref
 
 <span class="kd">instr</span> <span class="nf">21</span>
   <span class="kt">k</span><span class="n">freq</span> <span class="n">refread</span> <span class="vi">p4</span>
-  <span class="nb">printf</span> <span class="s">&quot;kfreq=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">ccum</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="nb">printf</span> <span class="s">&quot;kfreq=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nf">accum</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span> <span class="kt">k</span><span class="n">freq</span>
   <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;&lt;&lt;&lt; instr 21 deallocated &gt;&gt;&gt;&gt; </span><span class="se">\n</span><span class="s">&quot;</span>
 <span class="kd">endin</span>
 
@@ -675,10 +696,10 @@ xvar   deref iref
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dict_exists.html" class="btn btn-neutral float-right" title="dict_exists">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="refvalid.html" class="btn btn-neutral float-right" title="refvalid">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="defer.html" class="btn btn-neutral" title="defer"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="ref.html" class="btn btn-neutral" title="ref"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -704,10 +725,10 @@ xvar   deref iref
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="defer.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="ref.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="dict_exists.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="refvalid.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

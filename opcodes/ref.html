@@ -262,7 +262,11 @@
                 </li>
                 <li class="">
                     
-    <a class="" href="ref_valid.html">ref_valid</a>
+    <a class="" href="refread.html">refread</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="refvalid.html">refvalid</a>
                 </li>
                 <li class="">
                     
@@ -329,11 +333,38 @@
 <h2 id="description">Description</h2>
 <p><code>ref</code> and <code>deref</code> implement a mechanism to pass a reference to any object,
 allowing to share a variable across instruments, with opcodes, etc. A reference
-is a proxy to an axisting variable / array. A reference is reference counted and
-deallocates itself when it falls out of scope without being referenced by any
+is a proxy to an axisting variable / array. Refernces are reference counted and
+deallocate themselves when out of scope without being referenced by any
 object. It makes it possible to pass arrays by reference to user defined
-opcodes, allowing to modify an array inplace, to skip copying memory, etc. With
-a reference it is possible also to control an event from another event.</p>
+opcodes, allowing to modify an array inplace, to skip copying memory, etc.
+Using references with scalar / audio variables makes it possible to implement
+simple communication buses between events.</p>
+<h3 id="arrays">Arrays</h3>
+<div class="codehilite"><pre><span></span><span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span>
+<span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">i</span><span class="n">Xs</span>
+<span class="kt">i</span><span class="n">Ys</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
+</pre></div>
+
+
+<p>In the case above, <code>iYs</code> shares the same memory as <code>iXs</code> and any modification in
+one array will be visible in the other.</p>
+<h3 id="scalars-audio">Scalars / Audio</h3>
+<div class="codehilite"><pre><span></span><span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">a</span><span class="n">sig</span> <span class="nb">oscili</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span>
+  <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">a</span><span class="n">sig</span>
+  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">ref</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">a</span><span class="n">in</span> <span class="n">refread</span> <span class="vi">p4</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="kt">a</span><span class="n">in</span>
+<span class="kd">endin</span>
+</pre></div>
+
+
+<p>In the case above, <code>ain</code> in instr 2 <strong>is not</strong> a proxy of <code>asig</code>. <code>refread</code>
+reads from <code>asig</code> and copies the content to <code>ain</code>. Modifying <code>ain</code> does not
+affect <code>asig</code>. <code>deref</code> is not currently defined for scalar / audio variables.</p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span>iref ref xArray [, move=0]
 iref ref avar
@@ -346,9 +377,9 @@ iref ref ivar
 <ul>
 <li><code>xArray</code> / <code>xvar</code>: any csound object can be referenced</li>
 <li><code>move</code>: for arrays, it is possible to specify that the reference owns the
-  memory. This is useful for the <em>niche</em> case where a reference for an array is
-  scheduled and needs to be passed to an instrument which is scheduled at a
-  point in time later that the end of the current event.</li>
+  memory. This is useful for the <em>niche</em> case where a reference is passed to an
+  event scheduled at a point in time later that the end of the current event.
+  Without this, the ref would go out of scope before the <code>deref</code> takes place.</li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
@@ -364,8 +395,14 @@ iref ref ivar
 <span class="o">-</span><span class="n">m0</span>
 <span class="o">-</span><span class="n">d</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="cm">/*</span>
+
+<span class="cm">Example file for ref / deref / refinc / refread / refvalid</span>
+
+<span class="cm">*/</span>
+
 <span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
 <span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
@@ -373,26 +410,34 @@ iref ref ivar
 
 <span class="kt">gi</span><span class="n">A</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">3000</span>
 
-<span class="c1">; test: ref </span>
+<span class="c1">; Example 1: take a ref from an array, deref it to create a second view of it </span>
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span>
-  <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">i</span><span class="n">Xs</span>
-  <span class="kt">i</span><span class="n">Ys</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Ys</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;instrument 1, iYs&quot;</span>
-  <span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span>
+  <span class="c1">; a source array</span>
+  <span class="kt">i</span><span class="n">X</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span>
 
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span>
+  <span class="c1">; create a ref of iXs, return the index </span>
+  <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">i</span><span class="n">X</span>
+  <span class="c1">; now iYs points to iXs</span>
+  <span class="kt">i</span><span class="n">Y</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Y</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;instrument 1, iY&quot;</span>
 
-  <span class="c1">; this should fail since the source array is already</span>
-  <span class="c1">; gone when this instr. becomes active</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span>
+
+  <span class="kt">i</span><span class="n">Z</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span>
+
+  <span class="c1">; create a ref, pass it to instr. 2</span>
+  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Z</span><span class="p">)</span>
+
+  <span class="c1">; create another ref of iZ. In this case the event is scheduled</span>
+  <span class="c1">; in the future, so the source will not exist anymore when instr. 2</span>
+  <span class="c1">; is scheduled. This should fail.</span>
+  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Z</span><span class="p">)</span>
 
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
   <span class="kt">i</span><span class="n">ref</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="k">if</span> <span class="n">ref_valid</span><span class="p">(</span><span class="kt">i</span><span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+  <span class="k">if</span> <span class="n">refvalid</span><span class="p">(</span><span class="kt">i</span><span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
     <span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
     <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Zs</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;p1=2, iZs&quot;</span>
   <span class="k">else</span>
@@ -401,29 +446,47 @@ iref ref ivar
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-<span class="c1">; test: move ref</span>
+<span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="c1">; Example 2: move semantics for arrays</span>
 <span class="kd">instr</span> <span class="nf">3</span>
+  <span class="c1">; create a source array</span>
   <span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span>
-  <span class="c1">; A move operation. Now the reference owns the array. When iXs goes out</span>
-  <span class="c1">; of scope at the end of this event, its memory is not deallocated</span>
-  <span class="c1">; since it is now owned by the reference. It can be accessed later</span>
-  <span class="c1">; by &quot;deref&quot;</span>
-  <span class="c1">; NB - global arrays cannot be moved</span>
-  <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">k</span><span class="n">Xs</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="k">endif</span>
-  <span class="c1">; turnoff</span>
+
+  <span class="c1">; create a reference</span>
+  <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">k</span><span class="n">Xs</span>
+
+  <span class="c1">; In order to bridge the time gap between the end of life of the source</span>
+  <span class="c1">; of a ref and the scheduled event where a deref is taken, it is possible</span>
+  <span class="c1">; to create a forward reference, a &quot;promise&quot; that one deref has been scheduled</span>
+  <span class="c1">; in the future.</span>
+  <span class="c1">; Such forward refs are created via `refinc` (for increment reference).</span>
+  <span class="c1">; When this event stops, the memory ownership is transfered to the</span>
+  <span class="c1">; ref itself. The next `deref` will clear the forward ref and</span>
+  <span class="c1">; the memory is deallocated at the end of the deref&#39;s event.</span>
+  <span class="n">refinc</span> <span class="kt">i</span><span class="n">ref</span>
+  <span class="nb">schedule</span> <span class="mi">4</span><span class="p">,</span> <span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">ref</span>
+
+  <span class="c1">; The same can be compressed into one action by setting the forward</span>
+  <span class="c1">; references at creation time. The second argument to ref indicates the number</span>
+  <span class="c1">; of forward references to create. </span>
+  <span class="nb">schedule</span> <span class="mi">4</span><span class="p">,</span> <span class="vi">p3</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot; &lt;&lt;&lt; instr. 3 finished &gt;&gt;&gt; </span><span class="se">\n</span><span class="s">&quot;</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">4</span>
-  <span class="kt">i</span><span class="n">ref</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="kt">i</span><span class="n">Ys</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s"> p1=4 iXs=&quot;</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Xs</span>
+  <span class="nb">prints</span> <span class="s">&quot;instr. 4&quot;</span>
+  <span class="kt">i</span><span class="n">View</span><span class="p">[]</span> <span class="n">deref</span> <span class="vi">p4</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">View</span>
+  <span class="c1">; At deinition time the memory of the `iView` array is marked as deallocated.</span>
+  <span class="c1">; The handle (a global structure created by the `ref` opcode) which owns the memory,</span>
+  <span class="c1">; is signaled that no other clients  of this data are alive. It deallocates the</span>
+  <span class="c1">; original memory and frees itself</span>
 <span class="kd">endin</span>
 
-<span class="c1">; test: multiple derefs</span>
+  <span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+  <span class="c1">; test: multiple derefs</span>
 <span class="kd">instr</span> <span class="nf">5</span>
   <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span>
   <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">i</span><span class="n">Xs</span>
@@ -437,13 +500,16 @@ iref ref ivar
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
+<span class="c1">; test performance of pass-by-value vs pass-by-reference</span>
 <span class="kd">opcode</span> <span class="nf">arrayadd</span><span class="p">,</span> <span class="kt">i[]</span><span class="p">,</span> <span class="kt">i[]i</span>
+  <span class="c1">; pass by value in and out</span>
   <span class="kt">i</span><span class="n">In</span><span class="p">[],</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
   <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">i</span><span class="n">In</span> <span class="o">+</span> <span class="kt">i</span><span class="n">x</span>
   <span class="nb">xout</span> <span class="kt">i</span><span class="n">Out</span>
 <span class="kd">endop</span>
 
 <span class="kd">opcode</span> <span class="nf">arrayaddref</span><span class="p">,</span> <span class="kt">i[]</span><span class="p">,</span> <span class="kt">ii</span>
+  <span class="c1">; pass by ref in, by value out</span>
   <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
   <span class="kt">i</span><span class="n">In</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
   <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">i</span><span class="n">In</span> <span class="o">+</span> <span class="kt">i</span><span class="n">x</span>
@@ -451,19 +517,25 @@ iref ref ivar
 <span class="kd">endop</span>
 
 <span class="kd">opcode</span> <span class="nf">arrayadd_inplace</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">ii</span>
+  <span class="c1">; in place </span>
   <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
   <span class="kt">i</span><span class="n">In</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
   <span class="kt">i</span><span class="n">In</span> <span class="o">+=</span> <span class="kt">i</span><span class="n">x</span>
 <span class="kd">endop</span>
 
-<span class="kd">opcode</span> <span class="nf">arrayadd_inplace2</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">iii</span>
+<span class="kd">opcode</span> <span class="nf">arrayadd_byref_inout</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">iii</span>
+  <span class="c1">; pass by ref in and out</span>
   <span class="kt">i</span><span class="n">refin</span><span class="p">,</span> <span class="kt">i</span><span class="n">refout</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">In</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">refin</span>
+  <span class="kt">i</span><span class="n">In</span><span class="p">[]</span>  <span class="n">deref</span> <span class="kt">i</span><span class="n">refin</span>
   <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">refout</span>
-  <span class="kt">i</span><span class="n">Out</span> <span class="o">=</span> <span class="kt">i</span><span class="n">In</span> <span class="o">+</span> <span class="kt">i</span><span class="n">x</span>
+  <span class="k">if</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">)</span> <span class="k">then</span>
+    <span class="kt">i</span><span class="n">Out</span> <span class="o">=</span> <span class="kt">i</span><span class="n">In</span> <span class="o">+</span> <span class="kt">i</span><span class="n">x</span>
+  <span class="k">endif</span>
 <span class="kd">endop</span>
 
 <span class="kd">instr</span> <span class="nf">testUdoPerformance1</span>
+  <span class="c1">; Here we test the performance gain of passing arrays by reference.</span>
+  <span class="c1">; Passing the input array by reference seems to produce a speedup of ~25%,</span>
   <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="mi">1000000</span>
   <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span>
   <span class="kt">i</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
@@ -473,7 +545,7 @@ iref ref ivar
     <span class="kt">i</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
   <span class="k">od</span>
   <span class="kt">i</span><span class="n">t1</span> <span class="nb">rtclock</span>
-  <span class="nb">prints</span> <span class="s">&quot;Dur UDO=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
+  <span class="nb">prints</span> <span class="s">&quot;Dur UDO pass by value = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
 
   <span class="kt">i</span><span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Xs</span><span class="p">)</span>
   <span class="kt">i</span><span class="n">t0</span> <span class="nb">rtclock</span>
@@ -498,40 +570,43 @@ iref ref ivar
   <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
   <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
   <span class="kt">i</span><span class="n">t1</span> <span class="nb">rtclock</span>
-  <span class="nb">prints</span> <span class="s">&quot;Dur UDO ref=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
+  <span class="nb">prints</span> <span class="s">&quot;Dur UDO pass by ref input = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
 
   <span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span>
+  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">init</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span>
   <span class="kt">i</span><span class="n">t0</span> <span class="nb">rtclock</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
-  <span class="nf">arrayadd_inplace</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">),</span> <span class="mi">1</span>
+  <span class="kt">i</span><span class="n">refZ</span> <span class="o">=</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">refOut</span> <span class="o">=</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">)</span>
+
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
+
   <span class="kt">i</span><span class="n">t1</span> <span class="nb">rtclock</span>
-  <span class="nb">prints</span> <span class="s">&quot;Dur UDO inplace=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
-  <span class="c1">; printarray iZs</span>
+  <span class="nb">prints</span> <span class="s">&quot;Dur UDO pass by ref in and out=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
+  <span class="c1">; printarray iOut</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">7</span>
   <span class="kt">i</span><span class="n">In</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span>
   <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">init</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">)</span>
-  <span class="nf">arrayadd_inplace2</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">),</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">),</span> <span class="mf">0.5</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Out</span>
+  <span class="nf">arrayadd_byref_inout</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">),</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">),</span> <span class="mf">0.5</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
@@ -556,8 +631,8 @@ iref ref ivar
 <span class="kd">endin</span>
 
 <span class="c1">; refs can be used to communicate between instrs.</span>
-<span class="c1">; In this case, the array is moved to the handle so it is</span>
-<span class="c1">; only deallocated when all other derefs go out of scope</span>
+<span class="c1">; In this case, the memory of the array is moved to the handle</span>
+<span class="c1">; so it is only deallocated when all other derefs go out of scope</span>
 <span class="kd">instr</span> <span class="nf">10</span>
   <span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">genarray_i</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">9</span>
   <span class="nb">schedule</span> <span class="mi">11</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -571,6 +646,9 @@ iref ref ivar
   <span class="nb">printf</span> <span class="s">&quot;time: </span><span class="si">%f</span><span class="s">, k1: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nf">accum</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span> <span class="nb">timeinsts</span><span class="p">(),</span> <span class="kt">k</span><span class="n">1</span>
 <span class="kd">endin</span>
 
+<span class="c1">; ref / refread</span>
+<span class="c1">; refs can be used to create communication channels</span>
+<span class="c1">; between events</span>
 <span class="kd">instr</span> <span class="nf">20</span>
   <span class="kt">k</span><span class="n">freq</span> <span class="nb">linseg</span> <span class="mi">400</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1000</span>
   <span class="c1">; notica that instrument 21 outlives this instrument</span>
@@ -579,9 +657,9 @@ iref ref ivar
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">21</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="n">deref</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="n">refread</span> <span class="vi">p4</span>
   <span class="nb">printf</span> <span class="s">&quot;kfreq=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nf">accum</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">)),</span> <span class="kt">k</span><span class="n">freq</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;&lt;&lt;&lt; instr. 21 deallocated &gt;&gt;&gt;&gt; </span><span class="se">\n</span><span class="s">&quot;</span>
+  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;&lt;&lt;&lt;&lt; instr 21 deallocated &gt;&gt;&gt;&gt; </span><span class="se">\n</span><span class="s">&quot;</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">30</span>
@@ -591,22 +669,17 @@ iref ref ivar
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">31</span>
-  <span class="kt">a</span><span class="n">in</span> <span class="n">deref</span> <span class="vi">p4</span>
+  <span class="kt">a</span><span class="n">in</span> <span class="n">refread</span> <span class="vi">p4</span>
   <span class="kt">k</span><span class="n">cutoff</span> <span class="nb">linseg</span> <span class="mi">10000</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1000</span>
   <span class="kt">a</span><span class="n">sig</span> <span class="nb">K35_lpf</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span> <span class="mf">8.0</span>
   <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
 <span class="kd">endin</span>
 
-<span class="c1">;; Example 1: a reference is valid while the source is valid</span>
+
 <span class="c1">; schedule 1, 0, 1</span>
-
-<span class="c1">;; Example 2: if a ref is marked as a move operation, the reference</span>
-<span class="c1">;; owns the data and can outlive the source</span>
-<span class="nb">schedule</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
-
+<span class="c1">; schedule 3, 0, 1</span>
 <span class="c1">; schedule 5, 0, 0.1</span>
-
-<span class="c1">; schedule &quot;testUdoPerformance1&quot;, 0, 0.1</span>
+<span class="nb">schedule</span> <span class="s">&quot;testUdoPerformance1&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
 <span class="c1">; schedule 7, 0, 0.1</span>
 <span class="c1">; schedule 9, 0, 1</span>
 <span class="c1">; schedule 10, 0, 2</span>
@@ -625,6 +698,7 @@ iref ref ivar
 <h2 id="see-also">See also</h2>
 <ul>
 <li><a href="deref.html">deref</a></li>
+<li><a href="refread.html">refread</a></li>
 <li><a href="defer.html">defer</a></li>
 <li><a href="http://www.csounds.com/manual/html/schedule.html">schedule</a></li>
 <li><a href="http://www.csounds.com/manual/html/event.html">event</a></li>
@@ -639,7 +713,7 @@ iref ref ivar
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="ref_valid.html" class="btn btn-neutral float-right" title="ref_valid">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="refread.html" class="btn btn-neutral float-right" title="refread">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="ramptrig.html" class="btn btn-neutral" title="ramptrig"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -671,7 +745,7 @@ iref ref ivar
         <span><a href="ramptrig.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="ref_valid.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="refread.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
