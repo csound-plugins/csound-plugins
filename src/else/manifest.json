@@ -18,7 +18,10 @@
       "frac2int",
       "ref",
       "deref",
-      "ref_valid"
+      "xtracycles",
+      "refvalid",
+      "refread",
+      "vecview"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

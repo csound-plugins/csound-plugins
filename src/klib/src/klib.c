@@ -177,8 +177,6 @@
 
     Ss cacheget idx
 
-  * cachepop: the same as cacheget, but remove the string after getting it
-
 */
 
 #include "csdl.h"
@@ -887,7 +885,7 @@ dict_set_if(CSOUND *csound, DICT_SET_if *p) {
     if(handle->counter == p->counter && key == p->lastkey) {
         k = p->lastidx;
     } else {
-        int absent;    
+        int absent;
         p->lastidx = k = kh_put(khIntFlt, h, key, &absent);
         p->lastkey = key;
         if (absent) {
@@ -898,7 +896,7 @@ dict_set_if(CSOUND *csound, DICT_SET_if *p) {
                 UNLOCK(handle);
             } else {
                 kh_key(h, k) = key;
-            }      
+            }
         }
         p->counter = handle->counter;
     }
@@ -1075,7 +1073,7 @@ typedef struct {
     // in
     MYFLT *outkey;
     STRINGDAT *outval;
-    
+
     // internal
     HASH_GLOBALS *g;
     khint_t lastidx;
@@ -1106,7 +1104,7 @@ dict_set_is(CSOUND *csound, DICT_SET_is *p) {
     if(handle->counter == p->counter && key == p->lastkey) {
         k = p->lastidx;
     } else {
-        int absent;    
+        int absent;
         p->lastidx = k = kh_put(khIntStr, h, key, &absent);
         p->lastkey = key;
         if (absent) {
@@ -1307,7 +1305,7 @@ dict_get_if(CSOUND *csound, DICT_GET_if *p) {
         k = p->lastidx;
         *p->kout = kh_val(h, k);
         return OK;
-    } 
+    }
     p->lastidx = k = kh_get(khIntFlt, h, key);
     p->lastkey = key;
     *p->kout = k != kh_end(h) ? kh_val(h, k) : *p->defaultval;
@@ -1494,7 +1492,7 @@ dict_get_ss(CSOUND *csound, DICT_GET_ss *p) {
         p->counter = handle->counter;
         strncpy0(p->lastkey_data, p->outkey->data, (size_t) p->outkey->size-1);
         p->lastkey_size = p->outkey->size;
-    } 
+    }
     ks = &(kh_val(h, k));
     return stringdat_set(csound, p->outstr, ks->s, ks->l);
 }
@@ -1550,7 +1548,7 @@ hashtab_get_is(CSOUND *csound, DICT_GET_is *p) {
         p->lastidx = k;
         p->lastkey = key;
         p->counter = handle->counter;
-    } 
+    }
     ks = &(kh_val(h, k));
     return stringdat_set(csound, p->outstr, ks->s, ks->l);
 }
@@ -2004,7 +2002,7 @@ dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     char *vartypename = p->item->arrayType->varTypeName;
     ui32 size = handle_get_hashtable_size(handle);
     tabinit(csound, p->item, (i32)size);
-    
+
     if(strcmp(data, "keys")==0) {
         if(handle->khtype == 21 || handle->khtype == 22) {
             // str keys, check output array
@@ -2855,7 +2853,7 @@ static OENTRY localops[] = {
     { "dict_new.many", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many },
 
     { "dict_free",S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free},
-    
+
     { "dict_get.ss_k", S(DICT_GET_sf), 0, 3, "k", "iSO",
       (SUBR)dict_get_sf_0, (SUBR)dict_get_sf },
     { "dict_get.ss_k", S(DICT_GET_ss), 0, 3, "S", "iS",
@@ -2913,15 +2911,14 @@ static OENTRY localops[] = {
 
     { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists },
 
-    { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
-    { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
-    { "cache.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
-    { "cache.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+    // { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
+    // { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+    { "sref.i_set", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
+    { "sref.k_set", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
 
-    { "cacheget.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
-    { "cacheget.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
+    { "sref.i_get", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
+    { "sref.k_get", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
 
-    { "cachepop", S(CACHEGET), 0, 1, "S", "i", (SUBR)cachepop_i },
 
     { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen},
     { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty},

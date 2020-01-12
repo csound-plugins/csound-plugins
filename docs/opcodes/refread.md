@@ -1,76 +1,63 @@
-# ref
+# refread
 
 ## Abstract
 
-Get a reference to a variable
+Create a **read-only** view on the original object
 
 ## Description
 
 
-`ref` and `deref` implement a mechanism to pass a reference to any object,
-allowing to share a variable across instruments, with opcodes, etc. A reference
-is a proxy to an axisting variable / array. Refernces are reference counted and
-deallocate themselves when out of scope without being referenced by any
-object. It makes it possible to pass arrays by reference to user defined
-opcodes, allowing to modify an array inplace, to skip copying memory, etc.
-Using references with scalar / audio variables makes it possible to implement
-simple communication buses between events.
+`ref` and `refread` implement a mechanism to forward an object across events,
+to reference objects inside other objects, etc. A `ref` generates a handle
+wrapping the given object and returns an integer which maps to this handle. This
+handle index can then be passed to any event, placed inside a collection (array,
+dict, channel, etc.).
 
-### Arrays
+!!! Note
 
-```csound
+    `deref`, `refread` **does not** create an alias of the original object
+    but generates a **read only** *copy* of it.
 
-iXs[] fillarray 0, 1, 2, 3, 4
-iref ref iXs
-iYs[] deref iref
-```
-
-In the case above, `iYs` shares the same memory as `iXs` and any modification in
-one array will be visible in the other.
-
-### Scalars / Audio
 
 ```csound
 
 instr 1
-  asig oscili 0.5, 1000
-  iref ref asig
-  schedule 2, 0, p3, iref
+  asig vco2 0.5, 1000
+  kcutoff linseg 4000, p3, 200
+  schedule 2, 0, p3, ref(asig), ref(kcutoff)
 endin
 
 instr 2
-  ain refread p4
-  outs ain, ain
+  ain     refread p4
+  kcutoff refread p5
+  iQ = 0.8
+  asig K35_lpf ain, kcutoff, iQ
+  outs asig, asig
+  ; the references will be deallocated after this event finishes
 endin
+
 ```
 
-In the case above, `ain` in instr 2 **is not** a proxy of `asig`. `refread`
-reads from `asig` and copies the content to `ain`. Modifying `ain` does not
-affect `asig`. `deref` is not currently defined for scalar / audio variables.
 
 ## Syntax
 
-    iref ref xArray [, move=0]
-    iref ref avar
-    iref ref kvar
-    iref ref ivar
+    kvar refread iref
+    avar refread iref
 
 
-## Arguments
+### Arguments
 
-* `xArray` / `xvar`: any csound object can be referenced
-* `move`: for arrays, it is possible to specify that the reference owns the
-  memory. This is useful for the *niche* case where a reference is passed to an
-  event scheduled at a point in time later that the end of the current event.
-  Without this, the ref would go out of scope before the `deref` takes place.
+* `iref`: a reference index as created via `ref`
 
-## Output
+### Output
 
-* `iref`: an integer identifying the reference handle.
+* `xvar`: a read-only view over the object originally passed to `ref`
+
 
 ## Execution Time
 
 * Init
+* Performance
 
 ## Examples
 
@@ -384,8 +371,7 @@ e 10
 
 ## See also
 
-* [deref](deref.md)
-* [refread](refread.md)
+* [ref](ref.md)
 * [defer](defer.md)
 * [schedule](http://www.csounds.com/manual/html/schedule.html)
 * [event](http://www.csounds.com/manual/html/event.html)

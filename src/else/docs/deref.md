@@ -43,8 +43,14 @@ a reference it is possible also to control an event from another event.
 -m0
 -d
 </CsOptions>
-
 <CsInstruments>
+
+/*
+
+Example file for ref / deref / refinc / refread / refvalid
+
+*/
+
 sr     = 44100
 ksmps  = 64
 nchnls = 2
@@ -52,26 +58,34 @@ nchnls = 2
 
 giA[] fillarray 0, 1000, 2000, 3000
 
-; test: ref 
+; Example 1: take a ref from an array, deref it to create a second view of it 
 instr 1
-  iXs[] fillarray 0, 10, 20, 30, 40
-  iref ref iXs
-  iYs[] deref iref
-  printarray iYs, "", "instrument 1, iYs"
-  iZs[] fillarray 0, 1, 3, 5, 7
+  ; a source array
+  iX[] fillarray 0, 10, 20, 30, 40
+  
+  ; create a ref of iXs, return the index 
+  iref ref iX
+  ; now iYs points to iXs
+  iY[] deref iref
+  printarray iY, "", "instrument 1, iY"
 
-  schedule 2, 0, 1, ref(iZs)
+  
+  iZ[] fillarray 0, 1, 3, 5, 7
 
-  ; this should fail since the source array is already
-  ; gone when this instr. becomes active
-  schedule 2, 1, 1, ref(iZs)
+  ; create a ref, pass it to instr. 2
+  schedule 2, 0, 1, ref(iZ)
+
+  ; create another ref of iZ. In this case the event is scheduled
+  ; in the future, so the source will not exist anymore when instr. 2
+  ; is scheduled. This should fail.
+  schedule 2, 1, 1, ref(iZ)
   
   turnoff
 endin
 
 instr 2
   iref = p4
-  if ref_valid(iref) == 1 then
+  if refvalid(iref) == 1 then
     iZs[] deref iref
     printarray iZs, "", "p1=2, iZs"
   else
@@ -80,29 +94,47 @@ instr 2
   turnoff
 endin
 
-; test: move ref
+;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+; Example 2: move semantics for arrays
 instr 3
+  ; create a source array
   kXs[] fillarray 1, 1, 2, 3, 5, 8, 13
-  ; A move operation. Now the reference owns the array. When iXs goes out
-  ; of scope at the end of this event, its memory is not deallocated
-  ; since it is now owned by the reference. It can be accessed later
-  ; by "deref"
-  ; NB - global arrays cannot be moved
-  iref ref kXs, 1
-  schedule 4, 1, -1, iref
-  endif
-  ; turnoff
+
+  ; create a reference
+  iref ref kXs
+
+  ; In order to bridge the time gap between the end of life of the source
+  ; of a ref and the scheduled event where a deref is taken, it is possible
+  ; to create a forward reference, a "promise" that one deref has been scheduled
+  ; in the future.
+  ; Such forward refs are created via `refinc` (for increment reference).
+  ; When this event stops, the memory ownership is transfered to the
+  ; ref itself. The next `deref` will clear the forward ref and
+  ; the memory is deallocated at the end of the deref's event.
+  refinc iref
+  schedule 4, p3+1, -1, iref
+
+  ; The same can be compressed into one action by setting the forward
+  ; references at creation time. The second argument to ref indicates the number
+  ; of forward references to create. 
+  schedule 4, p3+2, -1, ref(kXs, 1)
+  defer "prints", " <<< instr. 3 finished >>> \n"
 endin
 
 instr 4
-  iref = p4
-  iXs[] deref iref
-  iYs[] deref iref
-  prints "\n p1=4 iXs="
-  printarray iXs
+  prints "instr. 4"
+  iView[] deref p4
+  printarray iView
+  ; At deinition time the memory of the `iView` array is marked as deallocated.
+  ; The handle (a global structure created by the `ref` opcode) which owns the memory,
+  ; is signaled that no other clients  of this data are alive. It deallocates the
+  ; original memory and frees itself
 endin
 
-; test: multiple derefs
+  ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ; test: multiple derefs
 instr 5
   iXs[] fillarray 0, 1, 4, 9
   iref ref iXs
@@ -116,13 +148,16 @@ instr 5
   turnoff
 endin
 
+; test performance of pass-by-value vs pass-by-reference
 opcode arrayadd, i[], i[]i
+  ; pass by value in and out
   iIn[], ix xin
   iOut[] = iIn + ix
   xout iOut
 endop
 
 opcode arrayaddref, i[], ii
+  ; pass by ref in, by value out
   iref, ix xin
   iIn[] deref iref
   iOut[] = iIn + ix
@@ -130,19 +165,25 @@ opcode arrayaddref, i[], ii
 endop
 
 opcode arrayadd_inplace, 0, ii
+  ; in place 
   iref, ix xin
   iIn[] deref iref
   iIn += ix
 endop
 
-opcode arrayadd_inplace2, 0, iii
+opcode arrayadd_byref_inout, 0, iii
+  ; pass by ref in and out
   irefin, irefout, ix xin
-  iIn[] deref irefin
+  iIn[]  deref irefin
   iOut[] deref irefout
-  iOut = iIn + ix
+  if lenarray(iOut) >= lenarray(iIn) then
+    iOut = iIn + ix
+  endif
 endop
 
 instr testUdoPerformance1
+  ; Here we test the performance gain of passing arrays by reference.
+  ; Passing the input array by reference seems to produce a speedup of ~25%,
   inum = 1000000
   iXs[] genarray 0, inum
   ii = 0
@@ -152,7 +193,7 @@ instr testUdoPerformance1
     ii += 1
   od
   it1 rtclock
-  prints "Dur UDO=%.8f \n", it1 - it0
+  prints "Dur UDO pass by value = %.8f \n", it1 - it0
 
   iref = ref(iXs)
   it0 rtclock
@@ -177,40 +218,43 @@ instr testUdoPerformance1
   iY0   arrayaddref iref, 0.3
   iY0   arrayaddref iref, 0.3
   it1 rtclock
-  prints "Dur UDO ref=%.8f \n", it1 - it0
+  prints "Dur UDO pass by ref input = %.8f \n", it1 - it0
 
   iZs[] genarray 0, inum
+  iOut[] init lenarray(iZs)
   it0 rtclock
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
-  arrayadd_inplace ref(iZs), 1
+  irefZ = ref(iZs)
+  irefOut = ref(iOut)
+  
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  arrayadd_byref_inout irefZ, irefOut, 0.5
+  
   it1 rtclock
-  prints "Dur UDO inplace=%.8f \n", it1 - it0
-  ; printarray iZs
+  prints "Dur UDO pass by ref in and out=%.8f \n", it1 - it0
+  ; printarray iOut
 endin
 
 instr 7
   iIn[] genarray 0, 1000
   iOut[] init lenarray(iIn)
-  arrayadd_inplace2 ref(iIn), ref(iOut), 0.5
-  printarray iOut
+  arrayadd_byref_inout ref(iIn), ref(iOut), 0.5
   turnoff
 endin
 
@@ -235,8 +279,8 @@ instr 9
 endin
 
 ; refs can be used to communicate between instrs.
-; In this case, the array is moved to the handle so it is
-; only deallocated when all other derefs go out of scope
+; In this case, the memory of the array is moved to the handle
+; so it is only deallocated when all other derefs go out of scope
 instr 10
   kXs[] genarray_i 0, 9
   schedule 11, 0.5, 3, ref(kXs, 1)
@@ -250,6 +294,9 @@ instr 11
   printf "time: %f, k1: %f \n", accum(metro(20)), timeinsts(), k1
 endin
 
+; ref / refread
+; refs can be used to create communication channels
+; between events
 instr 20
   kfreq linseg 400, p3, 1000
   ; notica that instrument 21 outlives this instrument
@@ -258,9 +305,9 @@ instr 20
 endin
 
 instr 21
-  kfreq deref p4
+  kfreq refread p4
   printf "kfreq=%f \n", accum(metro(20)), kfreq
-  defer "prints", "<<<< instr. 21 deallocated >>>> \n"
+  defer "prints", "<<<< instr 21 deallocated >>>> \n"
 endin
 
 instr 30
@@ -270,22 +317,17 @@ instr 30
 endin
 
 instr 31
-  ain deref p4
+  ain refread p4
   kcutoff linseg 10000, p3, 1000
   asig K35_lpf ain, kcutoff, 8.0
   outs asig, asig
 endin
 
-;; Example 1: a reference is valid while the source is valid
+
 ; schedule 1, 0, 1
-
-;; Example 2: if a ref is marked as a move operation, the reference
-;; owns the data and can outlive the source
-schedule 3, 0, 1
-
+; schedule 3, 0, 1
 ; schedule 5, 0, 0.1
-
-; schedule "testUdoPerformance1", 0, 0.1
+schedule "testUdoPerformance1", 0, 0.1
 ; schedule 7, 0, 0.1
 ; schedule 9, 0, 1
 ; schedule 10, 0, 2

@@ -16,3 +16,4 @@ docs-build
 *.dylib
 CMakeFiles/
 *.a
+.#*

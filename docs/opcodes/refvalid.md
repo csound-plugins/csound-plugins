@@ -1,4 +1,4 @@
-# ref_valid
+# refvalid
 
 ## Abstract
 
@@ -11,13 +11,13 @@ Queries if a reference is valid
 allowing to share a variable across instruments, with opcodes, etc. A reference
 is a proxy to an axisting variable / array. A reference is reference counted and
 deallocates itself when it falls out of scope without being referenced by any
-object. Since a reference is just an integer, `ref_valid` can be used to check if
+object. Since a reference is just an integer, `refvalid` can be used to check if
 the given reference index corresponds to a valid reference
 
 ## Syntax
 
-    iout ref_valid iref
-    kout ref_valid kref
+    iout refvalid iref
+    kout refvalid kref
    
 
 ## Arguments
@@ -56,7 +56,7 @@ instr 1
 endin
 
 instr 2
-  if ref_valid(p4) == 1 then
+  if refvalid(p4) == 1 then
     kfreq = deref(p4)
   else
     kfreq = 1000
@@ -66,7 +66,7 @@ instr 2
 endin
 
 instr 3
-  if ref_valid(p4) == 1 then
+  if refvalid(p4) == 1 then
     ain deref p4
   else
     ain = 0

@@ -30,7 +30,7 @@
 
     generates noise based on a chaotic equation
     y[n] = p * y[n-1]- y[n-2] - 0.05
-    
+
     kp: the p parameter in the equation, a value between 1.0 and 2.0
 
   # ramptrig
@@ -171,6 +171,7 @@
 #include "csdl.h"
 #include <math.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
@@ -2484,7 +2485,34 @@ ref_inc_perf(CSOUND *csound, REF1 *p) {
     return OK;
 }
 
+/* xtracycles
+ *
+ * inumcycles xtracycles
+ *
+ * Returns the number of extra cycles (extended through opcodes)
+ * like xtratim or through xtratim directly
+ */
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT state1;
+} OPCk_0;
+
+static int32_t
+xtracycles(CSOUND *csound, OPCk_0 *p) {
+    IGN(csound);
+    int numcycles = p->h.insdshead->xtratim;
+    *p->out = FL(numcycles);
+    return OK;
+}
+
+
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 
 #define S(x) sizeof(x)
@@ -2560,6 +2588,7 @@ static OENTRY localops[] = {
     { "refinc.i", S(REF1), 0, 1, "", "i", (SUBR)ref_inc_i},
     { "refinc.k", S(REF1), 0, 3, "", "k", (SUBR)ref1_init, (SUBR)ref_inc_perf},
 
+    { "xtracycles.i", S(OPCk_0), 0, 1, "i", "", (SUBR)xtracycles},
 };
 
 LINKAGE
