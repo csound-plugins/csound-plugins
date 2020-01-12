@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>cacheget - Csound Plugins</title>
+  <title>sref - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "cacheget";
-    var mkdocs_page_input_path = "opcodes/cacheget.md";
+    var mkdocs_page_name = "sref";
+    var mkdocs_page_input_path = "opcodes/sref.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -75,40 +75,6 @@
                 <li class="">
                     
     <a class="" href="atstop.html">atstop</a>
-                </li>
-                <li class=" current">
-                    
-    <a class="current" href="cacheget.html">cacheget</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#cacheget">cacheget</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
-                </li>
-                <li class="">
-                    
-    <a class="" href="cachepop.html">cachepop</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="cacheput.html">cacheput</a>
                 </li>
                 <li class="">
                     
@@ -270,6 +236,30 @@
                     
     <a class="" href="sigmdrive.html">sigmdrive</a>
                 </li>
+                <li class=" current">
+                    
+    <a class="current" href="sref.html">sref</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#sref">sref</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
                 <li class="">
                     
     <a class="" href="standardchaos.html">standardchaos</a>
@@ -281,6 +271,14 @@
                 <li class="">
                     
     <a class="" href="uniqinstance.html">uniqinstance</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="vecview.html">vecview</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="xtracycles.html">xtracycles</a>
                 </li>
     </ul>
 	    </li>
@@ -311,7 +309,7 @@
         
       
     
-    <li>cacheget</li>
+    <li>sref</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -321,36 +319,39 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="cacheget">cacheget</h1>
+                <h1 id="sref">sref</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Get a string inside the cache</p>
+<p>Create a reference to a string or retrieve a string from a reference</p>
 <h2 id="description">Description</h2>
-<p>The cache- opcodes implement a global string cache. This can be useful to
-pass multiple strings between instruments using the <code>event</code> opcode. This is
-similar to the <code>strset</code> and <code>strget</code> opcodes but automatically asigns an idx
-to each distints string inside the cache (we guarantee that passing twice 
-the same string will return the same index)</p>
-<p><code>cacheget</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>, depending on the type of
+<p><code>sref</code> implements a global string cache. This can be useful in situations where
+a string needs to be stored/passed but only numbers are allowed (for example,
+when using the <code>event</code> opcode). It behaves similar to the <code>strset</code> / <code>strget</code>
+opcodes but automatically assigns an index to each distinct string inside the
+cache and guarantees that passing twice the same string will return the same
+index.</p>
+<p><code>sref</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>, depending on the type of
 the input variable</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The same opcode is used for creating a reference to a string and from
+converting that reference back to a string.</p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>Sstr cacheget idx
-Sstr cacheget kdx
-Sstr cache idx
-Sstr cache kdx
+<div class="codehilite"><pre><span></span>Sstr sref idx
+Sstr sref kdx
+idx sref Sstr
+kdx sref Sstr
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>idx</code> / <code>kdx</code>: the numeric id representing the string, as returned by <code>cacheput</code></li>
-</ul>
-<h3 id="output">Output</h3>
-<ul>
+<li><code>idx</code> / <code>kdx</code>: the numeric id representing the string</li>
 <li><code>Sstr</code>: the string inside the cache, corresponding to <code>idx</code></li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Init </li>
+<li>Init</li>
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
@@ -362,39 +363,27 @@ Sstr cache kdx
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">  Example file for cacheput / cacheget</span>
+<span class="cm">Example file for sref</span>
 
-<span class="cm">  cacheput and cacheget implement a method to internalize strings,</span>
-<span class="cm">  similar to strset and strget, but without having to take care about</span>
-<span class="cm">  setting the indices</span>
-
-<span class="cm">  cacheput puts a strin into the cache and returns an idx identifying </span>
-<span class="cm">  this string. If a string is put into the cache which already exists,</span>
-<span class="cm">  we guarantee that the index returned is the same. </span>
-
-<span class="cm">  idx cacheput Sstr          i-time</span>
-<span class="cm">  kdx cacheput Sstr          k-time</span>
-
-<span class="cm">  cacheget retrieves a str previously put in the cache. If the index</span>
-<span class="cm">  does not point to an existing string, a performance error is raised</span>
-
-<span class="cm">  Sstr cacheget idx          i-time</span>
-<span class="cm">  Sstr cacheget kdx          k-time</span>
-
-<span class="cm">  Both opcodes work at both i- and k-time, depending on the arguments</span>
 <span class="cm">*/</span>
 
-<span class="c1">; Use cacheput/get to pass multiple strings between instruments</span>
-<span class="kd">instr</span> <span class="nf">1</span>  
-  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
+<span class="c1">; Use sref to pass multiple strings between instruments</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="n">cacheget</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="n">cacheget</span> <span class="vi">p5</span>
+  <span class="kt">S</span><span class="n">1</span> <span class="n">sref</span> <span class="vi">p4</span>
+  <span class="kt">S</span><span class="n">2</span> <span class="n">sref</span> <span class="vi">p5</span>
   <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
   <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; Use sref to store strings inside a numeric array</span>
+<span class="kd">instr</span> <span class="nf">3</span>
+  <span class="kt">i</span><span class="n">Struct</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;Bach&quot;</span><span class="p">),</span> <span class="mi">1675</span><span class="p">,</span> <span class="mi">1750</span>
+  <span class="nb">prints</span> <span class="s">&quot;Name = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">sref</span><span class="p">(</span><span class="kt">i</span><span class="n">Struct</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -402,17 +391,13 @@ Sstr cache kdx
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
 <span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="nb">i</span> <span class="mi">3</span> <span class="o">+</span> <span class="mf">0.1</span>
 
-<span class="n">f</span> <span class="mi">0</span> <span class="mi">1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>
 
 
-<h2 id="see-also">See also</h2>
-<ul>
-<li><a href="cacheput.html">cacheput</a></li>
-</ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
               
@@ -422,10 +407,10 @@ Sstr cache kdx
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="cachepop.html" class="btn btn-neutral float-right" title="cachepop">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="standardchaos.html" class="btn btn-neutral float-right" title="standardchaos">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="atstop.html" class="btn btn-neutral" title="atstop"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="sigmdrive.html" class="btn btn-neutral" title="sigmdrive"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -451,10 +436,10 @@ Sstr cache kdx
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="atstop.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="sigmdrive.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="cachepop.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="standardchaos.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>cachepop - Csound Plugins</title>
+  <title>xtracycles - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "cachepop";
-    var mkdocs_page_input_path = "opcodes/cachepop.md";
+    var mkdocs_page_name = "xtracycles";
+    var mkdocs_page_input_path = "opcodes/xtracycles.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -75,40 +75,6 @@
                 <li class="">
                     
     <a class="" href="atstop.html">atstop</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="cacheget.html">cacheget</a>
-                </li>
-                <li class=" current">
-                    
-    <a class="current" href="cachepop.html">cachepop</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#cachepop">cachepop</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
-                </li>
-                <li class="">
-                    
-    <a class="" href="cacheput.html">cacheput</a>
                 </li>
                 <li class="">
                     
@@ -272,6 +238,10 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="sref.html">sref</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="standardchaos.html">standardchaos</a>
                 </li>
                 <li class="">
@@ -281,6 +251,42 @@
                 <li class="">
                     
     <a class="" href="uniqinstance.html">uniqinstance</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="vecview.html">vecview</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="xtracycles.html">xtracycles</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#xtracycles">xtracycles</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#output">Output</a></li>
+        
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
     </ul>
 	    </li>
@@ -311,7 +317,7 @@
         
       
     
-    <li>cachepop</li>
+    <li>xtracycles</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -321,78 +327,91 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="cachepop">cachepop</h1>
+                <h1 id="xtracycles">xtracycles</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Get a cached string and remove it from the cache</p>
+<p>Returns the number of extra performance cycles for an event</p>
 <h2 id="description">Description</h2>
-<p>The cache- opcodes implement a global string cache. This can be useful to
-pass multiple strings between instruments using the <code>event</code> opcode. This is
-similar to the <code>strset</code> and <code>strget</code> opcodes but automatically asigns an idx
-to each distints string inside the cache (we guarantee that passing twice 
-the same string will return the same index). <code>cachepop</code> is similar to <a href="cacheget.html">cacheget</a>
-but after retrievin the value from the cache it is removed. This can be useful 
-for cases where one-of strings are passed between instruments and do not need
-to survive the current note</p>
+<p>xtracycles returns the number of extra performance cycles
+of an event. An event can extend its scheduled duration via
+two mechanisms - either through opcodes like <code>linsegr</code>, which
+have a release segment, or explicitely through <code>xtratim</code>, which
+extends the duration of an event by a given time.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>xtracycles</code> should be called after all other duration extending
+opcodes (like linsegr or xtratim). It works only at init.</p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>To calculate the extra time for an event, divide the number of
+cycles by kr (<code>extratime = xtracycles() / kr</code>)</p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>Sstr cachepop idx
+<div class="codehilite"><pre><span></span>icycles xtracycles
 </pre></div>
 
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>idx</code>: the numeric id representing the string, as returned by <code>cacheput</code></li>
+<li><code>icycles</code>: the number of extra performance cycles for this event</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
-<li><code>Sstr</code>: the string inside the cache, corresponding to <code>idx</code></li>
-</ul>
-<h3 id="execution-time">Execution Time</h3>
-<ul>
-<li>Init </li>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">--</span><span class="n">nosound</span>
+<span class="o">-</span><span class="n">d</span>
+<span class="o">-</span><span class="n">m0</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">  Example file for cacheput / cacheget / cachepop</span>
 
-<span class="cm">  cacheput and cacheget implement a method to internalize strings,</span>
-<span class="cm">  similar to strset and strget, but without having to take care about</span>
-<span class="cm">  setting the indices. cachepop is similar to cacheget but removes the</span>
-<span class="cm">  entry from the cache.</span>
+<span class="cm">## Example file for xtracycles opcode.</span>
 
-<span class="cm">  cacheput puts a strin into the cache and returns an idx identifying </span>
-<span class="cm">  this string. If a string is put into the cache which already exists,</span>
-<span class="cm">  we guarantee that the index returned is the same. </span>
+<span class="cm">xtracycles returns the number of extra performance cycles </span>
+<span class="cm">of an event. An event can extend its scheduled duration via</span>
+<span class="cm">two mechanisms - either through opcodes like `linsegr`, which</span>
+<span class="cm">have a release segment, or explicitely through `xtratim`, which</span>
+<span class="cm">extends the duration of an event by a given time. </span>
+<span class="cm">`xtracycles` should be called after all other duration extending</span>
+<span class="cm">opcodes (like linsegr or xtratim). It works only at init.</span>
 
-<span class="cm"> */</span>
+<span class="cm">NB: to calculate the extra time for an event, divide the number of</span>
+<span class="cm">cycles by kr (extratime = xtracycles() / kr)</span>
 
-<span class="c1">; Use cacheput/pop to pass multiple strings between instruments</span>
-<span class="kd">instr</span> <span class="nf">1</span>  
-  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">cacheput</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="cm">## Syntax</span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="n">cachepop</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="n">cachepop</span> <span class="vi">p5</span>
-  <span class="c1">; these strings are no longer in the cache</span>
-  <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
-  <span class="nb">turnoff</span>
+<span class="cm">icycles xtracycles</span>
+
+<span class="cm">## Returns</span>
+
+<span class="cm">icycles - the number of extra performance cycles for this event </span>
+
+<span class="cm">*/</span>
+
+<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">a</span><span class="n">env</span> <span class="nb">linsegr</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span>
+  <span class="kt">i</span><span class="n">extratime</span> <span class="o">=</span> <span class="n">xtracycles</span><span class="p">()</span> <span class="o">/</span> <span class="vg">kr</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s"> &gt;&gt;&gt; extra time = </span><span class="si">%f</span><span class="s"> (should be higher than 0.5) </span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">extratime</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">3</span>
 
-<span class="n">f</span> <span class="mi">0</span> <span class="mi">1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>
@@ -400,8 +419,9 @@ to survive the current note</p>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="cacheput.html">cacheput</a></li>
-<li><a href="cacheget.html">cacheget</a></li>
+<li><a href="http://www.csounds.com/manual/html/release.html">release</a></li>
+<li><a href="http://www.csounds.com/manual/html/xtratim.html">xtratim</a></li>
+<li><a href="defer.html">defer</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -412,10 +432,8 @@ to survive the current note</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="cacheput.html" class="btn btn-neutral float-right" title="cacheput">Next <span class="icon icon-circle-arrow-right"></span></a>
       
-      
-        <a href="cacheget.html" class="btn btn-neutral" title="cacheget"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="vecview.html" class="btn btn-neutral" title="vecview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -441,10 +459,8 @@ to survive the current note</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="cacheget.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="vecview.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
-      
-        <span style="margin-left: 15px"><a href="cacheput.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

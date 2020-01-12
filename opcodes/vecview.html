@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>uniqinstance - Csound Plugins</title>
+  <title>vecview - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "uniqinstance";
-    var mkdocs_page_input_path = "opcodes/uniqinstance.md";
+    var mkdocs_page_name = "vecview";
+    var mkdocs_page_input_path = "opcodes/vecview.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -248,12 +248,16 @@
                     
     <a class="" href="tubeharmonics.html">tubeharmonics</a>
                 </li>
+                <li class="">
+                    
+    <a class="" href="uniqinstance.html">uniqinstance</a>
+                </li>
                 <li class=" current">
                     
-    <a class="current" href="uniqinstance.html">uniqinstance</a>
+    <a class="current" href="vecview.html">vecview</a>
     <ul class="subnav">
             
-    <li class="toctree-l3"><a href="#uniqinstance">uniqinstance</a></li>
+    <li class="toctree-l3"><a href="#vecview">vecview</a></li>
     
         <ul>
         
@@ -273,10 +277,6 @@
     
 
     </ul>
-                </li>
-                <li class="">
-                    
-    <a class="" href="vecview.html">vecview</a>
                 </li>
                 <li class="">
                     
@@ -311,7 +311,7 @@
         
       
     
-    <li>uniqinstance</li>
+    <li>vecview</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -321,140 +321,158 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="uniqinstance">uniqinstance</h1>
+                <h1 id="vecview">vecview</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Return an fractional instrument number which is not in use</p>
+<p>Create a view into a table or another array</p>
 <h2 id="description">Description</h2>
-<p>Given an integer instrument number, <code>uniqinstance</code> a fractional 
-instrument number which is not active now and can be used as p1
-for <code>event</code>, <code>schedule</code> or similar opcodes to create a unique 
-instance of the given instrument</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This opcode <strong>DOES NOT</strong> create a new instance. It just returns
-an instr number which can be used to create one</p>
-</div>
+<p>vecview makes it possible to operate on a table as if it
+were an array, using any array opcode.</p>
+<p>It is also possible to take a slice from a different array
+without copying the underlying elements. It can be used to
+efficiently read a slice of an existing array, operate on
+rows of a 2D matrix, etc.</p>
+<p>The underlying memory is shared between the source and the view
+for the duration of the event.</p>
+<p>It is not supported to reuse the array as a left-side variable
+because that could incurr in reallocation / resizing, which in this
+case is not allowed since the underlying memory does not belong to
+the array. Using it in this way results in undefined behaviour.</p>
+<p>The same holds true for creating a view from a ftable and freeing
+the ftable during the lifetime of the view.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>instrnum  uniqinstance integer_instrnum
-instrnum  uniqinstance Sinstrname
+<div class="codehilite"><pre><span></span>iView[]  vecview ift,      [, istart=0, iend=0]
+kView[]  vecview iSource[] [, istart=0, iend=0]
+kView[]  vecview kSource[] [, istart=0, iend=0]
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>integer_instrnum</code>: the integer instrument number</li>
-<li><code>Sinstrname</code>: the name of a named instrument</li>
+<li><code>ift</code>: the source ftable</li>
+<li><code>iSource[] / kSource[]</code>: the source array</li>
+<li><code>istart</code>: the start index of the view (default=0)</li>
+<li><code>iend</code>: the end index of the view (non inclusive, default=end of
+          the table / array)</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>instrnum</code>: a fractional instrument number which is guaranteed
-  not to be active at the moment</li>
+<li><code>iView</code> / <code>kView</code>: the array view</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h3 id="execution-time">Execution time</h3>
 <ul>
-<li>Init </li>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">--</span><span class="n">nosound</span>
 <span class="o">-</span><span class="n">m0</span>
-
+<span class="o">-</span><span class="n">d</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">Example file for uniqinstance</span>
+<span class="cm">    vecview</span>
 
-<span class="cm">instrnum  uniqinstance intinstr</span>
 
-<span class="cm">Returns a unique fractional instrument number which is not</span>
-<span class="cm">active at the moment and can be assigned to a new instance</span>
+
+<span class="cm">    Create a view into a table or another array</span>
+
+<span class="cm">    iView[]  vecview ift,      [, istart=0, iend=0]</span>
+<span class="cm">    kView[]  vecview iSource[] [, istart=0, iend=0]</span>
+<span class="cm">    kView[]  vecview kSource[] [, istart=0, iend=0]</span>
+
+<span class="cm">    ift: the source ftable</span>
+<span class="cm">    iSource[] / kSource[]: the source array</span>
+<span class="cm">    istart: the start index of the view (default=0)</span>
+<span class="cm">    iend: the end index of the view (non inclusive, default=end of</span>
+<span class="cm">          the table / array)</span>
+
+<span class="cm">    vecview makes it possible to operate on a table as if it</span>
+<span class="cm">    were an array, using any array opcode. </span>
+
+<span class="cm">    It is also possible to take a slice from a different array</span>
+<span class="cm">    without copying the underlying elements. It can be used to </span>
+<span class="cm">    efficiently read a slice of an existing array, operate on</span>
+<span class="cm">    rows of a 2D matrix, etc.</span>
+
+<span class="cm">    The underlying memory is shared between the source and the view</span>
+<span class="cm">    for the duration of the event.</span>
+
+<span class="cm">    It is not supported to reuse the array as a left-side variable</span>
+<span class="cm">    because that could incurr in reallocation / resizing, which in this</span>
+<span class="cm">    case is not allowed since the underlying memory does not belong to </span>
+<span class="cm">    the array. Using it in this way results in undefined behaviour.</span>
+
+<span class="cm">    The same holds true for creating a view from a ftable and freeing </span>
+<span class="cm">    the ftable during the lifetime of the view.</span>
+
 
 <span class="cm">*/</span>
 
-<span class="kd">instr</span> <span class="nf">exit</span>
-  <span class="nb">exitnow</span>
-<span class="kd">endin</span>
+
+<span class="kt">gi</span><span class="n">tab</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">counter</span> <span class="nb">init</span> <span class="mi">0</span>
-  <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">20</span>
+  <span class="kt">i</span><span class="n">View</span><span class="p">[]</span> <span class="n">vecview</span> <span class="kt">gi</span><span class="n">tab</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Original array:&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">View</span>
+  <span class="kt">i</span><span class="n">View</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+  <span class="kt">i</span><span class="n">View</span> <span class="o">*=</span> <span class="mf">0.5</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Modified array:&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">View</span>
 
-  <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="kt">k</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="kt">k</span><span class="n">inst</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="kt">k</span><span class="n">counter</span><span class="o">/</span><span class="mi">100</span>
-    <span class="nb">printf</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
-    <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="k">endif</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Source table should be modified as well</span><span class="se">\n</span><span class="s">&quot;</span>
+  <span class="nb">ftprint</span> <span class="kt">gi</span><span class="n">tab</span>
+
+  <span class="nb">prints</span> <span class="s">&quot;array length: </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">View</span><span class="p">)</span>
+  <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">nstrnum10</span> <span class="n">uniqinstance</span> <span class="mi">10</span>
-  <span class="nb">printf</span> <span class="s">&quot;Unique instance of 10= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum10</span>
-  <span class="kt">i</span><span class="n">nstrnum11</span> <span class="n">uniqinstance</span> <span class="mi">11</span>
-  <span class="nb">printf</span> <span class="s">&quot;Unique instance of 11= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum11</span>
+  <span class="kt">k</span><span class="n">View</span><span class="p">[]</span> <span class="n">vecview</span> <span class="kt">gi</span><span class="n">tab</span>
+  <span class="nb">printf</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Original array:&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">View</span>
+  <span class="kt">k</span><span class="n">View</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+  <span class="kt">k</span><span class="n">View</span> <span class="o">*=</span> <span class="mf">0.5</span>
+  <span class="nb">printf</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Modified array:&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">View</span>
+
+  <span class="nb">printf</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Source table should be modified as well</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">ftprint</span> <span class="kt">gi</span><span class="n">tab</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-<span class="kd">instr</span> <span class="nf">10</span>
-  <span class="nb">print</span> <span class="vi">p1</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">11</span>
-  <span class="nb">print</span> <span class="vi">p1</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">example1</span>
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; example1 </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span>
-  <span class="nb">schedule</span> <span class="mf">10.150</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
-  <span class="nb">schedule</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
+<span class="kd">instr</span> <span class="nf">3</span> 
+  <span class="kt">i</span><span class="n">X</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span>
+  <span class="kt">i</span><span class="n">Y</span><span class="p">[]</span> <span class="n">vecview</span> <span class="kt">i</span><span class="n">X</span><span class="p">,</span> <span class="mi">5</span>
+  <span class="kt">k</span><span class="n">Z</span><span class="p">[]</span> <span class="n">vecview</span> <span class="kt">i</span><span class="n">X</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">i</span><span class="n">Y</span> <span class="o">*=</span> <span class="mi">10</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Y</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">X</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Z</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-<span class="c1">; --------------------------------------</span>
-<span class="c1">; Test that instances get recycled</span>
-<span class="kd">instr</span> <span class="nf">example2</span>
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; example2 </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="kt">i</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.01</span>
-  <span class="kt">i</span><span class="n">dur</span>  <span class="o">=</span> <span class="mf">1.0</span>   <span class="c1">; 100 simultaneous instances</span>
-  <span class="c1">; idur  = 2.0   ; 200 simultaneous instances</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="mi">1000</span> <span class="k">do</span>
-    <span class="nb">schedule</span> <span class="s">&quot;scheduniq&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span><span class="o">*</span><span class="kt">i</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
-  <span class="kt">i</span><span class="n">maxdur</span> <span class="o">=</span> <span class="mi">2000</span> <span class="o">*</span> <span class="kt">i</span><span class="n">step</span> <span class="o">+</span> <span class="kt">i</span><span class="n">dur</span>
+<span class="kd">instr</span> <span class="nf">4</span> 
+  <span class="kt">k</span><span class="n">X</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span>
+  <span class="kt">k</span><span class="n">Y</span><span class="p">[]</span> <span class="n">vecview</span> <span class="kt">k</span><span class="n">X</span><span class="p">,</span> <span class="mi">5</span>
+  <span class="kt">k</span><span class="n">Y</span> <span class="o">*=</span> <span class="mf">0.5</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">X</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Y</span>
   <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">scheduniq</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">i</span><span class="n">num2</span> <span class="o">=</span> <span class="n">uniqinstance</span><span class="p">(</span><span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-  <span class="k">if</span> <span class="kt">i</span><span class="n">num2</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">then</span>
-    <span class="nb">prints</span> <span class="s">&quot;&lt;&lt;&lt;&lt;&lt; Could not find unique instance &gt;&gt;&gt;&gt;&gt;</span><span class="se">\n</span><span class="s">&quot;</span>
-  <span class="k">else</span>
-    <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span>
-    <span class="nb">prints</span> <span class="s">&quot;active now=</span><span class="si">%d</span><span class="s">, inum=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">active</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="kt">i</span><span class="n">num2</span>
-  <span class="k">endif</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">20</span>
-  <span class="nb">printf</span> <span class="s">&quot;started </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p1</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;finished </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="c1">; i &quot;example1&quot; 0 10 </span>
-<span class="nb">i</span> <span class="s">&quot;example2&quot;</span> <span class="mi">0</span> <span class="mi">10</span>
+<span class="c1">; i1 0 1</span>
+<span class="c1">; i2 0 1</span>
+<span class="kt">i</span><span class="n">3</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="c1">; f0 3600</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -463,14 +481,12 @@ instrnum  uniqinstance Sinstrname
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="pread.html">pread</a></li>
-<li><a href="https://csound.com/docs/manual/pset.html">pset</a></li>
-<li><a href="https://csound.com/docs/manual/p.html">p</a></li>
-<li><a href="https://csound.com/docs/manual/passign.html">passign</a></li>
-<li><a href="https://csound.com/docs/manual/nstrnum.html">nstrnum</a></li>
+<li><a href="https://csound.com/docs/manual/copya2ftab.html">copya2ftab</a></li>
+<li><a href="https://csound.com/docs/manual/slicearray.html">slicearray</a></li>
+<li><a href="https://csound.com/docs/manual/tabrowlin.html">tabrowlin</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduado Moguillansky, 2019</p>
               
             </div>
           </div>
@@ -478,10 +494,10 @@ instrnum  uniqinstance Sinstrname
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="vecview.html" class="btn btn-neutral float-right" title="vecview">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="xtracycles.html" class="btn btn-neutral float-right" title="xtracycles">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="tubeharmonics.html" class="btn btn-neutral" title="tubeharmonics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="uniqinstance.html" class="btn btn-neutral" title="uniqinstance"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -507,10 +523,10 @@ instrnum  uniqinstance Sinstrname
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="tubeharmonics.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="uniqinstance.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="vecview.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="xtracycles.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
