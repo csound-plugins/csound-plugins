@@ -15,7 +15,7 @@ dict, channel, etc.).
 
 !!! Note
 
-    `refread` **does not** create an alias of the original object
+    `deref`, `refread` **does not** create an alias of the original object
     but generates a **read only** *copy* of it.
 
 
@@ -34,26 +34,6 @@ instr 2
   asig K35_lpf ain, kcutoff, iQ
   outs asig, asig
   ; the references will be deallocated after this event finishes
-endin
-
-```
-
-### Refs as a two way communication mechanism
-
-```csound
-
-instr 1
-  iref mkref "k", 0.5
-  ksend linseg 0, p3, 1
-  schedule 2, 0, p3, iref, ref(ksend)
-  krecv refget iref
-  printks "sent: %f, received: %f\n", 1/20, ksend, krecv
-endin
-
-instr 2
-  iref = p4
-  kin refget p5
-  refset iref, kin*2
 endin
 
 ```

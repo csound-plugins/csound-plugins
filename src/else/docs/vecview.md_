@@ -2,28 +2,28 @@
 
 ## Abstract
 
-    Create a view into a table or another array
+Create a view into a table or another array
 
 ## Description
 
-    vecview makes it possible to operate on a table as if it
-    were an array, using any array opcode.
+vecview makes it possible to operate on a table as if it
+were an array, using any array opcode.
 
-    It is also possible to take a slice from a different array
-    without copying the underlying elements. It can be used to
-    efficiently read a slice of an existing array, operate on
-    rows of a 2D matrix, etc.
+It is also possible to take a slice from a different array
+without copying the underlying elements. It can be used to
+efficiently read a slice of an existing array, operate on
+rows of a 2D matrix, etc.
 
-    The underlying memory is shared between the source and the view
-    for the duration of the event.
+The underlying memory is shared between the source and the view
+for the duration of the event.
 
-    It is not supported to reuse the array as a left-side variable
-    because that could incurr in reallocation / resizing, which in this
-    case is not allowed since the underlying memory does not belong to
-    the array. Using it in this way results in undefined behaviour.
+It is not supported to reuse the array as a left-side variable
+because that could incurr in reallocation / resizing, which in this
+case is not allowed since the underlying memory does not belong to
+the array. Using it in this way results in undefined behaviour.
 
-    The same holds true for creating a view from a ftable and freeing
-    the ftable during the lifetime of the view.
+The same holds true for creating a view from a ftable and freeing
+the ftable during the lifetime of the view.
 
 ## Syntax
 
