@@ -2,6 +2,14 @@
 
 This is a repository for plugins for [csound](https://csound.com/). 
 
+**Version**: 6.14.1
+
+### Note about versions
+
+The version number (major.minor.revision) indicates the compatibility with the core csound project. 
+The major and minor components correspond to the csound version, the revision number indicates the
+version of the plugins themselves. 
+
 # Plugins in this repo
 
 ### jsfx
@@ -14,7 +22,8 @@ very efficient hashtables for csound
 
 ### poly
 
-Parallel and sequential multiplexing opcodes, they enable to create and control multiple instances of a csound opcode
+Parallel and sequential multiplexing opcodes, they enable the creation and control of multiple 
+instances of a csound opcode
 
 ### else
 
@@ -26,6 +35,7 @@ generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
 
 ## Dependencies
 
+* `csound` >= 6.14
 * `nasm`: an assembler compiler needed by `jsusfx`
 
 #### macOS
@@ -61,14 +71,13 @@ Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
 
 ## Offline Documentation
 
-Static documentation can be browsed by opening site/index.html in your browser. To be able to
-use the search function you need to:
-
+Static documentation is included and can be browsed by opening `site/index.html` in your browser. 
+To be able to use the search function you need to:
 
     # install [mkdocs](https://www.mkdocs.org/):
     pip3 install mkdocs --user
 
-    # generate the documentation and serveit
+    # generate the documentation and serve it
     mkdocs build && mkdocs serve
 
-The documentation can then be browsed at htpp://127.0.0.1:8080
+The documentation can then be browsed at http://127.0.0.1:8080
