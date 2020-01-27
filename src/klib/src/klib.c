@@ -320,6 +320,15 @@ stringdat_set(CSOUND *csound, STRINGDAT *s, char *src, size_t srclen) {
     return OK;
 }
 
+static inline i32
+stringdat_view(CSOUND *csound, STRINGDAT *s, char *src, size_t allocatedsize) {
+    if(s->data != NULL)
+        csound->Free(csound, s->data);
+    s->data = src;
+    s->size = allocatedsize;
+    return OK;
+}
+
 // move src to s, s now owns src allocated storage
 static inline i32
 stringdat_move(CSOUND *csound, STRINGDAT *s, char *src, size_t allocatedsize) {
@@ -2453,8 +2462,27 @@ cacheget_perf(CSOUND *csound, CACHEGET *p) {
     ui32 idx = (ui32) (*p->idx);
     kstring_t *ks = cache_getstr(g, idx);
     if(ks == NULL)
-        return PERFERRF(Str("cacheget: string not found (idx: %d)"), idx);
+        return PERFERRF("string not found in cache (idx: %d)", idx);
     return stringdat_set(csound, p->item, ks->s, ks->l);
+}
+
+static i32
+sview_deinit(CSOUND *csound, CACHEGET *p) {
+    p->item->data = NULL;
+    p->item->size = 0;
+    return OK;
+}
+
+static i32
+sview(CSOUND *csound, CACHEGET *p) {
+    STRCACHE_GLOBALS *g = cache_globals(csound);
+    ui32 idx = (ui32) (*p->idx);
+    kstring_t *ks = cache_getstr(g, idx);
+    if(ks == NULL)
+        return INITERRF("string not found in cache (idx: %d)", idx);
+    stringdat_view(csound, p->item, ks->s, ks->m);
+    register_deinit(csound, p, sview_deinit);
+    return OK;
 }
 
 static i32
@@ -2917,8 +2945,8 @@ static OENTRY localops[] = {
     { "sref.k_set", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
 
     { "sref.i_get", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
+    { "sview.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview},
     { "sref.k_get", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
-
 
     { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen},
     { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty},

@@ -44,8 +44,9 @@ def make_indices(destdir, mode="wiki"):
                      "--outfile", outfile])
     
 def fill_manual_pages():
-    root = rootfolder
-    subprocess.call([root / "scripts" / "fill-manual-pages"])
+    """ this fills template manual pages (ending in .md_) into 
+    normal markdown files"""
+    subprocess.call([rootfolder / "scripts" / "fill-manual-pages"])
 
     
 def find_manual_pages(opcodes):
@@ -53,8 +54,12 @@ def find_manual_pages(opcodes):
     mdopcodes = {opcode + ".md" for opcode in opcodes}
     return [md for md in Path(rootfolder/"src").glob("**/*.md") 
             if md.name in mdopcodes]
-    
 
+def collect_assets(main_assets_folder):
+    for asset_folder in Path(rootfolder/"src").glob("**/docs/assets"):
+        copyall(asset_folder.glob("*"), main_assets_folder)
+        
+    
 def find_opcodes():
     """ find opcodes based on the manifest"""
     manifests = get_manifests()
@@ -102,6 +107,10 @@ def build_mkdocs(manpages):
     opcodes_dir = build_dir/"opcodes"
     opcodes_dir.mkdir(parents=True, exist_ok=True)
     copyall(manpages, opcodes_dir)
+
+    opcodes_assets_dir = opcodes_dir/"assets"
+    opcodes_assets_dir.mkdir(parents=True, exist_ok=True)
+    collect_assets(opcodes_assets_dir)
 
     for f in build_dir.glob("**/*.md_"):
         os.remove(f)

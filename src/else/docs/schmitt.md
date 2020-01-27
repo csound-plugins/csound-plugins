@@ -43,6 +43,8 @@ Port of pd/else's `schmitt`
 
 ## Examples
 
+![](assets/schmitt.gif)
+
 ```csound 
 
 <CsoundSynthesizer>
