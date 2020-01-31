@@ -7,58 +7,40 @@ Get a reference to a variable
 ## Description
 
 
-`ref` and `deref` implement a mechanism to pass a reference to any object,
-allowing to share a variable across instruments, with opcodes, etc. A reference
-is a proxy to an axisting variable / array. Refernces are reference counted and
-deallocate themselves when out of scope without being referenced by any
+`ref` and `deref` implement a mechanism to pass a reference to an array,
+allowing to share it across instruments, opcodes, etc. A ref
+is a proxy to an axisting array. Refs are reference counted and
+deallocate themselves when out of scope and not being referenced by any
 object. It makes it possible to pass arrays by reference to user defined
-opcodes, allowing to modify an array inplace, to skip copying memory, etc.
-Using references with scalar / audio variables makes it possible to implement
-simple communication buses between events.
+opcodes, allowing to modify an array in place, to skip copying memory, etc.
 
 ### Arrays
 
 ```csound
 
 iXs[] fillarray 0, 1, 2, 3, 4
-iref ref iXs
+iref  ref iXs
 iYs[] deref iref
 ```
 
 In the case above, `iYs` shares the same memory as `iXs` and any modification in
 one array will be visible in the other.
 
-### Scalars / Audio
+### Moving arrays
 
-```csound
-
-instr 1
-  asig oscili 0.5, 1000
-  iref ref asig
-  schedule 2, 0, p3, iref
-endin
-
-instr 2
-  ain refread p4
-  outs ain, ain
-endin
-```
-
-In the case above, `ain` in instr 2 **is not** a proxy of `asig`. `refread`
-reads from `asig` and copies the content to `ain`. Modifying `ain` does not
-affect `asig`. `deref` is not currently defined for scalar / audio variables.
+It is possible for the `ref` opcode to own the memory of the array. This can be
+used for the cases where a ref is passed to an event which is scheduled at a
+point in time later that the end of the event which owns the array. In this case
+the array if moved to a global space and owns the memory until no other events
+are referencing it.
 
 ## Syntax
 
-    iref ref xArray [, move=0]
-    iref ref avar
-    iref ref kvar
-    iref ref ivar
-
+    iref ref xArray, [imove=0]
 
 ## Arguments
 
-* `xArray` / `xvar`: any csound object can be referenced
+* `xArray`: the array to be referenced
 * `move`: for arrays, it is possible to specify that the reference owns the
   memory. This is useful for the *niche* case where a reference is passed to an
   event scheduled at a point in time later that the end of the current event.

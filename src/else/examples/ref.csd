@@ -7,7 +7,7 @@
 
 /*
 
-Example file for ref / deref / refinc / refread / refvalid
+Example file for ref / deref 
 
 */
 
@@ -61,34 +61,31 @@ instr 3
   ; create a source array
   kXs[] fillarray 1, 1, 2, 3, 5, 8, 13
 
-  ; create a reference
-  iref ref kXs
-
   ; In order to bridge the time gap between the end of life of the source
   ; of a ref and the scheduled event where a deref is taken, it is possible
   ; to create a forward reference, a "promise" that one deref has been scheduled
   ; in the future.
-  ; Such forward refs are created via `refinc` (for increment reference).
-  ; When this event stops, the memory ownership is transfered to the
-  ; ref itself. The next `deref` will clear the forward ref and
-  ; the memory is deallocated at the end of the deref's event.
-  refinc iref
-  schedule 4, p3+1, -1, iref
 
-  ; The same can be compressed into one action by setting the forward
-  ; references at creation time. The second argument to ref indicates the number
-  ; of forward references to create. 
-  schedule 4, p3+2, -1, ref(kXs, 1)
+  ; short lived event, ends before this event
+  schedule 4, 0, 0.1, ref(kXs)
+
+  ; starts before we end, but survives us
+  schedule 4, p3-0.1, 0.2, ref(kXs)
+
+  ; starts after we end, we need a move 
+  schedule 4, p3+1, 0.1, ref(kXs, 1)
+  
   defer "prints", " <<< instr. 3 finished >>> \n"
 endin
 
 instr 4
   prints "instr. 4"
-  iView[] deref p4
-  printarray iView
+  kView[] deref p4
+  printarray kView
+  defer "prints", " <<< instr. 4 finished >>> \n"
   ; At deinition time the memory of the `iView` array is marked as deallocated.
   ; The handle (a global structure created by the `ref` opcode) which owns the memory,
-  ; is signaled that no other clients  of this data are alive. It deallocates the
+  ; is signaled that no other clients of this data are alive. It deallocates the
   ; original memory and frees itself
 endin
 
@@ -154,6 +151,31 @@ instr testUdoPerformance1
   od
   it1 rtclock
   prints "Dur UDO pass by value = %.8f \n", it1 - it0
+
+  it0 rtclock
+  iYs[] arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  it1 rtclock
+  prints "Dur UDO pass by value unroll = %.8f \n", it1 - it0
+                                                                                                                  
 
   iref = ref(iXs)
   it0 rtclock
@@ -225,7 +247,7 @@ instr 8
   kXs[] deref ref(iXs)
   
   kXs[0] = timeinsts()
-  printarray kXs, metro(4)
+  printarray kXs, metro(8)
 endin
 
 instr 9
@@ -238,61 +260,12 @@ instr 9
   turnoff
 endin
 
-; refs can be used to communicate between instrs.
-; In this case, the memory of the array is moved to the handle
-; so it is only deallocated when all other derefs go out of scope
-instr 10
-  kXs[] genarray_i 0, 9
-  schedule 11, 0.5, 3, ref(kXs, 1)
-  kXs[0] = linseg(0, p3, 1)
-  defer "prints", "<<<< instr. 10 deallocated >>>> \n"
-endin
 
-instr 11
-  kIn[] deref p4
-  k1 = kIn[0]
-  printf "time: %f, k1: %f \n", accum(metro(20)), timeinsts(), k1
-endin
-
-; ref / refread
-; refs can be used to create communication channels
-; between events
-instr 20
-  kfreq linseg 400, p3, 1000
-  ; notica that instrument 21 outlives this instrument
-  schedule 21, 0, 4, ref(kfreq)
-  defer "prints", "<<<< instr. 20 deallocated >>>> \n"
-endin
-
-instr 21
-  kfreq refread p4
-  printf "kfreq=%f \n", accum(metro(20)), kfreq
-  defer "prints", "<<<< instr 21 deallocated >>>> \n"
-endin
-
-instr 30
-  asig vco2 0.1, 220
-  schedule 31, 0, 2, ref(asig)
-  defer "prints", "<<<< instr. 30 deallocated >>>> \n"
-endin
-
-instr 31
-  ain refread p4
-  kcutoff linseg 10000, p3, 1000
-  asig K35_lpf ain, kcutoff, 8.0
-  outs asig, asig
-endin
-
-
-; schedule 1, 0, 1
+;schedule 1, 0, 1
 ; schedule 3, 0, 1
 ; schedule 5, 0, 0.1
-schedule "testUdoPerformance1", 0, 0.1
-; schedule 7, 0, 0.1
-; schedule 9, 0, 1
-; schedule 10, 0, 2
-; schedule 20, 0, 2
-; schedule 30, 0, 2
+;schedule "testUdoPerformance1", 0, 0.1
+schedule 8, 0, 4
 </CsInstruments>
 
 <CsScore>

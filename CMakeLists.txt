@@ -112,7 +112,11 @@ addflag(-fomit-frame-pointer HAS_OMIT_FRAME_POINTER)
 
 # -------------------------------------------------------------------
 
+# User installed plugins should go to ~, since when csound is installed from 
+# source, it puts things under ~. However, csound instaled via installer puts
+# everything under /. 
 set(CS_FRAMEWORK_DEST "~/Library/Frameworks")
+# set(CS_FRAMEWORK_DEST "/Library/Frameworks")
 
 
 if(USE_LIB64)
