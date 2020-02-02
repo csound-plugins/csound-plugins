@@ -2628,9 +2628,9 @@ pool_fill(POOL_HANDLE *handle, MYFLT start, MYFLT stop, MYFLT step) {
     if (numitems <= 0 || numitems > handle->size || numitems > handle->allocated)
         return NOTOK;
     MYFLT x = start;
+    MYFLT *data = handle->data;
     for(int i=numitems-1; i >= 0; i--) {
-        // printf("idx: %d  x:%f\n", i, x);
-        handle->data[i] = x;
+        data[i] = x;
         x += step;
     }
     return OK;

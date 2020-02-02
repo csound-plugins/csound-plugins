@@ -43,20 +43,30 @@ instr 4
   turnoff
 endin
   
-
 instr test_same_idx
   idx1 = strcache("foo")
   idx2 = strcache("foo")
-  prints "idx1=%d, idx2=%d \n", idx1, idx2
+  prints "These indices should be the same: idx1=%d, idx2=%d \n", idx1, idx2
   turnoff
 endin
+
+instr test_strview
+  S1 = "uniquestring"
+  idx1 = strcache(S1)
+  Sview = strview(idx1)
+  prints "Sview = '%s' (should be '%s') \n", Sview, S1
+  turnoff
+endin
+
 </CsInstruments>
 
 <CsScore>
 
 ; i 1 0 0.1
 ; i 3 + 0.1
-i 4 + 0.1
-; i "test_same_idx" 0 1
+; i 4 + 0.1
+i "test_same_idx" 0 1
+
+; i "test_strview" 0 1
 </CsScore>
 </CsoundSynthesizer>
