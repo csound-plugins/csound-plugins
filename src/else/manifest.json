@@ -18,9 +18,8 @@
       "frac2int",
       "ref",
       "deref",
-      "xtracycles",
       "refvalid",
-      "refread",
+      "xtracycles",
       "vecview"
     ],
     "author": "Eduardo Moguillansky",

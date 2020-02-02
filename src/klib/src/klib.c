@@ -5,7 +5,7 @@
 
   This file is part of Csound.
 
-  The Csound Library is free software; you can redistribute it
+  The Csound Library is free software; you can rediibute it
   and/or modify it under the terms of the GNU Lesser General Public
   License as published by the Free Software Foundation; either
   version 2.1 of the License, or (at your option) any later version.
@@ -2374,27 +2374,35 @@ STRCACHE_GLOBALS* cache_globals(CSOUND *csound) {
 static i32
 cache_putstr(CSOUND *csound, STRCACHE_GLOBALS* g, STRINGDAT *s, i64 *out) {
     int absent;
-    khiter_t k = kh_put(khStrInt, g->str2int, s->data, &absent);
-    if(!absent) {
-        // key is present, just return the idx
-        *out = kh_val(g->str2int, k);
+    // first check if key is already there
+    khiter_t ki2s, ks2i;
+    khash_t(khIntStr) *i2s = g->int2str;
+    khash_t(khStrInt) *s2i = g->str2int;
+    ks2i = kh_get(khStrInt, g->str2int, s->data);
+    if(ks2i != kh_end(g->str2int)) {
+        // key found
+        i64 idx = kh_val(s2i, ks2i);
+        // printf("Key present, k=%d, idx=%ld, end=%d\n", ks2i, idx, kh_end(g->str2int));
+        *out = idx;
         return OK;
     }
     // key is not present, get a new idx for the str
+    ks2i = kh_put(khStrInt, s2i, s->data, &absent);
     ui32 idx = (g->counter++);
 
     // int2str[idx] = s
-    k = kh_put(khIntStr, g->int2str, idx, &absent);
+    ki2s = kh_put(khIntStr, i2s, idx, &absent);
     if(UNLIKELY(!absent)) {
         return INITERRF("cache: repeated int key, s=%s, idx=%d", s->data, idx);
     }
-    kh_key(g->int2str, k) = idx;
-    kstring_t *ks = &(g->int2str->vals[k]);
+    kh_key(i2s, ki2s) = idx;
+    kstring_t *ks = &(i2s->vals[ki2s]);
     kstr_init_from_stringdat(csound, ks, s);
     // str2int[s] = idx
     // we share the storage for the key in s2i and the value in i2s
-    kh_key(g->str2int, k) = ks->s;
-    kh_value(g->str2int, k) = idx;
+    kh_key(s2i, ks2i) = ks->s;
+    kh_value(s2i, ks2i) = idx;
+    // printf("key not present, k=%d, idx=%d\n", ks2i, idx);
     *out = idx;
     return OK;
 }
@@ -2941,12 +2949,12 @@ static OENTRY localops[] = {
 
     // { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
     // { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
-    { "sref.i_set", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
-    { "sref.k_set", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+    { "strcache.i_set", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
+    { "strcache.k_set", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
 
-    { "sref.i_get", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
-    { "sview.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview},
-    { "sref.k_get", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
+    { "strcache.i_get", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
+    { "strview.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview},
+    { "strcache.k_get", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
 
     { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen},
     { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty},

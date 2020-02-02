@@ -1,0 +1,53 @@
+# strcache
+
+## Abstract
+
+Put a string into the global cache or retrieve a string from the cache
+
+
+## Description
+
+`strcache` implements a global string cache. This can be useful in situations
+where a string needs to be stored/passed but only numbers are allowed (for
+example, when using the `event` opcode, or to be able to mix numbers and strings
+inside an array). It behaves similar to the `strset` / `strget` opcodes but
+automatically assigns an index to each distinct string inside the cache.
+
+`strcache` executes both at **i-time** and **k-time**, depending on the type of
+the input variable
+
+!!! Note
+
+    It is guaranteed that passing twice the same string will return the same
+    index.
+
+!!! Note
+
+    The same opcode is used for creating a reference to a string and from
+    converting that reference back to a string.
+
+## Syntax
+
+    Sstr strcache idx
+    Sstr strcache kdx
+    idx  strcache Sstr
+    kdx  strcache Sstr
+
+### Arguments
+
+* `idx` / `kdx`: the numeric id representing the string
+* `Sstr`: the string inside the cache, corresponding to `idx`
+
+### Execution Time
+
+* Init
+* Performance
+
+## Examples
+
+{example}
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

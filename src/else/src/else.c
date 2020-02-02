@@ -246,6 +246,63 @@ float fast_sin(float floatx) {
 }
 #endif
 
+// ------------------ pool --------------------
+
+// this is a data type to allocate slots for handles
+typedef struct {
+    int size;
+    int capacity;
+    int cangrow;
+    int *data;
+} intarray_t;
+
+static intarray_t*
+intpool_init(CSOUND *csound, intarray_t *pool, int size) {
+    pool->size = size;
+    pool->capacity = size;
+    pool->cangrow = 1;
+    pool->data = csound->Malloc(csound, sizeof(int) * size);
+    for(int i=0; i<size; i++) {
+        pool->data[i] = i;
+    }
+    return pool;
+}
+
+static void
+intarray_resize(CSOUND *csound, intarray_t *pool, int size) {
+    csound->ReAlloc(csound, pool->data, size);
+    pool->capacity = size;
+}
+
+static int
+intpool_push(CSOUND *csound, intarray_t *pool, int val) {
+    if(pool->size >= pool->capacity) {
+        return INITERR("Pool full, can't push this element");
+    }
+    pool->data[pool->size] = val;
+    pool->size += 1;
+    return OK;
+}
+
+static int
+intpool_pop(CSOUND *csound, intarray_t *pool) {
+    if(pool->size == 0) {
+        if(!pool->cangrow) {
+            INITERR("This pool is empty");
+            return -1;
+        }
+        // pool is empty. we refill it with new values outside of the current range
+        for(int i=0; i<pool->capacity; i++) {
+            pool->data[i] = i+pool->capacity;
+        }
+        pool->size = pool->capacity;
+        // and resize to make room for the values outside the pool to be pushed back
+        intarray_resize(csound, pool, pool->capacity * 2);
+    }
+    int val = pool->data[pool->size - 1];
+    pool->size--;
+    return val;
+}
 
 // ----------------- opcode A ------------------
 
@@ -2108,6 +2165,7 @@ typedef struct {
     CSOUND *csound;
     int numhandles;
     REF_HANDLE *handles;
+    intarray_t slots;
 } REF_GLOBALS;
 
 // static int32_t ref_reset(CSOUND *csound, REF_GLOBALS *g);
@@ -2126,12 +2184,13 @@ static REF_GLOBALS *ref_globals(CSOUND *csound) {
     g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
     g->csound = csound;
     g->handles = csound->Calloc(csound, sizeof(REF_HANDLE) * 8);
-    g->numhandles = 8;
+    g->numhandles = 64;
+    intpool_init(csound, &(g->slots), g->numhandles);
     // csound->RegisterResetCallback(csound, (void *)g, (int32_t(*)(CSOUND*, void*))ref_reset);
     return g;
 }
 
-static inline void ref_init_handle(REF_HANDLE *h) {
+static inline void _ref_handle_init(REF_HANDLE *h) {
     h->refcount = 0;
     h->forward_refs = 0;
     h->ownsdata = 0;
@@ -2140,23 +2199,43 @@ static inline void ref_init_handle(REF_HANDLE *h) {
     h->data = NULL;
 }
 
-static void _handle_release(CSOUND *csound, REF_HANDLE *h) {
+static void _ref_handle_release(CSOUND *csound, REF_HANDLE *h) {
     if(h->data != NULL && h->ownsdata) {
         csound->Free(csound, h->data);
+        h->data = NULL;
         if(csound->GetDebug(csound)) {
             MSG(">>>> ref: Releasing memory of array ref \n");
         }
     }
-    ref_init_handle(h);
+    _ref_handle_init(h);
 }
 
 static inline int32_t
-ref_getslot(REF_GLOBALS *g) {
+_ref_get_slot(REF_GLOBALS *g) {
+    CSOUND *csound = g->csound;
+    int freeslot = intpool_pop(csound, &(g->slots));
+    if(g->slots.capacity > g->numhandles) {
+        // if we are out of slots the slot pool is resized. If it is bigger
+        // that the number of handles, we need to match the handles array
+        g->handles = csound->ReAlloc(csound, g->handles, sizeof(REF_HANDLE)*g->slots.capacity);
+        g->numhandles = g->slots.capacity;
+    }
+    REF_HANDLE *h = &(g->handles[freeslot]);
+    if(h->active == 1) {
+        printf("Got free slot %d, but handle is active???\n", freeslot);
+        return -1;
+    }
+    _ref_handle_init(h);
+    return freeslot;
+}
+
+static inline int32_t
+_ref_get_slot2(REF_GLOBALS *g) {
     REF_HANDLE *handles = g->handles;
     for(int i=0; i<g->numhandles; i++) {
         REF_HANDLE *h = &(handles[i]);
         if(h->active == 0 && h->ownsdata == 0) {
-            ref_init_handle(h);
+            _ref_handle_init(h);
             return i;
         }
     }
@@ -2165,7 +2244,7 @@ ref_getslot(REF_GLOBALS *g) {
     CSOUND *csound = g->csound;
     g->numhandles *= 2;
     g->handles = csound->ReAlloc(csound, g->handles, sizeof(REF_HANDLE)*g->numhandles);
-    ref_init_handle(&(g->handles[idx]));
+    _ref_handle_init(&(g->handles[idx]));
     return idx;
 }
 
@@ -2191,9 +2270,9 @@ ref_new_array(CSOUND *csound, REF_NEW_ARRAY *p) {
         return INITERRF("Only 1D arrays supported (array has %d dims)", p->arr->dimensions);
     }
     REF_GLOBALS *g = ref_globals(csound);
-    int slot = ref_getslot(g);
+    int slot = _ref_get_slot(g);
     REF_HANDLE *h = &(g->handles[slot]);
-    ref_init_handle(h);
+    _ref_handle_init(h);
     char *argname = csound->GetInputArgName(p, 0);
     h->isglobal = argname[0] == 'g' ? 1 : 0;
     h->active = 1;
@@ -2229,7 +2308,7 @@ static int32_t ref_handle_decref(CSOUND *csound, REF_HANDLE *h) {
     }
     h->refcount--;
     if(h->refcount == 0 && h->forward_refs == 0) {
-        _handle_release(csound, h);
+        _ref_handle_release(csound, h);
     }
     return OK;
 }
@@ -2252,7 +2331,7 @@ ref_new_deinit(CSOUND *csound, REF_NEW_ARRAY *p) {
         }
     } else {
         // no clients
-        _handle_release(csound, h);
+        _ref_handle_release(csound, h);
     }
     return OK;
 }
@@ -2379,7 +2458,7 @@ ref_scalar_deinit(CSOUND *csound, REF1 *p) {
         return PERFERRF("Tried to deinit ref, but refcount: %d", p->handle->refcount);
     p->handle->refcount--;
     if(p->handle->refcount == 0)
-        _handle_release(csound, p->handle);
+        _ref_handle_release(csound, p->handle);
     return OK;
 }
 
@@ -2387,9 +2466,9 @@ static int32_t
 ref_scalar_init(CSOUND *csound, REF1 *p) {
     REF_GLOBALS *g = ref_globals(csound);
     p->g = g;
-    int slot = ref_getslot(g);
+    int slot = _ref_get_slot(g);
     REF_HANDLE *h = &(g->handles[slot]);
-    ref_init_handle(h);
+    _ref_handle_init(h);
     h->isglobal = csound->GetInputArgName(p, 0)[0] == 'g' ? 1 : 0;
     h->active = 1;
     h->type = RefScalar;
@@ -2441,7 +2520,7 @@ static int32_t
 ref_audio_init(CSOUND *csound, REF1 *p) {
     REF_GLOBALS *g = ref_globals(csound);
     p->g = g;
-    int slot = ref_getslot(g);
+    int slot = _ref_get_slot(g);
     REF_HANDLE *h = &(g->handles[slot]);
     h->isglobal = csound->GetInputArgName(p, 0)[0] == 'g' ? 1 : 0;
     h->active = 1;
@@ -2570,7 +2649,7 @@ static OENTRY localops[] = {
     { "diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO",
       (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf},
 
-    { "file_exists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init},
+    { "fileexists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init},
 
     { "pread.i", S(PREAD), 0, 1, "i", "iij", (SUBR)pread_i},
     { "pread.k", S(PREAD), 0, 3, "k", "ikJ", (SUBR)pread_init, (SUBR)pread_perf},
@@ -2590,13 +2669,12 @@ static OENTRY localops[] = {
     { "frac2int", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
     { "frac2int", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int},
 
-    { "vecview.i_table", S(TABALIAS),  0, 1, "i[]", "ioo", (SUBR)tabalias_init},
-    { "vecview.k_table", S(TABALIAS),  0, 1, "k[]", "ioo", (SUBR)tabalias_init},
-    { "vecview.k", S(ARRAYVIEW), 0, 1, "k[]", ".[]oo", (SUBR)arrayview_init},
-    { "vecview.i", S(ARRAYVIEW), 0, 1, "i[]", ".[]oo", (SUBR)arrayview_init},
+    { "memview.i_table", S(TABALIAS),  0, 1, "i[]", "ioo", (SUBR)tabalias_init},
+    { "memview.k_table", S(TABALIAS),  0, 1, "k[]", "ioo", (SUBR)tabalias_init},
+    { "memview.k", S(ARRAYVIEW), 0, 1, "k[]", ".[]oo", (SUBR)arrayview_init},
+    { "memview.i", S(ARRAYVIEW), 0, 1, "i[]", ".[]oo", (SUBR)arrayview_init},
 
     { "ref.arr", S(REF_NEW_ARRAY), 0, 1, "i", ".[]o", (SUBR)ref_new_array},
-    // { "bus.i", S(REF1), 0, 1, "i", "i", (SUBR)ref_scalar_init},
     // { "ref.k_send", S(REF1), 0, 3, "i", "k", (SUBR)ref_scalar_init, (SUBR)ref_scalar_perf},
     // { "ref.a_send", S(REF1), 0, 3, "i", "a", (SUBR)ref_audio_init, (SUBR)ref_audio_perf},
 

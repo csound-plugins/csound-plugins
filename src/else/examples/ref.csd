@@ -79,7 +79,7 @@ instr 3
 endin
 
 instr 4
-  prints "instr. 4"
+  prints "instr. 4\n   "
   kView[] deref p4
   printarray kView
   defer "prints", " <<< instr. 4 finished >>> \n"
@@ -141,7 +141,7 @@ endop
 instr testUdoPerformance1
   ; Here we test the performance gain of passing arrays by reference.
   ; Passing the input array by reference seems to produce a speedup of ~25%,
-  inum = 1000000
+  inum = 100000
   iXs[] genarray 0, inum
   ii = 0
   it0 rtclock
@@ -204,10 +204,10 @@ instr testUdoPerformance1
 
   iZs[] genarray 0, inum
   iOut[] init lenarray(iZs)
+
   it0 rtclock
   irefZ = ref(iZs)
-  irefOut = ref(iOut)
-  
+  irefOut = ref(iOut)  
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
@@ -227,8 +227,8 @@ instr testUdoPerformance1
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
-  
   it1 rtclock
+  
   prints "Dur UDO pass by ref in and out=%.8f \n", it1 - it0
   ; printarray iOut
 endin
@@ -261,11 +261,11 @@ instr 9
 endin
 
 
-;schedule 1, 0, 1
+; schedule 1, 0, 1
 ; schedule 3, 0, 1
 ; schedule 5, 0, 0.1
-;schedule "testUdoPerformance1", 0, 0.1
-schedule 8, 0, 4
+schedule "testUdoPerformance1", 0, 0.1
+; schedule 8, 0, 4
 </CsInstruments>
 
 <CsScore>
