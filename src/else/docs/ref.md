@@ -7,58 +7,40 @@ Get a reference to a variable
 ## Description
 
 
-`ref` and `deref` implement a mechanism to pass a reference to any object,
-allowing to share a variable across instruments, with opcodes, etc. A reference
-is a proxy to an axisting variable / array. Refernces are reference counted and
-deallocate themselves when out of scope without being referenced by any
+`ref` and `deref` implement a mechanism to pass a reference to an array,
+allowing to share it across instruments, opcodes, etc. A ref
+is a proxy to an axisting array. Refs are reference counted and
+deallocate themselves when out of scope and not being referenced by any
 object. It makes it possible to pass arrays by reference to user defined
-opcodes, allowing to modify an array inplace, to skip copying memory, etc.
-Using references with scalar / audio variables makes it possible to implement
-simple communication buses between events.
+opcodes, allowing to modify an array in place, to skip copying memory, etc.
 
 ### Arrays
 
 ```csound
 
 iXs[] fillarray 0, 1, 2, 3, 4
-iref ref iXs
+iref  ref iXs
 iYs[] deref iref
 ```
 
 In the case above, `iYs` shares the same memory as `iXs` and any modification in
 one array will be visible in the other.
 
-### Scalars / Audio
+### Moving arrays
 
-```csound
-
-instr 1
-  asig oscili 0.5, 1000
-  iref ref asig
-  schedule 2, 0, p3, iref
-endin
-
-instr 2
-  ain refread p4
-  outs ain, ain
-endin
-```
-
-In the case above, `ain` in instr 2 **is not** a proxy of `asig`. `refread`
-reads from `asig` and copies the content to `ain`. Modifying `ain` does not
-affect `asig`. `deref` is not currently defined for scalar / audio variables.
+It is possible for the `ref` opcode to own the memory of the array. This can be
+used for the cases where a ref is passed to an event which is scheduled at a
+point in time later that the end of the event which owns the array. In this case
+the array if moved to a global space and owns the memory until no other events
+are referencing it.
 
 ## Syntax
 
-    iref ref xArray [, move=0]
-    iref ref avar
-    iref ref kvar
-    iref ref ivar
-
+    iref ref xArray, [imove=0]
 
 ## Arguments
 
-* `xArray` / `xvar`: any csound object can be referenced
+* `xArray`: the array to be referenced
 * `move`: for arrays, it is possible to specify that the reference owns the
   memory. This is useful for the *niche* case where a reference is passed to an
   event scheduled at a point in time later that the end of the current event.
@@ -85,7 +67,7 @@ affect `asig`. `deref` is not currently defined for scalar / audio variables.
 
 /*
 
-Example file for ref / deref / refinc / refread / refvalid
+Example file for ref / deref 
 
 */
 
@@ -139,34 +121,31 @@ instr 3
   ; create a source array
   kXs[] fillarray 1, 1, 2, 3, 5, 8, 13
 
-  ; create a reference
-  iref ref kXs
-
   ; In order to bridge the time gap between the end of life of the source
   ; of a ref and the scheduled event where a deref is taken, it is possible
   ; to create a forward reference, a "promise" that one deref has been scheduled
   ; in the future.
-  ; Such forward refs are created via `refinc` (for increment reference).
-  ; When this event stops, the memory ownership is transfered to the
-  ; ref itself. The next `deref` will clear the forward ref and
-  ; the memory is deallocated at the end of the deref's event.
-  refinc iref
-  schedule 4, p3+1, -1, iref
 
-  ; The same can be compressed into one action by setting the forward
-  ; references at creation time. The second argument to ref indicates the number
-  ; of forward references to create. 
-  schedule 4, p3+2, -1, ref(kXs, 1)
+  ; short lived event, ends before this event
+  schedule 4, 0, 0.1, ref(kXs)
+
+  ; starts before we end, but survives us
+  schedule 4, p3-0.1, 0.2, ref(kXs)
+
+  ; starts after we end, we need a move 
+  schedule 4, p3+1, 0.1, ref(kXs, 1)
+  
   defer "prints", " <<< instr. 3 finished >>> \n"
 endin
 
 instr 4
-  prints "instr. 4"
-  iView[] deref p4
-  printarray iView
+  prints "instr. 4\n   "
+  kView[] deref p4
+  printarray kView
+  defer "prints", " <<< instr. 4 finished >>> \n"
   ; At deinition time the memory of the `iView` array is marked as deallocated.
   ; The handle (a global structure created by the `ref` opcode) which owns the memory,
-  ; is signaled that no other clients  of this data are alive. It deallocates the
+  ; is signaled that no other clients of this data are alive. It deallocates the
   ; original memory and frees itself
 endin
 
@@ -222,7 +201,7 @@ endop
 instr testUdoPerformance1
   ; Here we test the performance gain of passing arrays by reference.
   ; Passing the input array by reference seems to produce a speedup of ~25%,
-  inum = 1000000
+  inum = 100000
   iXs[] genarray 0, inum
   ii = 0
   it0 rtclock
@@ -232,6 +211,31 @@ instr testUdoPerformance1
   od
   it1 rtclock
   prints "Dur UDO pass by value = %.8f \n", it1 - it0
+
+  it0 rtclock
+  iYs[] arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  iYs   arrayadd iXs, 2.0
+  it1 rtclock
+  prints "Dur UDO pass by value unroll = %.8f \n", it1 - it0
+                                                                                                                  
 
   iref = ref(iXs)
   it0 rtclock
@@ -260,10 +264,10 @@ instr testUdoPerformance1
 
   iZs[] genarray 0, inum
   iOut[] init lenarray(iZs)
+
   it0 rtclock
   irefZ = ref(iZs)
-  irefOut = ref(iOut)
-  
+  irefOut = ref(iOut)  
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
@@ -283,8 +287,8 @@ instr testUdoPerformance1
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
   arrayadd_byref_inout irefZ, irefOut, 0.5
-  
   it1 rtclock
+  
   prints "Dur UDO pass by ref in and out=%.8f \n", it1 - it0
   ; printarray iOut
 endin
@@ -303,7 +307,7 @@ instr 8
   kXs[] deref ref(iXs)
   
   kXs[0] = timeinsts()
-  printarray kXs, metro(4)
+  printarray kXs, metro(8)
 endin
 
 instr 9
@@ -316,61 +320,12 @@ instr 9
   turnoff
 endin
 
-; refs can be used to communicate between instrs.
-; In this case, the memory of the array is moved to the handle
-; so it is only deallocated when all other derefs go out of scope
-instr 10
-  kXs[] genarray_i 0, 9
-  schedule 11, 0.5, 3, ref(kXs, 1)
-  kXs[0] = linseg(0, p3, 1)
-  defer "prints", "<<<< instr. 10 deallocated >>>> \n"
-endin
-
-instr 11
-  kIn[] deref p4
-  k1 = kIn[0]
-  printf "time: %f, k1: %f \n", accum(metro(20)), timeinsts(), k1
-endin
-
-; ref / refread
-; refs can be used to create communication channels
-; between events
-instr 20
-  kfreq linseg 400, p3, 1000
-  ; notica that instrument 21 outlives this instrument
-  schedule 21, 0, 4, ref(kfreq)
-  defer "prints", "<<<< instr. 20 deallocated >>>> \n"
-endin
-
-instr 21
-  kfreq refread p4
-  printf "kfreq=%f \n", accum(metro(20)), kfreq
-  defer "prints", "<<<< instr 21 deallocated >>>> \n"
-endin
-
-instr 30
-  asig vco2 0.1, 220
-  schedule 31, 0, 2, ref(asig)
-  defer "prints", "<<<< instr. 30 deallocated >>>> \n"
-endin
-
-instr 31
-  ain refread p4
-  kcutoff linseg 10000, p3, 1000
-  asig K35_lpf ain, kcutoff, 8.0
-  outs asig, asig
-endin
-
 
 ; schedule 1, 0, 1
 ; schedule 3, 0, 1
 ; schedule 5, 0, 0.1
 schedule "testUdoPerformance1", 0, 0.1
-; schedule 7, 0, 0.1
-; schedule 9, 0, 1
-; schedule 10, 0, 2
-; schedule 20, 0, 2
-; schedule 30, 0, 2
+; schedule 8, 0, 4
 </CsInstruments>
 
 <CsScore>
