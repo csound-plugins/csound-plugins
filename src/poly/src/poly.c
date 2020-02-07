@@ -486,17 +486,6 @@ static void _dump_types(CSOUND *csound, void **args, int32_t numargs) {
 }
 
 
-static i32 _find_test(CSOUND *csound) {
-    OENTRY *opc = find_opcode_new(csound, "oscili", "a", "kk");
-    if(opc != NULL) { printf("opcode found !! \n"); }
-    opc = find_opcode_new(csound, "oscili", "a", "ik");
-    if(opc != NULL) { printf("lo encontre 2 !! \n"); }
-    return OK;
-}
-
-
-
-
 // check that signatures are valid to be used with poly
 // own sig: outputs must be arrays of k or a type, one arg at least
 // inputs must have no string

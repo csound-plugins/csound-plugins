@@ -8,5 +8,5 @@ rm -fr $BUILD_FOLDER
 mkdir $BUILD_FOLDER
 cp ../../build/*.so $BUILD_FOLDER
 cd $BUILD_FOLDER
-apack csound-plugins-linux-$VERSION.7z *
+apack csound-plugins-linux-$VERSION.zip *
 cd ..

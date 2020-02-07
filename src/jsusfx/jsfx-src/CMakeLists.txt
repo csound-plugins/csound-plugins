@@ -41,7 +41,19 @@ if (UNIX AND NOT APPLE)
 	endif()
 else()
 	if (WIN32)
-		add_library(jsusfx ${sources} ${headers})
+	    # x64
+	    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+ 			add_custom_command(
+ 				OUTPUT ${PROJECT_SOURCE_DIR}/WDL/eel2/asm-nseel-x64.o
+ 				COMMAND php a2x64.php win64
+ 				WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/WDL/eel2
+ 			)
+ 			add_library(jsusfx ${sources} ${headers} ${PROJECT_SOURCE_DIR}/WDL/eel2/asm-nseel-x64.o)
+ 		else()
+ 			# Linux i686
+ 			add_library(jsusfx ${sources} ${headers})
+ 		endif()
+	    
 	else()
 		# MacOS, 64-bit always
 		add_custom_command(

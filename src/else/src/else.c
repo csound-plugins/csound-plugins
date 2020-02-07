@@ -1651,7 +1651,8 @@ typedef struct {
 } PWRITE;
 
 
-inline void pwrite_writevalues(CSOUND *csound, PWRITE *p, CS_VAR_MEM *pfields) {
+static inline void
+pwrite_writevalues(CSOUND *csound, PWRITE *p, CS_VAR_MEM *pfields) {
     for(int pair=0; pair < p->numpairs; pair++) {
         int indx = (int)*(p->inputs[pair*2]);
         MYFLT value = *(p->inputs[pair*2+1]);

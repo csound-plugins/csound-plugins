@@ -15,5 +15,6 @@ docs-build
 *.so
 *.dylib
 CMakeFiles/
+*.obj
 *.a
 .#*
