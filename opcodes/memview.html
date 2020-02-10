@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>linenv - Csound Plugins</title>
+  <title>memview - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "linenv";
-    var mkdocs_page_input_path = "opcodes/linenv.md";
+    var mkdocs_page_name = "memview";
+    var mkdocs_page_input_path = "opcodes/memview.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -160,12 +160,16 @@
                     
     <a class="" href="lfnoise.html">lfnoise</a>
                 </li>
+                <li class="">
+                    
+    <a class="" href="linenv.html">linenv</a>
+                </li>
                 <li class=" current">
                     
-    <a class="current" href="linenv.html">linenv</a>
+    <a class="current" href="memview.html">memview</a>
     <ul class="subnav">
             
-    <li class="toctree-l3"><a href="#linenv">linenv</a></li>
+    <li class="toctree-l3"><a href="#memview">memview</a></li>
     
         <ul>
         
@@ -185,10 +189,6 @@
     
 
     </ul>
-                </li>
-                <li class="">
-                    
-    <a class="" href="memview.html">memview</a>
                 </li>
                 <li class="">
                     
@@ -311,7 +311,7 @@
         
       
     
-    <li>linenv</li>
+    <li>memview</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -321,106 +321,157 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="linenv">linenv</h1>
+                <h1 id="memview">memview</h1>
 <h2 id="abstract">Abstract</h2>
-<p>A triggerable linear envelope with sustain segment </p>
+<p>Create a view into a table or another array</p>
 <h2 id="description">Description</h2>
-<p><code>linenv</code> is similar to linsegr with an additional gate argument, allowing
-to retrigger it at will. One of the values can be defined as a sustain point,
-meaning that as long as the gate is held, the envelope enters a sustain
-state when reaching this point. When the gate is set to 0, the envelope traverses
-the rest of the defined points.</p>
+<p>memview makes it possible to operate on a table as if it
+were an array (using any array opcode), or to operate on a slice
+of an array without copying the underlying memory. It can be used to
+efficiently read a slice of an existing array, operate on rows of a 
+2D matrix, etc.</p>
+<p>The underlying memory is shared between the source and the view
+for the duration of the event.</p>
+<p>Using the returned array as a left-side variable is not supported. This
+can result in reallocation/resizing of the array, which in this
+case is not allowed since the underlying memory does not belong to
+the array. <strong>Using it in this way results in undefined behaviour</strong></p>
+<p>The same holds true for creating a view from a ftable and freeing
+the ftable during the lifetime of the view.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>xout linenv kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...]
+<div class="codehilite"><pre><span></span>iView[]  memview ift,      [, istart=0, iend=0]
+kView[]  memview iSource[] [, istart=0, iend=0]
+kView[]  memview kSource[] [, istart=0, iend=0]
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>kgate</code>: whenever this switches from 0 to 1 a new envelope starts</li>
-<li><code>isustindex</code>: the index of the sustain point. For example, if <code>isustindex</code> is 2, then 
-when the envelope reaches kval2 (after ktime0+ktime1), it enters a sustain phase, where
-its value remains unmodified until the gate is set to 0. If no sustain point is desired,
-set <code>isustindex</code> to -1</li>
-<li><code>kval0</code>, <code>ktime1</code>, ...: a linear envelope, similar to <code>linsegr</code>. The release part can have
-as many segments as desired. <code>ktimex</code> values are defined as time interval between two values,
-<strong>not as absolute timestamps</strong></li>
+<li><code>ift</code>: the source ftable</li>
+<li><code>iSource[] / kSource[]</code>: the source array</li>
+<li><code>istart</code>: the start index of the view (default=0)</li>
+<li><code>iend</code>: the end index of the view (non inclusive, default=end of
+          the table / array)</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>xout</code>: value of the envelope (k- or a- rate)</li>
+<li><code>iView[]</code> / <code>kView[]</code>: the array view</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h3 id="execution-time">Execution time</h3>
 <ul>
-<li>Performance</li>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>
+<span class="o">--</span><span class="n">nosound</span>
+<span class="o">-</span><span class="n">m0</span>
+<span class="o">-</span><span class="n">d</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">    This is the example file for opcode &quot;linenv&quot;</span>
+<span class="cm">memview</span>
 
-<span class="cm">    linenv is a triggerable envelope with a sustain segment</span>
 
-<span class="cm">    aout linenv kgate, isustidx, kval0, ktime1, kval1, ..., ktimen, kvaln</span>
 
-<span class="cm">    NB: use isustidx=-1 if no sustain is desired</span>
-<span class="cm">    NB: use xtratim if necessary to allow for release segment </span>
+<span class="cm">Create a view into a table or another array</span>
+
+<span class="cm">iView[]  memview ift,      [, istart=0, iend=0]</span>
+<span class="cm">kView[]  memview iSource[] [, istart=0, iend=0]</span>
+<span class="cm">kView[]  memview kSource[] [, istart=0, iend=0]</span>
+
+<span class="cm">ift: the source ftable</span>
+<span class="cm">iSource[] / kSource[]: the source array</span>
+<span class="cm">istart: the start index of the view (default=0)</span>
+<span class="cm">iend: the end index of the view (non inclusive, default=end of</span>
+<span class="cm">the table / array)</span>
+
+<span class="cm">memview makes it possible to operate on a table as if it</span>
+<span class="cm">were an array, using any array opcode. </span>
+
+<span class="cm">It is also possible to take a slice from a different array</span>
+<span class="cm">without copying the underlying elements. It can be used to </span>
+<span class="cm">efficiently read a slice of an existing array, operate on</span>
+<span class="cm">rows of a 2D matrix, etc.</span>
+
+<span class="cm">The underlying memory is shared between the source and the view</span>
+<span class="cm">for the duration of the event.</span>
+
+<span class="cm">It is not supported to reuse the array as a left-side variable</span>
+<span class="cm">because that could incurr in reallocation / resizing, which in this</span>
+<span class="cm">case is not allowed since the underlying memory does not belong to </span>
+<span class="cm">the array. Using it in this way results in undefined behaviour.</span>
+
+<span class="cm">The same holds true for creating a view from a ftable and freeing </span>
+<span class="cm">the ftable during the lifetime of the view.</span>
+
 
 <span class="cm">*/</span>
 
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
-<span class="kt">gk</span><span class="n">gate</span> <span class="nb">init</span> <span class="mi">0</span>
-
-<span class="nb">FLpanel</span> <span class="s">&quot;linenv&quot;</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span>
-    <span class="kt">gk</span><span class="n">gate</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span> <span class="nb">FLbutton</span> <span class="s">&quot; Gate&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>  
-<span class="nb">FLpanelEnd</span>
-<span class="nb">FLrun</span>
+<span class="kt">gi</span><span class="n">tab</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="nb">sc_trig</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">)</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="nb">printf</span> <span class="s">&quot;t: </span><span class="si">%f</span><span class="s">,  kenv: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">timeinstk</span><span class="p">(),</span> <span class="nb">timeinsts</span><span class="p">(),</span> <span class="kt">k</span><span class="n">env</span>
+  <span class="kt">i</span><span class="n">View</span><span class="p">[]</span> <span class="n">memview</span> <span class="kt">gi</span><span class="n">tab</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Original array:&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">View</span>
+  <span class="kt">i</span><span class="n">View</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+  <span class="kt">i</span><span class="n">View</span> <span class="o">*=</span> <span class="mf">0.5</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Modified array:&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">View</span>
 
-    <span class="kt">k</span><span class="n">env</span> <span class="o">*=</span> <span class="mf">0.2</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Source table should be modified as well</span><span class="se">\n</span><span class="s">&quot;</span>
+  <span class="nb">ftprint</span> <span class="kt">gi</span><span class="n">tab</span>
+
+  <span class="nb">prints</span> <span class="s">&quot;array length: </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">View</span><span class="p">)</span>
+  <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">i</span><span class="n">period</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="kt">i</span><span class="n">gatedur</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="nb">sc_trig</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="kt">i</span><span class="n">period</span><span class="p">),</span> <span class="kt">i</span><span class="n">gatedur</span><span class="p">)</span>
-    <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="kt">a</span><span class="n">env</span>
-    <span class="nb">FLsetVal</span> <span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">gate</span><span class="p">),</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+  <span class="kt">k</span><span class="n">View</span><span class="p">[]</span> <span class="n">memview</span> <span class="kt">gi</span><span class="n">tab</span>
+  <span class="nb">printf</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Original array:&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">View</span>
+  <span class="kt">k</span><span class="n">View</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+  <span class="kt">k</span><span class="n">View</span> <span class="o">*=</span> <span class="mf">0.5</span>
+  <span class="nb">printf</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Modified array:&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">View</span>
+
+  <span class="nb">printf</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">$$$$ Source table should be modified as well</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">ftprint</span> <span class="kt">gi</span><span class="n">tab</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+
+  <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-<span class="kd">instr</span> <span class="nf">3</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="nb">pinker</span>
-    <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">gk</span><span class="n">gate</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">env</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+<span class="kd">instr</span> <span class="nf">3</span> 
+  <span class="kt">i</span><span class="n">X</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span>
+  <span class="kt">i</span><span class="n">Y</span><span class="p">[]</span> <span class="n">memview</span> <span class="kt">i</span><span class="n">X</span><span class="p">,</span> <span class="mi">5</span>
+  <span class="kt">k</span><span class="n">Z</span><span class="p">[]</span> <span class="n">memview</span> <span class="kt">i</span><span class="n">X</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span>
+  <span class="kt">i</span><span class="n">Y</span> <span class="o">*=</span> <span class="mi">10</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Y</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">X</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Z</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">4</span> 
+  <span class="kt">k</span><span class="n">X</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span>
+  <span class="kt">k</span><span class="n">Y</span><span class="p">[]</span> <span class="n">memview</span> <span class="kt">k</span><span class="n">X</span><span class="p">,</span> <span class="mi">5</span>
+  <span class="kt">k</span><span class="n">Y</span> <span class="o">*=</span> <span class="mf">0.5</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">X</span>
+  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Y</span>
+  <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="c1">; i1 0 10</span>
-<span class="kt">i</span><span class="n">2</span> <span class="mi">0</span> <span class="mi">10</span>
-<span class="c1">; i3 0 100</span>
+<span class="c1">; i1 0 1</span>
+<span class="c1">; i2 0 1</span>
+<span class="kt">i</span><span class="n">3</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="c1">; f0 3600</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -429,13 +480,14 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="ramptrig.html">ramptrig</a></li>
-<li><a href="https://csound.com/docs/manual/linsegr.html">linsegr</a></li>
-<li><a href="https://csound.com/docs/manual/bpf.html">bpf</a></li>
+<li><a href="https://csound.com/docs/manual/copya2ftab.html">copya2ftab</a></li>
+<li><a href="https://csound.com/docs/manual/slicearray.html">slicearray</a></li>
+<li><a href="https://csound.com/docs/manual/tabrowlin.html">tabrowlin</a></li>
+<li><a href="ref.html">ref</a></li>
+<li><a href="deref.html">deref</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
-<p>(idea based on pd/else's <code>envgen</code> and supercollider's <code>envgen</code>)</p>
+<p>Eduado Moguillansky, 2019</p>
               
             </div>
           </div>
@@ -443,10 +495,10 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="memview.html" class="btn btn-neutral float-right" title="memview">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="poly.html" class="btn btn-neutral float-right" title="poly">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="lfnoise.html" class="btn btn-neutral" title="lfnoise"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="linenv.html" class="btn btn-neutral" title="linenv"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -472,10 +524,10 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="lfnoise.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="linenv.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="memview.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="poly.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

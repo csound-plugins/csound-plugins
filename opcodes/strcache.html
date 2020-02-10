@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>pool_size - Csound Plugins</title>
+  <title>strcache - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "pool_size";
-    var mkdocs_page_input_path = "opcodes/pool_size.md";
+    var mkdocs_page_name = "strcache";
+    var mkdocs_page_input_path = "opcodes/strcache.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -204,31 +204,9 @@
                     
     <a class="" href="pool_push.html">pool_push</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="pool_size.html">pool_size</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#pool_size">pool_size</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="pool_size.html">pool_size</a>
                 </li>
                 <li class="">
                     
@@ -262,9 +240,29 @@
                     
     <a class="" href="standardchaos.html">standardchaos</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="strcache.html">strcache</a>
+    <a class="current" href="strcache.html">strcache</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#strcache">strcache</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -311,7 +309,7 @@
         
       
     
-    <li>pool_size</li>
+    <li>strcache</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -321,35 +319,39 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="pool_size">pool_size</h1>
+                <h1 id="strcache">strcache</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Returns the size of a pool</p>
+<p>Put a string into the global cache or retrieve a string from the cache</p>
 <h2 id="description">Description</h2>
-<p>A pool is actually a stack of numbers, based on an array.</p>
-<p>The pool_ opcodes implement a stack of numbers. This is useful when assigning
-ids to resources, like assigning fractional numbers to instrument instances to
-access them individually. To get a value, call <code>pool_pop</code> and when finished
-using it the value is returned to the pool with <code>pool_push</code>. <code>pool_size</code> returns
-the size of the pool (the number of items in it, not the capacity, see
-<code>pool_capacity</code> for that)</p>
+<p><code>strcache</code> implements a global string cache. This can be useful in situations
+where a string needs to be stored/passed but only numbers are allowed (for
+example, when using the <code>event</code> opcode, or to be able to mix numbers and strings
+inside an array). It behaves similar to the <code>strset</code> / <code>strget</code> opcodes but
+automatically assigns an index to each distinct string inside the cache.</p>
+<p><code>strcache</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>, depending on the type of
+the input variable</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To differenciate between the opcode being called at init- or at performance
-time, use the functional style <code>pool_size:i(ipool)</code> or <code>pool_size:k(ipool)</code></p>
+<p>It is guaranteed that passing twice the same string will return the same
+index.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The same opcode is used for creating a reference to a string and from
+converting that reference back to a string.</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>isize pool_size ipool
-ksize pool_size kpool
+<div class="codehilite"><pre><span></span>Sstr strcache idx
+Sstr strcache kdx
+idx  strcache Sstr
+kdx  strcache Sstr
 </pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>ipool</code>: the pool to push the value to</li>
-</ul>
-<h3 id="output">Output</h3>
-<ul>
-<li><code>isize</code> / <code>ksize</code>: the number of items in the pool</li>
+<li><code>idx</code> / <code>kdx</code>: the numeric id representing the string</li>
+<li><code>Sstr</code>: the string inside the cache, corresponding to <code>idx</code></li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
@@ -365,34 +367,56 @@ ksize pool_size kpool
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="cm">/*</span>
-<span class="cm">   Example file for pool_size</span>
 
-<span class="cm">   pool_size returns the size of the pool, either at </span>
-<span class="cm">   init or at performance time</span>
-
-<span class="cm">   The size of a pool is the number of items actually inside</span>
-<span class="cm">   the pool (see also pool_capacity)</span>
+<span class="cm">Example file for strcache / strview</span>
 
 <span class="cm">*/</span>
 
-<span class="kd">opcode</span> <span class="nf">print_pool</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">i</span>
-  <span class="kt">i</span><span class="n">pool</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="kt">i</span><span class="n">size</span> <span class="o">=</span> <span class="n">pool_size</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">size</span> <span class="k">do</span>
-    <span class="kt">i</span><span class="n">tem</span> <span class="o">=</span> <span class="n">pool_at</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="kt">i</span><span class="n">tem</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
-<span class="kd">endop</span>
-
+<span class="c1">; Use strcache to pass multiple strings between instruments</span>
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">i</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">10</span>
-  <span class="kt">i</span><span class="n">1</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="kt">i</span><span class="n">2</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&lt;&lt;&lt; pool size: </span><span class="si">%d</span><span class="s">, pool capacity: </span><span class="si">%d</span><span class="s"> &gt;&gt;&gt; </span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="w">\</span>
-         <span class="n">pool_size</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">),</span> <span class="n">pool_capacity</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
-  <span class="nf">print_pool</span> <span class="kt">i</span><span class="n">pool</span>
+  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="c1">;; get a read-only string from the cache</span>
+  <span class="kt">S</span><span class="n">1</span> <span class="n">strview</span> <span class="vi">p4</span>
+  <span class="kt">S</span><span class="n">2</span> <span class="n">strview</span> <span class="vi">p5</span>
+  <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; Use strcache to store strings inside a numeric array</span>
+<span class="kd">instr</span> <span class="nf">3</span>
+  <span class="kt">i</span><span class="n">Struct</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;Bach&quot;</span><span class="p">),</span> <span class="mi">1675</span><span class="p">,</span> <span class="mi">1750</span>
+  <span class="nb">prints</span> <span class="s">&quot;Name = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">i</span><span class="n">Struct</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; If the string does not need to be modified, strview</span>
+<span class="c1">;; can be used instead of strcache to retrieve a string</span>
+<span class="c1">;; from the cache. In this case, the string is not allocated,</span>
+<span class="c1">;; it only points to the version inside the cache. </span>
+<span class="kd">instr</span> <span class="nf">4</span>
+  <span class="kt">S</span><span class="n">1</span> <span class="o">=</span> <span class="s">&quot;foo bar&quot;</span>
+  <span class="kt">i</span><span class="n">S1</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
+  <span class="c1">;; S2 is a read-only view of the cached S1.</span>
+  <span class="kt">S</span><span class="n">2</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">i</span><span class="n">S1</span><span class="p">)</span>
+  <span class="nb">prints</span> <span class="s">&quot;S2 = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">test_same_idx</span>
+  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">dx2</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+  <span class="nb">prints</span> <span class="s">&quot;These indices should be the same: idx1=</span><span class="si">%d</span><span class="s">, idx2=</span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx2</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">test_strview</span>
+  <span class="kt">S</span><span class="n">1</span> <span class="o">=</span> <span class="s">&quot;uniquestring&quot;</span>
+  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
+  <span class="kt">S</span><span class="n">view</span> <span class="o">=</span> <span class="n">strview</span><span class="p">(</span><span class="kt">i</span><span class="n">dx1</span><span class="p">)</span>
+  <span class="nb">prints</span> <span class="s">&quot;Sview = &#39;</span><span class="si">%s</span><span class="s">&#39; (should be &#39;</span><span class="si">%s</span><span class="s">&#39;) </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">view</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
@@ -400,20 +424,17 @@ ksize pool_size kpool
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="c1">; i 1 0 0.1</span>
+<span class="c1">; i 3 + 0.1</span>
+<span class="c1">; i 4 + 0.1</span>
+<span class="nb">i</span> <span class="s">&quot;test_same_idx&quot;</span> <span class="mi">0</span> <span class="mi">1</span>
 
+<span class="c1">; i &quot;test_strview&quot; 0 1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </pre></div>
 
 
-<h2 id="see-also">See also</h2>
-<ul>
-<li><a href="pool_capacity.html">pool_capacity</a></li>
-<li><a href="pool_pop.html">pool_pop</a></li>
-<li><a href="pool_new.html">pool_new</a></li>
-<li><a href="pool_gen.html">pool_gen</a></li>
-</ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
               
@@ -423,10 +444,10 @@ ksize pool_size kpool
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="pread.html" class="btn btn-neutral float-right" title="pread">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="strview.html" class="btn btn-neutral float-right" title="strview">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="pool_push.html" class="btn btn-neutral" title="pool_push"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="standardchaos.html" class="btn btn-neutral" title="standardchaos"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -452,10 +473,10 @@ ksize pool_size kpool
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="pool_push.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="standardchaos.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="pread.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="strview.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
