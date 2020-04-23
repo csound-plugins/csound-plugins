@@ -1,5 +1,5 @@
 /*
-   kdict.c
+   klib.c
 
   Copyright (C) 2019 Eduardo Moguillansky
 
@@ -160,6 +160,16 @@
     dict_del idict, ikey
 
     Delete the key:pair at the end of this note
+
+  dict_clear
+  ==========
+
+    dict_clear idict
+    dict_clear kdict
+
+  TODO: make the dicts share the keys, by interning all keys into a global set (a hash-table
+  without values). This would make dict cloning much easier and efficient, making it able
+  to use it as an object system
 
   cache opcodes
   =============
@@ -469,6 +479,8 @@ static inline HASH_GLOBALS* dict_globals(CSOUND *csound) {
 /**
  * find a free index to create a new dict. Will grow the internal array if more
  * room is needed. Returns 0 if failed
+ *
+ * TODO: use a pool instead of linear searching
  */
 static inline ui32
 dict_getfreeslot(HASH_GLOBALS *g) {
@@ -1615,6 +1627,83 @@ dict_free(CSOUND *csound, DICT_FREE *p) {
                                    (i32 (*)(CSOUND*, void*))dict_free_callback);
     return OK;
 }
+
+// -----------------------------------
+//            CLEAR
+// -----------------------------------
+
+typedef struct {
+    OPDS h;
+    MYFLT *handleidx;
+    HASH_GLOBALS *g;
+} DICT_CLEAR;
+
+static i32 _dict_clear(CSOUND *csound, HANDLE *handle, HASH_GLOBALS *g) {
+    int khtype = handle->khtype;
+    kstring_t *ks;
+    khint_t k;
+    if(khtype == khStrFlt) {
+        khash_t(khStrFlt) *h = handle->hashtab;
+        // we need to free all keys
+        for (k = 0; k < kh_end(h); ++k) {
+            if (kh_exist(h, k)) {
+                csound->Free(csound, kh_key(h, k));
+            }
+        }
+        kh_clear(khStrFlt, h);
+    }
+    else if (khtype == khStrStr) {
+        khash_t(khStrStr) *h = handle->hashtab;
+        // we need to free all keys and values
+        for (k = 0; k < kh_end(h); ++k) {
+            if (kh_exist(h, k)) {
+                ks = &(kh_val(h, k));
+                if(ks->s != NULL)
+                    csound->Free(csound, ks->s);
+                csound->Free(csound, kh_key(h, k));
+            }
+        }
+        kh_clear(khStrStr, h);
+    }
+    else if (khtype == khIntFlt) {
+        khash_t(khIntFlt) *h = handle->hashtab;
+        kh_clear(khIntFlt, h);
+    }
+    else if (khtype == khIntStr) {
+        khash_t(khIntStr) *h = handle->hashtab;
+        // we need to free all values
+        for (k = 0; k < kh_end(h); ++k) {
+            if (kh_exist(h, k)) {
+                ks = &(kh_val(h, k));
+                csound->Free(csound, ks->s);
+            }
+        }
+        kh_clear(khIntStr, h);
+    }
+    else {
+        return NOTOK;
+    }
+    return OK;
+}
+
+static i32 dict_clear_i(CSOUND *csound, DICT_CLEAR *p) {
+    HASH_GLOBALS *g = dict_globals(csound);
+    HANDLE *handle = &(g->handles[(int)*p->handleidx]);
+    return _dict_clear(csound, handle, g);
+}
+
+static i32 dict_clear_init(CSOUND *csound, DICT_CLEAR *p) {
+    HASH_GLOBALS *g = dict_globals(csound);
+    p->g = g;
+    return OK;
+}
+
+static i32 dict_clear_perf(CSOUND *csound, DICT_CLEAR *p) {
+    HANDLE *handle = &(p->g->handles[(int)*p->handleidx]);
+    return _dict_clear(csound, handle, p->g);
+}
+
+
 
 // -----------------------------------
 //            PRINT
@@ -2827,17 +2916,24 @@ void pool_resize(CSOUND *csound, POOL_HANDLE *handle, int minsize) {
 }
 
 static i32
-pool_push_perf(CSOUND *csound, POOL_PUSH *p) {
+pool_push_perf_(CSOUND *csound, POOL_PUSH *p, int mode) {
     if(p->handle->size >= p->handle->allocated) {
         if(p->handle->cangrow) {
             pool_resize(csound, p->handle, p->handle->allocated*2);
         } else {
-            return PERFERR("Pool is full!");
+            if(mode == 1)
+                return INITERR("Pool is full!");
+            else
+                return PERFERR("Pool if full!");
         }
     }
     p->handle->data[p->handle->size] = *p->item;
     p->handle->size++;
     return OK;
+}
+static i32
+pool_push_perf(CSOUND *csound, POOL_PUSH *p) {
+    return pool_push_perf_(csound, p, 2);
 }
 
 static i32
@@ -2847,7 +2943,7 @@ pool_push_i(CSOUND *csound, POOL_PUSH *p) {
         register_deinit(csound, p, pool_push_perf);
         return OK;
     }
-    return pool_push_perf(csound, p);
+    return pool_push_perf_(csound, p, 1);
 }
 
 // this is called when reseting csound.
@@ -2888,7 +2984,10 @@ static OENTRY localops[] = {
     { "dict_new.size", S(DICT_NEW), 0, 1, "i", "Sj", (SUBR)dict_new },
     { "dict_new.many", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many },
 
-    { "dict_free",S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free},
+    { "dict_free", S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free},
+
+    { "dict_clear.i", S(DICT_CLEAR), 0, 1, "", "i", (SUBR)dict_clear_i},
+    { "dict_clear.k", S(DICT_CLEAR), 0, 3, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf},
 
     { "dict_get.ss_k", S(DICT_GET_sf), 0, 3, "k", "iSO",
       (SUBR)dict_get_sf_0, (SUBR)dict_get_sf },

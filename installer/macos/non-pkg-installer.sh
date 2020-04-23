@@ -14,7 +14,7 @@ BUILD_DIR=build
 DYLIBS_DIR=dylibs
 RELEASE_DIR=release
 ROOT_OPCODES64=/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64
-HOME_OPCODES64=$HOME/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64
+HOME_OPCODES64='$HOME/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64'
 
 rm -fr $BUILD_DIR
 mkdir -p $BUILD_DIR

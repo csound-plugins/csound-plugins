@@ -67,8 +67,9 @@ instr 1
 endin
 
 instr 2
-  S1 strcache p4
-  S2 strcache p5
+  ;; get a read-only string from the cache
+  S1 strview p4
+  S2 strview p5
   prints "S1=%s   S2=%s \n", S1, S2
   turnoff
 endin

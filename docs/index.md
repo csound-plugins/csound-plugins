@@ -22,7 +22,8 @@ A hashtable for csound
 * [dict_exists](opcodes/dict_exists.md): Returns 1 if the dict exists, 0 otherwise 
 * [dict_print](opcodes/dict_print.md): Prints the contents of a dict 
 * [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
-* [sref](opcodes/sref.md): ? 
+* [strcache](opcodes/strcache.md): Put a string into the global cache or retrieve a string from the cache 
+* [strview](opcodes/strview.md): Retrieves a read-only string from the cache 
 * [pool_new](opcodes/pool_new.md): Create an empty  pool 
 * [pool_gen](opcodes/pool_gen.md): Create a pool and fill it with values 
 * [pool_pop](opcodes/pool_pop.md): Pop (get) an item from a pool 
@@ -76,8 +77,8 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [ref](opcodes/ref.md): Get a reference to a variable 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
 * [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
+* [memview](opcodes/memview.md): Create a view into a table or another array 
 * [xtracycles](opcodes/xtracycles.md): Returns the number of extra performance cycles for an event 
-* [vecview](opcodes/vecview.md): ? 
 
 
 

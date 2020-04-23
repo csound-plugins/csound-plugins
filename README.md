@@ -2,7 +2,7 @@
 
 This is a repository for plugins for [csound](https://csound.com/). 
 
-**Version**: 6.14.1
+**Version**: 6.14-0.2
 
 ### Note about versions
 

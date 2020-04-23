@@ -340,7 +340,6 @@ e 10
 ## See also
 
 * [deref](deref.md)
-* [refread](refread.md)
 * [defer](defer.md)
 * [schedule](http://www.csounds.com/manual/html/schedule.html)
 * [event](http://www.csounds.com/manual/html/event.html)

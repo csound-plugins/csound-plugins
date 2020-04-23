@@ -19,8 +19,8 @@
       "ref",
       "deref",
       "refvalid",
-      "xtracycles",
-      "vecview"
+      "memview",
+      "xtracycles"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
