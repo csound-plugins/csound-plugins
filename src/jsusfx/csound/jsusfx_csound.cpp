@@ -57,13 +57,13 @@ public:
 
     JsusFxCsoundPath(const char *_dataRoot, CSOUND *_csound) : JsusFxPathLibrary_Basic(_dataRoot) {
         csound = _csound;
-    }    
+    }
 
     bool resolveImportPath(const string &importPath, const string &parentPath, string &resolvedPath) {
         const size_t pos = parentPath.rfind('/', '\\');
         if ( pos != string::npos )
             resolvedPath = parentPath.substr(0, pos + 1);
-        
+
         if ( fileExists(resolvedPath + importPath) ) {
             resolvedPath = resolvedPath + importPath;
             return true;
@@ -92,14 +92,14 @@ static EEL_F NSEEL_CGEN_CALL midisend(void *opaque, INT_PTR np, EEL_F **parms);
 class JsusFxCsound : public JsusFx {
 public:
     static const int kMidiBufferSize = 4096;
-    
+
     uint8_t midiHead[kMidiBufferSize];
     uint8_t midiPreStream[4];
     int midiPre = 0, midiExpt = 0;
     uint8_t midiOutBuffer[kMidiBufferSize];
     int midiOutSize = 0;
     double scrapspace[128];
-    
+
     // this is used to indicate if dsp is on (and midi parsing should be done)
     bool dspOn = 1;
     WDL_Mutex dspLock;
@@ -108,7 +108,7 @@ public:
         midi = &midiHead[0];
         NSEEL_addfunc_varparm("midisend",3,NSEEL_PProc_THIS,&midisend);
     }
-    
+
     ~JsusFxCsound() {
     }
 
@@ -117,7 +117,7 @@ public:
         // midi is read in the dsp thread. Do accumulate stuff if you don't read it
         if ( ! dspOn )
             return;
-        
+
         // in sysex stream, ignore everything
         if ( midiExpt == -1) {
             if ( b == 0xf0 ) {
@@ -125,17 +125,17 @@ public:
                 return;
             }
         }
-        
+
         // nothing is expected; new midi message
         if ( midiExpt == 0 ) {
             if ((b & 0xf0) == 0xf0) {
                 midiExpt = -1;
                 return;
             }
-            
+
             midiPre = 1;
             midiPreStream[0] = b;
-            
+
             switch(b & 0xf0) {
                 case 0xc0:
                 case 0xd0:
@@ -146,7 +146,7 @@ public:
             }
             return;
         }
-    
+
         midiPreStream[midiPre++] = b;
         if ( midiPre >= midiExpt) {
             if ( midiSize + midiExpt >= kMidiBufferSize ) {
@@ -154,14 +154,14 @@ public:
                 dspOn = false;
                 return;
             }
-        
+
             for(int i=0;i<midiExpt;i++) {
                 // midi[midiSize++] = midiPreStream[i];
             }
             midiExpt = 0;
         }
     }
-    
+
     void displayMsg(const char *fmt, ...) {
         char output[4096];
         va_list argptr;
@@ -190,7 +190,7 @@ public:
 
 static EEL_F NSEEL_CGEN_CALL midisend(void *opaque, INT_PTR np, EEL_F **parms) {
     JsusFxCsound *ctx = REAPER_GET_INTERFACE(opaque);
-    
+
     if ( JsusFxCsound::kMidiBufferSize <= ctx->midiOutSize + 3 ) {
         return 1;
     }
@@ -204,7 +204,7 @@ static EEL_F NSEEL_CGEN_CALL midisend(void *opaque, INT_PTR np, EEL_F **parms) {
         ctx->midiOutBuffer[ctx->midiOutSize++] = v % 256;
         ctx->midiOutBuffer[ctx->midiOutSize++] = v / 256;
     }
-    
+
     return 0;
 }
 
@@ -234,7 +234,7 @@ struct jsfx_handler {
     char scriptpath[PATH_MAX_LEN];
     bool bypass;
     bool user_bypass;
-    int pinIn, pinOut;  // number of channels defined in the script  
+    int pinIn, pinOut;  // number of channels defined in the script
     float inbuf[MAX_BUF_LEN];
     float outbuf[MAX_BUF_LEN];
     float *in_chanptrs[MAX_SIGNAL_PORT];
@@ -1229,12 +1229,12 @@ static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo 
     MYFLT d_y1 = (tgt_y1 - p->src_y1) / samplesblock;
     MYFLT y1 = p->src_y1;
     p->src_y1 = tgt_y1;
-    MYFLT tgt_abs0 = abs(p->ch0) * kabs;
+    MYFLT tgt_abs0 = fabs(p->ch0) * kabs;
     MYFLT d_abs0 = (tgt_abs0 - p->src_abs0) / samplesblock;
     MYFLT abs0 = p->src_abs0;
     p->src_abs0 = tgt_abs0;
 
-    MYFLT tgt_abs1 = abs(p->ch1) * kabs;
+    MYFLT tgt_abs1 = fabs(p->ch1) * kabs;
     MYFLT d_abs1 = (tgt_abs1 - p->src_abs1)/samplesblock;
     MYFLT abs1 = p->src_abs1;
     p->src_abs1 = tgt_abs1;
@@ -1373,7 +1373,7 @@ static int32_t tubeharmonics_mono_perf(CSOUND *csound, t_tubeharmonics_mono *p) 
     MYFLT y0 = p->src_y0;
     p->src_y0 = tgt_y0;
     p->seed1 += 1;
-    MYFLT tgt_abs0 = abs(p->ch0) * kabs;
+    MYFLT tgt_abs0 = fabs(p->ch0) * kabs;
     MYFLT d_abs0 = (tgt_abs0 - p->src_abs0) / samplesblock;
     MYFLT abs0 = p->src_abs0;
     p->src_abs0 = tgt_abs0;
