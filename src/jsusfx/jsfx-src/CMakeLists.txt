@@ -43,6 +43,7 @@ else()
 	if (WIN32)
 	    # x64
 	    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+			message(">>>>>> win 64 <<<<<<<")
  			add_custom_command(
  				OUTPUT ${PROJECT_SOURCE_DIR}/WDL/eel2/asm-nseel-x64.o
  				COMMAND php a2x64.php win64
