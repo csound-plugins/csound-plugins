@@ -18,3 +18,5 @@ CMakeFiles/
 *.obj
 *.a
 .#*
+installer/win/dlls
+installer/osx/dylibs
