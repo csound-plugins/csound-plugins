@@ -24,10 +24,15 @@ sudo installer -pkg csound6.14.0-MacOS_x86_64.pkg -target /
 #return to main working dir after installing Csound
 cd $SYSTEM_DEFAULTWORKINGDIRECTORY
 
-curl -Ls -o nasm.zip 'https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip'
+curl -Ls -o nasm-2.14.02.zip 'https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip'
 ls
-unzip nasm.zip
-nasmdir=$PWD/nasm
+unzip nasm-2.14.02.zip
+nasmdir=$PWD/nasm-2.14.02
+cd $nasmdir
+echo "In nasm dir $nasmdir"
+ls
+cd ..
+
 export PATH=$PATH:$nasmdir
 
 mkdir build
