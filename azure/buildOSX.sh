@@ -33,7 +33,10 @@ echo "In nasm dir $nasmdir"
 ls
 cd ..
 
-export PATH=$PATH:$nasmdir
+export PATH="$PATH:$nasmdir"
+echo $PATH
+
+nasm --version
 
 mkdir build
 cd build
