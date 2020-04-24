@@ -5,13 +5,13 @@
 # This installer script, when run, installs the plugins in the correct
 # Opcodes64 folder.
 
-PLUGINS_VERSION=0.1
+PLUGINS_VERSION=0.2
 CSOUND_VERSION=6.14
 MACOS_VERSION=10.14
 VERSION="$CSOUND_VERSION-$PLUGINS_VERSION-macos$MACOS_VERSION"
 
 BUILD_DIR=build
-DYLIBS_DIR=dylibs
+DYLIBS_DIR=../../build
 RELEASE_DIR=release
 ROOT_OPCODES64=/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64
 HOME_OPCODES64='$HOME/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64'
@@ -115,7 +115,7 @@ chmod +x build/csound-plugins-install.sh
 #                 uninstaller
 # -------------------------------------------
 
-DYLIBS=$(cd dylibs; ls -1 *.dylib)
+DYLIBS=$(cd $DYLIBS_DIR; ls -1 *.dylib)
 
 cat > build/csound-plugins-uninstall.sh <<EOF
 #!/bin/bash
