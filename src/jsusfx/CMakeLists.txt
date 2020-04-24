@@ -1,3 +1,9 @@
+option(BUILD_JSUSFX_OPCODES "Build jsusfx opcodes" ON)
+
+if(NOT(BUILD_JSUSFX_OPCODES))
+  return()
+endif()
+
 cmake_minimum_required(VERSION 2.7)
 project (jsusfx_csound)
 
