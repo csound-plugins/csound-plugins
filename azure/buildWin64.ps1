@@ -11,7 +11,7 @@ cd D:/a/1/s/
 
 mkdir build
 cd build
-cmake -G "Visual Studio 15 2017 Win64" ..
+cmake -G "Visual Studio 15 2017 Win64" -DBUILD_JSUSFX_OPCODES=OFF ..
 msbuild.exe Project.sln /property:Platform=x64 /property:Configuration=Release
 mkdir D:/a/1/a/Win64
 Copy-Item "D:/a/1/s/build/Release/*" -Destination D:/a/1/a/Win64
