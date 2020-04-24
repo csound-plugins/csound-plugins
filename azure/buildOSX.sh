@@ -31,9 +31,10 @@ nasmdir=$PWD/nasm-2.14.02
 cd $nasmdir
 echo "In nasm dir $nasmdir"
 ls
+sudo cp * /usr/local/bin
 cd ..
 
-export PATH="$PATH:$nasmdir"
+export PATH="$nasmdir:$PATH"
 echo $PATH
 
 nasm --version
