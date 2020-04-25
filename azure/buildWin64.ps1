@@ -7,11 +7,11 @@ cd c:/
 # cd "C:/Program Files/Csound6_x64"
 # dir
 
-Write-Debug "Downloading csound installer"
+Write-Host "Downloading csound installer"
 
 Invoke-WebRequest -Uri "https://github.com/csound/csound/releases/download/6.14.0/Csound6.14.0-Windows_x64-installer.exe" -Outfile csound-installer.exe
 
-Write-Debug "Installing csound installer"
+Write-Host "Installing csound installer"
 
 ./csound-installer.exe /passive
 
