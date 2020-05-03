@@ -1,0 +1,15 @@
+{
+    "name": "rory",
+    "opcodes": [
+      "trigLinseg", 
+      "trigExpseg",
+      "channelStateSave",
+      "channelStateRecall"
+    ],
+    "author": "Rory Walsh",
+    "author_email": "name@mail.com",
+    "license": "LGPL",
+    "description": "Miscellaneous opcodes for channel state save, triggers and others",
+    "url": "https://rorywalsh.github.io/csoundPluginOpcodes"
+}
+

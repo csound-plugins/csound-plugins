@@ -33,6 +33,16 @@ A hashtable for csound
 * [pool_at](opcodes/pool_at.md): Returns the item of a pool at a given index 
 
 
+## rory
+
+Miscellaneous opcodes for channel state save, triggers and others
+
+* [trigLinseg](opcodes/trigLinseg.md): Trace a series of line segments between specified points. 
+* [trigExpseg](opcodes/trigExpseg.md): Trace a series of exponential segments between specified points. 
+* [channelStateSave](opcodes/channelStateSave.md): Saves all channel data to file 
+* [channelStateRecall](opcodes/channelStateRecall.md): Recalls channel data saved to a file via channelStateSave 
+
+
 ## poly
 
 Multiple (parallel or sequential) instances of an opcode

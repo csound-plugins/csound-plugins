@@ -1,9 +1,5 @@
 # Installation
 
-## Binaries
-
-Download binaries from [github](https://github.com/csound-plugins/csound-plugins/releases/latest) (macOS, windows, linux)
-
 ## From Source
 
 
@@ -22,6 +18,6 @@ cd csound-plugins
 mkdir build
 cd build
 cmake ..
-make
+make 
 sudo make install
 ```
