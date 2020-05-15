@@ -3,15 +3,17 @@
 # call it from the root directoriy of the project:
 # scripts/cross-compile-win.sh
 
-plugins="poly;else;klib"
+cplugins="poly;else;klib;pathtools"
 
 CC=x86_64-w64-mingw32-gcc
+CPP=x86_64-w64-mingw32-c++
+
 DLL_FOLDER=$(realpath buildwin)
 
 rm -fr $DLL_FOLDER
 mkdir -p $DLL_FOLDER
 
-for plugin in $(echo $plugins | tr ';' ' '); do
+for plugin in $(echo $cplugins | tr ';' ' '); do
     pushd .
     PLUGIN_SRC=src/$plugin/src
     cd $PLUGIN_SRC
