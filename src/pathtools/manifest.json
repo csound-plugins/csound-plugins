@@ -2,15 +2,21 @@
     "name": "pathtools",
     "opcodes": [
       "findFileInPath",
+      "getEnvVar",
+      
       "pathAbsolute",
-      "pathSplitExt",
-      "pathSplitExtk",
-      "scriptDir",
+      "pathIsAbsolute",
+      
+      "pathJoin",
+      
       "pathSplit",
       "pathSplitk",
-      "pathIsAbsolute",
-      "getEnvVar",
-      "pathJoin"
+      
+      "pathSplitExt",
+      "pathSplitExtk",
+
+      "scriptDir"
+            
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

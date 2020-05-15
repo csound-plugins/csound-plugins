@@ -1,4 +1,4 @@
-# fileFind
+# findFileInPath
 
 ## Abstract
 
@@ -16,7 +16,7 @@ loading a sample. Returns the absolute path
         
 ## Arguments
 
-* `Sfile': a relative path to an existing file
+* `Sfile`: a relative path to an existing file
 
 ## Output
 

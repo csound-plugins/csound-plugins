@@ -97,15 +97,15 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 Cross-platform path handling
 
 * [findFileInPath](opcodes/findFileInPath.md): Find a file inside the search paths of the csound environment 
+* [getEnvVar](opcodes/getEnvVar.md): Get the value of an environment variable 
 * [pathAbsolute](opcodes/pathAbsolute.md): Returns the absolute path of a file 
+* [pathIsAbsolute](opcodes/pathIsAbsolute.md): Returns 1 if the path of a file is absolute 
+* [pathJoin](opcodes/pathJoin.md): Join two parts of a path according to the current platform 
+* [pathSplit](opcodes/pathSplit.md): Split a path into directory and basename 
+* [pathSplitk](opcodes/pathSplitk.md): Split a path into directory and basename at perf-time 
 * [pathSplitExt](opcodes/pathSplitExt.md): Split a path into prefix and extension 
 * [pathSplitExtk](opcodes/pathSplitExtk.md): Split a path into prefix and extension at performance time 
 * [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
-* [pathSplit](opcodes/pathSplit.md): Split a path into directory and basename 
-* [pathSplitk](opcodes/pathSplitk.md): Split a path into directory and basename at perf-time 
-* [pathIsAbsolute](opcodes/pathIsAbsolute.md): Returns 1 if the path of a file is absolute 
-* [getEnvVar](opcodes/getEnvVar.md): Get the value of an environment variable 
-* [pathJoin](opcodes/pathJoin.md): Join two parts of a path according to the current platform 
 
 
 
