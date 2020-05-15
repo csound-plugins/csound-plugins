@@ -1,13 +1,16 @@
 {
     "name": "pathtools",
     "opcodes": [
-      "fileFind",
+      "findFileInPath",
       "pathAbsolute",
       "pathSplitExt",
       "pathSplitExtk",
       "scriptDir",
       "pathSplit",
-      "pathIsAbsolute"
+      "pathSplitk",
+      "pathIsAbsolute",
+      "getEnvVar",
+      "pathJoin"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

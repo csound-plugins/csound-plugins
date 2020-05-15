@@ -108,7 +108,7 @@ void strncpy0(char *dest, const char *src, size_t n) {
 
 
 
-// make sure that the out string has enough allocated space to hold 
+// make sure that the out string has enough allocated space to hold
 // a string of `size` chars (the \0 should be taken into account)
 // This can be run only at init time
 static int32_t _string_ensure(CSOUND *csound, STRINGDAT *s, size_t size) {
@@ -129,7 +129,7 @@ static int32_t _str_rfind(const char *s, char ch) {
         return -1;
     for(int i=len-1; i>=0; i--) {
         if(s[i] == ch)
-            return i;    
+            return i;
     }
     return -1;
 }
@@ -159,7 +159,7 @@ static int32_t pathSplit_opcode(CSOUND *csound, PATHSPLIT *p) {
     if(pathlen == 0) {
         return PERFERR("pathSplit: source path is empty");
     }
-    
+
     char sep = _get_path_separator();
     int i = _str_rfind(p->Spath->data, sep) + 1;
     if(i == 0) {
@@ -310,12 +310,19 @@ static int32_t findFile(CSOUND *csound, S_S *p) {
 
 static int32_t getEnvVar(CSOUND *csound, S_S *p) {
     const char *val = csound->GetEnv(csound, p->s->data);
-    if(val == NULL)
-        stringdat_clear(csound, p->Sout);
-    else
+    if(val != NULL) {
         stringdat_copy_cstr(csound, p->Sout, val, strlen(val));
+        return OK;
+    }
+    val = getenv(p->s->data);
+    if(val != NULL) {
+        stringdat_copy_cstr(csound, p->Sout, val, strlen(val));
+        return OK;
+    }
+    stringdat_clear(csound, p->Sout);
     return OK;
 }
+
 
 static int32_t pathOfScript(CSOUND *csound, S_ *p) {
     // return the path of the current script
@@ -349,7 +356,7 @@ static OENTRY localops[] = {
     { "pathIsAbsolute.k", S(K_S), 0, 2, "k", "S", NULL, (SUBR)pathIsAbsolute},
     { "pathAbsolute", S(S_S), 0, 1, "S", "S", (SUBR)pathAbsolute},
     { "pathJoin", S(S_SS), 0, 1, "S", "SS", (SUBR)pathJoin},
-    { "findFile", S(S_S), 0, 1, "S", "S", (SUBR)findFile},
+    { "findFileInPath", S(S_S), 0, 1, "S", "S", (SUBR)findFile},
     { "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar },
     { "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript }
 

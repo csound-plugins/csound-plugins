@@ -69,26 +69,43 @@ A csound interface to the opensource implementation of jsfx
 
 Collection of miscellaneous plugins, most ports of supercollider, puredata/else or jsfx
 
+* [accum](opcodes/accum.md): Simple accumulator of scalar values 
+* [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
 * [crackle](opcodes/crackle.md): generates noise based on a chaotic equation 
-* [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
-* [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
-* [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
-* [schmitt](opcodes/schmitt.md): A schmitt trigger (a comparator with hysteresis). 
-* [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
-* [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
+* [defer](opcodes/defer.md): Run an opcode at the end of an event 
+* [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
-* [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
-* [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
-* [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
-* [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
-* [accum](opcodes/accum.md): Simple accumulator of scalar values 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
-* [ref](opcodes/ref.md): Get a reference to a variable 
-* [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
-* [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
+* [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
+* [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
 * [memview](opcodes/memview.md): Create a view into a table or another array 
+* [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
+* [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
+* [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
+* [ref](opcodes/ref.md): Get a reference to a variable 
+* [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
+* [schmitt](opcodes/schmitt.md): A schmitt trigger (a comparator with hysteresis). 
+* [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
+* [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
+* [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
 * [xtracycles](opcodes/xtracycles.md): Returns the number of extra performance cycles for an event 
+
+
+## pathtools
+
+Cross-platform path handling
+
+* [findFileInPath](opcodes/findFileInPath.md): Find a file inside the search paths of the csound environment 
+* [pathAbsolute](opcodes/pathAbsolute.md): Returns the absolute path of a file 
+* [pathSplitExt](opcodes/pathSplitExt.md): Split a path into prefix and extension 
+* [pathSplitExtk](opcodes/pathSplitExtk.md): Split a path into prefix and extension at performance time 
+* [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
+* [pathSplit](opcodes/pathSplit.md): Split a path into directory and basename 
+* [pathSplitk](opcodes/pathSplitk.md): Split a path into directory and basename at perf-time 
+* [pathIsAbsolute](opcodes/pathIsAbsolute.md): Returns 1 if the path of a file is absolute 
+* [getEnvVar](opcodes/getEnvVar.md): Get the value of an environment variable 
+* [pathJoin](opcodes/pathJoin.md): Join two parts of a path according to the current platform 
 
 
 
