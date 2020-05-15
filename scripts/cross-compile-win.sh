@@ -25,7 +25,8 @@ for plugin in $(echo $cplugins | tr ';' ' '); do
     DLL=lib$plugin.dll
 
     $CC -O2 -shared -msse2 -o $DLL -std=c99 -Wall -mfpmath=sse \
-        -ftree-vectorize -ffast-math -fomit-frame-pointer -mstackrealign -fPIC -DUSE_DOUBLE -DB64BIT \
+        -ftree-vectorize -ffast-math -fomit-frame-pointer -mstackrealign -fPIC \
+        -DUSE_DOUBLE -DB64BIT -DWIN32\
         -I/usr/local/include -I/usr/local/include/csound $plugin.o
     rm $plugin.o
     cp $DLL $DLL_FOLDER
