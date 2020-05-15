@@ -78,6 +78,14 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="channelStateRecall.html">channelStateRecall</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="channelStateSave.html">channelStateSave</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="crackle.html">crackle</a>
                 </li>
                 <li class=" current">
@@ -160,7 +168,15 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="findFileInPath.html">fileFind</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="frac2int.html">frac2int</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="getEnvVar.html">getEnvVar</a>
                 </li>
                 <li class="">
                     
@@ -193,6 +209,34 @@
                 <li class="">
                     
     <a class="" href="memview.html">memview</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pathAbsolute.html">pathAbsolute</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pathIsAbsolute.html">pathIsAbsolute</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pathJoin.html">pathJoin</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pathSplit.html">pathSplit</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pathSplitExt.html">pathSplitExt</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pathSplitExtk.html">pathSplitExtk</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="pathSplitk.html">pathSplitk</a>
                 </li>
                 <li class="">
                     
@@ -260,6 +304,10 @@
                 </li>
                 <li class="">
                     
+    <a class="" href="scriptDir.html">scriptDir</a>
+                </li>
+                <li class="">
+                    
     <a class="" href="sigmdrive.html">sigmdrive</a>
                 </li>
                 <li class="">
@@ -273,6 +321,14 @@
                 <li class="">
                     
     <a class="" href="strview.html">strview</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="trigExpseg.html">trigExpseg</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="trigLinseg.html">trigLinseg</a>
                 </li>
                 <li class="">
                     
@@ -327,113 +383,62 @@
               
                 <h1 id="defer">defer</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Run an opcode at the end of current event</p>
+<p>Run an opcode at the end of an event</p>
 <h2 id="description">Description</h2>
-<p><code>defer</code> runs an opcode as the last action of a given event, during the process
-of being deallocated. This can be used together with opcodes which release
-resources back which are being used during the event. At the moment <code>defer</code>
-works only with builtin opcodes. For complex release actions, it is nonetheless
-possible to bundle the actions in a separate instrument and use <code>schedule</code>
-together with defer (or simpler, use <code>atstop</code> instead).</p>
+<p><code>defer</code> can be used to execute the init pass of an opcode <strong>at the end</strong> of an event.
+This can be used to perform some cleanup, schedule an event, print something, etc.</p>
 <div class="admonition note">
 <p class="admonition-title">Release time vs deinit time</p>
 <p>The event is not scheduled at <em>release</em> time (see below "Release time vs Deinit time")
 but at the moment the note is freed.</p>
-<p><strong>Release time</strong> is when the note is within its <em>release phase</em>, which will only happen
-if the note has an envelope with a release segment (like <code>linsegr</code>), or if it has
-setup extra time with <code>xtratim</code>. The opcode <code>release</code> can be used to query if the
-current note is being released. The instrument keeps running in release phase as
+<p><strong>Release time</strong> is when the note is within its <em>release phase</em>, which will only happen 
+if the note has an envelope with a release segment (like <code>linsegr</code>), or if it has 
+setup extra time with <code>xtratim</code>. The opcode <code>release</code> can be used to query if the 
+current note is being released. The instrument keeps running in release phase as 
 long as the release part of the envelope is finished or the extra time allocated
-via <code>xtratim</code> is through.</p>
+via <code>xtratim</code> is through. </p>
 <p><strong>Deinit time</strong> is the moment the note is actually being freed, so the instrument is
-not running anymore at this point.</p>
+not running anymore at this point.  </p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>defer Sopcode, [arg1, arg2, ...]
+<div class="codehilite"><pre><span></span>defer Sopcode [arg1, ...]
 </pre></div>
 
 
-<p>Any arguments passed after the name of the opcode (which must be within
-quotations) are passed directly to the opcode itself. Notice that only opcodes
-without output make sense in this context. Useful opcodes are <code>print</code>, <code>prints</code>,
-<a href="pool_push.html">pool_push</a>, <a href="dict_free.html">dict_free</a>, etc</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code>defer</code> evaluates at init time but acts at deacllocation time. The arguments
-passed are evaluated at deallocation time</p>
-</div>
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>Sopcode</code>: the name of the opcode to defer</li>
-<li><code>args</code>: any args (i, k, S) are passed to the opcodes. They are evaluated at
-  deallocation time.</li>
+<li><code>Sopcode</code>: the name of the opcode to run at deinit time</li>
+<li><code>args</code>: any argument passed to the opcode itself</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init</li>
-<li>Deallocation</li>
+<li>Deinit time</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>           
+<span class="o">-</span><span class="n">odac</span>
 
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="c1">;; Example 1</span>
+
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="nb">printk2</span> <span class="nb">timeinsts</span><span class="p">()</span>
-  <span class="c1">;; this will be called at the end of this instrument</span>
-  <span class="n">defer</span> <span class="s">&quot;event_i&quot;</span><span class="p">,</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">93</span>
+  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinsts</span>
+  <span class="nb">prints</span> <span class="s">&quot;Instr 1 started&quot;</span>
+  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;Instr 1 stopped after </span><span class="si">%.3f</span><span class="s"> seconds&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">t</span>
 <span class="kd">endin</span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="nb">print</span> <span class="vi">p4</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">example1</span>
-  <span class="nb">schedule</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="c1">;; -------------------------------------------</span>
-<span class="c1">;; Example 2</span>
-
-<span class="kd">instr</span> <span class="nf">10</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;*sf&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">200</span>
-  <span class="c1">;; delete this key at the end of the note</span>
-  <span class="n">defer</span> <span class="s">&quot;dict_set&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
-  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
-  <span class="nb">schedule</span> <span class="mi">11</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span> 
-
-<span class="kd">instr</span> <span class="nf">11</span>
-<span class="nb">printf</span> <span class="s">&quot;Instr 11 </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="c1">;; by now the dict should have deleted the key &quot;foo&quot;</span>
-  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">example2</span>
-  <span class="nb">schedule</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
-<span class="kd">endin</span>
-
-<span class="nb">schedule</span> <span class="s">&quot;example2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="n">e</span> <span class="mi">3</span>
-<span class="c1">; f0 3600</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="n">f</span> <span class="mi">0</span> <span class="mi">4</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -442,7 +447,7 @@ passed are evaluated at deallocation time</p>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="atstop.html">atstop</a></li>
+<li><a href="defer.html">defer</a></li>
 <li><a href="http://www.csounds.com/manual/html/schedule.html">schedule</a></li>
 <li><a href="http://www.csounds.com/manual/html/event.html">event</a></li>
 <li><a href="http://www.csounds.com/manual/html/release.html">release</a></li>

@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>standardchaos - Csound Plugins</title>
+  <title>pathIsAbsolute - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "standardchaos";
-    var mkdocs_page_input_path = "opcodes/standardchaos.md";
+    var mkdocs_page_name = "pathIsAbsolute";
+    var mkdocs_page_input_path = "opcodes/pathIsAbsolute.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -188,9 +188,37 @@
                     
     <a class="" href="pathAbsolute.html">pathAbsolute</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="pathIsAbsolute.html">pathIsAbsolute</a>
+    <a class="current" href="pathIsAbsolute.html">pathIsAbsolute</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#pathisabsolute">pathIsAbsolute</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#output">Output</a></li>
+        
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -284,31 +312,9 @@
                     
     <a class="" href="sigmdrive.html">sigmdrive</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="standardchaos.html">standardchaos</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#standardchaos">standardchaos</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="standardchaos.html">standardchaos</a>
                 </li>
                 <li class="">
                     
@@ -367,7 +373,7 @@
         
       
     
-    <li>standardchaos</li>
+    <li>pathIsAbsolute</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -377,119 +383,43 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="standardchaos">standardchaos</h1>
+                <h1 id="pathisabsolute">pathIsAbsolute</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Standard map chaotic generator</p>
+<p>Returns 1 if the path of a file is absolute</p>
 <h2 id="description">Description</h2>
-<p><code>standardchaos</code> is a chaotic generator, the sound is generated with 
-the following difference equations;</p>
-<div class="codehilite"><pre><span></span>y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
-x[n] = (x[n-1] + y[n]) % 2pi;
-out = (x[n] - pi) / pi
-</pre></div>
-
-
+<p>Returns 1 if the path of a file is absolute</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>aout standardchaos krate, kk=1, ix=0.5, iy=0
+<div class="codehilite"><pre><span></span>i_isabsolute pathIsAbsolute Spath 
+k_isabsolute pathIsAbsolute Spath
 </pre></div>
 
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>krate</code>: from 0 to nyquist</li>
-<li><code>kk</code>: a value for k in the above equation</li>
-<li><code>ix</code>: initial value for x</li>
-<li><code>iy</code>: initial value for y</li>
+<li>`Spath': The path to a file or directory</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>aout</code>: audio output of the chaotic generator</li>
+<li><code>i_isabsolute</code>: 1 if the path is absolute, 0 otherwise</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Performance (audio)</li>
+<li>Init (if the result is i-type)</li>
+<li>Perf (if the result is k-type)</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>           
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
-
-<span class="cm">/* Example file for standardchaos opcode</span>
-
-<span class="cm">    aout standardchaos krate, kk, ix=0.5, iy=0</span>
-
-<span class="cm">    Standard map chaotic generator, the sound is generated with the difference equations;</span>
-<span class="cm">    y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;</span>
-<span class="cm">    x[n] = (x[n-1] + y[n]) % 2pi;</span>
-<span class="cm">    out = (x[n] - pi) / pi;</span>
-
-<span class="cm">*/</span>
-
-<span class="nb">FLpanel</span> <span class="s">&quot;standardchaos&quot;</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span>
-    <span class="kt">i</span><span class="n">disp1</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">522</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="kt">i</span><span class="n">disp2</span> <span class="nb">FLvalue</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">522</span><span class="p">,</span> <span class="mi">80</span>
-    <span class="nb">FLcolor</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">250</span>
-    <span class="kt">gk</span><span class="n">rate</span><span class="p">,</span>   <span class="kt">gi</span><span class="n">h1</span> <span class="nb">FLslider</span> <span class="s">&quot;rate&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp1</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span>
-    <span class="kt">gk</span><span class="n">k</span><span class="p">,</span>      <span class="kt">gi</span><span class="n">h2</span> <span class="nb">FLslider</span> <span class="s">&quot;k&quot;</span><span class="p">,</span>    <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>    <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">i</span><span class="n">disp2</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">80</span>
-<span class="nb">FLpanelEnd</span>
-<span class="nb">FLrun</span>
-
-<span class="nb">FLsetVal_i</span> <span class="mi">1618</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span>
-<span class="nb">FLsetVal_i</span> <span class="mi">1</span><span class="p">,</span>    <span class="kt">gi</span><span class="n">h2</span>
-
-<span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">i</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.5</span>
-    <span class="kt">i</span><span class="n">y</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="kt">i</span><span class="n">gain</span> <span class="o">=</span> <span class="mf">0.3</span>
-
-    <span class="kt">a</span><span class="n">out</span> <span class="n">standardchaos</span> <span class="kt">gk</span><span class="n">rate</span><span class="p">,</span> <span class="kt">gk</span><span class="n">k</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span><span class="p">,</span> <span class="kt">i</span><span class="n">y</span>
-    <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="kt">i</span><span class="n">gain</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span> 
-<span class="kd">endin</span>
-
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">100</span>
-
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="n">Widgets</span><span class="o">&lt;/</span><span class="n">label</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
- <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">100</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">100</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">320</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">240</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">uuid</span><span class="o">/&gt;</span>
- <span class="o">&lt;</span><span class="n">bgcolor</span> <span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
- <span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><span class="kt">i</span><span class="n">_isabsolute</span> <span class="n">pathAbsolute</span> <span class="s">&quot;relative/path/to/file.txt&quot;</span>
+<span class="nb">prints</span> <span class="s">&quot;Path is absolute: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">_isabsolute</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="s">&quot;yes&quot;</span> <span class="o">:</span> <span class="s">&quot;no&quot;</span>
 </pre></div>
 
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="crackle.html">crackle</a></li>
-<li><a href="https://csound.com/docs/manual/chuap.html">chuap</a></li>
-<li><a href="https://csound.com/docs/manual/dust2.html">dust2</a></li>
+<li><a href="pathAbsolute.html">pathAbsolute</a></li>
+<li><a href="scriptDir.html">scriptDir</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019
-(based on pd/else's <code>standard~</code> - https://github.com/porres/pd-else)</p>
+<p>Eduardo Moguillansky, 2020</p>
               
             </div>
           </div>
@@ -497,10 +427,10 @@ out = (x[n] - pi) / pi
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="strcache.html" class="btn btn-neutral float-right" title="strcache">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="pathJoin.html" class="btn btn-neutral float-right" title="pathJoin">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="sigmdrive.html" class="btn btn-neutral" title="sigmdrive"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="pathAbsolute.html" class="btn btn-neutral" title="pathAbsolute"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -526,10 +456,10 @@ out = (x[n] - pi) / pi
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="sigmdrive.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="pathAbsolute.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="strcache.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="pathJoin.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
