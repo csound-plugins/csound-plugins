@@ -101,11 +101,13 @@ Cross-platform path handling
 * [pathAbsolute](opcodes/pathAbsolute.md): Returns the absolute path of a file 
 * [pathIsAbsolute](opcodes/pathIsAbsolute.md): Returns 1 if the path of a file is absolute 
 * [pathJoin](opcodes/pathJoin.md): Join two parts of a path according to the current platform 
+* [pathNative](opcodes/pathNative.md): Convert a path to its native version 
 * [pathSplit](opcodes/pathSplit.md): Split a path into directory and basename 
 * [pathSplitk](opcodes/pathSplitk.md): Split a path into directory and basename at perf-time 
 * [pathSplitExt](opcodes/pathSplitExt.md): Split a path into prefix and extension 
 * [pathSplitExtk](opcodes/pathSplitExtk.md): Split a path into prefix and extension at performance time 
 * [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
+* [sysPlatform](opcodes/sysPlatform.md): Get a string description of the current system platform 
 
 
 

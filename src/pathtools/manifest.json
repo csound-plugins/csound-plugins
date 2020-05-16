@@ -8,6 +8,7 @@
       "pathIsAbsolute",
       
       "pathJoin",
+      "pathNative",
       
       "pathSplit",
       "pathSplitk",
@@ -15,7 +16,8 @@
       "pathSplitExt",
       "pathSplitExtk",
 
-      "scriptDir"
+      "scriptDir",
+      "sysPlatform"
             
     ],
     "author": "Eduardo Moguillansky",

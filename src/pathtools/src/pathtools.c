@@ -32,6 +32,11 @@
 #include <unistd.h>
 #include <ctype.h>
 
+#if defined(WIN32) || defined(__MINGW32__) || defined(_WIN32)
+    #define OS_WIN32
+#endif
+
+
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -70,7 +75,8 @@
 
 
 static inline char _get_path_separator() {
-#ifdef WIN32
+#ifdef OS_WIN32
+    printf("Win32! \n");
     return '\\';
 #else
     return '/';
@@ -78,7 +84,7 @@ static inline char _get_path_separator() {
 }
 
 static inline char _get_path_delim() {
-#ifdef WIN32
+#ifdef OS_WIN32
     return ';';
 #else
     return ':';
@@ -135,7 +141,36 @@ static int32_t _str_rfind(const char *s, char ch) {
 }
 
 
-static void stringdat_copy_cstr(CSOUND *csound, STRINGDAT *dest, char *src, size_t len) {
+static void _str_replace_inplace(char *s, size_t n, char orig, char replacement) {
+    for(size_t i=0; i < n; i++) {
+        char c = s[i];
+        if (c==0)
+            break;
+        if (c == orig)
+            s[i] = replacement;
+    }
+}
+
+
+static void _path_make_native_inplace(char *s, size_t len) {
+#ifdef OS_WIN32
+    char wrongsep = '/';
+    char sep = '\\';
+#else
+    char wrongsep = '\\';
+    char sep = '/';
+#endif
+    _str_replace_inplace(s, len, sep, wrongsep);
+}
+
+
+static void stringdat_copy_cstr(CSOUND *csound, STRINGDAT *dest, const char *src, size_t len) {
+    _string_ensure(csound, dest, len+1);
+    strncpy0(dest->data, src, len);
+}
+
+static void stringdat_copy_literal(CSOUND *csound, STRINGDAT *dest, const char *src) {
+    size_t len = strlen(src);
     _string_ensure(csound, dest, len+1);
     strncpy0(dest->data, src, len);
 }
@@ -151,10 +186,10 @@ typedef struct {
     OPDS h;
     STRINGDAT *S1, *S2;
     STRINGDAT *Spath;
-} PATHSPLIT;
+} SS_S;
 
 
-static int32_t pathSplit_opcode(CSOUND *csound, PATHSPLIT *p) {
+static int32_t pathSplit_opcode(CSOUND *csound, SS_S *p) {
     size_t pathlen = strlen(p->Spath->data);
     if(pathlen == 0) {
         return PERFERR("pathSplit: source path is empty");
@@ -181,7 +216,8 @@ static int32_t pathSplit_opcode(CSOUND *csound, PATHSPLIT *p) {
     return OK;
 }
 
-static int32_t pathSplitExt_opcode(CSOUND *csound, PATHSPLIT *p) {
+
+static int32_t pathSplitExt_opcode(CSOUND *csound, SS_S *p) {
     size_t pathlen = strlen(p->Spath->data);
     if(pathlen == 0) {
         return PERFERR("pathSplit: source path is empty");
@@ -211,13 +247,44 @@ typedef struct {
     STRINGDAT *s;
 } K_S;
 
+
+
+// this should be called on a native path
+static int32_t _path_is_absolute(char *path, size_t len) {
+#ifdef OS_WIN32
+    if(len < 2)
+        return 0;
+    if(path[1] == ':' && path[2] == '\\') {
+        // starts with a drive, it is absolute
+        return 1;
+    }
+    return 0;
+#else
+    if(len == 0)
+        return 0;
+    return path[0] == '/' ? 1 : 0;
+#endif
+}
+
+
 static int32_t pathIsAbsolute(CSOUND *csound, K_S *p) {
-    if(strlen(p->s->data) == 0) {
+    char *data = p->s->data;
+    size_t len = strlen(data);
+    if(len == 0) {
         MSG("Path is empty\n");
         return NOTOK;
     }
-    char sep = _get_path_separator();
-    *p->out = p->s->data[0] == sep ? 1 : 0;
+    if(len >= 1024) {
+        MSG("Path too long\n");
+        return NOTOK;
+    }
+#ifdef OS_WIN32
+    char tmp[1024];
+    strncpy0(tmp, data, len);
+    _path_make_native_inplace(tmp, len);
+    *p->out = _path_is_absolute(tmp, len);
+#endif
+    *p->out = _path_is_absolute(data, len);
     return OK;
 }
 
@@ -267,33 +334,41 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
         MSG("pathAbsolute: Path is empty\n");
         return NOTOK;
     }
-    char sep = _get_path_separator();
-    int isabsolute = p->s->data[0] == sep ? 1 : 0;
     size_t slen = strlen(p->s->data);
     if(slen > 1000) {
         MSG("pathAbsolute: Path two long!\n");
         return NOTOK;
     }
+
+    int isabsolute = _path_is_absolute(p->s->data, slen);
+    char sep = _get_path_separator();
     if (isabsolute) {
         stringdat_copy_cstr(csound, p->Sout, p->s->data, slen);
-    } else {
-        _string_ensure(csound, p->Sout, 1024);
-        if (getcwd(p->Sout->data, p->Sout->size - slen - 2) == NULL) {
-            stringdat_clear(csound, p->Sout);
-            MSG("Could not get the current working directory\n");
-            return NOTOK;
-        }
-        // now cat the abs path
-        size_t lenout = strlen(p->Sout->data);
-        _string_ensure(csound, p->Sout, lenout + 2 + slen);
-        char *outdata = p->Sout->data;
-        if(outdata[lenout-1] != sep) {
-            outdata[lenout] = sep;
-            strncpy0(outdata + lenout+1, p->s->data, slen);
-        } else {
-            strncpy0(outdata + lenout, p->s->data, slen);
-        }
+        return OK;
     }
+
+    _string_ensure(csound, p->Sout, 1024);
+    if (getcwd(p->Sout->data, p->Sout->size - slen - 2) == NULL) {
+        stringdat_clear(csound, p->Sout);
+        MSG("Could not get the current working directory\n");
+        return NOTOK;
+    }
+
+    // now cat the abs path
+    size_t lenout = strlen(p->Sout->data);
+    _string_ensure(csound, p->Sout, lenout + 2 + slen);
+    char *outdata = p->Sout->data;
+    if(outdata[lenout-1] != sep) {
+        outdata[lenout] = sep;
+        strncpy0(outdata + lenout+1, p->s->data, slen);
+        lenout += slen + 1;
+    } else {
+        strncpy0(outdata + lenout, p->s->data, slen);
+        lenout += slen;
+    }
+#ifdef OS_WIN32
+    _path_make_native_inplace(outdata, lenout);
+#endif
     return OK;
 }
 
@@ -341,6 +416,43 @@ static int32_t pathOfScript(CSOUND *csound, S_ *p) {
     return OK;
 }
 
+// convert the path to its native version (using native separators)
+static int32_t pathNative(CSOUND *csound, S_S *p) {
+    size_t len = strlen(p->s->data);
+    stringdat_copy_cstr(csound, p->Sout, p->s->data, len);
+    char *outdata = p->Sout->data;
+#ifdef OS_WIN32
+    char wrongsep = '/';
+    char sep = '\\';
+#else
+    char wrongsep = '\\';
+    char sep = '/';
+#endif
+    _str_replace_inplace(outdata, len, wrongsep, sep);
+    return OK;
+}
+
+static int32_t getPlatform(CSOUND *csound, S_ *p) {
+#ifdef OS_WIN32
+    stringdat_copy_literal(csound, p->Sout, "windows");
+    return OK;
+#endif
+#ifdef __APPLE__
+    stringdat_copy_literal(csound, p->Sout, "macos");
+    return OK;
+#endif
+#ifdef __linux__
+    stringdat_copy_literal(csound, p->Sout, "linux");
+    return OK;
+#endif
+#ifdef __unix__
+    stringdat_copy_literal(csound, p->Sout, "unix");
+    return OK;
+#else
+    stringdat_clear(csound, p->Sout);
+    return OK;
+#endif
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -348,18 +460,19 @@ static int32_t pathOfScript(CSOUND *csound, S_ *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-    { "pathSplit", S(PATHSPLIT), 0, 1, "SS", "S", (SUBR)pathSplit_opcode },
-    { "pathSplitk", S(PATHSPLIT), 0, 2, "SS", "S", NULL, (SUBR)pathSplit_opcode },
-    { "pathSplitExt", S(PATHSPLIT), 0, 1, "SS", "S", (SUBR)pathSplitExt_opcode },
-    { "pathSplitExtk", S(PATHSPLIT), 0, 2, "SS", "S", NULL, (SUBR)pathSplitExt_opcode },
+    { "pathSplit", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplit_opcode },
+    { "pathSplitk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplit_opcode },
+    { "pathSplitExt", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplitExt_opcode },
+    { "pathSplitExtk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplitExt_opcode },
     { "pathIsAbsolute.i", S(K_S), 0, 1, "i", "S", (SUBR)pathIsAbsolute},
     { "pathIsAbsolute.k", S(K_S), 0, 2, "k", "S", NULL, (SUBR)pathIsAbsolute},
     { "pathAbsolute", S(S_S), 0, 1, "S", "S", (SUBR)pathAbsolute},
     { "pathJoin", S(S_SS), 0, 1, "S", "SS", (SUBR)pathJoin},
     { "findFileInPath", S(S_S), 0, 1, "S", "S", (SUBR)findFile},
     { "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar },
-    { "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript }
-
+    { "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript },
+    { "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative },
+    { "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform}
 };
 
 LINKAGE
