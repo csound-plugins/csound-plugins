@@ -24,14 +24,21 @@ nchnls = 2
 instr 1
     prints "\n\n"
     
-    Spath = "/home/bar"
-    prints "Path %s is absolute? %d\n", Spath, pathIsAbsolute:i(Spath)
+    Splatform sysPlatform
+
+    if strcmp(Splatform, "windows") == 0 then
+        Spath = "C:/home/bar"
+        prints "Path %s is absolute? %d\n", Spath, pathIsAbsolute:i(Spath)
+
+    else
+        Spath = "/home/bar"
+        prints "Path %s is absolute? %d\n", Spath, pathIsAbsolute:i(Spath)
+    endif
 
     Spath = "./foo"
     prints "Path %s is absolute? %d\n", Spath, pathIsAbsolute:i(Spath)
-    
+
     prints "\n\n"
-    
     turnoff
 endin
 
