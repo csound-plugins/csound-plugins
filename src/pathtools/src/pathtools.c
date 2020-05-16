@@ -349,6 +349,15 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
         return NOTOK;
     }
 
+#ifdef OS_WIN32
+    if(p->s->data[0] == '/') {
+        MSG("Path is ambiguous. This looks like a unix absolute path (it starts with a "
+            " forward slash), but is not an absolute path in windows. Prepending the "
+            " current working directory will probably result in an invalid path");
+        return NOTOK;
+    }
+#endif
+
     int isabsolute = _path_is_absolute(p->s->data, slen);
     char sep = _get_path_separator();
     if (isabsolute) {
