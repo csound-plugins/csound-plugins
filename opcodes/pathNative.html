@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>dict_new - Csound Plugins</title>
+  <title>pathNative - Csound Plugins</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "dict_new";
-    var mkdocs_page_input_path = "opcodes/dict_new.md";
+    var mkdocs_page_name = "pathNative";
+    var mkdocs_page_input_path = "opcodes/pathNative.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -112,35 +112,9 @@
                     
     <a class="" href="dict_iter.html">dict_iter</a>
                 </li>
-                <li class=" current">
+                <li class="">
                     
-    <a class="current" href="dict_new.html">dict_new</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#dict_new">dict_new</a></li>
-    
-        <ul>
-        
-            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
-        
-            <li><a class="toctree-l4" href="#description">Description</a></li>
-        
-            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
-        
-            <li><a class="toctree-l4" href="#types">Types</a></li>
-        
-            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
-        
-            <li><a class="toctree-l4" href="#examples">Examples</a></li>
-        
-            <li><a class="toctree-l4" href="#see-also">See also</a></li>
-        
-            <li><a class="toctree-l4" href="#credits">Credits</a></li>
-        
-        </ul>
-    
-
-    </ul>
+    <a class="" href="dict_new.html">dict_new</a>
                 </li>
                 <li class="">
                     
@@ -222,9 +196,37 @@
                     
     <a class="" href="pathJoin.html">pathJoin</a>
                 </li>
-                <li class="">
+                <li class=" current">
                     
-    <a class="" href="pathNative.html">pathNative</a>
+    <a class="current" href="pathNative.html">pathNative</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#pathnative">pathNative</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#abstract">Abstract</a></li>
+        
+            <li><a class="toctree-l4" href="#description">Description</a></li>
+        
+            <li><a class="toctree-l4" href="#syntax">Syntax</a></li>
+        
+            <li><a class="toctree-l4" href="#arguments">Arguments</a></li>
+        
+            <li><a class="toctree-l4" href="#output">Output</a></li>
+        
+            <li><a class="toctree-l4" href="#execution-time">Execution Time</a></li>
+        
+            <li><a class="toctree-l4" href="#examples">Examples</a></li>
+        
+            <li><a class="toctree-l4" href="#see-also">See also</a></li>
+        
+            <li><a class="toctree-l4" href="#credits">Credits</a></li>
+        
+        </ul>
+    
+
+    </ul>
                 </li>
                 <li class="">
                     
@@ -379,7 +381,7 @@
         
       
     
-    <li>dict_new</li>
+    <li>pathNative</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -389,178 +391,51 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="dict_new">dict_new</h1>
+                <h1 id="pathnative">pathNative</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Create a hashtable </p>
+<p>Convert a path to its native version</p>
 <h2 id="description">Description</h2>
-<p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes 
-implement a hashtable mapping either strings or integers to strings or floats.</p>
-<h3 id="local-vs-global">Local vs Global</h3>
-<p>A hashtable can be either <strong>local</strong>, in which case its lifespan is fixed to the lifespan 
-of the note it was created in; or it can be <strong>global</strong>, in which case <strong>it is not 
-deallocated</strong> when the note is released and is kept alive until either the end 
-of the performance, or until freed via <a href="dict_free.html">dict_free</a></p>
-<p><code>dict_new</code> runs only at <strong>i-time</strong></p>
+<p>Convert a path to a native path by replacing path separators to
+the native separators ('/' in unix, '\' in windows)</p>
+<p>This is only useful when passing paths to external processes which
+need an absolute, native path</p>
+<p><strong>NB</strong>: do not use absolute paths when writing cross-platform paths,
+since it is not possible to convert an absolute unix path to an absolute
+windows path (because of windows use of drives)</p>
+<p><strong>NB2</strong>: windows already converts any forward slash to backwards slash, so
+as long as you use relative paths, there is no need to use this</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span>idict dict_new Stype
-idict dict_new Stype, key0, value0, key1, value1, ...
-</pre></div>
-
-
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>With the second variant it is possible to create a dict and give it initial values at init-time. </p>
-</div>
-<h2 id="types">Types</h2>
-<p>The types of a dict are fixed at creation time and are specified via the <code>Stype</code> argument. To declare a dict as <code>global</code>, prefix the type with a "*". </p>
-<table>
-<thead>
-<tr>
-<th align="left">type</th>
-<th align="left">shortform</th>
-<th>as global</th>
-<th align="left">key</th>
-<th align="left">value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left">str:float</td>
-<td align="left">sf</td>
-<td><em>str:float or </em>sf</td>
-<td align="left">string</td>
-<td align="left">float</td>
-</tr>
-<tr>
-<td align="left">str:str</td>
-<td align="left">ss</td>
-<td><em>str:str or </em>ss</td>
-<td align="left">string</td>
-<td align="left">string</td>
-</tr>
-<tr>
-<td align="left">int:float</td>
-<td align="left">if</td>
-<td><em>int:float or </em>if</td>
-<td align="left">int</td>
-<td align="left">float</td>
-</tr>
-<tr>
-<td align="left">int:str</td>
-<td align="left">is</td>
-<td><em>int:str or </em>is</td>
-<td align="left">int</td>
-<td align="left">string</td>
-</tr>
-<tr>
-<td align="left">str:any</td>
-<td align="left">sa</td>
-<td><em>str:any or </em>sa</td>
-<td align="left">string</td>
-<td align="left">any</td>
-</tr>
-</tbody>
-</table>
-<h3 id="any-type"><code>any</code> type</h3>
-<p>A dict of the form <code>str:any</code> accepts strings as keys and can have both strings and numbers as values. This can be used to pass arguments to an instrument like</p>
-<div class="codehilite"><pre><span></span>    <span class="kt">i</span><span class="n">args</span> <span class="n">dict_new</span> <span class="s">&quot;*sa&quot;</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span><span class="p">,</span> <span class="mf">0.5</span>
-    <span class="nb">schedule</span> <span class="s">&quot;myinstr&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">args</span>
-
-    <span class="c1">; then, inside myinstr</span>
-    <span class="kd">instr</span> <span class="nf">myinstr</span>
-      <span class="kt">i</span><span class="n">args</span> <span class="o">=</span> <span class="vi">p4</span>
-      <span class="kt">S</span><span class="n">name</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;name&quot;</span>
-      <span class="kt">k</span><span class="n">freq</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span>
-      <span class="kt">k</span><span class="n">amp</span>  <span class="n">dict_get</span> <span class="kt">i</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span>
-      <span class="c1">; ... do something with this</span>
-    <span class="kd">endin</span>
+<div class="codehilite"><pre><span></span>Snative pathNative Spath
 </pre></div>
 
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li>
-<p><code>Stype</code>: a string describing the type of the key and the value. See the table above. <strong>NB</strong>: to declare the dict as global, prepend the type string with a "*".</p>
-</li>
-<li>
-<p><code>key0</code>, <code>value0</code>, <code>key1</code>, <code>value1</code>, etc: initial pairs can be set at creation time, matching 
-              the types declared with <code>Stype</code> </p>
-</li>
+<li><code>Spath</code>: the path to convert</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>idict</code>: identifies this dict with an integer. This integer can be passed around to another instrument and will always resolve to the same dict, as long as this dict is still alive. This can be checked via <code>dict_query idict, "exists"</code></li>
+<li><code>Snative</code>: the native path</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="c1">; -odac  -iadc    ;;;RT audio out and in</span>
+<div class="codehilite"><pre><span></span><span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;foo/bar/baz.txt&quot;</span>
+<span class="kt">S</span><span class="n">native</span> <span class="n">pathNative</span> <span class="kt">S</span><span class="n">path</span>
+<span class="nb">prints</span> <span class="s">&quot;Original: </span><span class="si">%s</span><span class="s">, Native version: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">native</span>
 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-
-<span class="kd">instr</span> <span class="nf">1</span> 
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
-
-  <span class="c1">; set key a key:value pair</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>
-
-  <span class="c1">; retrieve the value</span>
-  <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
-
-  <span class="c1">; get a non-existent key, will output the default</span>
-  <span class="kt">k</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> 
-
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span> 
-
-  <span class="c1">; now create another dict, this one will outlive this note</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;*str:str&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
-
-  <span class="c1">; schedule another inst, pass this dict</span>
-  <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict2</span>
-
-  <span class="nb">turnoff</span>
-
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">baz</span> <span class="o">=</span> <span class="n">dict_get</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">)</span>
-  <span class="nb">printf</span> <span class="s">&quot;instr 2, kbaz = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">baz</span>
-
-  <span class="c1">; free dict at the end of this note</span>
-  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="c1">; schedule 1, 0, 1</span>
-
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">2</span>
-
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="c1">; this should print the original in unix, &quot;foo\bar\baz.txt&quot; in windows</span>
 </pre></div>
 
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="dict_free.html">dict_free</a></li>
-<li><a href="dict_set.html">dict_set</a></li>
+<li><a href="pathNative.html">pathNative</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2020</p>
               
             </div>
           </div>
@@ -568,10 +443,10 @@ idict dict_new Stype, key0, value0, key1, value1, ...
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dict_print.html" class="btn btn-neutral float-right" title="dict_print">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="pathSplit.html" class="btn btn-neutral float-right" title="pathSplit">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="dict_iter.html" class="btn btn-neutral" title="dict_iter"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="pathJoin.html" class="btn btn-neutral" title="pathJoin"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -597,10 +472,10 @@ idict dict_new Stype, key0, value0, key1, value1, ...
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="dict_iter.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="pathJoin.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="dict_print.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="pathSplit.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
