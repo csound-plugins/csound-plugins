@@ -36,7 +36,7 @@
     #define OS_WIN32
 #endif
 
-#define USE_POSIX_PATH
+// #define USE_POSIX_PATH
 
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
@@ -81,7 +81,7 @@ static inline char _get_path_separator() {
     return '/';
 #endif
 #ifdef OS_WIN32
-        printf("Win32! \n");
+    printf("Win32! \n");
     return '\\';
 #else
     return '/';
@@ -258,7 +258,7 @@ static int32_t _path_is_absolute(char *path, size_t len) {
 #ifdef OS_WIN32
     if(len < 2)
         return 0;
-    if(path[1] == ':' && path[2] == sep) {
+    if(path[1] == ':' && (path[2] == '/' || path[2] == '\\') ) {
         // starts with a drive, it is absolute
         return 1;
     }
@@ -278,16 +278,6 @@ static int32_t pathIsAbsolute(CSOUND *csound, K_S *p) {
         MSG("Path is empty\n");
         return NOTOK;
     }
-    if(len >= 1024) {
-        MSG("Path too long\n");
-        return NOTOK;
-    }
-#ifdef OSgeWIN32
-    char tmp[1024];
-    strncpy0(tmp, data, len);
-    _path_make_native_inplace(tmp, len);
-    *p->out = _path_is_absolute(tmp, len);
-#endif
     *p->out = _path_is_absolute(data, len);
     return OK;
 }
