@@ -36,7 +36,7 @@
     #define OS_WIN32
 #endif
 
-// #define USE_POSIX_PATH
+#define FORCE_FORWARD_SLASH
 
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
@@ -77,7 +77,7 @@
 
 
 static inline char _get_path_separator() {
-#ifdef USE_POSIX_PATH
+#ifdef FORCE_FORWARD_SLASH
     return '/';
 #endif
 #ifdef OS_WIN32
@@ -146,13 +146,11 @@ static int32_t _str_rfind(const char *s, char ch) {
 }
 
 
-static void _str_replace_inplace(char *s, size_t n, char orig, char replacement) {
-    for(size_t i=0; i < n; i++) {
-        char c = s[i];
-        if (c==0)
-            break;
-        if (c == orig)
-            s[i] = replacement;
+static void _str_replace_inplace(char *s, char orig, char replacement) {
+    while (*s) {
+        if(*s == orig)
+            *s = replacement;
+        s++;
     }
 }
 
@@ -165,7 +163,7 @@ static void _path_make_native_inplace(char *s, size_t len) {
     char wrongsep = '\\';
     char sep = '/';
 #endif
-    _str_replace_inplace(s, len, sep, wrongsep);
+    _str_replace_inplace(s, sep, wrongsep);
 }
 
 
@@ -302,6 +300,15 @@ typedef struct {
 } S_SS;
 
 
+// this should only be called in windows
+static void _win32_normalize_path_slashes(char *s) {
+#ifdef FORCE_FORWARD_SLASH
+    _str_replace_inplace(s, '\\', '/');
+#else
+    _str_replace_inplace(s, '/', '\\');
+#endif
+}
+
 static int32_t pathJoin(CSOUND *csound, S_SS *p) {
     size_t len1 = strlen(p->S1->data);
     size_t len2 = strlen(p->S2->data);
@@ -310,7 +317,12 @@ static int32_t pathJoin(CSOUND *csound, S_SS *p) {
         stringdat_copy_cstr(csound, p->Sout, p->S2->data, len2);
         return OK;
     }
-    _string_ensure(csound, p->Sout, len1+1+len2+1);
+    else if(len2 == 0) {
+        stringdat_copy_cstr(csound, p->Sout, p->S1->data, len1);
+        return OK;
+    }
+    size_t soutlen = len1+len2+2;
+    _string_ensure(csound, p->Sout, soutlen);
     strncpy0(p->Sout->data, p->S1->data, len1);
     if(p->Sout->data[len1-1] != sep) {
         p->Sout->data[len1] = sep;
@@ -319,6 +331,9 @@ static int32_t pathJoin(CSOUND *csound, S_SS *p) {
         // it already has a separator, just join them
         strncpy0(p->Sout->data + len1, p->S2->data, len2);
     }
+#ifdef OS_WIN32
+    _win32_normalize_path_slashes(p->Sout->data);
+#endif
     return OK;
 }
 
@@ -360,6 +375,10 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
         strncpy0(outdata + lenout, p->s->data, slen);
         lenout += slen;
     }
+#ifdef OS_WIN32
+    _win32_normalize_path_slashes(p->Sout->data);
+#endif
+
     return OK;
 }
 
@@ -419,7 +438,7 @@ static int32_t pathNative(CSOUND *csound, S_S *p) {
     char wrongsep = '\\';
     char sep = '/';
 #endif
-    _str_replace_inplace(outdata, len, wrongsep, sep);
+    _str_replace_inplace(outdata, wrongsep, sep);
     return OK;
 }
 
