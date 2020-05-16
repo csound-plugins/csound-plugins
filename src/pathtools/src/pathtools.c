@@ -36,6 +36,8 @@
     #define OS_WIN32
 #endif
 
+#define USE_POSIX_PATH
+
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
@@ -75,8 +77,11 @@
 
 
 static inline char _get_path_separator() {
+#ifdef USE_POSIX_PATH
+    return '/';
+#endif
 #ifdef OS_WIN32
-    printf("Win32! \n");
+        printf("Win32! \n");
     return '\\';
 #else
     return '/';
@@ -248,13 +253,12 @@ typedef struct {
 } K_S;
 
 
-
-// this should be called on a native path
 static int32_t _path_is_absolute(char *path, size_t len) {
+    char sep = _get_path_separator();
 #ifdef OS_WIN32
     if(len < 2)
         return 0;
-    if(path[1] == ':' && path[2] == '\\') {
+    if(path[1] == ':' && path[2] == sep) {
         // starts with a drive, it is absolute
         return 1;
     }
@@ -262,7 +266,7 @@ static int32_t _path_is_absolute(char *path, size_t len) {
 #else
     if(len == 0)
         return 0;
-    return path[0] == '/' ? 1 : 0;
+    return path[0] == sep ? 1 : 0;
 #endif
 }
 
@@ -278,7 +282,7 @@ static int32_t pathIsAbsolute(CSOUND *csound, K_S *p) {
         MSG("Path too long\n");
         return NOTOK;
     }
-#ifdef OS_WIN32
+#ifdef OSgeWIN32
     char tmp[1024];
     strncpy0(tmp, data, len);
     _path_make_native_inplace(tmp, len);
@@ -354,7 +358,7 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
         return NOTOK;
     }
 
-    // now cat the abs path
+    // now concatenate the abs path
     size_t lenout = strlen(p->Sout->data);
     _string_ensure(csound, p->Sout, lenout + 2 + slen);
     char *outdata = p->Sout->data;
@@ -366,9 +370,6 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
         strncpy0(outdata + lenout, p->s->data, slen);
         lenout += slen;
     }
-#ifdef OS_WIN32
-    _path_make_native_inplace(outdata, lenout);
-#endif
     return OK;
 }
 

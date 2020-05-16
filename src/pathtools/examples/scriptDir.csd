@@ -28,11 +28,12 @@ instr 1
     prints "\n\n"
     
     Sscriptdir scriptDir
-    prints "Directory of current script: %s \n\n", Sscriptdir
-
     Scwd pwd
-    prints "Current working dir: %s\n", Scwd
+        
+    prints "Directory of current script: %s \n", Sscriptdir
+    prints "Current working dir        : %s\n", Scwd
 
+    prints "\n"
     turnoff
 
 endin
