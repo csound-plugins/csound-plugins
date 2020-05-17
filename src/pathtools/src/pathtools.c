@@ -351,9 +351,9 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
 
 #ifdef OS_WIN32
     if(p->s->data[0] == '/') {
-        MSG("Path is ambiguous. This looks like a unix absolute path (it starts with a "
-            " forward slash), but is not an absolute path in windows. Prepending the "
-            " current working directory will probably result in an invalid path");
+        MSG("Path is ambiguous. This looks like a unix absolute path (it starts with a\n"
+            " forward slash), but is not an absolute path in windows. Prepending the \n"
+            " current working directory will probably result in an invalid path\n");
         return NOTOK;
     }
 #endif
