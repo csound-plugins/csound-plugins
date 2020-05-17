@@ -11,17 +11,22 @@ different sigmoid equations are implemented.
 
 #### mode 0
 
+```c
     out = tanh(in * drivefactor)
+```
 
 #### mode 1
 
-    if in > 0    then   out = 1.0 - pow(1. - in, drivefactor)
-    if in <= 0   then   out = pow(1. + x, drivefactor) - 1.0
+
+    if in > 0    -> out = 1.0 - pow(1. - in, drivefactor)
+    if in <= 0   -> out = pow(1. + x, drivefactor) - 1.0
 
 
 ## Syntax
 
+```csound
     aout sigmdrive ain, xdrivefactor, kmode=0
+```
     
 ### Arguments
 

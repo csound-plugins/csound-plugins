@@ -75,6 +75,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [defer](opcodes/defer.md): Run an opcode at the end of an event 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
+* [errormsg](opcodes/errormsg.md): Throws an error message at performance 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 

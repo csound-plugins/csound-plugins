@@ -26,7 +26,9 @@ the output value is set to `inotfound`.
   
 ## Syntax
 
-    output:i|k pread instrnum:i, index:i|k [, inotfound=-1] 
+```csound
+output:i|k pread instrnum:i, index:i|k [, inotfound=-1] 
+```
     
 ### Arguments
 

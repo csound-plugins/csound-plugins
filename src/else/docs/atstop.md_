@@ -32,9 +32,12 @@ being used by this note, there are no conflicts with release envelopes, etc.
 
 ## Syntax
 
-    atstop instrnum   [, idelay=0, idur=-1, p4, p5, ...]
-    atstop Sinstrname [, idelay=0, idur=-1, p4, p5, ...]
-          
+```csound
+
+atstop instrnum   [, idelay=0, idur=-1, p4, p5, ...]
+atstop Sinstrname [, idelay=0, idur=-1, p4, p5, ...]
+
+```          
 
 > `atstop` executes only at **init time**. 
     

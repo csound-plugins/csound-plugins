@@ -1,15 +1,17 @@
 td.linenos { background-color: #f0f0f0; padding-right: 10px; }
 span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }
+
 pre  { line-height: 140%;
       background-color: #f0f0f8;
-      padding: 10px;
+      padding: 0px;
+      font-size: 92% !important;}
       
-      font-size: 88% !important;}
 code {
-    font-size: 90% !important; 
-    border: 0;
+    font-size: 92% !important; 
+    border: none !important;
     color: #992222;
 }
+
 body .hll { background-color: #ffffcc }
 body  { background: #08a8f8; }
 body .c { color: #408080; font-style: italic } /* Comment */

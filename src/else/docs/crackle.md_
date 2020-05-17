@@ -15,7 +15,11 @@ Port of supercollider's [Crackle](http://doc.sccode.org/Classes/Crackle.html)
 
 ## Syntax
 
-    aout crackle kp
+```csound
+
+aout crackle kp
+    
+```
     
 ### Arguments
 

@@ -25,9 +25,13 @@ the ftable during the lifetime of the view.
 
 ## Syntax
 
-    iView[]  memview ift,      [, istart=0, iend=0]
-    kView[]  memview iSource[] [, istart=0, iend=0]
-    kView[]  memview kSource[] [, istart=0, iend=0]
+```csound
+
+iView[]  memview ift,      [, istart=0, iend=0]
+kView[]  memview iSource[] [, istart=0, iend=0]
+kView[]  memview kSource[] [, istart=0, iend=0]
+
+```
 
 ### Arguments
 

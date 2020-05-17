@@ -22,9 +22,11 @@ A trigger detected whenever the value is possitive and higher than the previous 
 
 ## Syntax
 
-    kout ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
-    kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
-    
+```csound
+kout ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
+kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
+```
+
 ### Arguments
 
 * `ktrig`: whenever this is possitive and higher than last value, kout is rewinded to 0

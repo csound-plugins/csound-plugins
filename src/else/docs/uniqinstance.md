@@ -20,8 +20,12 @@ instance of the given instrument
 
 ## Syntax
 
-    instrnum  uniqinstance integer_instrnum
-    instrnum  uniqinstance Sinstrname
+```csound
+
+instrnum  uniqinstance integer_instrnum
+instrnum  uniqinstance Sinstrname
+
+```
     
 ### Arguments
 

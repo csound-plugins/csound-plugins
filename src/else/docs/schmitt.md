@@ -25,7 +25,11 @@ Port of pd/else's `schmitt`
 
 ## Syntax
 
-    xout  schmitt xin, khigh, klow
+```csound
+
+xout  schmitt xin, khigh, klow
+
+```
     
 ### Arguments
 

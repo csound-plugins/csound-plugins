@@ -16,7 +16,9 @@ the following difference equations;
 
 ## Syntax
 
+```csound
     aout standardchaos krate, kk=1, ix=0.5, iy=0
+```
     
 ### Arguments
 

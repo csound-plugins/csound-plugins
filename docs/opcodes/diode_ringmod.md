@@ -20,8 +20,9 @@ stage.
 
 ## Syntax
 
-    aout diode_ringmod ain, kfreq, kdiode=0, kfeedback=0, knonlinear=0, koversample=0
-    
+```csound
+aout diode_ringmod ain, kfreq, kdiode=0, kfeedback=0, knonlinear=0, koversample=0
+```
 
 ### Arguments
 

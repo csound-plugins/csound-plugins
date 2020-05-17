@@ -13,8 +13,11 @@ of interpolating between the generated values. Output is always band limited.
 ## Syntax
 
 
-    aout lfnoise krate, kinterp=0
+```csound
 
+aout lfnoise krate, kinterp=0
+
+```
     
 ### Arguments
 

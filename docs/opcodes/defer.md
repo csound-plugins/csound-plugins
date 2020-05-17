@@ -27,12 +27,14 @@ This can be used to perform some cleanup, schedule an event, print something, et
 
 ## Syntax
 
-    defer Sopcode [arg1, ...]
+```csound
+defer Sopcode *args
+```
             
 ## Arguments
 
 * `Sopcode`: the name of the opcode to run at deinit time
-* `args`: any argument passed to the opcode itself
+* `args`: arguments passed to the opcode itself
 
 ## Execution Time
 

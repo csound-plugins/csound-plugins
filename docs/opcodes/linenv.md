@@ -15,8 +15,12 @@ the rest of the defined points.
 
 ## Syntax
 
-    xout linenv kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...]
-    
+```csound
+
+xout linenv kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...]
+
+```
+
 ### Arguments
 
 * `kgate`: whenever this switches from 0 to 1 a new envelope starts

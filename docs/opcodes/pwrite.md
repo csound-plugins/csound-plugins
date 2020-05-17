@@ -34,7 +34,11 @@ changes to **ALL** instruments with the same integer number.
 
 ## Syntax
 
-    pwrite instrnum:i, index:i|k, value:i|k
+```csound
+
+pwrite instrnum:i, index:i|k, value:i|k
+
+```
     
 ### Arguments
 

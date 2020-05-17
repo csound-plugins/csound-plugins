@@ -12,8 +12,12 @@ for example, as `p1`) back to an integer.
 
 ## Syntax
 
-    iInt frac2int iFloat, iMul
-    kInt frac2int kFloat, kMul
+```csound
+
+iInt frac2int iFloat, iMul
+kInt frac2int kFloat, kMul
+
+```
 
 ## Arguments
 

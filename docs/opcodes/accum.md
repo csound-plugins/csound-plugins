@@ -15,7 +15,10 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
 
 ## Syntax
 
-    kout accum kin, initial=0
+
+```csound
+kout accum kin, initial=0
+```
     
 ## Arguments
 

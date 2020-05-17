@@ -16,9 +16,10 @@ the given reference index corresponds to a valid reference
 
 ## Syntax
 
-    iout refvalid iref
-    kout refvalid kref
-   
+```csound
+iout refvalid iref
+kout refvalid kref
+```   
 
 ## Arguments
 

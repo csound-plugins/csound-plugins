@@ -17,9 +17,10 @@ a reference it is possible also to control an event from another event.
 
 ## Syntax
 
-    xArray deref iref
-    xvar   deref iref
-
+```csound
+xArray deref iref
+xvar   deref iref
+```
 
 ### Arguments
 

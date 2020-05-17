@@ -2042,6 +2042,35 @@ static void _init_array_view(CSOUND *csound, ARRAYDAT *outarr, MYFLT *sourcedata
 }
 
 
+// arrsetslice in, start=0, end=0, step=1
+// arrsetslice in, start=0, end=0
+typedef struct {
+    OPDS h;
+    ARRAYDAT *in;
+    MYFLT *value, *start, *end, *step;
+} ARRSETSLICE;
+
+static int32_t
+array_set_slice(CSOUND *csound, ARRSETSLICE *p) {
+    if(p->in->dimensions!=1) {
+        MSGF("Expected array of 1 dimension, but array has"
+             "got %d dimensions", p->in->dimensions);
+        return NOTOK;
+    }
+    int32_t start = (int32_t)*p->start;
+    int32_t end = (int32_t)*p->end;
+    int32_t step = (int32_t)*p->step;
+    MYFLT value = *p->value;
+    if(end == 0) {
+        end = p->in->sizes[0];
+    }
+    MYFLT *data = p->in->data;
+    for(int i=start; i<end; i+=step) {
+        data[i] = value;
+    }
+    return OK;
+}
+
 
 typedef struct {
     OPDS h;
@@ -2052,35 +2081,35 @@ typedef struct {
 } TABALIAS;
 
 static int
-tabalias_deinit(CSOUND *csound, TABALIAS *p) {
-    IGN(csound);
-    p->out->data = NULL;
-    p->out->sizes[0] = 0;
-    return OK;
-}
+        tabalias_deinit(CSOUND *csound, TABALIAS *p) {
+        IGN(csound);
+        p->out->data = NULL;
+        p->out->sizes[0] = 0;
+        return OK;
+    }
 
-static int
-tabalias_init(CSOUND *csound, TABALIAS *p) {
-    FUNC *ftp;
-    ftp = csound->FTnp2Find(csound, p->ifn);
-    if (UNLIKELY(ftp == NULL))
-        return NOTOK;
-    int tabsize = ftp->flen;
-    int start = (int)*p->istart;
-    int end   = (int)*p->iend;
-    if(end == 0)
-        end = tabsize;
-    p->size = end - start;
-    p->ftp = ftp;
+    static int
+        tabalias_init(CSOUND *csound, TABALIAS *p) {
+        FUNC *ftp;
+        ftp = csound->FTnp2Find(csound, p->ifn);
+        if (UNLIKELY(ftp == NULL))
+            return NOTOK;
+        int tabsize = ftp->flen;
+        int start = (int)*p->istart;
+        int end   = (int)*p->iend;
+        if(end == 0)
+            end = tabsize;
+        p->size = end - start;
+        p->ftp = ftp;
 
-    if (tabsize < end)
-        return INITERR("end is bigger than the length of the table");
+        if (tabsize < end)
+            return INITERR("end is bigger than the length of the table");
 
-    _init_array_view(csound, p->out, &(ftp->ftable[start]), end-start,
-                     sizeof(MYFLT)*(tabsize-start));
-    register_deinit(csound, p, tabalias_deinit);
-    return OK;
-}
+        _init_array_view(csound, p->out, &(ftp->ftable[start]), end-start,
+                         sizeof(MYFLT)*(tabsize-start));
+        register_deinit(csound, p, tabalias_deinit);
+        return OK;
+    }
 
 
 /*
@@ -2091,47 +2120,47 @@ tabalias_init(CSOUND *csound, TABALIAS *p) {
   An array view into another array, useful to operate on a row
   of a large 2D array.
 
- */
+*/
 
 
-typedef struct {
-    OPDS h;
-    ARRAYDAT *out, *in;
-    MYFLT *istart, *iend;
-    MYFLT *dataptr;
-    int size;
-} ARRAYVIEW;
+    typedef struct {
+        OPDS h;
+        ARRAYDAT *out, *in;
+        MYFLT *istart, *iend;
+        MYFLT *dataptr;
+        int size;
+    } ARRAYVIEW;
 
-static void _array_view_deinit(ARRAYDAT *arr) {
-    arr->data = NULL;
-    arr->sizes[0] = 0;
-}
-
-
-static int
-arrayview_deinit(CSOUND *csound, ARRAYVIEW *p) {
-    IGN(csound);
-    _array_view_deinit(p->out);
-    return OK;
-}
+    static void _array_view_deinit(ARRAYDAT *arr) {
+        arr->data = NULL;
+        arr->sizes[0] = 0;
+    }
 
 
-static int32_t
-arrayview_init(CSOUND *csound, ARRAYVIEW *p) {
-    if(p->in->data == NULL)
-        return INITERR("source array has not been initialized");
-    if(p->in->dimensions > 1)
-        return INITERR(Str("A view can only be taken from a 1D array"));
+    static int
+        arrayview_deinit(CSOUND *csound, ARRAYVIEW *p) {
+        IGN(csound);
+        _array_view_deinit(p->out);
+        return OK;
+    }
 
-    int end   = (int)*p->iend;
-    int start = (int)*p->istart;
-    if(end == 0)
-        end = p->in->sizes[0];
-    _init_array_view(csound, p->out, &(p->in->data[start]), end - start,
-                     p->in->allocated - start);
-    register_deinit(csound, p, arrayview_deinit);
-    return OK;
-}
+
+    static int32_t
+        arrayview_init(CSOUND *csound, ARRAYVIEW *p) {
+        if(p->in->data == NULL)
+            return INITERR("source array has not been initialized");
+        if(p->in->dimensions > 1)
+            return INITERR(Str("A view can only be taken from a 1D array"));
+
+        int end   = (int)*p->iend;
+        int start = (int)*p->istart;
+        if(end == 0)
+            end = p->in->sizes[0];
+        _init_array_view(csound, p->out, &(p->in->data[start]), end - start,
+                         p->in->allocated - start);
+        register_deinit(csound, p, arrayview_deinit);
+        return OK;
+    }
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2147,81 +2176,81 @@ arrayview_init(CSOUND *csound, ARRAYVIEW *p) {
  */
 
 
-enum RefType { RefScalar, RefAudio, RefArrayScalar };
+    enum RefType { RefScalar, RefAudio, RefArrayScalar };
 
 
-typedef struct {
-    int active;
-    MYFLT *data;
-    enum RefType type;
-    int size;
-    size_t allocated;
-    int refcount;
-    int forward_refs;
-    int ownsdata;
-    int isglobal;
-} REF_HANDLE;
+    typedef struct {
+        int active;
+        MYFLT *data;
+        enum RefType type;
+        int size;
+        size_t allocated;
+        int refcount;
+        int forward_refs;
+        int ownsdata;
+        int isglobal;
+    } REF_HANDLE;
 
-typedef struct {
-    CSOUND *csound;
-    int numhandles;
-    REF_HANDLE *handles;
-    intarray_t slots;
-} REF_GLOBALS;
+    typedef struct {
+        CSOUND *csound;
+        int numhandles;
+        REF_HANDLE *handles;
+        intarray_t slots;
+    } REF_GLOBALS;
 
 // static int32_t ref_reset(CSOUND *csound, REF_GLOBALS *g);
 
 #define REF_GLOBALS_VARNAME "__ref_globals__"
 
-static REF_GLOBALS *ref_globals(CSOUND *csound) {
-    REF_GLOBALS *g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
-    if(g != NULL) return g;
+    static REF_GLOBALS *ref_globals(CSOUND *csound) {
+        REF_GLOBALS *g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
+        if(g != NULL) return g;
 
-    int err = csound->CreateGlobalVariable(csound, REF_GLOBALS_VARNAME, sizeof(REF_GLOBALS));
-    if(err != 0) {
-        INITERR("failed to create globals for ref");
-        return NULL;
-    }
-    g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
-    g->csound = csound;
-    g->handles = csound->Calloc(csound, sizeof(REF_HANDLE) * 8);
-    g->numhandles = 64;
-    intpool_init(csound, &(g->slots), g->numhandles);
-    // csound->RegisterResetCallback(csound, (void *)g, (int32_t(*)(CSOUND*, void*))ref_reset);
-    return g;
-}
-
-static inline void _ref_handle_init(REF_HANDLE *h) {
-    h->refcount = 0;
-    h->forward_refs = 0;
-    h->ownsdata = 0;
-    h->size = 0;
-    h->allocated = 0;
-    h->data = NULL;
-}
-
-static void _ref_handle_release(CSOUND *csound, REF_HANDLE *h) {
-    if(h->data != NULL && h->ownsdata) {
-        csound->Free(csound, h->data);
-        h->data = NULL;
-        if(csound->GetDebug(csound)) {
-            MSG(">>>> ref: Releasing memory of array ref \n");
+        int err = csound->CreateGlobalVariable(csound, REF_GLOBALS_VARNAME, sizeof(REF_GLOBALS));
+        if(err != 0) {
+            INITERR("failed to create globals for ref");
+            return NULL;
         }
+        g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
+        g->csound = csound;
+        g->handles = csound->Calloc(csound, sizeof(REF_HANDLE) * 8);
+        g->numhandles = 64;
+        intpool_init(csound, &(g->slots), g->numhandles);
+        // csound->RegisterResetCallback(csound, (void *)g, (int32_t(*)(CSOUND*, void*))ref_reset);
+        return g;
     }
-    _ref_handle_init(h);
-}
 
-static inline int32_t
-_ref_get_slot(REF_GLOBALS *g) {
-    CSOUND *csound = g->csound;
-    int freeslot = intpool_pop(csound, &(g->slots));
-    if(g->slots.capacity > g->numhandles) {
-        // if we are out of slots the slot pool is resized. If it is bigger
-        // that the number of handles, we need to match the handles array
-        g->handles = csound->ReAlloc(csound, g->handles, sizeof(REF_HANDLE)*g->slots.capacity);
-        g->numhandles = g->slots.capacity;
+    static inline void _ref_handle_init(REF_HANDLE *h) {
+        h->refcount = 0;
+        h->forward_refs = 0;
+        h->ownsdata = 0;
+        h->size = 0;
+        h->allocated = 0;
+        h->data = NULL;
     }
-    REF_HANDLE *h = &(g->handles[freeslot]);
+
+    static void _ref_handle_release(CSOUND *csound, REF_HANDLE *h) {
+        if(h->data != NULL && h->ownsdata) {
+            csound->Free(csound, h->data);
+            h->data = NULL;
+            if(csound->GetDebug(csound)) {
+                MSG(">>>> ref: Releasing memory of array ref \n");
+            }
+        }
+        _ref_handle_init(h);
+    }
+
+    static inline int32_t
+        _ref_get_slot(REF_GLOBALS *g) {
+        CSOUND *csound = g->csound;
+        int freeslot = intpool_pop(csound, &(g->slots));
+        if(g->slots.capacity > g->numhandles) {
+            // if we are out of slots the slot pool is resized. If it is bigger
+            // that the number of handles, we need to match the handles array
+            g->handles = csound->ReAlloc(csound, g->handles, sizeof(REF_HANDLE)*g->slots.capacity);
+            g->numhandles = g->slots.capacity;
+        }
+        REF_HANDLE *h = &(g->handles[freeslot]);
     if(h->active == 1) {
         printf("Got free slot %d, but handle is active???\n", freeslot);
         return -1;
@@ -2774,6 +2803,9 @@ static OENTRY localops[] = {
 
     { "errormsg", S(ERRORMSG), 0, 3, "", "SS", (SUBR)errormsg_init, (SUBR)errormsg_perf},
     { "errormsg", S(ERRORMSG), 0, 3, "", "S", (SUBR)errormsg_init0, (SUBR)errormsg_perf},
+
+    { "setslice.k", S(ARRSETSLICE), 0, 2, "", "k[]kOOP", NULL, (SUBR)array_set_slice},
+    { "setslice.i", S(ARRSETSLICE), 0, 1, "", "i[]ioop", (SUBR)array_set_slice}
 
 };
 

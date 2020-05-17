@@ -19,6 +19,7 @@
       "ref",
       "refvalid",      
       "schmitt",
+      "setslice",
       "sigmdrive",
       "standardchaos",
       "uniqinstance",

@@ -12,7 +12,11 @@ It doesn't check any search path of csound and does not expand any variables
 
 ## Syntax
 
-    iexists  file_exists  Spath
+```csound
+
+iexists  file_exists  Spath
+
+```
     
 ### Arguments
 
