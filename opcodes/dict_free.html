@@ -102,6 +102,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
@@ -116,7 +118,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="diode_ringmod.html">diode_ringmod</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">errormsg</a>
+                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">throwerror</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="file_exists.html">file_exists</a>
                     </li>
@@ -263,7 +265,7 @@ on (because it is global), and it will be either freed at the end of the perform
 or explicitely by calling <a href="dict_free.html">dict_free</a></p>
 <p><code>dict_free</code> executes only at <strong>init time</strong>. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>dict_free idict [, iwhen=0]
+<div class="codehilite"><pre><span></span><code>dict_free idict [, iwhen=1]
 </code></pre></div>
 
 
@@ -272,7 +274,7 @@ or explicitely by calling <a href="dict_free.html">dict_free</a></p>
 <li><code>idict</code>: the handle of the dict to be freed</li>
 <li><code>iwhen</code>: similar to <code>ftfree</code><ul>
 <li>if <code>iwhen == 0</code> : free the dict now</li>
-<li>if <code>iwhen == 1</code> : free the dict at the end of this note</li>
+<li>if <code>iwhen == 1</code> : free the dict at the end of this note (the default)</li>
 </ul>
 </li>
 </ul>
@@ -282,10 +284,6 @@ or explicitely by calling <a href="dict_free.html">dict_free</a></p>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="c1">; -odac  -iadc    ;;;RT audio out and in</span>
-
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>

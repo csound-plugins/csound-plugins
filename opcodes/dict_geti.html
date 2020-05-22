@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>accum - Csound Plugins</title>
+  <title>dict_geti - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "accum";
-    var mkdocs_page_input_path = "opcodes/accum.md";
+    var mkdocs_page_name = "dict_geti";
+    var mkdocs_page_input_path = "opcodes/dict_geti.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -62,27 +62,7 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Opcodes</span></p>
                 <ul class="current">
-                    <li class="toctree-l1 current"><a class="reference internal current" href="accum.html">accum</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="accum.html">accum</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
@@ -102,7 +82,29 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="dict_geti.html">dict_geti</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
@@ -242,7 +244,7 @@
         
       
     
-    <li>accum</li>
+    <li>dict_geti</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -253,65 +255,70 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="accum">accum</h1>
+                <h1 id="dict_geti">dict_geti</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Simple accumulator of scalar values</p>
+<p>Get a string value from a hashtable at init time</p>
 <h2 id="description">Description</h2>
-<p><code>accum</code> can be used together with <code>changed</code>, <code>changed2</code>, <code>metro</code>, etc, 
-to convert a binary trigger to an incremental one. Incremental triggers
-are used by many opcodes (<code>printf</code>, for example), so by doing <code>accum(changed(kvar))</code>
-it is possible to use binary triggers wherever an incremental trigger is expected.
-<code>accum</code> outputs its current value and increments it afterwords. </p>
+<p>For dicts of type str:str or str:any, this version of dict_get runs at
+init-time only. See <a href="dict_get.html">dict_get</a> for any further details</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="kt">k</span><span class="n">in</span><span class="p">,</span> <span class="kt">i</span><span class="n">nitial</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code>Svalue dict_geti idict, Skey
 </code></pre></div>
 
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li>`kin': the step to add. This value will be added each k-cycle</li>
-<li><code>initial</code>: initial value of the accumulator</li>
+<li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
+<li><code>Skey</code> / <code>kkey</code>: the key to be queries, as previously set by <a href="dict_set">dict_set</a></li>
 </ul>
-<h2 id="output">Output</h2>
+<h3 id="output">Output</h3>
 <ul>
-<li><code>kout</code>: accumulated value</li>
+<li><code>Svalue</code>: the value corresponding to the key</li>
 </ul>
-<h2 id="execution-time">Execution Time</h2>
+<h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Init </li>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>    <span class="c1">; outputs 0, 1, 2, 3, 4...</span>
-
-<span class="c1">; Play a sample with variable speed, stop the event when finished</span>
-<span class="kt">a</span><span class="n">phase</span> <span class="kt">a</span><span class="n">ccum</span> <span class="mi">1</span>
-<span class="kt">i</span><span class="n">len</span> <span class="o">=</span> <span class="nb">ftlen</span><span class="p">(</span><span class="kt">i</span><span class="n">ft</span><span class="p">)</span>
-<span class="kt">a</span><span class="n">mask</span> 
-
-<span class="kt">a</span><span class="n">sig</span> <span class="nb">table3</span> <span class="kt">a</span><span class="n">phase</span><span class="p">,</span> <span class="kt">i</span><span class="n">ft</span>
-</code></pre></div>
-
-
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">--</span><span class="n">nosound</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
+<span class="cm">/*</span>
+
+<span class="cm">  # Example file for dict_geti</span>
+
+<span class="cm">  ## dict_geti</span>
+
+<span class="cm">    Svalue dict_geti idict, Skey</span>
+
+
+<span class="cm">  Get the value at a given key at init time. An empty string</span>
+<span class="cm">  is returned when the key is not found.</span>
+
+<span class="cm">*/</span>
+
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">x</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">printf</span> <span class="s">&quot;kx=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">ccum</span><span class="p">(</span><span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">x</span><span class="p">)),</span> <span class="kt">k</span><span class="n">x</span>
-  <span class="c1">; the same without accum would only print the first time,</span>
-  <span class="c1">; since changed would return always 1 but printf expects an ever</span>
-  <span class="c1">; increasing trigger</span>
+  <span class="c1">; create a local dict, mapping strings to numbers</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sa&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">10</span>
+
+  <span class="kt">S</span><span class="n">foo</span> <span class="n">dict_geti</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
+  <span class="nb">prints</span> <span class="s">&quot;Soo: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">foo</span>
+
+  <span class="nb">turnoff</span>
 <span class="kd">endin</span>
+
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
-
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.01</span>
+<span class="n">f</span> <span class="mi">0</span> <span class="mi">1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
@@ -319,13 +326,12 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="http://www.csounds.com/manual/html/metro.html">metro</a></li>
-<li><a href="http://www.csounds.com/manual/html/changed.html">changed</a></li>
-<li><a href="http://www.csounds.com/manual/html/sc_trig.html">sc_trig</a></li>
-<li><a href="http://www.csounds.com/manual/html/printf.html">printf</a></li>
+<li><a href="dict_new.html">dict_new</a></li>
+<li><a href="dict_set.html">dict_set</a></li>
+<li><a href="dict_get.html">dict_get</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2020</p>
               
             </div>
           </div>
@@ -333,10 +339,10 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="atstop.html" class="btn btn-neutral float-right" title="atstop">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="dict_iter.html" class="btn btn-neutral float-right" title="dict_iter">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../Installation.html" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="dict_get.html" class="btn btn-neutral" title="dict_get"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -362,10 +368,10 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../Installation.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="dict_get.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="atstop.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="dict_iter.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

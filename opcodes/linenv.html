@@ -82,6 +82,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
@@ -96,7 +98,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="diode_ringmod.html">diode_ringmod</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">errormsg</a>
+                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">throwerror</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="file_exists.html">file_exists</a>
                     </li>
@@ -273,7 +275,8 @@ the rest of the defined points.</p>
 <li><code>isustindex</code>: the index of the sustain point. For example, if <code>isustindex</code> is 2, then 
 when the envelope reaches kval2 (after ktime0+ktime1), it enters a sustain phase, where
 its value remains unmodified until the gate is set to 0. If no sustain point is desired,
-set <code>isustindex</code> to -1</li>
+set <code>isustindex</code> to 0. <strong>NB</strong>: negative values count from end. To imitate the behaviour of
+linsegr, use -1 as sustain index.</li>
 <li><code>kval0</code>, <code>ktime1</code>, ...: a linear envelope, similar to <code>linsegr</code>. The release part can have
 as many segments as desired. <code>ktimex</code> values are defined as time interval between two values,
 <strong>not as absolute timestamps</strong></li>
@@ -302,7 +305,6 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 
 <span class="cm">    aout linenv kgate, isustidx, kval0, ktime1, kval1, ..., ktimen, kvaln</span>
 
-<span class="cm">    NB: use isustidx=-1 if no sustain is desired</span>
 <span class="cm">    NB: use xtratim if necessary to allow for release segment </span>
 
 <span class="cm">*/</span>
@@ -333,7 +335,7 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
     <span class="kt">i</span><span class="n">period</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="kt">i</span><span class="n">gatedur</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="nb">sc_trig</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="kt">i</span><span class="n">period</span><span class="p">),</span> <span class="kt">i</span><span class="n">gatedur</span><span class="p">)</span>
-    <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mi">0</span>
     <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="kt">a</span><span class="n">env</span>
     <span class="nb">FLsetVal</span> <span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">gate</span><span class="p">),</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span>
     <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
@@ -346,14 +348,22 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
     <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
 <span class="kd">endin</span>
 
+<span class="kd">instr</span> <span class="nf">4</span>
+    <span class="c1">; no sustain (&quot;one shot&quot;)</span>
+    <span class="kt">a</span><span class="n">sig</span> <span class="nb">pinker</span>
+    <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">gk</span><span class="n">gate</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">env</span>
+    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+<span class="kd">endin</span>
+
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
 <span class="c1">; i1 0 10</span>
-<span class="kt">i</span><span class="n">2</span> <span class="mi">0</span> <span class="mi">10</span>
+<span class="c1">; i2 0 10</span>
 <span class="c1">; i3 0 100</span>
-
+<span class="kt">i</span><span class="n">4</span> <span class="mi">0</span> <span class="mi">100</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>

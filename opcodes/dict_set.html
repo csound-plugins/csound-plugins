@@ -82,6 +82,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
@@ -114,7 +116,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="diode_ringmod.html">diode_ringmod</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">errormsg</a>
+                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">throwerror</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="file_exists.html">file_exists</a>
                     </li>
@@ -378,6 +380,7 @@ dict_set idict, xkey
 <span class="kd">endop</span>
 
 <span class="kd">instr</span> <span class="nf">exit</span>
+  <span class="nb">prints</span> <span class="s">&quot;Exiting csound </span><span class="se">\n</span><span class="s">&quot;</span>
   <span class="nb">exitnow</span>
 <span class="kd">endin</span>
 
@@ -469,7 +472,7 @@ dict_set idict, xkey
 <span class="kd">instr</span> <span class="nf">example3</span>
   <span class="c1">; the same as example2 but with channels</span>
   <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="kt">i</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.</span> <span class="mi">01</span>
+  <span class="kt">i</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.01</span>
   <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mf">0.3</span>
   <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="mi">10000</span> <span class="k">do</span> 
     <span class="nb">schedule</span> <span class="mi">20</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span> <span class="o">*</span> <span class="kt">i</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span>

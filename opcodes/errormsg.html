@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>errormsg - Csound Plugins</title>
+  <title>throwerror - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,7 +19,7 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "errormsg";
+    var mkdocs_page_name = "throwerror";
     var mkdocs_page_input_path = "opcodes/errormsg.md";
     var mkdocs_page_url = null;
   </script>
@@ -82,6 +82,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
@@ -96,7 +98,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="diode_ringmod.html">diode_ringmod</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="errormsg.html">errormsg</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="errormsg.html">throwerror</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
     </li>
@@ -242,7 +244,7 @@
         
       
     
-    <li>errormsg</li>
+    <li>throwerror</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -253,34 +255,33 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="errormsg">errormsg</h1>
+                <h1 id="throwerror">throwerror</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Throws an error message at performance</p>
+<p>Throws an error message at performance or init</p>
 <h2 id="description">Description</h2>
-<p>Use errormsg to stop the current event with a performance error. Alternatively 
-errormsg can just issue a warning of debugging information. This uses
-the builtin messaging api so the messages will look as if thrown by an internal
-opcode. </p>
+<p>Use throwerror to stop the current event with a performance error. Alternatively 
+throwerror can just issue a warning.</p>
 <p>Without a type, a performance error is thrown. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>errormsg Smessage
-errormsg Stype, Smessage
+<div class="codehilite"><pre><span></span><code>throwerror Smessage
+throwerror Stype, Smessage
 </code></pre></div>
 
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>Stype</code>: one of "error", "warning", "info". If absent, type defaults to "error"</li>
-<li><code>Smessage</code>: the text message to show. Use sprintfk to construct a message if needed</li>
+<li><code>Stype</code>: one of "error", "init", "warning", "info". If absent, type defaults to "error"</li>
+<li><code>Smessage</code>: the text message to show. Use sprintf / sprintfk to construct a message if needed</li>
 </ul>
 <h3 id="output">Output</h3>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
-<li>Performance</li>
+<li>Init (if Stype == "init")</li>
+<li>Performance (otherwise)</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="k">if</span> <span class="kt">k</span><span class="n">midi</span> <span class="o">&gt;</span> <span class="mi">128</span> <span class="k">then</span>
-    <span class="n">errormsg</span> <span class="s">&quot;Received an invalid midi value, stopping current event&quot;</span>
+    <span class="n">throwerror</span> <span class="s">&quot;Received an invalid midi value, stopping current event&quot;</span>
 <span class="k">endif</span>
 </code></pre></div>
 

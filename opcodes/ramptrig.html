@@ -82,6 +82,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
@@ -96,7 +98,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="diode_ringmod.html">diode_ringmod</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">errormsg</a>
+                    <li class="toctree-l1"><a class="reference internal" href="errormsg.html">throwerror</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="file_exists.html">file_exists</a>
                     </li>
@@ -268,8 +270,9 @@ where <code>ramptrig</code> is used as a triggerable phasor, passed as an argume
 which generates the envelope. See examples</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">i</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
-<span class="kt">k</span><span class="n">out</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">i</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
+<span class="kt">a</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dir</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span>
+<span class="kt">k</span><span class="n">out</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
 
 
