@@ -120,22 +120,27 @@
         end of the release part, it glides to the beginning and starts attack envelope
         from there
     isustidx: the idx of the sustaining value. if isustidx is 2, then the value stays
-        at kval2 until kgate is closed (0). Use -1 to disable sustain
-    kdel0, kval0, ...: the points of the envelope, similar to linseg
+        at kval2 until kgate is closed (0).
+        * Use 0 to disable sustain, negative indexes count from end (-1 is the last segment)
+        NB: the first segment (index 0 ) can't be used as sustain segment. In order to have
+        a sustain segment just at the beginning, use a very short first segment and set
+        the sustain index to 1
 
-    If noteoff release is needed, xtratim and release opcodes are needed.
+        kdel0, kval0, ...: the points of the envelope, similar to linseg
 
-    inspired by else's envgen
+        If noteoff release is needed, xtratim and release opcodes are needed.
 
-    Example: generate an adsr envelope with attack=0.05, decay=0.1, sust=0.2, rel=0.5
+        inspired by else's envgen
 
-    isustidx = 2
-    aout linenv kgate, isustidx, 0, 0.05, 1, 0.1, 0.2, 0.5, 0
+        Example: generate an adsr envelope with attack=0.05, decay=0.1, sust=0.2, rel=0.5
 
-    Example 2: emulate ramptrig
+        isustidx = 2
+        aout linenv kgate, isustidx, 0, 0.05, 1, 0.1, 0.2, 0.5, 0
+
+        Example 2: emulate ramptrig
 
         These are the same:
-            kout ramptrig ktrig, idur
+        kout ramptrig ktrig, idur
             kout rampgate ktrig, -1, 0, idur, 1
 
   # sp_peaklim
@@ -843,12 +848,13 @@ typedef struct {
 
 } RAMPGATE;
 
+
 static int32_t rampgate_k_init_common(CSOUND *csound, RAMPGATE *p, MYFLT sr) {
     p->sr = sr;
     p->state = Off;  // not playing
-    p->numpoints = p->INOCOUNT - 2;  // this should be uneven
+    p->numpoints = p->INOCOUNT - 2;  // this should be odd
     if(p->numpoints % 2 == 0) {
-        INITERRF(Str("Number of points should be uneven, got %d"), p->numpoints);
+        INITERRF(Str("Number of points should be odd (got %d points)"), p->numpoints);
     }
     p->numsegments = (p->numpoints - 1) / 2;
     // printf("numpoints: %d,  numsegments: %d\n", p->numpoints, p->numsegments);
@@ -862,10 +868,15 @@ static int32_t rampgate_k_init_common(CSOUND *csound, RAMPGATE *p, MYFLT sr) {
     p->segment_idx = 0;
     p->retrigger_ramptime = 0.020;  // this could be configurable
     p->sustain_idx = (int32_t)*p->sustpoint;
-
-    if(p->sustain_idx >= 0 && p->sustain_idx >= p->numsegments)
-        return INITERRF("Sustain point is %d, but there are only %d defined segments",
+    int sustain_idx = (int32_t)*p->sustpoint;
+    if(sustain_idx < 0) {
+        sustain_idx += p->numsegments;
+    }
+    p->sustain_idx = sustain_idx;
+    if(p->sustain_idx != 0 && (p->sustain_idx < 0 || p->sustain_idx >= p->numsegments)) {
+        return INITERRF("Sustain point (%d) out of range. There are %d defined segments",
                         p->sustain_idx, p->numsegments);
+    }
     return OK;
 }
 
@@ -895,7 +906,8 @@ static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
             if(p->state == Off) {
                 // not playing, just waiting for a gate, so start attack
                 p->t = 0;
-                p->state = p->sustain_idx == 0 ? Sustain : Attack;
+                // p->state = p->sustain_idx == 0 ? Sustain : Attack;
+                p->state = Attack;
                 rampgate_update_segment(p, 0);
                 p->val = p->prev_val;
             } else if(p->state == Release) {
@@ -939,7 +951,8 @@ static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
         p->t -= p->segment_end;
         rampgate_update_segment(p, 0);
         p->val = *(p->points[0]);
-        p->state = p->sustain_idx == 0 ? Sustain : Attack;
+        // p->state = p->sustain_idx == 0 ? Sustain : Attack;
+        p->state = Attack;
     } else if(p->segment_idx >= p->numsegments - 1) {
         // end of envelope
         p->state = Off;
@@ -984,7 +997,8 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
                 p->segment_end = *points[1];
                 p->next_val = *points[2];
                 p->segment_idx = 0;
-                p->state = p->sustain_idx == 0 ? Sustain : Attack;
+                // p->state = p->sustain_idx == 0 ? Sustain : Attack;
+                p->state = Attack;
                 p->val = p->prev_val;
             } else if(p->state == Release) {
                 // still playing release section, enter ramp to beginning state
@@ -1941,7 +1955,7 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
  * kout accum kstep, initial=0
  *
  * Can be used together with changed for all opcodes which need an increasing
- * trigger (printf, for example)
+ * trigger (printf, for example).
  *
  * printf "kvar=%f \n", accum(changed(kvar)), kvar
  *
@@ -1961,8 +1975,24 @@ accum_init(CSOUND *csound, ACCUM *p) {
 
 static int32_t
 accum_perf(CSOUND *csound, ACCUM *p) {
-    p->value += *p->step;
     *p->out = p->value;
+    p->value += *p->step;
+    return OK;
+}
+
+static int32_t
+accum_perf_audio(CSOUND *csound, ACCUM *p) {
+    MYFLT step = *p->step;
+    MYFLT value = p->value;
+    MYFLT *out = p->out;
+
+    SAMPLE_ACCURATE(out);
+
+    for(int n=offset; n<nsmps; n++) {
+        out[n] = value;
+        value += step;
+    }
+    p->value = value;
     return OK;
 }
 
@@ -2660,7 +2690,7 @@ xtracycles(CSOUND *csound, OPCk_0 *p) {
  * endif
  */
 
-enum Errorkind_t { ERRORMSG_ERROR, ERRORMSG_WARNING, ERRORMSG_INFO};
+enum Errorkind_t { ERRORMSG_ERROR, ERRORMSG_WARNING, ERRORMSG_INFO, ERRORMSG_INIT, ERRORMSG_UNKNOWN};
 
 typedef struct {
     OPDS h;
@@ -2674,6 +2704,10 @@ typedef struct {
 
 static int32_t errormsg_init(CSOUND *csound, ERRORMSG *p) {
     IGN(csound);
+    if(!strcmp(p->S1->data, "init")) {
+        p->which = ERRORMSG_UNKNOWN;
+        return INITERRF("\n   %s\n", p->S2->data);
+    }
     if(!strcmp(p->S1->data, "error"))
         p->kind = ERRORMSG_ERROR;
     else if(!strcmp(p->S1->data, "warning"))
@@ -2681,7 +2715,7 @@ static int32_t errormsg_init(CSOUND *csound, ERRORMSG *p) {
     else if(!strcmp(p->S1->data, "info"))
         p->kind = ERRORMSG_INFO;
     else
-        return csound->InitError(csound, "Unknown type");
+        return INITERR("Unknown type");
     p->warning_done = 0;   // default: mark message as "error"
     p->which = 1;
     return OK;
@@ -2717,6 +2751,8 @@ static int32_t errormsg_perf(CSOUND *csound, ERRORMSG *p) {
         csound->Warning(csound, "Info from instr %d (%s), line %d\n    %s\n",
                        ip->insno, name, p->h.optext->t.linenum, msg);
         return OK;
+    case ERRORMSG_UNKNOWN:
+        return NOTOK;
     }
 }
 
@@ -2776,6 +2812,8 @@ static OENTRY localops[] = {
     { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
 
     { "accum", S(ACCUM), 0, 3, "k", "ko", (SUBR)accum_init, (SUBR)accum_perf},
+    { "accum", S(ACCUM), 0, 3, "a", "ko", (SUBR)accum_init, (SUBR)accum_perf_audio},
+
     { "frac2int", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
     { "frac2int", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int},
 
@@ -2801,8 +2839,8 @@ static OENTRY localops[] = {
 
     // { "xtracycles.i", S(OPCk_0), 0, 1, "i", "", (SUBR)xtracycles},
 
-    { "errormsg", S(ERRORMSG), 0, 3, "", "SS", (SUBR)errormsg_init, (SUBR)errormsg_perf},
-    { "errormsg", S(ERRORMSG), 0, 3, "", "S", (SUBR)errormsg_init0, (SUBR)errormsg_perf},
+    { "throwerror.s", S(ERRORMSG), 0, 3, "", "S", (SUBR)errormsg_init0, (SUBR)errormsg_perf},
+    { "throwerror.ss", S(ERRORMSG), 0, 3, "", "SS", (SUBR)errormsg_init, (SUBR)errormsg_perf},
 
     { "setslice.k", S(ARRSETSLICE), 0, 2, "", "k[]kOOP", NULL, (SUBR)array_set_slice},
     { "setslice.i", S(ARRSETSLICE), 0, 1, "", "i[]ioop", (SUBR)array_set_slice}

@@ -87,6 +87,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [ref](opcodes/ref.md): Get a reference to a variable 
 * [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
 * [schmitt](opcodes/schmitt.md): A schmitt trigger (a comparator with hysteresis). 
+* [setslice](opcodes/setslice.md): Set a slice of an array to a given value 
 * [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
 * [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 

@@ -27,7 +27,8 @@ xout linenv kgate, isustindex, kval0, [ktime1, kval1, ktime2, kval2, ...]
 * `isustindex`: the index of the sustain point. For example, if `isustindex` is 2, then 
 when the envelope reaches kval2 (after ktime0+ktime1), it enters a sustain phase, where
 its value remains unmodified until the gate is set to 0. If no sustain point is desired,
-set `isustindex` to -1
+set `isustindex` to 0. **NB**: negative values count from end. To imitate the behaviour of
+linsegr, use -1 as sustain index.
 * `kval0`, `ktime1`, ...: a linear envelope, similar to `linsegr`. The release part can have
 as many segments as desired. `ktimex` values are defined as time interval between two values,
 **not as absolute timestamps**

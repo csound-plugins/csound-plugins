@@ -13,7 +13,6 @@
 
     aout linenv kgate, isustidx, kval0, ktime1, kval1, ..., ktimen, kvaln
 
-    NB: use isustidx=-1 if no sustain is desired
     NB: use xtratim if necessary to allow for release segment 
     
 */
@@ -44,7 +43,7 @@ instr 2
     iperiod = 2
     igatedur = 1
     kgate = sc_trig:k(metro(1/iperiod), igatedur)
-    aenv linenv kgate, 1, 0, 0.2, 1, 0.1, 0
+    aenv linenv kgate, -2, 0, 0.05, 1, 0.2, 0.5, 0.2, 1, 0.4, 0
     asig = oscili:a(0.2, 1000) * aenv
     FLsetVal changed(kgate), kgate, gih1
     outs asig, asig
@@ -57,13 +56,21 @@ instr 3
 	outs asig, asig
 endin
 
+instr 4
+    ; no sustain ("one shot")
+    asig pinker
+	aenv linenv gkgate, 0, 0, 0.05, 1, 0.1, 0.2, 0.5, 0
+	asig *= aenv
+	outs asig, asig
+endin
+    
 </CsInstruments>
 
 <CsScore>
 
 ; i1 0 10
-i2 0 10
+; i2 0 10
 ; i3 0 100
-
+i4 0 100
 </CsScore>
 </CsoundSynthesizer>

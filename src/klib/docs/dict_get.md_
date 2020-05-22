@@ -14,18 +14,23 @@ for number values)
 
 ## Syntax
 
-    kvalue dict_get idict, Skeym, idefault=0
+    kvalue dict_get idict, Skey, idefault=0
+    ivalue dict_get idict, Skey, idefault=0
     kvalue dict_get idict, kkey, idefault=0
+    ivalue dict_get idict, ikey, idefault=0
     Svalue dict_get idict, Skey
+    Svalue dict_geti idict, Skey  ; (init time version)
     Svalue dict_get idict, kkey
     
 The type of key and value depend on the type definition of the `dict`, see [dict_new](dict_new)
 
-`dict_get` executes both at **i-time** and **k-time**. 
+`dict_get` executes at **i-time** and **k-time** depending on the output value
+ 
 
 !!! Note
 
     In the case of a dict of type "str:str", dict_get returns an empty string if the key is not found
+    For this case also, `dict_get` runs at k-time. Use `dict_geti` for an init time version
 
 ## Arguments
 
@@ -112,6 +117,9 @@ i 1 0 2
 
 * [dict_new](dict_new.md)
 * [dict_set](dict_set.md)
+* [dict_geti](dict_geti.md)
+* [dict_get](dict_get.md)
+
 
 ## Credits
 

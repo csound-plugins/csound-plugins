@@ -1,0 +1,42 @@
+# dict_geti
+
+## Abstract
+
+Get a string value from a hashtable at init time
+
+## Description
+
+For dicts of type str:str or str:any, this version of dict_get runs at
+init-time only. See [dict_get](dict_get.md) for any further details
+
+## Syntax
+
+    Svalue dict_geti idict, Skey 
+
+## Arguments
+
+* `ìdict`: the handle of the dict, as returned by `dict_new`
+* `Skey` / `kkey`: the key to be queries, as previously set by [dict_set](dict_set)
+
+### Output
+
+* `Svalue`: the value corresponding to the key
+
+### Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+## See also
+
+* [dict_new](dict_new.md)
+* [dict_set](dict_set.md)
+* [dict_get](dict_get.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2020

@@ -470,10 +470,17 @@ static HASH_GLOBALS* create_globals(CSOUND *csound) {
 /**
  * get the globals struct
  */
+
+static HASH_GLOBALS *_globals = NULL;
+
 static inline HASH_GLOBALS* dict_globals(CSOUND *csound) {
+    if(_globals != NULL)
+        return _globals;
     HASH_GLOBALS *g = (HASH_GLOBALS*)csound->QueryGlobalVariable(csound, GLOBALS_NAME);
-    if(LIKELY(g != NULL)) return g;
-    return create_globals(csound);
+    if(g == NULL)
+        g = create_globals(csound);
+    _globals = g;
+    return g;
 }
 
 /**
@@ -591,6 +598,7 @@ dict_reset(CSOUND *csound, HASH_GLOBALS *g) {
     csound->DestroyMutex(g->mutex_);
     csound->Free(csound, g->handles);
     csound->DestroyGlobalVariable(csound, GLOBALS_NAME);
+    _globals = NULL;
     return OK;
 }
 
@@ -1518,6 +1526,32 @@ dict_get_ss(CSOUND *csound, DICT_GET_ss *p) {
     return stringdat_set(csound, p->outstr, ks->s, ks->l);
 }
 
+
+static i32
+dict_get_ss_i(CSOUND *csound, DICT_GET_ss *p) {
+    HASH_GLOBALS *g = dict_globals(csound);
+    i32 idx = (i32)*p->handleidx;
+    HANDLE *handle = &(g->handles[idx]);
+    if(handle->hashtab == NULL) {
+        p->outstr->data[0] = '\0';
+        return OK;
+    }
+    CHECK_HASHTAB_TYPE2(handle->khtype, khStrStr, khStrAny);
+    khash_t(khStrStr) *h = handle->hashtab;
+    kstring_t *ks;
+    khiter_t k;
+
+    CHECK_KEY_SIZE(p->outkey);
+    k = kh_get(khStrStr, h, p->outkey->data);
+    if(k == kh_end(h)) {
+        // key not found, set out to empty string
+        p->outstr->data[0] = '\0';
+        return OK;
+    }
+    // key found
+    ks = &(kh_val(h, k));
+    return stringdat_set(csound, p->outstr, ks->s, ks->l);
+}
 
 // kvalue dict_get ihandle, kkey, kdefault=0
 
@@ -2989,11 +3023,12 @@ static OENTRY localops[] = {
     { "dict_clear.i", S(DICT_CLEAR), 0, 1, "", "i", (SUBR)dict_clear_i},
     { "dict_clear.k", S(DICT_CLEAR), 0, 3, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf},
 
-    { "dict_get.ss_k", S(DICT_GET_sf), 0, 3, "k", "iSO",
+    { "dict_get.sk_k", S(DICT_GET_sf), 0, 3, "k", "iSO",
       (SUBR)dict_get_sf_0, (SUBR)dict_get_sf },
     { "dict_get.ss_k", S(DICT_GET_ss), 0, 3, "S", "iS",
       (SUBR)dict_get_ss_0, (SUBR)dict_get_ss },
-    { "dict_get.sf_k", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
+    { "dict_geti.ss_i", S(DICT_GET_ss), 0, 1, "S", "iS", (SUBR)dict_get_ss_i},
+    { "dict_get.sf_i", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
     { "dict_get.if_k", S(DICT_GET_if), 0, 3, "k", "ikO",
       (SUBR)dict_get_if_0, (SUBR)dict_get_if },
     { "dict_get.is_k", S(DICT_GET_is), 0, 3, "S", "ik",
