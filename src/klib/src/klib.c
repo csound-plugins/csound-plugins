@@ -1764,7 +1764,8 @@ void print_hashtab_ss(CSOUND *csound, khash_t(khStrStr) *h) {
         if(!kh_exist(h, k)) continue;
         chars += sprintf(line+chars, "%s: \"%s\"", kh_key(h, k), kh_val(h, k).s);
         if(chars < linelength) {
-            line[chars++] = '\t';
+            line[chars++] = ', ';
+            line[chars++] = ' ';
         } else {
             line[chars+1] = '\0';
             csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
@@ -1787,7 +1788,8 @@ print_hashtab_sf(CSOUND *csound, khash_t(khStrFlt) *h) {
         if(!kh_exist(h, k)) continue;
         chars += sprintf(line+chars, "%s: %.5f", kh_key(h, k), kh_val(h, k));
         if(chars < linelength) {
-            line[chars++] = '\t';
+            line[chars++] = ',';
+            line[chars++] = ' ';
         } else {
             line[chars+1] = '\0';
             csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
@@ -1845,7 +1847,8 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
             if(!kh_exist(h, k)) continue;
             chars += sprintf(line+chars, "%d: %s", kh_key(h, k), kh_val(h, k).s);
             if(chars < linelength) {
-                line[chars++] = '\t';
+                line[chars++] = ', ';
+                line[chars++] = ' ';
             } else {
                 line[chars+1] = '\0';
                 csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
