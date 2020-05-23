@@ -11,7 +11,7 @@ Simple accumulator of scalar values
 to convert a binary trigger to an incremental one. Incremental triggers
 are used by many opcodes (`printf`, for example), so by doing `accum(changed(kvar))`
 it is possible to use binary triggers wherever an incremental trigger is expected.
-
+`accum` outputs its current value and increments it afterwords. 
 
 ## Syntax
 
@@ -34,6 +34,19 @@ kout accum kin, initial=0
 * Init 
 
 ## Examples
+
+```csound
+
+kout accum 1, 0    ; outputs 0, 1, 2, 3, 4...
+
+; Play a sample with variable speed, stop the event when finished
+aphase accum 1
+ilen = ftlen(ift)
+amask 
+
+asig table3 aphase, ift
+
+```
 
 ```csound 
 

@@ -4,6 +4,7 @@
       "dict_new",
         "dict_free",
         "dict_get",
+        "dict_geti",
         "dict_set",
         "dict_size",
         "dict_query",

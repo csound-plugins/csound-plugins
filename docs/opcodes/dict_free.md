@@ -17,7 +17,7 @@ or explicitely by calling [dict_free](dict_free.md)
 
 ## Syntax
 
-    dict_free idict [, iwhen=0] 
+    dict_free idict [, iwhen=1]
 
     
 ### Arguments
@@ -25,21 +25,18 @@ or explicitely by calling [dict_free](dict_free.md)
 * `idict`: the handle of the dict to be freed
 * `iwhen`: similar to `ftfree`
     * if `iwhen == 0` : free the dict now
-    * if `iwhen == 1` : free the dict at the end of this note
+    * if `iwhen == 1` : free the dict at the end of this note (the default)
 
 ### Execution Time
 
 * Init
+
 
 ## Examples
 
 ```csound
 
 <CsoundSynthesizer>
-<CsOptions>
-; -odac  -iadc    ;;;RT audio out and in
-
-</CsOptions>
 <CsInstruments>
 
 sr = 44100

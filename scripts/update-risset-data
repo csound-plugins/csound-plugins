@@ -1,0 +1,25 @@
+#!/bin/bash
+rootpath=$(realpath "$0")
+root=$(realpath $(dirname "$rootpath")/..)
+echo $root
+
+RISSETDATA=$(realpath ~/dev/csound/risset-data)
+
+copydocs() {
+    namespace="$1"
+    plugin="$2"
+    version="$3"
+
+    cp $root/src/$plugin/docs/*.md "$RISSETDATA"/plugins/$namespace/$version/$plugin/doc/
+    cp $root/src/$plugin/docs/assets/* "$RISSETDATA"/plugins/$namespace/$version/$plugin/doc/assets
+            
+}
+
+copydocs emplugins else 0.2.1
+copydocs emplugins klib 0.2.1
+copydocs emplugins poly 0.2.1
+copydocs emplugins jsfx 0.2.1
+copydocs emplugins pathtools 0.2.1
+
+
+

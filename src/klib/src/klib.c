@@ -213,6 +213,7 @@ typedef uint64_t ui64;
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
 #define ARRAYCHECK(arr, size) (tabcheck(csound, arr, size, &(p->h)))
+#define MSGF(fmt, ...) (csound->Message(csound, fmt, __VA_ARGS__))
 
 #define UI32MAX 0x7FFFFFFF
 
@@ -259,6 +260,10 @@ typedef uint64_t ui64;
 #define get_handle_check(p)  ((ui32)*(p)->handleidx < p->g->maxhandles ? &((p)->g->handles[(ui32)*(p)->handleidx]) : NULL)
 
 #define get_handle(p) (&((p)->g->handles[(ui32)*(p)->handleidx]))
+
+#define register_deinit(csound, p, func) \
+    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
+
 
 
 // #define CSOUND_MULTICORE
@@ -412,6 +417,9 @@ typedef struct {
     CSOUND *csound;
     HANDLE *handles;
     ui32 maxhandles;
+    ui32 *slots;
+    ui32 maxslots;
+    ui32 lastslot;
     void *mutex_;
 } HASH_GLOBALS;
 
@@ -434,9 +442,11 @@ typedef struct {
     void  *inargs[VARGMAX];
     // internal
     HASH_GLOBALS *g;
+    i32 idx;
     int khtype;
     int global;
 } DICT_NEW;
+
 
 // forward declarations
 static i32 dict_reset(CSOUND *csound, HASH_GLOBALS *g);
@@ -462,6 +472,12 @@ static HASH_GLOBALS* create_globals(CSOUND *csound) {
     g->csound = csound;
     g->maxhandles = HANDLES_INITIAL_SIZE;
     g->handles = csound->Calloc(csound, sizeof(HANDLE)*g->maxhandles);
+    g->slots = csound->Calloc(csound, sizeof(ui32)*g->maxhandles);
+    g->maxslots = g->maxhandles;
+    g->lastslot = g->maxhandles;
+    for(ui32 i=0;i < g->maxslots; i++) {
+        g->slots[i] = i;
+    }
     g->mutex_ = csound->Create_Mutex(0);
     csound->RegisterResetCallback(csound, (void*)g, (i32(*)(CSOUND*, void*))dict_reset);
     return g;
@@ -485,12 +501,12 @@ static inline HASH_GLOBALS* dict_globals(CSOUND *csound) {
 
 /**
  * find a free index to create a new dict. Will grow the internal array if more
- * room is needed. Returns 0 if failed
+ * room is needed. Returns -1 if failed
  *
  * TODO: use a pool instead of linear searching
  */
-static inline ui32
-dict_getfreeslot(HASH_GLOBALS *g) {
+static inline i32
+dict_getfreeslot_(HASH_GLOBALS *g) {
     HANDLE *handles = g->handles;
     for(ui32 i=1; i<g->maxhandles; i++) {
         if(handles[i].hashtab == NULL)
@@ -509,39 +525,132 @@ dict_getfreeslot(HASH_GLOBALS *g) {
     return idx;
 }
 
+static inline void
+_init_handle(HANDLE *h) {
+    memset((void*)h, 0, sizeof(HANDLE));
+}
+
+static i32
+dict_expand_pool(HASH_GLOBALS *g) {
+    CSOUND *csound = g->csound;
+    if(g->lastslot > 0) {
+        MSGF("dict_expand_pool: dict is not empty! (dict size: %d)\n", g->lastslot);
+        return NOTOK;
+    }
+    ui32 oldsize = g->maxhandles;
+    ui32 newsize = g->maxhandles * 2;
+    g->handles = csound->ReAlloc(csound, g->handles, sizeof(HANDLE)*newsize);
+    for(int i=oldsize; i<newsize; i++) {
+        _init_handle(&(g->handles[i]));
+    }
+    g->slots = csound->ReAlloc(csound, g->slots, sizeof(ui32)*newsize);
+    if(g->handles == NULL || g->slots == NULL) {
+        MSGF("%s\n", "dict_expand_pool: memory allocation error");
+        return NOTOK;
+    }
+    // fill the pool with new values, from maxhandles to numhandles
+    ui32 i = 0;
+    for(ui32 slot=oldsize; slot<newsize; slot++) {
+        g->slots[i++] = slot;
+    }
+    g->lastslot = oldsize;
+    g->maxslots = newsize;
+    g->maxhandles = newsize;
+    DBG("Expanded pool. New capacity: %d, size: %d\n", newsize, g->lastslot);
+    return OK;
+}
+
+static i32
+dict_getfreeslot(HASH_GLOBALS *g) {
+    CSOUND *csound = g->csound;
+    if(g->lastslot == 0) {
+        int res = dict_expand_pool(g);
+        if(res == NOTOK) {
+            csound->Message(csound, "dict_getfreeslot: pool is empty, could not expand it\n");
+            return -1;
+        }
+    }
+    ui32 slot = g->slots[g->lastslot-1];
+    if(slot > g->maxhandles - 1) {
+        MSGF("Internal error: got an index %d from pool, but there are "
+             "only %d handles\n", (int)slot, g->maxhandles);
+        return -1;
+    }
+    HANDLE *handle = &(g->handles[slot]);
+    if(handle == NULL) {
+        MSGF("Internal error: handle is null for idx %d\n", slot);
+        return -1;
+    }
+    if(handle->hashtab != NULL) {
+        MSGF("Internal error: the slot %d is signaled as empty, but the "
+             "hashtab is not NULL\n", slot);
+        return -1;
+    }
+    g->lastslot -= 1;
+    return slot;
+}
+
+/**
+ * Mark a slot as free
+ */
+static i32
+dict_release_slot(HASH_GLOBALS *g, i32 slot) {
+    if(g->lastslot >= g->maxslots) {
+        CSOUND *csound = g->csound;
+        MSGF("Trying to return slot %d to pool, but pool is full!", slot);
+        MSGF("Pool capacity: %d, last element: %d\n", g->maxslots, g->lastslot);
+        return NOTOK;
+    }
+    g->slots[g->lastslot] = slot;
+    g->lastslot += 1;
+    return OK;
+}
+
 /**
  *  Creates a new dict, sets its pointer at a free index and returns this index
- *  Returns 0 if failed
+ *  Returns OK or NOTOK
  *
  * g: globals as returned by dict_globals
  * khtype: the int signature of this dict
  * isglobal: should this dict be deallocated together with the instrument or should
  *           it outlive the instr
+ *
+ * a dict of type str:any has two hashtables
+ *  hashtab: str:str
+ *  hashtab2: str:float
  */
-static ui32
+static i32
 dict_make_strany(CSOUND *csound, HASH_GLOBALS *g, ui32 idx, int isglobal) {
     khash_t(khStrFlt) *hsf = kh_init(khStrFlt);
     khash_t(khStrStr) *hss = kh_init(khStrStr);
     HANDLE *handle = &(g->handles[idx]);
-    handle->hashtab = hsf;
-    handle->hashtab2 = hss;
+    handle->hashtab = hss;
+    handle->hashtab2 = hsf;
     handle->khtype = khStrAny;
     handle->counter = 0;
     handle->isglobal = isglobal;
     handle->mutex_ = csound->Create_Mutex(0);
-    return idx;
+    return OK;
 }
 
 
-static ui32
+static i32
 dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal, ui32 initialsize) {
-    ui32 idx = dict_getfreeslot(g);
-    if(idx == 0)
-        return 0;
+    i32 idx = dict_getfreeslot(g);
+    DBG("Creating dict with index %d\n", idx);
+    if(idx < 0) {
+        MSGF("%s\n", "Couldn't get a free slot");
+        return -1;
+    }
     void *hashtab = NULL;
     if(khtype == khStrAny) {
         // initialsize is not taken into account
-        return dict_make_strany(csound, g, idx, isglobal);
+        int res = dict_make_strany(csound, g, idx, isglobal);
+        if(res == NOTOK) {
+            MSGF("Error when calling dict_make_strany (idx: %d)\n", idx);
+            return NOTOK;
+        }
+        return idx;
     }
 
     switch(khtype) {
@@ -564,6 +673,7 @@ dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal, ui32 initia
     }
     HANDLE *handle = &(g->handles[idx]);
     handle->hashtab = hashtab;
+    handle->hashtab2 = NULL;
     handle->khtype = khtype;
     handle->counter = 0;
     handle->isglobal = isglobal;
@@ -572,12 +682,12 @@ dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal, ui32 initia
 }
 
 
-static ui32
+static i32
 dict_copy(CSOUND *csound, HASH_GLOBALS *g, ui32 index) {
     // TODO!
-    ui32 newidx = dict_getfreeslot(g);
-    if(newidx == 0) return 0;
-    return newidx;
+    i32 newidx = dict_getfreeslot(g);
+    if(newidx < 0) return -1;
+    return (ui32)newidx;
 }
 
 
@@ -589,6 +699,7 @@ static i32
 dict_reset(CSOUND *csound, HASH_GLOBALS *g) {
     ui32 i;
     DBG("%s", "hashtab_reset");
+
     for(i = 0; i < g->maxhandles; i++) {
         if(g->handles[i].hashtab != NULL)
             _dict_free(csound, g, i);
@@ -597,8 +708,37 @@ dict_reset(CSOUND *csound, HASH_GLOBALS *g) {
     }
     csound->DestroyMutex(g->mutex_);
     csound->Free(csound, g->handles);
+    csound->Free(csound, g->slots);
     csound->DestroyGlobalVariable(csound, GLOBALS_NAME);
     _globals = NULL;
+    return OK;
+}
+
+static i32
+_hashtable_free_sf(CSOUND *csound, void *hashtab) {
+    khash_t(khStrFlt) *h = hashtab;
+    khint_t k;
+    for (k = 0; k < kh_end(h); ++k) {
+        if (kh_exist(h, k))
+            csound->Free(csound, kh_key(h, k));
+    }
+    kh_destroy(khStrFlt, h);
+    return OK;
+}
+
+static i32
+_hashtable_free_ss(CSOUND *csound, void *hashtab) {
+    khash_t(khStrStr) *h = hashtab;
+    kstring_t *ks;
+    for (khint_t k = 0; k < kh_end(h); ++k) {
+        if (kh_exist(h, k)) {
+            ks = &(kh_val(h, k));
+            if(ks->s != NULL)
+                csound->Free(csound, ks->s);
+            csound->Free(csound, kh_key(h, k));
+        }
+    }
+    kh_destroy(khStrStr, h);
     return OK;
 }
 
@@ -611,9 +751,15 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
     HANDLE *handle = &(g->handles[idx]);
     khint_t k;
     kstring_t *ks;
+    if(handle->hashtab == NULL) {
+        MSGF("dict_free: trying to free handle (idx: %d), but its hashtable is NULL!\n", idx);
+        return NOTOK;
+    }
     int khtype = handle->khtype;
     DBG("dict: freeing idx=%d, type=%d\n", idx, khtype);
     if(khtype == khStrFlt) {
+        _hashtable_free_sf(csound, handle->hashtab);
+        /*
         khash_t(khStrFlt) *h = handle->hashtab;
         // we need to free all keys
         for (k = 0; k < kh_end(h); ++k) {
@@ -621,7 +767,10 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
                 csound->Free(csound, kh_key(h, k));
         }
         kh_destroy(khStrFlt, h);
+        */
     } else if (khtype == khStrStr) {
+        _hashtable_free_ss(csound, handle->hashtab);
+        /*
         khash_t(khStrStr) *h = handle->hashtab;
         // we need to free all keys and values
         for (k = 0; k < kh_end(h); ++k) {
@@ -633,6 +782,7 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
             }
         }
         kh_destroy(khStrStr, h);
+        */
     } else if (khtype == khIntFlt) {
         khash_t(khIntFlt) *h = handle->hashtab;
         kh_destroy(khIntFlt, h);
@@ -646,12 +796,26 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
             }
         }
         kh_destroy(khIntStr, h);
-    } else
+    } else if(khtype == khStrAny) {
+        if(handle->hashtab == NULL) {
+            MSGF("Internal error: hashtab is NULL (idx: %d)\n", (i32)idx);
+        } else
+            _hashtable_free_ss(csound, handle->hashtab);
+        if(handle->hashtab2 == NULL) {
+            MSGF("Internal error: hashtab2 is NULL (idx: %d)\n", (i32)idx);
+        } else
+            _hashtable_free_sf(csound, handle->hashtab2);
+        // TODO
+    } else {
+        MSGF("dict_free: dict type unknown: %d\n", khtype);
         return NOTOK;
+    }
     handle->hashtab = NULL;
+    handle->hashtab2 = NULL;
     handle->counter = 0;
     handle->khtype = 0;
     handle->isglobal = 0;
+    dict_release_slot(g, idx);
     return OK;
 }
 
@@ -660,16 +824,26 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
  * was created and the note it belongs to is released)
  */
 static i32
-dict_deinit_callback(CSOUND *csound, DICT_NEW* p) {
-    DBG("%s", "deinit callback");
-    ui32 idx = (ui32)*p->handleidx;
-    HASH_GLOBALS *g = p->g;
+dict_deinit_callback(CSOUND *csound, DICT_NEW *p) {
+    i32 idx = p->idx;
+    DBG("deinit callback idx: %d", idx);
+    HASH_GLOBALS *g = dict_globals(csound);
+    if(idx < 0 || idx >= g->maxhandles) {
+        MSGF("dict deinit error: index out of range (idx:%d, max handles: %d)\n",
+             idx, g->maxhandles);
+        return NOTOK;
+    }
     if(g->handles[idx].hashtab == NULL) {
-        csound->Message(csound, "%s\n", Str("dict already freed"));
+        MSGF("dict(idx=%d) already freed\n", idx);
         return OK;
     }
+    // We need to free the captured copy of the opcode
+    csound->Free(csound, p);
     return _dict_free(csound, g, idx);
+
 }
+
+
 
 /**
  * A dict has a type defined by a string of two characters. The first defined
@@ -768,6 +942,7 @@ strdef_to_intdef(STRINGDAT *s) {
  *
  *  isglobal: if 1, the dict is not deleted after the note is freed
  */
+
 static i32
 dict_new(CSOUND *csound, DICT_NEW *p) {
     p->g = dict_globals(csound);
@@ -782,17 +957,20 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
         // called as idict dict_new "*sf", icapacity
         capacity = (int)*(MYFLT*)p->inargs[0];
     }
-    ui32 idx = dict_make(csound, p->g, khtype, (i32) p->global, capacity);
-    if(idx == 0)
-        return INITERR(Str("dict: failed to allocate the hashtable"));
+    i32 idx = dict_make(csound, p->g, khtype, (i32) p->global, capacity);
+    if(idx < 0)
+        return INITERR(Str("dict_new: failed to create a new dict"));
+    p->idx = idx;
     *p->handleidx = (MYFLT)idx;
     p->khtype = khtype;
     if (p->global == 0) {
-        // dict should not survive this note
-        csound->RegisterDeinitCallback(csound, p,
-                                       (i32 (*)(CSOUND*, void*))dict_deinit_callback);
+        // we capture a copy of the opcode for deinit. This allows to make multiple
+        // dicts in a init time loop
+        DICT_NEW *p2 = csound->Malloc(csound, sizeof(DICT_NEW));
+        p2->h.insdshead = p->h.insdshead;
+        p2->idx = p->idx;
+        register_deinit(csound, p2, dict_deinit_callback);
     }
-
     return OK;
 }
 
@@ -845,14 +1023,22 @@ check_multi_signature(CSOUND *csound, void **args, ui32 numargs, int khtype) {
 static i32
 dict_new_many(CSOUND *csound, DICT_NEW *p) {
     i32 ret = dict_new(csound, p);
-    if (ret == NOTOK) return NOTOK;
+    if (ret == NOTOK) {
+        MSGF("%s\n", "Error when creating new dictionary");
+        return NOTOK;
+    }
+
     // our signature is: idict dict_new Stype, args passed to opcode
     // So the number of args to be passed to opcode is our num. args - 1
     ui32 numargs = p->INOCOUNT - 1;
+
     i32 idx = (i32)(*p->handleidx);
+
     HANDLE *handle = &(p->g->handles[idx]);
+
     CHECK_HANDLE(handle);
     check_multi_signature(csound, p->inargs, numargs, handle->khtype);
+
     switch(p->khtype) {
     case khStrFlt:
         return set_many_sf(csound, p->inargs, numargs, handle);
@@ -865,6 +1051,7 @@ dict_new_many(CSOUND *csound, DICT_NEW *p) {
     case khStrAny:
         return set_many_sa(csound, p->inargs, numargs, handle);
     }
+
     return OK;  // this will never be reached
 }
 
@@ -1223,8 +1410,6 @@ dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
     return OK;
 }
 
-#define register_deinit(csound, p, func) \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
 
 static i32
 dict_del_s_atstop(CSOUND *csound, DICT_DEL_s *p) {
@@ -1657,8 +1842,7 @@ dict_free(CSOUND *csound, DICT_FREE *p) {
         return _dict_free(csound, g, idx);
     }
     // free at the end of the note
-    csound->RegisterDeinitCallback(csound, p,
-                                   (i32 (*)(CSOUND*, void*))dict_free_callback);
+    register_deinit(csound, p, dict_free_callback);
     return OK;
 }
 
@@ -3020,6 +3204,7 @@ pool_at_i(CSOUND *csound, POOL_1 *p) {
 static OENTRY localops[] = {
     { "dict_new.size", S(DICT_NEW), 0, 1, "i", "Sj", (SUBR)dict_new },
     { "dict_new.many", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many },
+    { "dict_new.many_k", S(DICT_NEW), 0, 2, "k", "S*", NULL, (SUBR)dict_new_many },
 
     { "dict_free", S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free},
 

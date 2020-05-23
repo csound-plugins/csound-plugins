@@ -16,6 +16,7 @@ A hashtable for csound
 * [dict_new](opcodes/dict_new.md): Create a hashtable 
 * [dict_free](opcodes/dict_free.md): Free a hashtable 
 * [dict_get](opcodes/dict_get.md): Get a value from a hashtable 
+* [dict_geti](opcodes/dict_geti.md): Get a string value from a hashtable at init time 
 * [dict_set](opcodes/dict_set.md): Set (or remove) a value from a hashtable 
 * [dict_size](opcodes/dict_size.md): Returns the number of key:value pairs in a dict 
 * [dict_query](opcodes/dict_query.md): Query different properties of a dict 
@@ -75,7 +76,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [defer](opcodes/defer.md): Run an opcode at the end of an event 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
-* [errormsg](opcodes/errormsg.md): Throws an error message at performance 
+* [errormsg](opcodes/errormsg.md): Throws an error message at performance or init 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 

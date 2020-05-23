@@ -138,6 +138,7 @@ opcode argget, k, Si
 endop
 
 instr exit
+  prints "Exiting csound \n"
   exitnow
 endin
 
@@ -229,7 +230,7 @@ endin
 instr example3
   ; the same as example2 but with channels
   i0 = 0
-  istep = 0. 01
+  istep = 0.01
   idur = 0.3
   while i0 < 10000 do 
     schedule 20, i0 * istep, idur

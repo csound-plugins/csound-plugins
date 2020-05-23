@@ -23,8 +23,10 @@ A trigger detected whenever the value is possitive and higher than the previous 
 ## Syntax
 
 ```csound
-kout ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
-kout, kfinished ramptrig ktrig, kdur, ivaluepost=1, ivaluepre=0
+kout ramptrig ktrig, kdur, kvaluepost=1, kvaluepre=0
+aout ramptrig ktrig, kdir, kvaluepost=1
+kout, kfinished ramptrig ktrig, kdur, kvaluepost=1, kvaluepre=0
+
 ```
 
 ### Arguments
