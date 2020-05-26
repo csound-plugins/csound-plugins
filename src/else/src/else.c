@@ -174,6 +174,7 @@
 */
 
 #include "csdl.h"
+#include "arrays.h"
 #include <math.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -2757,6 +2758,85 @@ static int32_t errormsg_perf(CSOUND *csound, ERRORMSG *p) {
 }
 
 
+typedef struct {
+    OPDS h;
+    ARRAYDAT *A;
+    ARRAYDAT *B;
+    char varTypeName;
+    int sizeA;
+} _AA;
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *A;
+    ARRAYDAT *B;
+    MYFLT *k1;
+    char varTypeName;
+} _AAk;
+
+
+static int32_t extendArray_init(CSOUND *csound, _AA *p) {
+    p->sizeA = p->A->sizes[0];
+    if(p->A->dimensions == 1 && p->B->dimensions == 1) {
+        int size = p->A->sizes[0] + p->B->sizes[0];
+        tabinit(csound, p->A, size);
+        p->varTypeName = p->A->arrayType->varTypeName[0];
+        return OK;
+    }
+    return NOTOK;
+}
+
+static int32_t extendArray_k(CSOUND *csound, _AA *p) {
+    int offset = p->sizeA;
+    if(p->varTypeName == 'S') {
+        STRINGDAT *deststrs = (STRINGDAT*)p->A->data;
+        STRINGDAT *srcstrs = (STRINGDAT*)p->B->data;
+        for(int i=0; i<p->B->sizes[0]; i++) {
+            char *srcstr = srcstrs[i].data;
+            deststrs[offset + i].size = strlen(srcstr);
+            deststrs[offset + i].data = csound->Strdup(csound, srcstr);
+        }
+    } else if(p->varTypeName == 'k' || p->varTypeName == 'i') {
+        memcpy(&(p->A->data[offset]), p->B->data, sizeof(MYFLT)*p->B->sizes[0]);
+    } else {
+        return PERFERRF("extendArray: Arrays of type %c not supported", p->varTypeName);
+    }
+    return OK;
+}
+
+static int32_t extendArray_i(CSOUND *csound, _AA *p) {
+    int ret = extendArray_init(csound, p);
+    if(ret == NOTOK) {
+        return INITERR("Error initializing extendArray");
+    }
+    return extendArray_k(csound, p);
+}
+
+
+static int32_t setslice_array_k(CSOUND *csound, _AAk *p) {
+    if(p->A->dimensions != 1 || p->B->dimensions != 1)
+        return PERFERR("Arrays should be 1D");
+
+    int offset = (int)*p->k1;
+    int sizeB = p->B->sizes[0];
+    int sizeA = p->A->sizes[0];
+    int numitems = min(sizeA - offset, sizeB);
+    if(p->varTypeName == 'S') {
+        STRINGDAT *deststrs = (STRINGDAT*)p->A->data;
+        STRINGDAT *srcstrs = (STRINGDAT*)p->B->data;
+        for(int i=0; i<numitems; i++) {
+            char *srcstr = srcstrs[i].data;
+            deststrs[offset + i].size = strlen(srcstr);
+            deststrs[offset + i].data = csound->Strdup(csound, srcstr);
+        }
+    } else if(p->varTypeName == 'k' || p->varTypeName == 'i') {
+        memcpy(&(p->A->data[offset]), p->B->data, sizeof(MYFLT)*numitems);
+    } else {
+        return PERFERRF("extendArray: Arrays of type %c not supported", p->varTypeName);
+    }
+    return OK;
+}
+
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2811,16 +2891,16 @@ static OENTRY localops[] = {
     { "atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
     { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
 
-    { "accum", S(ACCUM), 0, 3, "k", "ko", (SUBR)accum_init, (SUBR)accum_perf},
-    { "accum", S(ACCUM), 0, 3, "a", "ko", (SUBR)accum_init, (SUBR)accum_perf_audio},
+    { "accum.k", S(ACCUM), 0, 3, "k", "ko", (SUBR)accum_init, (SUBR)accum_perf},
+    { "accum.a", S(ACCUM), 0, 3, "a", "ko", (SUBR)accum_init, (SUBR)accum_perf_audio},
 
-    { "frac2int", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
-    { "frac2int", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int},
+    { "frac2int.i", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
+    { "frac2int.k", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int},
 
     { "memview.i_table", S(TABALIAS),  0, 1, "i[]", "ioo", (SUBR)tabalias_init},
     { "memview.k_table", S(TABALIAS),  0, 1, "k[]", "ioo", (SUBR)tabalias_init},
-    { "memview.k", S(ARRAYVIEW), 0, 1, "k[]", ".[]oo", (SUBR)arrayview_init},
     { "memview.i", S(ARRAYVIEW), 0, 1, "i[]", ".[]oo", (SUBR)arrayview_init},
+    { "memview.k", S(ARRAYVIEW), 0, 1, "k[]", ".[]oo", (SUBR)arrayview_init},
 
     { "ref.arr", S(REF_NEW_ARRAY), 0, 1, "i", ".[]o", (SUBR)ref_new_array},
     // { "ref.k_send", S(REF1), 0, 3, "i", "k", (SUBR)ref_scalar_init, (SUBR)ref_scalar_perf},
@@ -2842,8 +2922,18 @@ static OENTRY localops[] = {
     { "throwerror.s", S(ERRORMSG), 0, 3, "", "S", (SUBR)errormsg_init0, (SUBR)errormsg_perf},
     { "throwerror.ss", S(ERRORMSG), 0, 3, "", "SS", (SUBR)errormsg_init, (SUBR)errormsg_perf},
 
+    { "setslice.i", S(ARRSETSLICE), 0, 1, "", "i[]ioop", (SUBR)array_set_slice},
     { "setslice.k", S(ARRSETSLICE), 0, 2, "", "k[]kOOP", NULL, (SUBR)array_set_slice},
-    { "setslice.i", S(ARRSETSLICE), 0, 1, "", "i[]ioop", (SUBR)array_set_slice}
+    { "setslice.i[]", S(ARRSETSLICE), 0, 1, "", "i[]i[]i", (SUBR)setslice_array_k},
+    { "setslice.k[]", S(ARRSETSLICE), 0, 2, "", "k[]k[]k", NULL, (SUBR)setslice_array_k},
+    { "setslice.S[]", S(ARRSETSLICE), 0, 2, "", "S[]S[]k", NULL, (SUBR)setslice_array_k},
+
+    { "extendarray.ii", S(_AA), 0, 1, "", "i[]i[]", (SUBR)extendArray_i},
+    { "extendarray.ki", S(_AA), 0, 3, "", "k[]i[]", (SUBR)extendArray_init, (SUBR)extendArray_k},
+    { "extendarray.kk", S(_AA), 0, 3, "", "k[]k[]", (SUBR)extendArray_init, (SUBR)extendArray_k},
+    { "extendarray.SS", S(_AA), 0, 1, "", "S[]S[]", (SUBR)extendArray_i },
+
+
 
 };
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+VERSION=0.2.1
+
+DROP=$(realpath ~/Downloads/drop.zip)
+
 rootpath=$(realpath "$0")
 root=$(realpath $(dirname "$rootpath")/..)
 echo $root
@@ -9,17 +13,46 @@ copydocs() {
     namespace="$1"
     plugin="$2"
     version="$3"
-
+    mkdir -p $RISSETDATA/plugins/$namespace/$version/$plugin/doc
+    mkdir -p $RISSETDATA/plugins/$namespace/$version/$plugin/doc/assets
+                
     cp $root/src/$plugin/docs/*.md "$RISSETDATA"/plugins/$namespace/$version/$plugin/doc/
     cp $root/src/$plugin/docs/assets/* "$RISSETDATA"/plugins/$namespace/$version/$plugin/doc/assets
             
 }
 
-copydocs emplugins else 0.2.1
-copydocs emplugins klib 0.2.1
-copydocs emplugins poly 0.2.1
-copydocs emplugins jsfx 0.2.1
-copydocs emplugins pathtools 0.2.1
+copydocs emplugins else $VERSION
+copydocs emplugins klib $VERSION
+copydocs emplugins poly $VERSION
+copydocs emplugins jsfx $VERSION
+copydocs emplugins pathtools $VERSION
 
+cd ~/tmp
+rm -fr ~/tmp/drop*
 
+cp "$DROP" ~/tmp
+ls -l 
+aunpack drop.zip
+cd drop/Linux
 
+for plugin in else klib poly jsfx pathtools; do
+    mkdir -p $RISSETDATA/plugins/emplugins/$VERSION/$plugin && cp lib$plugin.so $RISSETDATA/plugins/emplugins/$VERSION/$plugin/
+done
+mkdir -p $RISSETDATA/plugins/rorywalsh/$VERSION/rory
+cp librory.so $RISSETDATA/plugins/rorywalsh/$VERSION/rory
+
+cd ..
+cd MacOS
+for plugin in else klib poly jsfx pathtools; do
+    cp lib$plugin.dylib $RISSETDATA/plugins/emplugins/$VERSION/$plugin/
+done
+cp librory.dylib $RISSETDATA/plugins/rorywalsh/$VERSION/rory
+
+cd "$root"
+scripts/cross-compile-win.sh
+cd buildwin
+
+for plugin in else klib pathtools poly; do
+    cp lib$plugin.dll "$RISSETDATA/plugins/emplugins/$VERSION/$plugin/"
+done
+cp librory.dll "$RISSETDATA/plugins/rorywalsh/$VERSION/rory"

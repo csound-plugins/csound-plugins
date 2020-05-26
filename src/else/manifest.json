@@ -7,7 +7,7 @@
       "defer",
       "deref",
       "diode_ringmod",
-      "errormsg",
+      "extendarray",
       "file_exists",
       "frac2int",
       "lfnoise",
@@ -22,6 +22,7 @@
       "setslice",
       "sigmdrive",
       "standardchaos",
+      "throwerror",
       "uniqinstance",
       "xtracycles"
     ],
