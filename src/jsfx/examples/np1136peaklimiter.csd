@@ -112,7 +112,7 @@ instr 100
 
   kreduction_db = dbamp(jsfx_getslider(ih, 15))
   kreduction_db limit kreduction_db, 0, 100
-  FLsetVal metro(15), sc_lagud(kreduction_db, 0.001, 0.01), gi_s15
+  FLsetVal metro(15), lagud(kreduction_db, 0.001, 0.01), gi_s15
 
   gaOuts[0] = 0
 endin

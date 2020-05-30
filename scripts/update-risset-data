@@ -56,3 +56,7 @@ for plugin in else klib pathtools poly; do
     cp lib$plugin.dll "$RISSETDATA/plugins/emplugins/$VERSION/$plugin/"
 done
 cp librory.dll "$RISSETDATA/plugins/rorywalsh/$VERSION/rory"
+
+pushd
+cd $RISSETDATA
+scripts/generate-documentation.py --html
