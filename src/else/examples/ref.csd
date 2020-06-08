@@ -2,6 +2,7 @@
 <CsOptions>
 -m0
 -d
+--nosound
 </CsOptions>
 <CsInstruments>
 
@@ -141,7 +142,7 @@ endop
 instr testUdoPerformance1
   ; Here we test the performance gain of passing arrays by reference.
   ; Passing the input array by reference seems to produce a speedup of ~25%,
-  inum = 100000
+  inum = 10000
   iXs[] genarray 0, inum
   ii = 0
   it0 rtclock
@@ -151,32 +152,7 @@ instr testUdoPerformance1
   od
   it1 rtclock
   prints "Dur UDO pass by value = %.8f \n", it1 - it0
-
-  it0 rtclock
-  iYs[] arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  it1 rtclock
-  prints "Dur UDO pass by value unroll = %.8f \n", it1 - it0
-                                                                                                                  
-
+                                                                                                                
   iref = ref(iXs)
   it0 rtclock
   iY0[] arrayaddref iref, 0.1
