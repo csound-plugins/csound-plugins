@@ -57,7 +57,7 @@ endin
 
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-; Example 2: move semantics for arrays
+; Example 2: extra references to keep array alive
 instr 3
   ; create a source array
   kXs[] fillarray 1, 1, 2, 3, 5, 8, 13
@@ -68,20 +68,20 @@ instr 3
   ; in the future.
 
   ; short lived event, ends before this event
-  schedule 4, 0, 0.1, ref(kXs)
+  schedule 4, 0, 0.1, ref(kXs), 0
 
   ; starts before we end, but survives us
-  schedule 4, p3-0.1, 0.2, ref(kXs)
+  schedule 4, p3-0.1, 0.2, ref(kXs), 0
 
-  ; starts after we end, we need a move 
-  schedule 4, p3+1, 0.1, ref(kXs, 1)
+  ; starts after we end, we need an extra reference 
+  schedule 4, p3+1, 0.1, ref(kXs, 1), 1
   
   defer "prints", " <<< instr. 3 finished >>> \n"
 endin
 
 instr 4
   prints "instr. 4\n   "
-  kView[] deref p4
+  kView[] deref p4, p5
   printarray kView
   defer "prints", " <<< instr. 4 finished >>> \n"
   ; At deinition time the memory of the `iView` array is marked as deallocated.
@@ -248,4 +248,22 @@ schedule "testUdoPerformance1", 0, 0.1
 e 10 
 
 </CsScore>
+
 </CsoundSynthesizer>
+<bsbPanel>
+ <label>Widgets</label>
+ <objectName/>
+ <x>0</x>
+ <y>0</y>
+ <width>0</width>
+ <height>0</height>
+ <visible>true</visible>
+ <uuid/>
+ <bgcolor mode="nobackground">
+  <r>255</r>
+  <g>255</g>
+  <b>255</b>
+ </bgcolor>
+</bsbPanel>
+<bsbPresets>
+</bsbPresets>
