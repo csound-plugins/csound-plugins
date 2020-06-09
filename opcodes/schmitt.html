@@ -272,8 +272,8 @@ input is higher than <code>khigh</code>, output is 1 and stays 1 until input dro
 <p class="admonition-title">Note</p>
 <p><code>schmitt</code> is particularly useful for implementing effects like a noise gate,
 to avoid fast opening and closing at the threshold. It can be further refined
-together with <code>sc_lagud</code> to add attack / release times to the opening of the gate
-or with <code>sc_trig</code> to assure a minimum open time for the gate</p>
+together with <code>lagud</code> to add attack / release times to the opening of the gate
+or with <code>trighold</code> to assure a minimum open time for the gate</p>
 </div>
 <p>Port of pd/else's <code>schmitt</code></p>
 <h2 id="syntax">Syntax</h2>
@@ -353,8 +353,8 @@ or with <code>sc_trig</code> to assure a minimum open time for the gate</p>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="https://csound.com/docs/manual/sc_lagud.html">sc_lagud</a></li>
-<li><a href="https://csound.com/docs/manual/sc_trig.html">sc_trig</a></li>
+<li><a href="https://csound.com/docs/manual/lagud.html">lagud</a></li>
+<li><a href="https://csound.com/docs/manual/trighold.html">trighold</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>

@@ -268,6 +268,10 @@ This operation is done in place. It is the equivalent of this code:</p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code><span class="n">setslice</span> <span class="kt">i</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">i</span><span class="n">value</span> <span class="p">[,</span> <span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">setslice</span> <span class="kt">k</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">k</span><span class="n">value</span> <span class="p">[,</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">setslice</span> <span class="kt">i</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">i</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">setslice</span> <span class="kt">k</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">k</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">setslice</span> <span class="kt">S</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">S</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
 
 
@@ -277,6 +281,8 @@ This operation is done in place. It is the equivalent of this code:</p>
 <li><code>start</code>: the start index of the slice. Defaults to 0</li>
 <li><code>end</code>: the end index of the slice. Defaults to 0 which means until the end of the slice</li>
 <li><code>step</code>: the number of steps to jump between elements. Default to 1 (all elements in the slice)</li>
+<li><code>xSource[]</code>: the array used as source. In this case, all elements of the source array are
+    copied to the destination array (xArray) starting at the given offset</li>
 </ul>
 <h2 id="output">Output</h2>
 <h2 id="execution-time">Execution Time</h2>
