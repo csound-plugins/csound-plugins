@@ -1977,7 +1977,7 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
 typedef struct {
     OPDS h;
     MYFLT *out;
-    MYFLT *step, *initial_value;
+    MYFLT *step, *initial_value, *reset;
     MYFLT value;
 } ACCUM;
 
@@ -1989,6 +1989,9 @@ accum_init(CSOUND *csound, ACCUM *p) {
 
 static int32_t
 accum_perf(CSOUND *csound, ACCUM *p) {
+    if(*p->reset == 1) {
+        p->value = *p->initial_value;
+    }
     *p->out = p->value;
     p->value += *p->step;
     return OK;
@@ -1997,7 +2000,7 @@ accum_perf(CSOUND *csound, ACCUM *p) {
 static int32_t
 accum_perf_audio(CSOUND *csound, ACCUM *p) {
     MYFLT step = *p->step;
-    MYFLT value = p->value;
+    MYFLT value = *p->reset == 0 ? p->value : *p->initial_value;
     MYFLT *out = p->out;
 
     SAMPLE_ACCURATE(out);
@@ -2896,8 +2899,8 @@ static OENTRY localops[] = {
     { "atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
     { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
 
-    { "accum.k", S(ACCUM), 0, 3, "k", "ko", (SUBR)accum_init, (SUBR)accum_perf},
-    { "accum.a", S(ACCUM), 0, 3, "a", "ko", (SUBR)accum_init, (SUBR)accum_perf_audio},
+    { "accum.k", S(ACCUM), 0, 3, "k", "koO", (SUBR)accum_init, (SUBR)accum_perf},
+    { "accum.a", S(ACCUM), 0, 3, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio},
 
     { "frac2int.i", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
     { "frac2int.k", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int},
