@@ -116,7 +116,7 @@ i1 0 10
 ## See also
 
 * [linenv](linenv.md)
-* [sc_phasor](https://csound.com/docs/manual/sc_phasor.html)
+* [trigphasor](https://csound.com/docs/manual/trigphasor.html)
 * [bpf](https://csound.com/docs/manual/bpf.html)
 
 ## Credits

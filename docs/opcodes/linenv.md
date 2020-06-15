@@ -77,7 +77,7 @@ FLpanelEnd
 FLrun
 
 instr 1
-    kgate = sc_trig:k(metro(1/2), 0.5)
+    kgate = trighold:k(metro(1/2), 0.5)
     kenv linenv kgate, 1, 0, 0.15, 1, 0.1, 0
     printf "t: %f,  kenv: %f \n", timeinstk(), timeinsts(), kenv
 
@@ -89,7 +89,7 @@ endin
 instr 2
     iperiod = 2
     igatedur = 1
-    kgate = sc_trig:k(metro(1/iperiod), igatedur)
+    kgate = trighold:k(metro(1/iperiod), igatedur)
     aenv linenv kgate, -2, 0, 0.05, 1, 0.2, 0.5, 0.2, 1, 0.4, 0
     asig = oscili:a(0.2, 1000) * aenv
     FLsetVal changed(kgate), kgate, gih1

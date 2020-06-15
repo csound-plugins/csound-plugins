@@ -23,22 +23,25 @@ instr exit
 endin
 
 instr 1
+  ; generate new instances manually, to check that 
+  ; uniqinstance does not collide with existing instances
+  ; scheduled via other means
   kcounter init 0
   ktrig metro 20
   
   if ktrig == 1 then
     kcounter += 1
     kinst = 10 + kcounter/100
-    printf "kinst=%f \n", ktrig, kinst
-    event "i", kinst, 0, 1
+    printsk "kinst=%f \n", kinst
+    schedulek(kinst, 0, 1)
   endif
 endin
 
 instr 2
   instrnum10 uniqinstance 10
-  printf "Unique instance of 10= %f\n", 1, instrnum10
+  prints "Unique instance of 10= %f\n", instrnum10
   instrnum11 uniqinstance 11
-  printf "Unique instance of 11= %f\n", 1, instrnum11
+  prints "Unique instance of 11= %f\n", instrnum11
   turnoff
 endin
 
@@ -62,7 +65,7 @@ endin
 ; --------------------------------------
 ; Test that instances get recycled
 instr example2
-  printf ">>>>>>>>>>>>>>>>>>> example2 \n", 1
+  prints ">>>>>>>>>>>>>>>>>>> example2 \n"
   i0 = 0
   istep = 0.01
   idur  = 1.0   ; 100 simultaneous instances
@@ -88,7 +91,7 @@ instr scheduniq
 endin
 
 instr 20
-  printf "started %f\n", 1, p1
+  printsk "started %f\n", p1
   defer "prints", "finished %f \n", p1
 endin
 
@@ -96,8 +99,8 @@ endin
 
 <CsScore>
 
-; i "example1" 0 10 
-i "example2" 0 10
+i "example1" 0 10 
+; i "example2" 0 10
 
 </CsScore>
 </CsoundSynthesizer>

@@ -2710,6 +2710,7 @@ typedef struct {
 } _AAk;
 
 
+
 static int32_t extendArray_init(CSOUND *csound, _AA *p) {
     p->sizeA = p->A->sizes[0];
     if(p->A->dimensions == 1 && p->B->dimensions == 1) {
@@ -2785,6 +2786,59 @@ static int32_t setslice_array_k_init_k(CSOUND *csound, _AAk *p) {
 
 static int32_t setslice_array_k_init_S(CSOUND *csound, _AAk *p) {
     p->varTypeName = 'S';
+    return OK;
+}
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *itab;
+    // sr, nchnls, loopstart=0, basenote=60
+    MYFLT *sr;
+    MYFLT *nchnls;
+    MYFLT *loopstart;
+    MYFLT *basenote;
+
+} FTSETPARAMS;
+
+static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
+    FUNC    *ftp;
+
+    if(*p->nchnls <= 0)
+        return INITERRF("Number of channels must be 1 or higher, got %d", (int)*p->nchnls);
+
+    if (UNLIKELY((ftp = csound->FTnp2Finde(csound, p->itab)) == NULL))
+        return INITERRF("ftsetparams: table %d not found", (int)*p->itab);
+
+    if(ftp->flen % (int)*p->nchnls != 0)
+        return INITERRF("ftsetparms: the table has a length of %d, which is not divisible"
+                        "by the number of channels (%d)", ftp->flen, (int)*p->nchnls);
+
+    ftp->gen01args.sample_rate = *p->sr;
+    ftp->nchanls = (int)*p->nchnls;
+    MYFLT basenote = *p->basenote;
+
+    if (basenote < 0)
+        basenote = FL(60);
+    double natcps = pow(2.0, (basenote - FL(69)) / 12.0) * csound->GetA4(csound);
+
+    if(*p->loopstart > 0) {
+        ftp->begin1 = (int)*p->loopstart;
+        ftp->loopmode1 = 1;
+        ftp->cvtbas = LOFACT * (*p->sr / csound->GetSr(csound));
+        ftp->cpscvt = ftp->cvtbas / natcps;
+        ftp->end1 = ftp->flenfrms;
+    } else {
+        // no looping
+        ftp->cpscvt = FL(0.0);
+        ftp->loopmode1 = 0;
+        ftp->loopmode2 = 0;
+        ftp->end1 = ftp->flenfrms;
+        ftp->begin2 = 0;
+        ftp->end2 = 0;
+        ftp->cvtbas = LOFACT * 1;
+    }
+    ftp->soundend = ftp->flen / ftp->nchanls;
     return OK;
 }
 
@@ -2884,9 +2938,8 @@ static OENTRY localops[] = {
     { "extendarray.ki", S(_AA), 0, 3, "", "k[]i[]", (SUBR)extendArray_init, (SUBR)extendArray_k},
     { "extendarray.kk", S(_AA), 0, 3, "", "k[]k[]", (SUBR)extendArray_init, (SUBR)extendArray_k},
     { "extendarray.SS", S(_AA), 0, 1, "", "S[]S[]", (SUBR)extendArray_i },
-
-
-
+    // itab, sr, nchnls, loopstart=0, basenote=60
+    { "ftsetparams.i", S(FTSETPARAMS), 0, 1, "", "iiioj", (SUBR)ftsetparams }
 };
 
 LINKAGE

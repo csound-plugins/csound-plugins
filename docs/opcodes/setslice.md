@@ -20,6 +20,9 @@ array[start:end:step] = value
 setslice iArray[], ivalue [, istart=0, iend=0, istep=1]
 setslice kArray[], kvalue [, kstart=0, kend=0, kstep=1]
 
+setslice iArray[], iSource[], istart=0
+setslice kArray[], kSource[], kstart=0
+setslice SArray[], SSource[], kstart=0
 
 ```
     
@@ -29,6 +32,8 @@ setslice kArray[], kvalue [, kstart=0, kend=0, kstep=1]
 * `start`: the start index of the slice. Defaults to 0
 * `end`: the end index of the slice. Defaults to 0 which means until the end of the slice
 * `step`: the number of steps to jump between elements. Default to 1 (all elements in the slice)
+* `xSource[]`: the array used as source. In this case, all elements of the source array are
+    copied to the destination array (xArray) starting at the given offset
 
 ## Output
 

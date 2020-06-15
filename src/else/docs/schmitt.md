@@ -18,8 +18,8 @@ input is higher than `khigh`, output is 1 and stays 1 until input drops beneath
 
     `schmitt` is particularly useful for implementing effects like a noise gate,
     to avoid fast opening and closing at the threshold. It can be further refined
-    together with `sc_lagud` to add attack / release times to the opening of the gate
-    or with `sc_trig` to assure a minimum open time for the gate
+    together with `lagud` to add attack / release times to the opening of the gate
+    or with `trighold` to assure a minimum open time for the gate
 
 Port of pd/else's `schmitt`
 
@@ -109,8 +109,8 @@ i1 0 100
 
 ## See also
 
-* [sc_lagud](https://csound.com/docs/manual/sc_lagud.html)
-* [sc_trig](https://csound.com/docs/manual/sc_trig.html)
+* [lagud](https://csound.com/docs/manual/lagud.html)
+* [trighold](https://csound.com/docs/manual/trighold.html)
 
 
 ## Credits

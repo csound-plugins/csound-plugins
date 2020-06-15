@@ -8,43 +8,33 @@ Get a reference to a variable
 
 
 `ref` and `deref` implement a mechanism to pass a reference to an array,
-allowing to share it across instruments, opcodes, etc. A ref
-is a proxy to an axisting array. Refs are reference counted and
-deallocate themselves when out of scope and not being referenced by any
+allowing to share it across instruments, opcodes, etc. Refs are reference counted and
+deallocate themselves when out of scope and not being used by any
 object. It makes it possible to pass arrays by reference to user defined
-opcodes, allowing to modify an array in place, to skip copying memory, etc.
-
-### Arrays
+opcodes, allowing to modify an array in place, skip copying memory, etc.
 
 ```csound
 
-iXs[] fillarray 0, 1, 2, 3, 4
-iref  ref iXs
-iYs[] deref iref
+iX[] fillarray 0, 1, 2, 3, 4
+iref  ref iX
+iY[] deref iref
+
 ```
 
-In the case above, `iYs` shares the same memory as `iXs` and any modification in
-one array will be visible in the other.
-
-### Moving arrays
-
-It is possible for the `ref` opcode to own the memory of the array. This can be
-used for the cases where a ref is passed to an event which is scheduled at a
-point in time later that the end of the event which owns the array. In this case
-the array if moved to a global space and owns the memory until no other events
-are referencing it.
+In the case above, `iY` shares the same memory as `iX` and any modification in
+one array will be visible in the other. 
 
 ## Syntax
 
-    iref ref xArray, [imove=0]
+    iref ref xArray, [iextrarefs=0]
 
 ## Arguments
 
 * `xArray`: the array to be referenced
-* `move`: for arrays, it is possible to specify that the reference owns the
-  memory. This is useful for the *niche* case where a reference is passed to an
+* `iextrarefs`: use this for the *niche* case where a reference is passed to an
   event scheduled at a point in time later that the end of the current event.
-  Without this, the ref would go out of scope before the `deref` takes place.
+  Without this, the ref would go out of scope before the `deref` takes place. 
+  Any extra ref must be matched with an extra deref (`kArr[] deref iref, 1`)
 
 ## Output
 
@@ -62,6 +52,7 @@ are referencing it.
 <CsOptions>
 -m0
 -d
+--nosound
 </CsOptions>
 <CsInstruments>
 
@@ -116,7 +107,7 @@ endin
 
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-; Example 2: move semantics for arrays
+; Example 2: extra references to keep array alive
 instr 3
   ; create a source array
   kXs[] fillarray 1, 1, 2, 3, 5, 8, 13
@@ -127,20 +118,20 @@ instr 3
   ; in the future.
 
   ; short lived event, ends before this event
-  schedule 4, 0, 0.1, ref(kXs)
+  schedule 4, 0, 0.1, ref(kXs), 0
 
   ; starts before we end, but survives us
-  schedule 4, p3-0.1, 0.2, ref(kXs)
+  schedule 4, p3-0.1, 0.2, ref(kXs), 0
 
-  ; starts after we end, we need a move 
-  schedule 4, p3+1, 0.1, ref(kXs, 1)
+  ; starts after we end, we need an extra reference 
+  schedule 4, p3+1, 0.1, ref(kXs, 1), 1
   
   defer "prints", " <<< instr. 3 finished >>> \n"
 endin
 
 instr 4
   prints "instr. 4\n   "
-  kView[] deref p4
+  kView[] deref p4, p5
   printarray kView
   defer "prints", " <<< instr. 4 finished >>> \n"
   ; At deinition time the memory of the `iView` array is marked as deallocated.
@@ -201,7 +192,7 @@ endop
 instr testUdoPerformance1
   ; Here we test the performance gain of passing arrays by reference.
   ; Passing the input array by reference seems to produce a speedup of ~25%,
-  inum = 100000
+  inum = 10000
   iXs[] genarray 0, inum
   ii = 0
   it0 rtclock
@@ -211,32 +202,7 @@ instr testUdoPerformance1
   od
   it1 rtclock
   prints "Dur UDO pass by value = %.8f \n", it1 - it0
-
-  it0 rtclock
-  iYs[] arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  iYs   arrayadd iXs, 2.0
-  it1 rtclock
-  prints "Dur UDO pass by value unroll = %.8f \n", it1 - it0
-                                                                                                                  
-
+                                                                                                                
   iref = ref(iXs)
   it0 rtclock
   iY0[] arrayaddref iref, 0.1
@@ -332,7 +298,26 @@ schedule "testUdoPerformance1", 0, 0.1
 e 10 
 
 </CsScore>
+
 </CsoundSynthesizer>
+<bsbPanel>
+ <label>Widgets</label>
+ <objectName/>
+ <x>0</x>
+ <y>0</y>
+ <width>0</width>
+ <height>0</height>
+ <visible>true</visible>
+ <uuid/>
+ <bgcolor mode="nobackground">
+  <r>255</r>
+  <g>255</g>
+  <b>255</b>
+ </bgcolor>
+</bsbPanel>
+<bsbPresets>
+</bsbPresets>
+
 
 ```
 

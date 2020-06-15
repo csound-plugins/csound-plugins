@@ -14,7 +14,7 @@ instance of the given instrument
 
 !!! Note
 
-    This opcode **DOES NOT** create a new instance. It just returns
+    This opcode DOES NOT create a new instance. It just returns
     an instr number which can be used to create one
     
 
@@ -41,8 +41,8 @@ instrnum  uniqinstance Sinstrname
 
 * Init 
 
-
 ## Examples
+
 
 {example}
 

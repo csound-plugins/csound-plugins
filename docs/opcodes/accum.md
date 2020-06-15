@@ -80,7 +80,7 @@ i1 0 0.1
 
 * [metro](http://www.csounds.com/manual/html/metro.html)
 * [changed](http://www.csounds.com/manual/html/changed.html)
-* [sc_trig](http://www.csounds.com/manual/html/sc_trig.html)
+* [trighold](http://www.csounds.com/manual/html/trighold.html)
 * [printf](http://www.csounds.com/manual/html/printf.html)
 
 ## Credits
