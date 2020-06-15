@@ -79,6 +79,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [extendarray](opcodes/extendarray.md): Extend one array with the contents of a second array, in place 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
+* [ftsetparams](opcodes/ftsetparams.md): Set metadata parameters of a table, as if it was loaded via GEN1 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
 * [memview](opcodes/memview.md): Create a view into a table or another array 

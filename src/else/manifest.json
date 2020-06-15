@@ -10,6 +10,7 @@
       "extendarray",
       "file_exists",
       "frac2int",
+      "ftsetparams",
       "lfnoise",
       "linenv",
       "memview",
