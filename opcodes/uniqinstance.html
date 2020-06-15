@@ -106,6 +106,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
@@ -267,7 +269,7 @@ for <code>event</code>, <code>schedule</code> or similar opcodes to create a uni
 instance of the given instrument</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This opcode <strong>DOES NOT</strong> create a new instance. It just returns
+<p>This opcode DOES NOT create a new instance. It just returns
 an instr number which can be used to create one</p>
 </div>
 <h2 id="syntax">Syntax</h2>
@@ -316,22 +318,25 @@ an instr number which can be used to create one</p>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
+  <span class="c1">; generate new instances manually, to check that </span>
+  <span class="c1">; uniqinstance does not collide with existing instances</span>
+  <span class="c1">; scheduled via other means</span>
   <span class="kt">k</span><span class="n">counter</span> <span class="nb">init</span> <span class="mi">0</span>
   <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">20</span>
 
   <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
     <span class="kt">k</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="kt">k</span><span class="n">inst</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="kt">k</span><span class="n">counter</span><span class="o">/</span><span class="mi">100</span>
-    <span class="nb">printf</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
-    <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="n">printsk</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
+    <span class="nb">schedulek</span><span class="p">(</span><span class="kt">k</span><span class="n">inst</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
   <span class="k">endif</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
   <span class="kt">i</span><span class="n">nstrnum10</span> <span class="n">uniqinstance</span> <span class="mi">10</span>
-  <span class="nb">printf</span> <span class="s">&quot;Unique instance of 10= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum10</span>
+  <span class="nb">prints</span> <span class="s">&quot;Unique instance of 10= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum10</span>
   <span class="kt">i</span><span class="n">nstrnum11</span> <span class="n">uniqinstance</span> <span class="mi">11</span>
-  <span class="nb">printf</span> <span class="s">&quot;Unique instance of 11= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum11</span>
+  <span class="nb">prints</span> <span class="s">&quot;Unique instance of 11= </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">nstrnum11</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
@@ -355,7 +360,7 @@ an instr number which can be used to create one</p>
 <span class="c1">; --------------------------------------</span>
 <span class="c1">; Test that instances get recycled</span>
 <span class="kd">instr</span> <span class="nf">example2</span>
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; example2 </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="nb">prints</span> <span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; example2 </span><span class="se">\n</span><span class="s">&quot;</span>
   <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
   <span class="kt">i</span><span class="n">step</span> <span class="o">=</span> <span class="mf">0.01</span>
   <span class="kt">i</span><span class="n">dur</span>  <span class="o">=</span> <span class="mf">1.0</span>   <span class="c1">; 100 simultaneous instances</span>
@@ -381,7 +386,7 @@ an instr number which can be used to create one</p>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">20</span>
-  <span class="nb">printf</span> <span class="s">&quot;started </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p1</span>
+  <span class="n">printsk</span> <span class="s">&quot;started </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span>
   <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;finished </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span>
 <span class="kd">endin</span>
 
@@ -389,8 +394,8 @@ an instr number which can be used to create one</p>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="c1">; i &quot;example1&quot; 0 10 </span>
-<span class="nb">i</span> <span class="s">&quot;example2&quot;</span> <span class="mi">0</span> <span class="mi">10</span>
+<span class="nb">i</span> <span class="s">&quot;example1&quot;</span> <span class="mi">0</span> <span class="mi">10</span> 
+<span class="c1">; i &quot;example2&quot; 0 10</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
