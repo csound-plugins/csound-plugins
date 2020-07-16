@@ -1,5 +1,7 @@
 #!/bin/bash
-VERSION=0.2.1
+
+VERSION=0.2.3
+echo "VERSION: " $VERSION
 
 DROP=$(realpath ~/Downloads/drop.zip)
 
@@ -13,11 +15,11 @@ copydocs() {
     namespace="$1"
     plugin="$2"
     version="$3"
-    mkdir -p $RISSETDATA/plugins/$namespace/$version/$plugin/doc
-    mkdir -p $RISSETDATA/plugins/$namespace/$version/$plugin/doc/assets
+    mkdir -p $RISSETDATA/plugins/$namespace/$plugin/$version/doc
+    mkdir -p $RISSETDATA/plugins/$namespace/$plugin/$version/doc/assets
                 
-    cp $root/src/$plugin/docs/*.md "$RISSETDATA"/plugins/$namespace/$version/$plugin/doc/
-    cp $root/src/$plugin/docs/assets/* "$RISSETDATA"/plugins/$namespace/$version/$plugin/doc/assets
+    cp $root/src/$plugin/docs/*.md "$RISSETDATA"/plugins/$namespace/$plugin/$version/doc/
+    cp $root/src/$plugin/docs/assets/* "$RISSETDATA"/plugins/$namespace/$plugin/$version/doc/assets
             
 }
 
@@ -36,26 +38,26 @@ aunpack drop.zip
 cd drop/Linux
 
 for plugin in else klib poly jsfx pathtools; do
-    mkdir -p $RISSETDATA/plugins/emplugins/$VERSION/$plugin && cp lib$plugin.so $RISSETDATA/plugins/emplugins/$VERSION/$plugin/
+    mkdir -p $RISSETDATA/plugins/emplugins/$plugin/$VERSION && cp lib$plugin.so $RISSETDATA/plugins/emplugins/$plugin/$VERSION
 done
-mkdir -p $RISSETDATA/plugins/rorywalsh/$VERSION/rory
-cp librory.so $RISSETDATA/plugins/rorywalsh/$VERSION/rory
+mkdir -p $RISSETDATA/plugins/rorywalsh/rory/$VERSION
+cp librory.so $RISSETDATA/plugins/rorywalsh/rory/$VERSION
 
 cd ..
 cd MacOS
 for plugin in else klib poly jsfx pathtools; do
-    cp lib$plugin.dylib $RISSETDATA/plugins/emplugins/$VERSION/$plugin/
+    cp lib$plugin.dylib $RISSETDATA/plugins/emplugins/$plugin/$VERSION
 done
-cp librory.dylib $RISSETDATA/plugins/rorywalsh/$VERSION/rory
+cp librory.dylib $RISSETDATA/plugins/rorywalsh/rory/$VERSION
 
 cd "$root"
 scripts/cross-compile-win.sh
 cd buildwin
 
 for plugin in else klib pathtools poly; do
-    cp lib$plugin.dll "$RISSETDATA/plugins/emplugins/$VERSION/$plugin/"
+    cp lib$plugin.dll "$RISSETDATA/plugins/emplugins/$plugin/$VERSION"
 done
-cp librory.dll "$RISSETDATA/plugins/rorywalsh/$VERSION/rory"
+cp librory.dll "$RISSETDATA/plugins/rorywalsh/rory/$VERSION"
 
 pushd
 cd $RISSETDATA
