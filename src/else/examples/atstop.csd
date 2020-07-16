@@ -106,6 +106,19 @@ instr 200
   turnoff
 endin
 
+; test atstop with k args
+instr _printCounter
+  icounter = p4
+  prints "counter: %d\n", icounter
+  turnoff
+endin
+
+instr kargs
+  kcounter init 0
+  kcounter += 1
+  atstop "_printCounter", 0, -1, kcounter
+endin
+
 instr StopPerformance
   exitnow
 endin
@@ -119,7 +132,8 @@ endin
 
 ; i 10 0 1
 ; i "StopPerformance" 10 1
-i "first" 1 0.5
+; i "first" 1 0.5
+i "kargs" 0 1
 f 0 5
 </CsScore>
 </CsoundSynthesizer>

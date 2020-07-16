@@ -1,5 +1,5 @@
 /*
-   else.c
+  else.c
 
   Copyright (C) 2019 Eduardo Moguillansky
 
@@ -20,156 +20,156 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   02110-1301 USA
 
-  */
+*/
 
 /*
 
   # crackle
 
-    aout  crackle kp
+  aout  crackle kp
 
-    generates noise based on a chaotic equation
-    y[n] = p * y[n-1]- y[n-2] - 0.05
+  generates noise based on a chaotic equation
+  y[n] = p * y[n-1]- y[n-2] - 0.05
 
-    kp: the p parameter in the equation, a value between 1.0 and 2.0
-
-  # ramptrig
-
-    a resetable line going from 0 to 1
-
-    kout             ramptrig ktrig, kdur, ivaluepost=1
-    aout             ramptrig ktrig, kdur, ivaluepost=1
-    kout, kfinished  ramptrig ktrig, kdur, ivaluepost=1
-
-    ktrig: whenever ktrig > 0 and ktrig > previous trig the outvalue is reset to 0
-    kdur: duration of the ramp (how long does it take to go from 0 to 1)
-    ivaluepost: value after reaching end of ramp (1)
-    ivaluepre: value before any trigger (0)
-
-    kout: the ramp value. Will go from 0 to 1 in kdur. If the ramp reaches 1,
-        kout will be set to ivaluepost (1). Before any trigger, value is ivaluepre (0)
-
-    Main usecase is in connection to bpf, to produce something similar to Env and EnvGen
-    in supercollider
-
-    kphase ramptrig ktrig, idur
-    kenv bpf kphase * idur, 0, 0, 0.01, 1, idur, 0
-    asig = pinker() * interp(kenv)
+  kp: the p parameter in the equation, a value between 1.0 and 2.0
 
   # ramptrig
 
-    kout ramptrig ktrig, idur, [ivaloff]
+  a resetable line going from 0 to 1
 
-    A ramp from 0 to 1 in idur seconds. Can be retriggered. Concieved to be used together
-    with bpf to generate trigerrable complex envelopes
+  kout             ramptrig ktrig, kdur, ivaluepost=1
+  aout             ramptrig ktrig, kdur, ivaluepost=1
+  kout, kfinished  ramptrig ktrig, kdur, ivaluepost=1
 
-    idur = 2
-    kramp ramptrig ktrig, idur
-    aenv bpf kramp*idur, 0, 0, 0.3, 1, 1.7, 1, 2, 0
+  ktrig: whenever ktrig > 0 and ktrig > previous trig the outvalue is reset to 0
+  kdur: duration of the ramp (how long does it take to go from 0 to 1)
+  ivaluepost: value after reaching end of ramp (1)
+  ivaluepre: value before any trigger (0)
+
+  kout: the ramp value. Will go from 0 to 1 in kdur. If the ramp reaches 1,
+  kout will be set to ivaluepost (1). Before any trigger, value is ivaluepre (0)
+
+  Main usecase is in connection to bpf, to produce something similar to Env and EnvGen
+  in supercollider
+
+  kphase ramptrig ktrig, idur
+  kenv bpf kphase * idur, 0, 0, 0.01, 1, idur, 0
+  asig = pinker() * interp(kenv)
+
+  # ramptrig
+
+  kout ramptrig ktrig, idur, [ivaloff]
+
+  A ramp from 0 to 1 in idur seconds. Can be retriggered. Concieved to be used together
+  with bpf to generate trigerrable complex envelopes
+
+  idur = 2
+  kramp ramptrig ktrig, idur
+  aenv bpf kramp*idur, 0, 0, 0.3, 1, 1.7, 1, 2, 0
 
   # sigmdrive  (sigmoid drive)
 
-    aout sigmdrive ain, xfactor, kmode=0
+  aout sigmdrive ain, xfactor, kmode=0
 
-    xfactor: drive factor (k or a)
-    kmode: 0 = tanh, 1 = pow
+  xfactor: drive factor (k or a)
+  kmode: 0 = tanh, 1 = pow
 
   # lfnoise
 
-    aout lfnoise kfreq, kinterp=0
+  aout lfnoise kfreq, kinterp=0
 
-    low frequency, band-limited noise
+  low frequency, band-limited noise
 
   # schmitt
 
-    A schmitt trigger
+  A schmitt trigger
 
-    kout schmitt kin, khigh, klow
-    aout schmitt ain, khigh, klow
+  kout schmitt kin, khigh, klow
+  aout schmitt ain, khigh, klow
 
-    output value is either 1 if in > high, or 0 if in < low
+  output value is either 1 if in > high, or 0 if in < low
 
 
   # standardchaos
 
-    Standard map chaotic generator, the sound is generated with the difference equations;
+  Standard map chaotic generator, the sound is generated with the difference equations;
 
-    y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
-    x[n] = (x[n-1] + y[n]) % 2pi;
-    out = (x[n] - pi) / pi;
+  y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
+  x[n] = (x[n-1] + y[n]) % 2pi;
+  out = (x[n] - pi) / pi;
 
-    aout standardchaos krate, kk=1, ix=0.5, iy=0
+  aout standardchaos krate, kk=1, ix=0.5, iy=0
 
-    krate: from 0 to nyquist
-    kk: a value for k in the above equation
-    ix: initial value for x
-    iy: initial value for y
+  krate: from 0 to nyquist
+  kk: a value for k in the above equation
+  ix: initial value for x
+  iy: initial value for y
 
   # linenv
 
-    an envelope generator similar to linsegr but with retriggerable gate and
-    flexible sustain point
+  an envelope generator similar to linsegr but with retriggerable gate and
+  flexible sustain point
 
-    aout/kout rampgate kgate, isustidx, kval0, kdel0, kval1, kdel1, ..., kvaln
+  aout/kout rampgate kgate, isustidx, kval0, kdel0, kval1, kdel1, ..., kvaln
 
-    kgate: when kgate changes from 0 to 1, value follows envelope until isustpoint is reached
-        value stays there until kgate switches to 0, after which it follow the rest
-        of the envelope and stays at the env until a new switch. If kgate switches to 0
-        before reaching isustpoint, then it uses the current value as sustain point and
-        follows the envelope from there. If kgate switches to 1 before reaching the
-        end of the release part, it glides to the beginning and starts attack envelope
-        from there
-    isustidx: the idx of the sustaining value. if isustidx is 2, then the value stays
-        at kval2 until kgate is closed (0).
-        * Use 0 to disable sustain, negative indexes count from end (-1 is the last segment)
-        NB: the first segment (index 0 ) can't be used as sustain segment. In order to have
-        a sustain segment just at the beginning, use a very short first segment and set
-        the sustain index to 1
+  kgate: when kgate changes from 0 to 1, value follows envelope until isustpoint is reached
+  value stays there until kgate switches to 0, after which it follow the rest
+  of the envelope and stays at the env until a new switch. If kgate switches to 0
+  before reaching isustpoint, then it uses the current value as sustain point and
+  follows the envelope from there. If kgate switches to 1 before reaching the
+  end of the release part, it glides to the beginning and starts attack envelope
+  from there
+  isustidx: the idx of the sustaining value. if isustidx is 2, then the value stays
+  at kval2 until kgate is closed (0).
+  * Use 0 to disable sustain, negative indexes count from end (-1 is the last segment)
+  NB: the first segment (index 0 ) can't be used as sustain segment. In order to have
+  a sustain segment just at the beginning, use a very short first segment and set
+  the sustain index to 1
 
-        kdel0, kval0, ...: the points of the envelope, similar to linseg
+  kdel0, kval0, ...: the points of the envelope, similar to linseg
 
-        If noteoff release is needed, xtratim and release opcodes are needed.
+  If noteoff release is needed, xtratim and release opcodes are needed.
 
-        inspired by else's envgen
+  inspired by else's envgen
 
-        Example: generate an adsr envelope with attack=0.05, decay=0.1, sust=0.2, rel=0.5
+  Example: generate an adsr envelope with attack=0.05, decay=0.1, sust=0.2, rel=0.5
 
-        isustidx = 2
-        aout linenv kgate, isustidx, 0, 0.05, 1, 0.1, 0.2, 0.5, 0
+  isustidx = 2
+  aout linenv kgate, isustidx, 0, 0.05, 1, 0.1, 0.2, 0.5, 0
 
-        Example 2: emulate ramptrig
+  Example 2: emulate ramptrig
 
-        These are the same:
-        kout ramptrig ktrig, idur
-            kout rampgate ktrig, -1, 0, idur, 1
+  These are the same:
+  kout ramptrig ktrig, idur
+  kout rampgate ktrig, -1, 0, idur, 1
 
   # sp_peaklim
 
-    aout sp_peaklim ain, ktresh=0, iattack=0.01, irelease=0.1
+  aout sp_peaklim ain, ktresh=0, iattack=0.01, irelease=0.1
 
   # diode_ringmod
 
-    A ring modulator with some dirtyness. Two versions: one where an inbuilt sinus as
-    modulator signal; and a second where the user passed its own signal as modulator. In the
-    second case the effect of nonlinearities is reduced to feedback (in the first, the freq.
-    of the oscillator is also modified)
+  A ring modulator with some dirtyness. Two versions: one where an inbuilt sinus as
+  modulator signal; and a second where the user passed its own signal as modulator. In the
+  second case the effect of nonlinearities is reduced to feedback (in the first, the freq.
+  of the oscillator is also modified)
 
-    (mod -> diode sim -> feedback) * carrier
+  (mod -> diode sim -> feedback) * carrier
 
-    aout dioderingmod acarr, kmodfreq, kdiode=0, kfeedback=0,
-                      knonlinearities=0.1, koversample=0
+  aout dioderingmod acarr, kmodfreq, kdiode=0, kfeedback=0,
+  knonlinearities=0.1, koversample=0
 
-    A port of jsfx Loser's ringmodulator
+  A port of jsfx Loser's ringmodulator
 
   # atstop
 
-    schedule an instrument when the note stops
+  schedule an instrument when the note stops
 
-    NB: this is scheduled not at release start, but when the
-    note is deallocated
+  NB: this is scheduled not at release start, but when the
+  note is deallocated
 
-    atstop Sintr, idelay, idur, pfields...
-    atstop instrnum, idelay, idur, pfields...
+  atstop Sintr, idelay, idur, pfields...
+  atstop instrnum, idelay, idur, pfields...
 
 */
 
@@ -196,26 +196,26 @@
 // #define DEBUG
 
 #ifdef DEBUG
-    #define DBG(fmt, ...) printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);
-    #define DBG_(m) DBG("%s", m)
+#define DBG(fmt, ...) printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);
+#define DBG_(m) DBG("%s", m)
 #else
-    #define DBG(fmt, ...)
-    #define DBG_(m)
+#define DBG(fmt, ...)
+#define DBG_(m)
 #endif
 
 
-#define SAMPLE_ACCURATE(out) \
-    uint32_t n, nsmps = CS_KSMPS;                                    \
-    uint32_t offset = p->h.insdshead->ksmps_offset;                  \
-    uint32_t early = p->h.insdshead->ksmps_no_end;                   \
-    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));   \
-    if (UNLIKELY(early)) {                                           \
-        nsmps -= early;                                              \
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));              \
-    }                                                                \
+#define SAMPLE_ACCURATE(out)                                        \
+    uint32_t n, nsmps = CS_KSMPS;                                   \
+    uint32_t offset = p->h.insdshead->ksmps_offset;                 \
+    uint32_t early = p->h.insdshead->ksmps_no_end;                  \
+    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));  \
+    if (UNLIKELY(early)) {                                          \
+        nsmps -= early;                                             \
+        memset(&out[nsmps], '\0', early*sizeof(MYFLT));             \
+    }                                                               \
 
 
-#define register_deinit(csound, p, func) \
+#define register_deinit(csound, p, func)                                \
     csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
 
 
@@ -436,7 +436,7 @@ static int32_t ramptrig_a_kk(CSOUND *csound, RAMPTRIGK *p) {
 
     SAMPLE_ACCURATE(out)
 
-    MYFLT ktrig = *p->ktrig;
+        MYFLT ktrig = *p->ktrig;
     MYFLT now = p->now;
     MYFLT delta = 1 / (*p->kdur * p->sr);
     if(ktrig > 0 && ktrig > p->lasttrig) {
@@ -663,13 +663,13 @@ static int32_t lfnoise_perf(CSOUND *csound, LFNOISE *p) {
                 ynp1 = random; // next random value
             }
         } else {
-           if (phase <= 0.) {    // update
-               random = ((MYFLT)((val & 0x7fffffff) - 0x40000000)) * (MYFLT)(1.0 / 0x40000000);
-               val = val * 435898247 + 382842987;
-               phase = phase + 1;
-               yn = ynp1;
-               ynp1 = random; // next random value
-           }
+            if (phase <= 0.) {    // update
+                random = ((MYFLT)((val & 0x7fffffff) - 0x40000000)) * (MYFLT)(1.0 / 0x40000000);
+                val = val * 435898247 + 382842987;
+                phase = phase + 1;
+                yn = ynp1;
+                ynp1 = random; // next random value
+            }
         }
         if (interp) {
             if (hz >= 0)
@@ -682,12 +682,12 @@ static int32_t lfnoise_perf(CSOUND *csound, LFNOISE *p) {
         }
 
         phase += phase_step;
-   }
-   p->x_val = val;
-   p->x_phase = phase;
-   p->x_ynp1 = ynp1;   // next random value
-   p->x_yn = yn;       // current output
-   return OK;
+    }
+    p->x_val = val;
+    p->x_phase = phase;
+    p->x_ynp1 = ynp1;   // next random value
+    p->x_yn = yn;       // current output
+    return OK;
 }
 
 
@@ -2792,6 +2792,103 @@ static int32_t setslice_array_k_init_S(CSOUND *csound, _AAk *p) {
     return OK;
 }
 
+// -- perlin3, taken verbatim from supercollider's Perlin3 --
+// Based on java code by Ken Perlin, published at http://mrl.nyu.edu/~perlin/noise/
+static int _p[512], _permutation[256] = {
+    151,160,137,91,90,15,
+    131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+    190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
+    88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
+    77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
+    102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
+    135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
+    5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
+    223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172,9,
+    129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
+    251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
+    49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
+    138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+};
+
+static double fade(double t) { return t * t * t * (t * (t * 6. - 15.) + 10.); }
+static double lerp(double t, double a, double b) { return a + t * (b - a); }
+static double grad(int hash, double x, double y, double z) {
+    int h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
+    double u = h<8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
+        v = h<4 ? y : h==12||h==14 ? x : z;
+    return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
+}
+
+double perlin_noise(double x, double y, double z) {
+	int X = (int)floor(x) & 255,                  // FIND UNIT CUBE THAT
+        Y = (int)floor(y) & 255,                  // CONTAINS POINT.
+        Z = (int)floor(z) & 255;
+	x -= floor(x);                                // FIND RELATIVE X,Y,Z
+	y -= floor(y);                                // OF POINT IN CUBE.
+	z -= floor(z);
+	double u = fade(x),                                // COMPUTE FADE CURVES
+           v = fade(y),                                // FOR EACH OF X,Y,Z.
+           w = fade(z);
+	int A  = _p[X  ]+Y, 
+	    AA = _p[A]+Z, 
+	    AB = _p[A+1]+Z,      // HASH COORDINATES OF
+        B  = _p[X+1]+Y, 
+        BA = _p[B]+Z, 
+        BB = _p[B+1]+Z;      // THE 8 CUBE CORNERS,
+
+	return lerp(w, lerp(v, lerp(u, grad(_p[AA  ], x  , y  , z   ),  // AND ADD
+                                grad(_p[BA  ], x-1, y  , z   )), // BLENDED
+                        lerp(u, grad(_p[AB  ], x  , y-1, z   ),  // RESULTS
+                             grad(_p[BB  ], x-1, y-1, z   ))),// FROM  8
+                lerp(v, lerp(u, grad(_p[AA+1], x  , y  , z-1 ),  // CORNERS
+                             grad(_p[BA+1], x-1, y  , z-1 )), // OF CUBE
+                     lerp(u, grad(_p[AB+1], x  , y-1, z-1 ),
+                          grad(_p[BB+1], x-1, y-1, z-1 ))));
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *x, *y, *z;
+} PERLIN3;
+
+static void perlin_noise_init(CSOUND *csound) {
+    int *loaded = csound->QueryGlobalVariable(csound, "_perlin3_loaded");
+    if(loaded != NULL) return;
+    csound->CreateGlobalVariable(csound, "_perlin3_loaded", sizeof(int));
+    for (int i=0; i < 256 ; i++)
+        _p[256+i] = _p[i] = _permutation[i];
+}
+
+
+static int32_t perlin3_init(CSOUND *csound, PERLIN3 *p) {
+    perlin_noise_init(csound);
+    return OK;
+}
+
+static int32_t perlin3_k_kkk(CSOUND *csound, PERLIN3 *p) {
+	IGN(csound);
+	*p->out = perlin_noise(*p->x, *p->y, *p->z);
+	return OK;
+}
+
+static int32_t perlin3_a_aaa(CSOUND *csound, PERLIN3 *p) {
+	IGN(csound);
+    MYFLT *out = p->out;
+
+    SAMPLE_ACCURATE(out);
+
+    MYFLT *x = p->x;
+    MYFLT *y = p->y;
+    MYFLT *z = p->z;
+
+    for(n=offset; n<nsmps; n++) {
+        out[n] = perlin_noise(x[n], y[n], z[n]);
+    }
+
+    return OK;
+}
+
 
 typedef struct {
     OPDS h;
@@ -2898,6 +2995,8 @@ static OENTRY localops[] = {
     { "atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s },
     { "atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
     { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
+    { "atstop.k", S(SCHED_DEINIT), 0, 1, "", "iii*", (SUBR)atstop_i },
+    { "atstop.Sk", S(SCHED_DEINIT), 0, 1, "", "Sii*", (SUBR)atstop_s },
 
     { "accum.k", S(ACCUM), 0, 3, "k", "koO", (SUBR)accum_init, (SUBR)accum_perf},
     { "accum.a", S(ACCUM), 0, 3, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio},
@@ -2942,7 +3041,11 @@ static OENTRY localops[] = {
     { "extendarray.kk", S(_AA), 0, 3, "", "k[]k[]", (SUBR)extendArray_init, (SUBR)extendArray_k},
     { "extendarray.SS", S(_AA), 0, 1, "", "S[]S[]", (SUBR)extendArray_i },
     // itab, sr, nchnls, loopstart=0, basenote=60
-    { "ftsetparams.i", S(FTSETPARAMS), 0, 1, "", "iiioj", (SUBR)ftsetparams }
+    { "ftsetparams.i", S(FTSETPARAMS), 0, 1, "", "iiioj", (SUBR)ftsetparams },
+    { "perlin3.k_kkk", S(PERLIN3), 0, 3, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk},
+    { "perlin3.a_aaa", S(PERLIN3), 0, 3, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa},
+
+
 };
 
 LINKAGE
