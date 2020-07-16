@@ -83,6 +83,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
 * [memview](opcodes/memview.md): Create a view into a table or another array 
+* [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
 * [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 

@@ -1966,10 +1966,10 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
  *
  * a simple accumulator
  *
- * kout accum kstep, initial=0
+ * kout accum kstep, initial=0, reset=0
  *
  * Can be used together with changed for all opcodes which need an increasing
- * trigger (printf, for example).
+ * trigger (printf, for example), or as a simple phasor
  *
  * printf "kvar=%f \n", accum(changed(kvar)), kvar
  *
@@ -2005,7 +2005,7 @@ accum_perf_audio(CSOUND *csound, ACCUM *p) {
 
     SAMPLE_ACCURATE(out);
 
-    for(int n=offset; n<nsmps; n++) {
+    for(size_t n=offset; n<nsmps; n++) {
         out[n] = value;
         value += step;
     }
@@ -3000,6 +3000,7 @@ static OENTRY localops[] = {
 
     { "accum.k", S(ACCUM), 0, 3, "k", "koO", (SUBR)accum_init, (SUBR)accum_perf},
     { "accum.a", S(ACCUM), 0, 3, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio},
+
 
     { "frac2int.i", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int},
     { "frac2int.k", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int},

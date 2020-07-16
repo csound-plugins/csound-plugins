@@ -17,13 +17,17 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
 
 
 ```csound
-kout accum kin, initial=0
+kout accum kstep, initial=0, kreset=0
+aout accum kstep, initial=0, kreset=0
+
 ```
     
 ## Arguments
 
-* `kin': the step to add. This value will be added each k-cycle
+* `kstep': the step to add. This value will be added at each iteration (at each k-cycle 
+    for `accum:k` and at each sample for `accum:a`)
 * `initial`: initial value of the accumulator
+* `kreset`: if 1, the accummulator is reset to the initial value
 
 ## Output
 
@@ -40,12 +44,16 @@ kout accum kin, initial=0
 kout accum 1, 0    ; outputs 0, 1, 2, 3, 4...
 
 ; Play a sample with variable speed, stop the event when finished
-aphase accum 1
+aindex accum 1
+kspeed = linseg:k(0.5, ilen, 2)
 ilen = ftlen(ift)
-amask 
-
-asig table3 aphase, ift
-
+aindex *= kspeed
+asig table3 aindex, ift
+if aindex[0] >= ilen - (ksmps*kspeed) then
+    turnoff
+endif
+ifade = 1/ksmps
+out asig * linsegr(0, ifade, 1, ifade, 0)
 ```
 
 ```csound 

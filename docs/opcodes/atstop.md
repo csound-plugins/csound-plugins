@@ -14,6 +14,8 @@ chain of events, free any table or dict allocated, etc. The advantage
 over the `release` opcode is that `atstop` is guaranteed to be run 
 after the note has stopped, so there is no danger in deallocating resources
 being used by this note, there are no conflicts with release envelopes, etc.
+If any k-variables are passed to the scheduled instr these will reflect the 
+changes at the end of the instr.
 
 !!! Note "Release time vs deinit time"
 
@@ -47,6 +49,7 @@ atstop Sinstrname [, idelay=0, idur=-1, p4, p5, ...]
 * `idelay`: the time offset **after** the stop time of this note to start this instrument
 * `idur`: the duration of the event
 * `p4`, `p5`, ...: any other p-arguments, as used with similar opcodes like `schedule`, `event`, etc.
+    They can be any i-, k- or S- variable. The scheduled instr will access them, as p-args.
 
 ## Execution Time
 
@@ -164,6 +167,19 @@ instr 200
   turnoff
 endin
 
+; test atstop with k args
+instr _printCounter
+  icounter = p4
+  prints "counter: %d\n", icounter
+  turnoff
+endin
+
+instr kargs
+  kcounter init 0
+  kcounter += 1
+  atstop "_printCounter", 0, -1, kcounter
+endin
+
 instr StopPerformance
   exitnow
 endin
@@ -177,7 +193,8 @@ endin
 
 ; i 10 0 1
 ; i "StopPerformance" 10 1
-i "first" 1 0.5
+; i "first" 1 0.5
+i "kargs" 0 1
 f 0 5
 </CsScore>
 </CsoundSynthesizer>
