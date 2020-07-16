@@ -162,6 +162,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pathSplitk.html">pathSplitk</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="perlin3.html">perlin3</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="poly.html">poly</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="poly0.html">poly0</a>
@@ -267,14 +269,17 @@ are used by many opcodes (<code>printf</code>, for example), so by doing <code>a
 it is possible to use binary triggers wherever an incremental trigger is expected.
 <code>accum</code> outputs its current value and increments it afterwords. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="kt">k</span><span class="n">in</span><span class="p">,</span> <span class="kt">i</span><span class="n">nitial</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="kt">k</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">nitial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">reset</span><span class="o">=</span><span class="mi">0</span>
+<span class="kt">a</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="kt">k</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">nitial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">reset</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
 
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li>`kin': the step to add. This value will be added each k-cycle</li>
+<li><code>kstep': the step to add. This value will be added at each iteration (at each k-cycle 
+    for</code>accum:k<code>and at each sample for</code>accum:a`)</li>
 <li><code>initial</code>: initial value of the accumulator</li>
+<li><code>kreset</code>: if 1, the accummulator is reset to the initial value</li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
@@ -288,11 +293,16 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
 <div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>    <span class="c1">; outputs 0, 1, 2, 3, 4...</span>
 
 <span class="c1">; Play a sample with variable speed, stop the event when finished</span>
-<span class="kt">a</span><span class="n">phase</span> <span class="kt">a</span><span class="n">ccum</span> <span class="mi">1</span>
+<span class="kt">a</span><span class="n">index</span> <span class="kt">a</span><span class="n">ccum</span> <span class="mi">1</span>
+<span class="kt">k</span><span class="n">speed</span> <span class="o">=</span> <span class="nb">linseg</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="kt">i</span><span class="n">len</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="kt">i</span><span class="n">len</span> <span class="o">=</span> <span class="nb">ftlen</span><span class="p">(</span><span class="kt">i</span><span class="n">ft</span><span class="p">)</span>
-<span class="kt">a</span><span class="n">mask</span> 
-
-<span class="kt">a</span><span class="n">sig</span> <span class="nb">table3</span> <span class="kt">a</span><span class="n">phase</span><span class="p">,</span> <span class="kt">i</span><span class="n">ft</span>
+<span class="kt">a</span><span class="n">index</span> <span class="o">*=</span> <span class="kt">k</span><span class="n">speed</span>
+<span class="kt">a</span><span class="n">sig</span> <span class="nb">table3</span> <span class="kt">a</span><span class="n">index</span><span class="p">,</span> <span class="kt">i</span><span class="n">ft</span>
+<span class="k">if</span> <span class="kt">a</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="kt">i</span><span class="n">len</span> <span class="o">-</span> <span class="p">(</span><span class="vg">ksmps</span><span class="o">*</span><span class="kt">k</span><span class="n">speed</span><span class="p">)</span> <span class="k">then</span>
+    <span class="nb">turnoff</span>
+<span class="k">endif</span>
+<span class="kt">i</span><span class="n">fade</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="vg">ksmps</span>
+<span class="nb">out</span> <span class="kt">a</span><span class="n">sig</span> <span class="o">*</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">fade</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">fade</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 
 
