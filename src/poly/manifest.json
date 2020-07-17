@@ -1,5 +1,7 @@
 {
     "name": "poly",
+    "version": "0.2.3",
+    "csound_version": "6.14",
     "opcodes": [
       "poly", 
       "polyseq",

@@ -1,5 +1,7 @@
 {
     "name": "rory",
+    "version": "0.2.3",
+    "csound_version": "6.13",
     "opcodes": [
       "trigLinseg", 
       "trigExpseg",

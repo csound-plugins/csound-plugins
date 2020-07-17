@@ -1,5 +1,7 @@
 {
     "name": "jsfx",
+    "version": "0.2.3",
+    "csound_version": "6.14",
     "opcodes": [
       "jsfx",
       "jsfx_new",
@@ -11,6 +13,8 @@
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
     "license": "LGPL",
-    "description": "A csound interface to the opensource implementation of jsfx",
+    "short_description": "jsfx support for csound",
+    "description": "A csound interface to the opensource implementation of jsfx (a jitted language for dsp)",
+    "platforms": ["linux", "macos"],
     "url": ""
 }

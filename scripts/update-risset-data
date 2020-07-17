@@ -20,6 +20,9 @@ copydocs() {
                 
     cp $root/src/$plugin/docs/*.md "$RISSETDATA"/plugins/$namespace/$plugin/$version/doc/
     cp $root/src/$plugin/docs/assets/* "$RISSETDATA"/plugins/$namespace/$plugin/$version/doc/assets
+
+    $root/scripts/make-risset-manifest -o $RISSETDATA/plugins/$namespace/$plugin/$version/manifest.json \
+        $root/src/$plugin/manifest.json 
             
 }
 

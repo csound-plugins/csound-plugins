@@ -1,0 +1,40 @@
+{
+  "name": "pathtools",
+  "opcodes": [
+    "findFileInPath",
+    "getEnvVar",
+    "pathAbsolute",
+    "pathIsAbsolute",
+    "pathJoin",
+    "pathNative",
+    "pathSplit",
+    "pathSplitk",
+    "pathSplitExt",
+    "pathSplitExtk",
+    "scriptDir",
+    "sysPlatform"
+  ],
+  "libname": "libpathtools",
+  "version": "0.2.3",
+  "short_description": "Cross-platform path handling",
+  "long_description": "Cross-platform path handling",
+  "csound_version": "6.14",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "",
+  "binaries": {
+    "linux": {
+      "url": "libpathtools.so",
+      "build_platform": "Ubuntu 16.04"
+    },
+    "macos": {
+      "url": "libpathtools.dylib",
+      "build_platform": "10.14.0"
+    },
+    "windows": {
+      "url": "libpathtools.dll",
+      "build_platform": "Windows 7"
+    }
+  }
+}

@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import json
+import argparse
+import subprocess
+import shutil
+import os
+import re
+
+parser = argparse.ArgumentParser()
+parser.add_argument("manifest")
+parser.add_argument("-o", "--outfile", default="")
+parser.add_argument("--version", default="")
+
+args = parser.parse_args()
+
+
+BUILD_PLATFORMS = {
+    'linux': 'Ubuntu 16.04',
+    'macos': '10.14.0',
+    'windows': 'Windows 7'
+}
+
+
+def get_csound_version() -> tuple[int, int, int]:
+    """
+    Returns the csound version as tuple (major, minor, patch) so that '6.03.0' is (6, 3, 0)
+
+    Raises IOError if either csound is not present or its version 
+    can't be parsed
+    """
+    csound = shutil.which('csound')
+    if not csound:
+        raise IOError("Csound not found")
+    cmd = f'{csound} --version'.split()
+    proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+    proc.wait()
+    lines = proc.stderr.readlines()
+    if not lines:
+        raise IOError("Could not read csounds output")
+    for line in lines:
+        if b"Csound version" not in line:
+            continue
+        line = line.decode('utf8')
+        matches = re.findall(r"(\d+\.\d+(\.\d+)?)", line)
+        if not matches:
+            continue
+        version = matches[0]
+        if isinstance(version, tuple):
+            version = version[0]
+        points = version.count(".")
+        if points == 1:
+            major, minor = list(map(int, version.split(".")))
+            patch = 0
+        else:
+            major, minor, patch = list(map(int, version.split(".")[:3]))
+        return (major, minor, patch)
+    raise IOError("Did not find a csound version")
+
+def binary_for_platform(platform, libname):
+    if platform == "linux":
+        return libname + ".so"
+    elif platform == "macos":
+        return libname + ".dylib"
+    elif platform == "windows":
+        return libname + ".dll"
+    else:
+        raise ValueError(f"platform {platform} unknown")
+
+def convert_dict(orig: dict, version: str = "") -> dict:
+    plugin_version = version if version else orig.get('version', '0.0.0')
+    csound_version = orig.get('csound_version')
+    if csound_version is None:
+        csound_version = ".".join(map(str, get_csound_version()))
+
+    libname = f"lib{orig['name']}"
+
+    binaries = {}
+    platforms = orig.get('platforms', ['linux', 'macos', 'windows'])
+    for platform in platforms:
+        binary = binary_for_platform(platform, libname)
+        binaries[platform] = {
+            'url': binary,
+            'build_platform': BUILD_PLATFORMS.get(platform, '??')
+        }
+
+    risset_manifest_dict = {
+        'name': orig['name'],
+        'opcodes': orig['opcodes'],
+        'libname': libname,
+        'version': plugin_version,
+        'short_description': orig.get('short_description', orig.get('description', '')),
+        'long_description': orig.get('description', ''),
+        'csound_version': csound_version,
+        'author': orig['author'],
+        'email': orig['author_email'],
+        'license': orig.get('license', "LGPL"),
+        'repository': orig.get('url', ''),
+        'binaries': binaries
+    }
+
+    return risset_manifest_dict
+
+def process_plugin(orig_manifest: str, output_manifest: str = None, version: str = ""):
+    orig_dict = json.load(open(orig_manifest))
+    if not output_manifest:
+        output_manifest = os.path.join(os.path.split(orig_manifest)[0], orig_dict['name'] + '.json')
+    risset_dict = convert_dict(orig_dict, version)
+    with open(output_manifest, "w") as f:
+        json.dump(risset_dict, f, indent=2)
+
+process_plugin(args.manifest, args.outfile, args.version)
+# print(get_csound_version())
