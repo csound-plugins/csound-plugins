@@ -45,7 +45,7 @@ jobs:
 
 - job: Linux
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-18.04'
   steps:
   - bash: chmod 777 ./azure/buildLinux.sh
   - bash: ./azure/buildLinux.sh
