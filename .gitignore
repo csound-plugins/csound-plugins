@@ -20,4 +20,4 @@ CMakeFiles/
 .#*
 installer/win/dlls
 installer/osx/dylibs
-buildwin/
+buildwin/*

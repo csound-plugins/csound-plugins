@@ -36,6 +36,6 @@
     "short_description": "Miscellaneous plugins",
     "csound_version": "6.14",
     "platforms": ["linux", "macos", "windows"],
-    "url": ""
+    "url": "https://github.com/csound-plugins/csound-plugins"
 }
 

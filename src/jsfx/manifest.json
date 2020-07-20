@@ -16,5 +16,5 @@
     "short_description": "jsfx support for csound",
     "description": "A csound interface to the opensource implementation of jsfx (a jitted language for dsp)",
     "platforms": ["linux", "macos"],
-    "url": ""
+    "url": "https://github.com/csound-plugins/csound-plugins"
 }
