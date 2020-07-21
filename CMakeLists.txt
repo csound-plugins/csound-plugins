@@ -106,7 +106,16 @@ if(MINGW)
 endif()
 
 addflag(-ftree-vectorize HAS_TREE_VECTORIZE)
-# addflag(-ffast-math HAS_FAST_MATH)
+
+
+if(SKIP_FAST_MATH)
+  message(STATUS "Skipping -ffast-math")
+else()
+  # fast-math causes undefined symbols in linux when built inside an azure pipeline
+  addflag(-ffast-math HAS_FAST_MATH)          
+  message(STATUS "Adding -ffast-math")
+endif()
+
 addflag(-fomit-frame-pointer HAS_OMIT_FRAME_POINTER)
 
 

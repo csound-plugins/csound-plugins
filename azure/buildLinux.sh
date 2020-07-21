@@ -55,7 +55,7 @@ ls
 
 mkdir build
 cd build
-cmake ..
+cmake -DSKIP_FAST_MATH=True ..
 make -j4
 ls
 mkdir $BUILD_ARTIFACTSTAGINGDIRECTORY/Linux
