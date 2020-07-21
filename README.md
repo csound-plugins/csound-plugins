@@ -42,7 +42,7 @@ Binaries can be installed via [risset](https://github.com/csound-plugins/risset)
 #### Install dependencies
 
 ```bash
-sudo apt install nasm
+sudo apt install nasm cmake
 ```
 
 #### Build and install

@@ -106,7 +106,7 @@ if(MINGW)
 endif()
 
 addflag(-ftree-vectorize HAS_TREE_VECTORIZE)
-addflag(-ffast-math HAS_FAST_MATH)
+# addflag(-ffast-math HAS_FAST_MATH)
 addflag(-fomit-frame-pointer HAS_OMIT_FRAME_POINTER)
 
 

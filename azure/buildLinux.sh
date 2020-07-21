@@ -56,7 +56,7 @@ ls
 mkdir build
 cd build
 cmake ..
-make
+make -j4
 ls
 mkdir $BUILD_ARTIFACTSTAGINGDIRECTORY/Linux
 cp *.so $BUILD_ARTIFACTSTAGINGDIRECTORY/Linux
