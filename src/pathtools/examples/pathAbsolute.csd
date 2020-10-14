@@ -20,10 +20,13 @@ instr 1
     Sabs = pathAbsolute(Spath)
     prints "Path: \"%s\", Absolute Path: \"%s\" \n", Spath, Sabs
 
-    Spath = "home/foo.ext"
+    Spath = "foo/bar.ext"
     Sabs = pathAbsolute(Spath)
     prints "Path: \"%s\", Absolute Path: \"%s\" \n", Spath, Sabs
-    
+
+    Spath = " ~/Documents/mydoc.txt"
+    Sabs = pathAbsolute(Spath)
+    prints "Path: \"%s\", Absolute Path: \"%s\" \n", Spath, Sabs
     turnoff
 endin
 

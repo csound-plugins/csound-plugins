@@ -339,11 +339,11 @@ static int32_t pathJoin(CSOUND *csound, S_SS *p) {
 
 
 static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
-    if(strlen(p->s->data) == 0) {
+    size_t slen = strlen(p->s->data);
+    if(slen == 0) {
         MSG("pathAbsolute: Path is empty\n");
         return NOTOK;
     }
-    size_t slen = strlen(p->s->data);
     if(slen > 1000) {
         MSG("pathAbsolute: Path two long!\n");
         return NOTOK;
@@ -358,8 +358,20 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
     }
 #endif
 
-    int isabsolute = _path_is_absolute(p->s->data, slen);
     char sep = _get_path_separator();
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    if(p->s->data[0] == '~' && p->s->data[1] == sep) {
+        char *home = getenv("HOME");
+        size_t homelen = strlen(home);
+        _string_ensure(csound, p->Sout, slen + homelen + 10);
+        strncpy0(p->Sout->data, home, homelen);
+        strncpy0(p->Sout->data + homelen, p->s->data + 1, slen-1);
+        return OK;
+    }
+#endif
+
+    int isabsolute = _path_is_absolute(p->s->data, slen);
     if (isabsolute) {
         stringdat_copy_cstr(csound, p->Sout, p->s->data, slen);
         return OK;

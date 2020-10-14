@@ -19,7 +19,7 @@ of the performance, or until freed via [dict_free](dict_free.md)
 
 ## Syntax
 
-    idict dict_new Stype
+    idict dict_new Stype, icapacity=-1
     idict dict_new Stype, key0, value0, key1, value1, ...
     
     kdict dict_new Stype, key0, value0, key1, value1, ...
@@ -27,6 +27,13 @@ of the performance, or until freed via [dict_free](dict_free.md)
 !!! Note
 
     With the second variant it is possible to create a dict and give it initial values at the same time.
+
+## Args
+
+* `Stype`: the type of the dictionary, see below
+* `icapacity`: the initial size of the dictionary. If not given a sensible default is used. Dictionaries can
+    grow as they are filled, but since this requires memory allocation, it can be unsafe during performance
+* `key0, value0, ...`: initial key:value pairs
 
 ## Types
 

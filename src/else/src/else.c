@@ -1373,11 +1373,11 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
     int32_t intphase = p->phase;
     MYFLT cpstoinc = p->cpstoinc;
 #endif
-
+    MYFLT nl_fb = 0;
+    MYFLT nl_f = 0;
     for(int i=0; i < nsmps; i++) {
-        MYFLT nl_f = nl == 0 ? 0 : randflt(&seed) * 4*nl - 2*nl;
-        MYFLT nl_fb = fb == 0 | nl == 0 ? 0 :  (randflt(&seed) * 2*nl - nl)*0.001;
-
+        nl_f = nl == 0 ? 0 : randflt(&seed) * 4*nl - 2*nl;
+        nl_fb = (fb == 0)|(nl == 0) ? 0 : (randflt(&seed)*2*nl - nl)*0.001;
         //interpolate 'f'
         tf += d_f;
 
@@ -1418,8 +1418,12 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
                 p->sin_bl2_2 = p->sin_bl1_2;
                 p->sin_bl1_1 = ps_d_sin1;
                 p->sin_bl1_2 = ps_d_sin2;
-                MYFLT sin_bl_out1 = (p->sin_bl1_1*p->bl_c1 + p->sin_bl2_1*p->bl_c2 + sin_bl3_1*p->bl_c3);
-                MYFLT sin_bl_out2 = (p->sin_bl1_2*p->bl_c1 + p->sin_bl2_2*p->bl_c2 + sin_bl3_2*p->bl_c3);
+                MYFLT sin_bl_out1 = (p->sin_bl1_1*p->bl_c1 +
+                                     p->sin_bl2_1*p->bl_c2 +
+                                     sin_bl3_1*p->bl_c3);
+                MYFLT sin_bl_out2 = (p->sin_bl1_2*p->bl_c1 +
+                                     p->sin_bl2_2*p->bl_c2 +
+                                     sin_bl3_2*p->bl_c3);
                 //power series out
                 MYFLT o_sin_out1 = 0.5*(sin_bl_out1+p->o_sin_out2);
                 p->o_sin_out2 = 0.5*(sin_bl_out2+o_sin_out1);
@@ -1811,6 +1815,8 @@ uniqueinstance_(CSOUND *csound, UNIQINSTANCE *p) {
         if(instance->actflg && instance->p1.value != instance->insno) {
             fractional_part = modf(instance->p1.value, &integral_part);
             idx = (int)(fractional_part * numslots + 0.5);
+            if(idx >= numslots)
+                continue;
             if(idx > maxidx)
                 maxidx = idx;
             else if(idx < minidx)
@@ -1834,12 +1840,6 @@ uniqueinstance_(CSOUND *csound, UNIQINSTANCE *p) {
 }
 
 static int32_t
-uniqueinstance_dealloc(CSOUND *csound, UNIQINSTANCE *p) {
-    csound->Free(csound, p->slots);
-    return OK;
-}
-
-static int32_t
 uniqueinstance_initcommon(CSOUND *csound, UNIQINSTANCE *p) {
     IGN(csound);
     p->numslots = (int)*p->max_instances;
@@ -1847,10 +1847,7 @@ uniqueinstance_initcommon(CSOUND *csound, UNIQINSTANCE *p) {
         p->numslots = UNIQ_NUMSLOTS;
     else if(p->numslots > UNIQ_NUMSLOTS)
         p->numslots = UNIQ_NUMSLOTS;
-    // p->slots = csound->Malloc(csound, p->numslots * sizeof(char));
-    // register_deinit(csound, p, uniqueinstance_dealloc);
     MYFLT instrnum = uniqueinstance_(csound, p);
-
     *p->out = instrnum;
     return OK;
 }
@@ -2660,12 +2657,19 @@ static int32_t errormsg_init(CSOUND *csound, ERRORMSG *p) {
     return OK;
 }
 
+static int32_t initerror(CSOUND *csound, ERRORMSG *p) {
+    IGN(csound);
+    return INITERRF("\n   %s\n", p->S2->data);
+}
+
 static int32_t errormsg_init0(CSOUND *csound, ERRORMSG *p) {
     IGN(csound);
     p->kind = ERRORMSG_ERROR;
     p->which = 0;
     return OK;
 }
+
+
 
 static int32_t errormsg_perf(CSOUND *csound, ERRORMSG *p) {
     char *name;
@@ -2692,6 +2696,9 @@ static int32_t errormsg_perf(CSOUND *csound, ERRORMSG *p) {
         return OK;
     case ERRORMSG_UNKNOWN:
         return NOTOK;
+    default:
+        return csound->PerfError(csound, &(p->h),
+                                 "throwerror: internal error %d\n", p->kind);
     }
 }
 
@@ -2829,11 +2836,11 @@ double perlin_noise(double x, double y, double z) {
 	double u = fade(x),                                // COMPUTE FADE CURVES
            v = fade(y),                                // FOR EACH OF X,Y,Z.
            w = fade(z);
-	int A  = _p[X  ]+Y, 
-	    AA = _p[A]+Z, 
+	int A  = _p[X  ]+Y,
+	    AA = _p[A]+Z,
 	    AB = _p[A+1]+Z,      // HASH COORDINATES OF
-        B  = _p[X+1]+Y, 
-        BA = _p[B]+Z, 
+        B  = _p[X+1]+Y,
+        BA = _p[B]+Z,
         BB = _p[B+1]+Z;      // THE 8 CUBE CORNERS,
 
 	return lerp(w, lerp(v, lerp(u, grad(_p[AA  ], x  , y  , z   ),  // AND ADD
@@ -2943,9 +2950,8 @@ static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
 }
 
 
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 
 #define S(x) sizeof(x)
@@ -3029,6 +3035,7 @@ static OENTRY localops[] = {
 
     { "throwerror.s", S(ERRORMSG), 0, 3, "", "S", (SUBR)errormsg_init0, (SUBR)errormsg_perf},
     { "throwerror.ss", S(ERRORMSG), 0, 3, "", "SS", (SUBR)errormsg_init, (SUBR)errormsg_perf},
+    { "initerror.s", S(ERRORMSG), 0, 1, "", "S", (SUBR)initerror},
 
     { "setslice.i", S(ARRSETSLICE), 0, 1, "", "i[]ioop", (SUBR)array_set_slice},
     { "setslice.k", S(ARRSETSLICE), 0, 2, "", "k[]kOOP", NULL, (SUBR)array_set_slice},
@@ -3045,7 +3052,6 @@ static OENTRY localops[] = {
     { "ftsetparams.i", S(FTSETPARAMS), 0, 1, "", "iiioj", (SUBR)ftsetparams },
     { "perlin3.k_kkk", S(PERLIN3), 0, 3, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk},
     { "perlin3.a_aaa", S(PERLIN3), 0, 3, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa},
-
 
 };
 

@@ -11,6 +11,7 @@
       "file_exists",
       "frac2int",
       "ftsetparams",
+      "initerror",
       "lfnoise",
       "linenv",
       "memview",
@@ -28,7 +29,7 @@
       "uniqinstance",
       "xtracycles"
     ],
-    "version": "0.2.3",
+    "version": "0.2.5",
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
     "license": "LGPL",

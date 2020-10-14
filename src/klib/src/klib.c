@@ -932,15 +932,17 @@ strdef_to_intdef(STRINGDAT *s) {
 /**
  * dict_new opcode, works at i-time only
  *
- * idict  dict_new Stype, [isglobal=0, key, value, key, value, ...]
- *
+ * idict  dict_new Stype, [key, value, key, value, ...]
+ * idict  dict_new Stype, icapacity=0
+ * 
  * Stype: the type of the dict
- *   sf: str -> float
- *   ss: str -> str
- *   if: int -> float
- *   is: int -> str
- *
- *  isglobal: if 1, the dict is not deleted after the note is freed
+ *   sf or str:float   str -> float
+ *   ss or str:str     str -> str
+ *   if or int:float   int -> float
+ *   is or int:str     int -> str
+ * 
+ * if Stype starts with *, the dict is global and will not be deallocated
+ * at the end of the event
  */
 
 static i32

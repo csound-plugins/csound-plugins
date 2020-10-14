@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.2.3
+VERSION=0.2.4
 echo "VERSION: " $VERSION
 
 DROP=$(realpath ~/Downloads/drop.zip)
