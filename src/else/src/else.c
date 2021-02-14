@@ -214,6 +214,22 @@
         memset(&out[nsmps], '\0', early*sizeof(MYFLT));             \
     }                                                               \
 
+// needed for each opcode using audio-rate inputs/outputs
+#define AUDIO_OPCODE(csound, p) \
+    IGN(csound); \
+    uint32_t n, nsmps = CS_KSMPS;                                    \
+    uint32_t offset = p->h.insdshead->ksmps_offset;                  \
+    uint32_t early = p->h.insdshead->ksmps_no_end;                   \
+
+// initialize an audio output variable, for sample-accurate offset/early end
+// this should be called for each audio output
+#define AUDIO_OUTPUT(out) \
+    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));   \
+    if (UNLIKELY(early)) {                                           \
+        nsmps -= early;                                              \
+        memset(&out[nsmps], '\0', early*sizeof(MYFLT));              \
+    }                                                                \
+
 
 #define register_deinit(csound, p, func)                                \
     csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
@@ -1679,7 +1695,7 @@ typedef struct {
     int maxpfield;        // max pfield accepted by the instrument
     int broadcasting;     // are we broadcasting?
     int found;            // have we found any matching instances?
-    CS_VAR_MEM *pfields;  // a pointer to the insance pfield, when doing exact matching
+    CS_VAR_MEM *pfields;  // a pointer to the instance pfield, when doing exact matching
 } PWRITE;
 
 
@@ -1899,7 +1915,7 @@ endin
 
 */
 
-#define MAXPARGS 31
+#define ATSTOP_MAXPARGS 64
 
 typedef struct {
     OPDS h;
@@ -1907,7 +1923,7 @@ typedef struct {
 
     // inputs
     void *instr;
-    MYFLT *pargs [MAXPARGS];
+    MYFLT *pargs [ATSTOP_MAXPARGS];
 
     // internal
     MYFLT instrnum;   // cached instrnum
@@ -2899,7 +2915,7 @@ static int32_t perlin3_a_aaa(CSOUND *csound, PERLIN3 *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *itab;
+    MYFLT *tabnum;
     // sr, nchnls, loopstart=0, basenote=60
     MYFLT *sr;
     MYFLT *nchnls;
@@ -2914,8 +2930,8 @@ static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
     if(*p->nchnls <= 0)
         return INITERRF("Number of channels must be 1 or higher, got %d", (int)*p->nchnls);
 
-    if (UNLIKELY((ftp = csound->FTnp2Finde(csound, p->itab)) == NULL))
-        return INITERRF("ftsetparams: table %d not found", (int)*p->itab);
+    if (UNLIKELY((ftp = csound->FTnp2Finde(csound, p->tabnum)) == NULL))
+        return INITERRF("ftsetparams: table %d not found", (int)*p->tabnum);
 
     if(ftp->flen % (int)*p->nchnls != 0)
         return INITERRF("ftsetparms: the table has a length of %d, which is not divisible"
@@ -2950,6 +2966,996 @@ static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
 }
 
 
+/*
+ * interparr
+ *
+ * kout  interparr kidx, kxs[], kmode=0
+ *
+ * Interpolate between adjacent values of array kxs depending on the
+ * index kidx. The fractional part of kidx is used for the interpolation
+ * Used together with searchsorted can construct any bpf
+ *
+ * imode: 0=linear interp, -1=cos, > 0 = exponential
+ *
+ * A normal bpf:
+ * ky bpf kx, kxs[], kys[]   -> kidx searchsorted kx, kxs[]
+ *                              ky interparr kidx, kys[]
+ * Audio bpf
+ *
+ * ay bpf ax, ixs[], iys[]    -> aidx searchsorted ax, kxs[]
+ *                               ay interparr aidx, kys[]
+ *
+ * A bpf would then be just useful for the case where the pairs are given
+ * as arguments to the opcode.
+ */
+
+static inline MYFLT _cubic_interpol(MYFLT frac, MYFLT ypre, MYFLT y0, MYFLT y1, MYFLT ypost) {
+    MYFLT frac2 = frac*frac;
+    MYFLT a0 = ypost - y1 - ypre + y0;
+    MYFLT a1 = ypre - y0 - a0;
+    MYFLT a2 = y1 - ypre;
+    MYFLT a3 = y0;
+    return a0*frac*frac2+a1*frac2+a2*frac+a3;
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *idx;
+    ARRAYDAT *arr;
+    void *mode;
+    char modetype;
+    MYFLT modeval;
+} INTERPARR_x_xK;
+
+
+static int32_t interparr_k_kK_init(CSOUND *csound, INTERPARR_x_xK *p) {
+    p->modetype = 'f';
+    return OK;
+}
+
+static int32_t interparr_k_kK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
+    IGN(csound);
+    MYFLT idx = *p->idx;
+    MYFLT intpart, ypre, ypost, frac2, a0, a1, a2, a3;
+    MYFLT frac = modf(idx, &intpart);
+    MYFLT *data = p->arr->data;
+    uint64_t len = p->arr->sizes[0];
+    if (idx <= 0) {
+        *p->out = data[0];
+        return OK;
+    }
+    if (idx >= len - 1) {
+        *p->out = data[len - 1];
+        return OK;
+    }
+
+    uint64_t i = (uint64_t)intpart;
+
+    MYFLT y0 = data[i];
+    MYFLT y1 = data[i+1];
+    MYFLT mode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
+    if(mode >= 0) {
+        *p->out = y0 + (y1 - y0) * POWER(frac, mode);
+    } else {
+        switch(-(int)mode) {
+        case 0:   // linear
+            *p->out = y0 + (y1 - y0)*frac;
+            break;
+        case 1:  // cos
+            *p->out = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+            break;
+        case 2:  // floor
+            *p->out = y0;
+            break;
+        case 3:  // cubic
+            ypre = i > 0 ? data[i-1] : y0;
+            ypost = len - i > 3 ? data[i+2] : y1;
+            *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
+            break;
+        }
+    }
+    return OK;
+}
+
+static int32_t interparr_k_kK_ir(CSOUND *csound, INTERPARR_x_xK *p) {
+    interparr_k_kK_init(csound, p);
+    return interparr_k_kK_kr(csound, p);
+}
+
+
+static MYFLT _interp_parse_mode(char *s) {
+    if(!strcmp(s, "linear"))
+        return 0;
+    else if(!strcmp(s, "cos"))
+        return -1;
+    else if(!strcmp(s, "floor"))
+        return -2;
+    else if(!strcmp(s, "cubic"))
+        return -3;
+    else if(!strncmp(s, "exp=", 4)) {
+        return atof(&s[4]);
+    }
+    return 0;
+}
+
+static int32_t interparr_k_kKS_init(CSOUND *csound, INTERPARR_x_xK *p) {
+    IGN(csound);
+    p->modetype = 's';
+    STRINGDAT *modestr = (STRINGDAT *)p->mode;
+    p->modeval = _interp_parse_mode(modestr->data);
+    return OK;
+}
+
+static int32_t interparr_k_kKS_ir(CSOUND *csound, INTERPARR_x_xK *p) {
+    interparr_k_kKS_init(csound, p);
+    return interparr_k_kK_kr(csound, p);
+}
+
+
+static int32_t interparr_a_aK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
+    MYFLT *out = p->out;
+    MYFLT *in = p->idx;
+    MYFLT *data = p->arr->data;
+    MYFLT frac, intpart, idx;
+    uint64_t len = p->arr->sizes[0];
+
+    AUDIO_OPCODE(csound, p);
+    AUDIO_OUTPUT(out);
+    MYFLT imode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
+    for(n=offset; n<nsmps; n++) {
+        idx = in[n];
+        intpart = modf(idx, &frac);
+        if (idx <= 0) {
+            out[n] = data[0];
+            return OK;
+        }
+        if (idx >= len - 1) {
+            out[n] = data[len - 1];
+            return OK;
+        }
+
+        uint64_t i = (uint64_t)intpart;
+
+        MYFLT y0 = data[i];
+        MYFLT y1 = data[i+1];
+        if(imode == 0) {
+            out[n] = y0 + (y1 - y0)*frac;
+        } else if(imode == -1) {
+            out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+        } else if(imode >= 0) {
+            out[n] = y0 + (y1 - y0) * POWER(frac, imode);
+        } else if(imode == -2) {
+            out[n] = y0;
+        }
+    }
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *out;
+    ARRAYDAT *idx;
+    ARRAYDAT *arr;
+    void *mode;
+    char modetype;
+    MYFLT modeval;
+} INTERPARR_K_KK;
+
+static int32_t interparr_K_KK_init(CSOUND *csound, INTERPARR_K_KK *p) {
+    p->modetype = 'f';
+    if(p->idx->dimensions > 1)
+        return INITERR("idx array should be 1D");
+    if(p->arr->dimensions > 1)
+        return INITERR("data array should be 1D");
+    tabinit(csound, p->out, p->idx->sizes[0]);
+    return OK;
+}
+
+static int32_t interparr_K_KKS_init(CSOUND *csound, INTERPARR_K_KK *p) {
+    if(interparr_K_KK_init(csound, p) != OK)
+        return NOTOK;
+    p->modetype = 's';
+    STRINGDAT *modestr = (STRINGDAT *)p->mode;
+    p->modeval = _interp_parse_mode(modestr->data);
+    return OK;
+}
+
+static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
+    MYFLT *out = p->out->data;
+    MYFLT *in = p->idx->data;
+    MYFLT *data = p->arr->data;
+    MYFLT frac, intpart, idx, ypre, ypost;
+    size_t len = p->arr->sizes[0];
+    size_t numitems = p->idx->sizes[0];
+    tabcheck(csound, p->out, numitems, &(p->h));
+    MYFLT imode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
+    int method;
+    if(imode > 0) {
+        method = 4;
+    } else {
+        method = -(int)imode;
+    }
+    MYFLT data0 = data[0];
+    MYFLT data1 = data[len-1];
+    for(size_t n=0; n < numitems; n++) {
+        idx = in[n];
+        frac = modf(idx, &intpart);
+        if (idx <= 0) {
+            out[n] = data0;
+            return OK;
+        }
+        if (idx >= len - 1) {
+            out[n] = data1;
+            return OK;
+        }
+
+        size_t i = (uint64_t)intpart;
+
+        MYFLT y0 = data[i];
+        MYFLT y1 = data[i+1];
+        switch (method) {
+        case 0:
+            out[n] = y0 + (y1 - y0)*frac;
+            break;
+        case 1:
+            out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+            break;
+        case 2:
+            out[n] = y0;
+            break;
+        case 3:
+            ypre = i > 0 ? data[i-1] : y0;
+            ypost = len - i > 3 ? data[i+2] : y1;
+            out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
+            break;
+        default:
+            out[n] = 0;
+        }
+    }
+    return OK;
+}
+
+static int32_t interparr_K_KK_ir(CSOUND *csound, INTERPARR_K_KK *p) {
+    interparr_K_KK_init(csound, p);
+    return interparr_K_KK_kr(csound, p);
+}
+
+static int32_t interparr_K_KKS_ir(CSOUND *csound, INTERPARR_K_KK *p) {
+    interparr_K_KKS_init(csound, p);
+    return interparr_K_KK_kr(csound, p);
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *idx, *tabnum;
+    void *mode;
+    MYFLT *step, *offset;
+    FUNC *ftp;
+    int lasttab;
+    char modetype;
+    MYFLT modeval;
+} INTERPTAB;
+
+static int32_t interptab_init(CSOUND *csound, INTERPTAB *p) {
+    FUNC *ftp;
+    ftp = csound->FTnp2Find(csound, p->tabnum);
+    if (UNLIKELY(ftp == NULL)) {
+        MSGF("table %d not found", (int)*p->tabnum);
+        return NOTOK;
+    }
+    p->ftp = ftp;
+    p->lasttab = (int)*p->tabnum;
+    if(*p->step <= 0)
+        *p->step = 1;
+    p->modetype = 'f';
+    return OK;
+}
+
+static int32_t interptab_S_init(CSOUND *csound, INTERPTAB *p) {
+    if(interptab_init(csound, p) != OK)
+        return NOTOK;
+    p->modetype = 's';
+    STRINGDAT *modestr = (STRINGDAT *)p->mode;
+    p->modeval = _interp_parse_mode(modestr->data);
+    return OK;
+}
+
+static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
+    IGN(csound);
+    MYFLT idx = *p->idx;
+    MYFLT *data = p->ftp->ftable;
+
+    if (idx <= 0) {
+        *p->out = data[0];
+        return OK;
+    }
+
+    MYFLT intpart, mu;
+    MYFLT frac = modf(idx, &intpart);
+
+    uint64_t len = p->ftp->flen;
+    int32_t step = (int32_t)*p->step;
+    int32_t taboffset = (int32_t)*p->offset;
+    uint64_t i = (uint64_t)intpart * step + taboffset;
+
+    if (i >= len - 1) {
+        *p->out = data[len - step + taboffset];
+        return OK;
+    }
+
+    if (frac == 0) {
+        *p->out = data[i];
+        return OK;
+    }
+    MYFLT y0 = data[i];
+    MYFLT y1 = data[i+step];
+    MYFLT mode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
+    MYFLT ypre, ypost;
+    if(mode >= 0) {
+        *p->out = y0 + (y1 - y0) * POWER(frac, mode);
+    } else {
+        switch(-(int)mode) {
+        case 0:   // linear
+            *p->out = y0 + (y1 - y0)*frac;
+            break;
+        case 1:  // cos
+            *p->out = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+            break;
+        case 2:  // floor
+            *p->out = y0;
+            break;
+        case 3:  // cubic
+            ypre = i > 0 ? data[i-1] : y0;
+            ypost = len - i > 3 ? data[i+2] : y1;
+            *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
+            break;
+        }
+    }
+    return OK;
+}
+
+static int32_t interptab_ir(CSOUND *csound, INTERPTAB *p) {
+    if(interptab_init(csound, p) == NOTOK)
+        return NOTOK;
+    return interptab_kr(csound, p);
+}
+
+static int32_t interptab_S_ir(CSOUND *csound, INTERPTAB *p) {
+    if(interptab_S_init(csound, p) == NOTOK)
+        return NOTOK;
+    return interptab_kr(csound, p);
+}
+
+
+static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
+    IGN(csound);
+    if((int)*p->tabnum != p->lasttab) {
+        FUNC *ftp = csound->FTnp2Find(csound, p->tabnum);
+        if (UNLIKELY(ftp == NULL)) {
+            MSGF("table %d not found", (int)*p->tabnum);
+            return NOTOK;
+        }
+        p->ftp = ftp;
+        p->lasttab = (int)*p->tabnum;
+    }
+    MYFLT *out = p->out;
+    MYFLT *in = p->idx;
+    uint64_t taboffset = (uint64_t)*p->offset;
+    uint64_t step = (uint64_t)*p->step;
+    if(step <= 0) {
+        return PERFERRF("step cannot be less than 1, got %lu", step);
+    }
+
+    MYFLT *data = p->ftp->ftable;
+    MYFLT mode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
+
+    MYFLT idx, intpart, frac, y0, y1, ypre, ypost;
+    uint64_t len = p->ftp->flen;
+
+    AUDIO_OPCODE(csound, p);
+    AUDIO_OUTPUT(out);
+
+    // we branch outside the loop depending on the interpolation mode
+    MYFLT firstelem = data[0];
+    MYFLT lastelem = data[len - step + taboffset];
+    if(mode == 0. || mode == 1.) {
+        // linear interp
+        for(n=offset; n < nsmps; n++) {
+            idx = in[n];
+            frac = modf(idx, &intpart);
+            uint64_t i = (uint64_t)intpart * step + taboffset;
+            if(i <= 0)
+                out[n] = firstelem;
+            else if(i>= len - 1)
+                out[n] = lastelem;
+            else if(frac == 0)
+                out[n] = data[i];
+            else {
+                y0 = data[i];
+                y1 = data[i+step];
+                out[n] = y0 + (y1 - y0)*frac;
+            }
+        }
+    } else if (mode == -1. ) {
+        // cos interp
+        for(n=offset; n < nsmps; n++) {
+            idx = in[n];
+            frac = modf(idx, &intpart);
+            uint64_t i = (uint64_t)intpart * step + taboffset;
+            if(i <= 0)
+                out[n] = firstelem;
+            else if(i>= len - 1)
+                out[n] = lastelem;
+            else if(frac == 0)
+                out[n] = data[i];
+            else {
+                y0 = data[i];
+                y1 = data[i+step];
+                out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+            }
+        }
+    } else if (mode > 0. ) {
+        // expon
+        for(n=offset; n < nsmps; n++) {
+            idx = in[n];
+            frac = modf(idx, &intpart);
+            uint64_t i = (uint64_t)intpart * step + taboffset;
+            if(i <= 0)
+                out[n] = firstelem;
+            else if(i>= len - 1)
+                out[n] = lastelem;
+            else if(frac == 0)
+                out[n] = data[i];
+            else {
+                y0 = data[i];
+                y1 = data[i+step];
+                out[n] = y0 + (y1 - y0) * POWER(frac, mode);
+            }
+        }
+    } else if (mode == -2) {
+        // floor interp
+        for(n=offset; n < nsmps; n++) {
+            idx = in[n];
+            frac = modf(idx, &intpart);
+            uint64_t i = (uint64_t)intpart * step + taboffset;
+            if(i <= 0)
+                out[n] = firstelem;
+            else if(i>= len - 1)
+                out[n] = lastelem;
+            else
+                out[n] = data[i];
+        }
+    } else if (mode == -3) {  // cubic interpol
+        for(n=offset; n < nsmps; n++) {
+            idx = in[n];
+            frac = modf(idx, &intpart);
+            uint64_t i = (uint64_t)intpart * step + taboffset;
+            if(i <= 0)
+                out[n] = firstelem;
+            else if(i>= len - 1)
+                out[n] = lastelem;
+            else if(frac == 0)
+                out[n] = data[i];
+            else {
+                y0 = data[i];
+                y1 = data[i+step];
+                ypre = i >= step ? data[i-step] : y0;
+                ypost = len - i > step*2 ? data[i+step+step] : y1;
+                out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
+            }
+        }
+    } else {
+        return PERFERRF("Interpolation mode should be 0 (linear), -1 (cos), -2 (floor),"
+                        "-3 (cubic) or a value > 0 for exponential interpolation "
+                        "(got %f)", mode);
+    }
+    return OK;
+}
+
+
+/*
+ * bisect
+ * bisect
+ *
+ * Returns the idx where kx would fit inside karray, with a fractional
+ * part indicating the distance between the adjacent items. Together
+ * with interparr this can be used to construct piecewise interpolation
+ * curves (bpf) in many different configurations
+ *
+ * kidx bisect kx, karray[]
+ * aidx bisect ax, karray[]
+ * idx  bisect ix, iarray[]
+ * kidx[] bisect kxs[], karray[]
+ * idx[]  bisect ixs[], iarray[]
+ */
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *x;
+    ARRAYDAT *arr;
+    int64_t lastidx;
+} BISECT;
+
+
+static inline int64_t array_bisect_multidim(MYFLT x, MYFLT *xs, int64_t len,
+                                            int step, int offset, int64_t lastidx) {
+    // step: the frame size, a.k.a the number of columns per row
+    // offset: the column index to use for comparison
+    // returns: the fractional row index
+    if(x <= xs[offset]) {
+        return -1;
+    }
+    if(x >= xs[len-step+offset]) {
+        return -2;
+    }
+    if(lastidx >= 0 &&
+            lastidx < len-step*2 &&
+            xs[lastidx*step+offset] <= x && x < xs[(lastidx+1)*step+offset]) {
+        return lastidx;
+    }
+
+    int64_t numframes = (int64_t)ceil((len-offset)/step);
+    int64_t imin = 0;
+    int64_t imax = numframes;
+    int64_t imid;
+
+    while (imin < imax) {
+        imid = (imax + imin) / 2;
+        if (xs[imid*step+offset] < x)
+            imin = imid + 1;
+        else
+            imax = imid;
+    }
+    // now the right item is in pairmin
+    return imin - 1;
+}
+
+static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t lastidx) {
+    // -1: lower bound, -2: upper bound
+    if(x <= xs[0]) {
+        return -1;
+    }
+    if(x >= xs[xslen-1]) {
+        return -2;
+    }
+    if(lastidx >= 0 && lastidx < xslen-2 && xs[lastidx] <= x && x < xs[lastidx+1]) {
+        return lastidx;
+    }
+
+    int64_t imin = 0;
+    int64_t imax = xslen;
+    int64_t imid;
+
+    while (imin < imax) {
+        imid = (imax + imin) / 2;
+        if (xs[imid] < x)
+            imin = imid + 1;
+        else
+            imax = imid;
+    }
+    // now the right pair is in pairmin
+    return imin - 1;
+}
+
+
+static int32_t bisect_init(CSOUND *csound, BISECT *p) {
+    IGN(csound);
+    p->lastidx = -1;
+    return OK;
+}
+
+static int32_t bisect_kr(CSOUND *csound, BISECT *p) {
+    IGN(csound);
+    int64_t lenarr = p->arr->sizes[0];
+    MYFLT *arr = p->arr->data;
+    MYFLT x = *p->x;
+    MYFLT x0, x1, frac;
+
+    int64_t idx = array_bisect(x, arr, lenarr, p->lastidx);
+
+    if(idx == -1) {
+        *p->out = 0;
+        p->lastidx = -1;
+        return OK;
+    }
+
+    if(idx == -2) {
+        *p->out = lenarr - 1;
+        p->lastidx = -1;
+        return OK;
+    }
+
+    x0 = arr[idx];
+    x1 = arr[idx+1];
+    frac = (x - x0) / (x1 - x0);
+    *p->out = (MYFLT)idx + frac;
+    p->lastidx = idx;
+    return OK;
+}
+
+static int32_t bisect_ir(CSOUND *csound, BISECT *p) {
+    bisect_init(csound, p);
+    return bisect_kr(csound, p);
+}
+
+static int32_t bisect_a_a_kr(CSOUND *csound, BISECT *p) {
+    IGN(csound);
+    int64_t lenarr = p->arr->sizes[0];
+    MYFLT *arr = p->arr->data;
+    MYFLT *out = p->out;
+    MYFLT *in = p->x;
+    MYFLT x0, x1, frac, x;
+    int64_t idx, lastidx = p->lastidx;
+    AUDIO_OPCODE(csound, p);
+    AUDIO_OUTPUT(out);
+
+    for(n=offset; n<nsmps; n++) {
+        x = in[n];
+        idx = array_bisect(x, arr, lenarr, lastidx);
+        if(idx == -1) {
+            out[n] = 0;
+            lastidx = -1;
+        } else if(idx == -2) {
+            out[n] = lenarr - 1;
+            lastidx = -1;
+        } else {
+            x0 = arr[idx];
+            x1 = arr[idx+1];
+            frac = (x - x0) / (x1 - x0);
+            out[n] = (MYFLT)idx + frac;
+            lastidx = idx;
+        }
+    }
+    p->lastidx = lastidx;
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *out;
+    ARRAYDAT *xs;
+    ARRAYDAT *arr;
+    int64_t lastidx;
+} BISECTARR;
+
+static int32_t bisectarr_init(CSOUND *csound, BISECTARR *p) {
+    IGN(csound);
+    p->lastidx = -1;
+    tabinit(csound, p->out, p->xs->sizes[0]);
+    return OK;
+}
+
+static int32_t bisectarr_kr(CSOUND *csound, BISECTARR *p) {
+    IGN(csound);
+    MYFLT *out = p->out->data;
+    MYFLT *in = p->xs->data;
+    MYFLT *arr = p->arr->data;
+
+    size_t lenarr = p->arr->sizes[0];
+    size_t numitems = p->xs->sizes[0];
+    tabcheck(csound, p->out, numitems, &(p->h));
+
+    MYFLT x0, x1, frac, x;
+    int64_t idx, lastidx = p->lastidx;
+
+    for(size_t n=0; n<numitems; n++) {
+        x = in[n];
+        idx = array_bisect(x, arr, lenarr, lastidx);
+        if(idx == -1) {
+            out[n] = 0;
+            lastidx = -1;
+        } else if(idx == -2) {
+            out[n] = lenarr - 1;
+            lastidx = -1;
+        } else {
+            x0 = arr[idx];
+            x1 = arr[idx+1];
+            frac = (x - x0) / (x1 - x0);
+            out[n] = (MYFLT)idx + frac;
+            lastidx = idx;
+        }
+    }
+    p->lastidx = lastidx;
+    return OK;
+}
+
+static int32_t bisectarr_ir(CSOUND *csound, BISECTARR *p) {
+    bisectarr_init(csound, p);
+    return bisectarr_kr(csound, p);
+}
+
+// kidx bisect kx, ktab, kstep=1, koffset=0
+// aidx bisect ax, ktab, kstep=1, koffset=0
+// kidx[] bisect kx[], ktab, kstep=1, koffset=0
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *in, *tabnum, *step, *offset;
+
+    FUNC *ftp;
+    int64_t lastidx;
+    int lasttab;
+} BISECTTAB;
+
+static int32_t bisecttab_init(CSOUND *csound, BISECTTAB *p) {
+    FUNC *ftp;
+    ftp = csound->FTnp2Find(csound, p->tabnum);
+    if (UNLIKELY(ftp == NULL)) {
+        MSGF("table %d not found", (int)*p->tabnum);
+        return NOTOK;
+    }
+    p->ftp = ftp;
+    p->lastidx = -1;
+    p->lasttab = (int)*p->tabnum;
+    if(*p->step <= 0)
+        *p->step = 1;
+    return OK;
+}
+
+static int32_t bisecttab_k_k_kr(CSOUND *csound, BISECTTAB *p) {
+    IGN(csound);
+    if((int)*p->tabnum != p->lasttab) {
+        FUNC *ftp = csound->FTnp2Find(csound, p->tabnum);
+        if (UNLIKELY(ftp == NULL)) {
+            MSGF("table %d not found", (int)*p->tabnum);
+            return NOTOK;
+        }
+        p->ftp = ftp;
+        p->lasttab = (int)*p->tabnum;
+    }
+    MYFLT *data = p->ftp->ftable;
+    MYFLT x = *p->in;
+    int64_t lendata = p->ftp->flen;
+    MYFLT x0, x1, frac;
+    int32_t taboffset = (int32_t)*p->offset;
+    int32_t step = (int32_t)*p->step;
+
+    int64_t row = array_bisect_multidim(x, data, lendata, step, taboffset, p->lastidx);
+
+    if(step <= 0) {
+        return PERFERRF("step cannot be less than 1, got %d", step);
+    }
+
+    if(row == -1) {
+        *p->out = 0;
+        p->lastidx = -1;
+    } else if (row == -2) {
+        *p->out = ceil((lendata-taboffset)/step)-1;
+        p->lastidx = -1;
+    } else {
+        x0 = data[taboffset+row*step];
+        x1 = data[taboffset+(row+1)*step];
+        frac = (x - x0) / (x1 - x0);
+        *p->out = (MYFLT)row + frac;
+        p->lastidx = row;
+    }
+    return OK;
+}
+
+static int32_t bisecttab_k_k_ir(CSOUND *csound, BISECTTAB *p) {
+    int res = bisecttab_init(csound, p);
+    if (res == NOTOK)
+        return NOTOK;
+    return bisecttab_k_k_kr(csound, p);
+}
+
+static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
+    IGN(csound);
+    if((int)*p->tabnum != p->lasttab) {
+        FUNC *ftp = csound->FTnp2Find(csound, p->tabnum);
+        if (UNLIKELY(ftp == NULL)) {
+            MSGF("table %d not found", (int)*p->tabnum);
+            return NOTOK;
+        }
+        p->ftp = ftp;
+        p->lasttab = (int)*p->tabnum;
+    }
+    MYFLT *out = p->out;
+    MYFLT *in = p->in;
+    int32_t taboffset = (int32_t)*p->offset;
+    int32_t step = (int32_t)*p->step;
+    if(step <= 0) {
+        return PERFERRF("step cannot be less than 1, got %d", step);
+    }
+
+    MYFLT *data = p->ftp->ftable;
+
+    AUDIO_OPCODE(csound, p);
+    AUDIO_OUTPUT(out);
+
+    int64_t idx,
+            lendata = p->ftp->flen,
+            lastidx = p->lastidx;
+
+    MYFLT x0, x1, frac, x;
+    MYFLT rightmost = ceil((lendata-taboffset)/step)-1;
+    for(n=offset; n < nsmps; n++) {
+        x = in[n];
+        idx = array_bisect_multidim(x, data, lendata, step, taboffset, lastidx);
+        if(idx == -1) {
+            out[n] = 0;
+            lastidx = -1;
+        } else if(idx == -2) {
+            out[n] = rightmost;
+            lastidx = -1;
+        } else {
+            int64_t idx0 = taboffset + idx*step;
+            x0 = data[idx0];
+            x1 = data[idx0+step];
+            frac = (x - x0) / (x1 - x0);
+            out[n] = (MYFLT)idx + frac;
+            lastidx = idx;
+        }
+    }
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *out;
+    ARRAYDAT *in;
+    MYFLT *tabnum, *step, *offset;
+
+    FUNC *ftp;
+    int64_t lastidx;
+    int lasttab;
+} BISECTTAB_ARR;
+
+static int32_t bisecttabarr_init(CSOUND *csound, BISECTTAB_ARR *p) {
+    FUNC *ftp;
+    ftp = csound->FTnp2Find(csound, p->tabnum);
+    if (UNLIKELY(ftp == NULL)) {
+        MSGF("table %d not found", (int)*p->tabnum);
+        return NOTOK;
+    }
+    p->ftp = ftp;
+    p->lastidx = -1;
+    p->lasttab = (int)*p->tabnum;
+    if(*p->step <= 0)
+        *p->step = 1;
+    tabinit(csound, p->out, p->in->sizes[0]);
+    return OK;
+}
+
+static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
+    IGN(csound);
+    if((int)*p->tabnum != p->lasttab) {
+        FUNC *ftp = csound->FTnp2Find(csound, p->tabnum);
+        if (UNLIKELY(ftp == NULL)) {
+            MSGF("table %d not found", (int)*p->tabnum);
+            return NOTOK;
+        }
+        p->ftp = ftp;
+        p->lasttab = (int)*p->tabnum;
+    }
+    MYFLT *data = p->ftp->ftable;
+
+    MYFLT *out = p->out->data;
+    MYFLT *in = p->in->data;
+    int32_t taboffset = (int32_t)*p->offset;
+    int32_t step = (int32_t)*p->step;
+    size_t arrsize = p->in->sizes[0];
+    tabcheck(csound, p->out, arrsize, &(p->h));
+    if(step <= 0) {
+        MSGF("step cannot be less than 1, got %d", step);
+        return NOTOK;
+    }
+
+    int64_t idx,
+            lendata = p->ftp->flen,
+            lastidx = p->lastidx;
+
+    MYFLT x0, x1, frac, x;
+    for(size_t n=0; n < arrsize; n++) {
+        x = in[n];
+        idx = array_bisect_multidim(x, data, lendata, step, taboffset, lastidx);
+        if(idx == -1) {
+            out[n] = 0;
+            lastidx = -1;
+        } else if(idx == -2) {
+            out[n] = lendata - step + taboffset;
+            lastidx = -1;
+        } else {
+            x0 = data[taboffset + idx*step];
+            x1 = data[taboffset + idx*step + 1];
+            frac = (x - x0) / (x1 - x0);
+            out[n] = (MYFLT)idx + frac;
+            lastidx = idx;
+        }
+    }
+    p->lastidx = lastidx;
+    return OK;
+}
+
+static int32_t bisecttabarr_ir(CSOUND *csound, BISECTTAB_ARR *p) {
+    bisecttabarr_init(csound, p);
+    return bisecttabarr_kr(csound, p);
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    // MYFLT *tabnum;
+    MYFLT *pargs [VARGMAX-5];
+} FILLTAB;
+
+// itab filltab 100, 0, 1, 2, 3, 4
+// creates a table with given number (0=let csound make the number) and fill
+// it with the pargs following. This is the same as ftgen 0, 0, 0, -2, ...
+static int32_t filltab(CSOUND *csound, FILLTAB *p) {
+    MYFLT   *fp;
+    FUNC    *ftp;
+    EVTBLK  *ftevt;
+
+    ftevt =(EVTBLK*) csound->Malloc(csound, sizeof(EVTBLK));
+    ftevt->opcod = 'f';
+    ftevt->strarg = NULL;
+    fp = &ftevt->p[0];
+    size_t n = csound->GetInputArgCnt(p);
+    size_t tabsize = n;
+    fp[0] = FL(0.0);
+    fp[1] = 0; // *p->tabnum;                                 /* copy p1 - p5 */
+    fp[2] = ftevt->p2orig = FL(0.0);                    /* force time 0 */
+    fp[3] = ftevt->p3orig = tabsize;
+    fp[4] = 2;
+    fp[5] = 0;
+    ftevt->pcnt = (int16) 6;
+    n = csound->hfgens(csound, &ftp, ftevt, 1);         /* call the fgen */
+    csound->Free(csound, ftevt);
+    if (UNLIKELY(n != 0) || ftp == NULL)
+        return INITERR("ftgen error");
+    MYFLT **pargs = p->pargs;
+    MYFLT *ftable = ftp->ftable;
+    for(size_t i=0; i<tabsize; i++) {
+        ftable[i] = *pargs[i];
+    }
+    *p->out = (MYFLT) ftp->fno;                      /* record the fno */
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *size;
+    MYFLT *defaultvalue;
+} FTNEW;
+
+static int32_t ftnew(CSOUND *csound, FTNEW *p) {
+    MYFLT   *fp;
+    FUNC    *ftp;
+    EVTBLK  *ftevt;
+
+    ftevt =(EVTBLK*) csound->Malloc(csound, sizeof(EVTBLK));
+    ftevt->opcod = 'f';
+    ftevt->strarg = NULL;
+    fp = &ftevt->p[0];
+    size_t tabsize = (size_t)*p->size;
+    fp[0] = FL(0.0);
+    fp[1] = FL(0.0);  // *p->tabnum;
+    fp[2] = ftevt->p2orig = FL(0.0);                    /* force time 0 */
+    fp[3] = ftevt->p3orig = tabsize;
+    fp[4] = 2;
+    fp[5] = 0;
+    ftevt->pcnt = (int16) 6;
+    int n = csound->hfgens(csound, &ftp, ftevt, 1);         /* call the fgen */
+    csound->Free(csound, ftevt);
+    if (UNLIKELY(n != 0) || ftp == NULL)
+        return INITERR("ftgen error");
+    if(*p->defaultvalue != 0) {
+        MYFLT v = *p->defaultvalue;
+        MYFLT *ftable = ftp->ftable;
+        for(size_t i=0; i<tabsize; i++) {
+            ftable[i] = v;
+        }
+    }
+    *p->out = (MYFLT) ftp->fno;                      /* record the fno */
+    return OK;
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3053,6 +4059,52 @@ static OENTRY localops[] = {
     { "perlin3.k_kkk", S(PERLIN3), 0, 3, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk},
     { "perlin3.a_aaa", S(PERLIN3), 0, 3, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa},
 
+    { "interp1d.k_kK", S(INTERPARR_x_xK), 0, 3, "k", "k.[]O", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr},
+    { "interp1d.k_kKS", S(INTERPARR_x_xK), 0, 3, "k", "k.[]S", (SUBR)interparr_k_kKS_init, (SUBR)interparr_k_kK_kr},
+
+    { "interp1d.a_aK", S(INTERPARR_x_xK), 0, 3, "a", "a.[]O", (SUBR)interparr_k_kK_init, (SUBR)interparr_a_aK_kr},
+    { "interp1d.a_aKS", S(INTERPARR_x_xK), 0, 3, "a", "a.[]S", (SUBR)interparr_k_kKS_init, (SUBR)interparr_a_aK_kr},
+
+    { "interp1d.i_iI", S(INTERPARR_x_xK), 0, 1, "i", "ii[]o", (SUBR)interparr_k_kK_ir},
+    { "interp1d.i_iIS", S(INTERPARR_x_xK), 0, 1, "i", "ii[]S", (SUBR)interparr_k_kKS_ir},
+
+    { "interp1d.K_KK", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]O", (SUBR)interparr_K_KK_init, (SUBR)interparr_K_KK_kr},
+    { "interp1d.K_KKS", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]S", (SUBR)interparr_K_KKS_init, (SUBR)interparr_K_KK_kr},
+
+    { "interp1d.I_II", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]o", (SUBR)interparr_K_KK_ir},
+    { "interp1d.I_IIS", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]S", (SUBR)interparr_K_KKS_ir},
+
+    // kout interptab kin, ktab, kmode=0, kstep=1, koffset=0
+    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kkOPO", (SUBR)interptab_init, (SUBR)interptab_kr},
+    { "interp1d.kS", S(INTERPTAB), 0, 3, "k", "kkOPS", (SUBR)interptab_S_init, (SUBR)interptab_kr},
+
+    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "iiopo", (SUBR)interptab_ir},
+    { "interp1d.iS", S(INTERPTAB), 0, 1, "i", "iiSpo", (SUBR)interptab_S_ir},
+
+    { "interp1d.a",  S(INTERPTAB), 0, 3, "k", "kkOPO", (SUBR)interptab_init, (SUBR)interptab_a_a_kr},
+    { "interp1d.aS", S(INTERPTAB), 0, 3, "k", "kkSPO", (SUBR)interptab_S_init, (SUBR)interptab_a_a_kr},
+
+    // TODO : kout[] interp1d kin[], ktab, kmode=0,kstep=1, koffset=0
+
+
+    { "bisect.k_k", S(BISECT), 0, 3, "k", "k.[]", (SUBR)bisect_init, (SUBR)bisect_kr},
+    { "bisect.i_i", S(BISECT), 0, 1, "i", "i.[]", (SUBR)bisect_ir },
+    { "bisect.a_a", S(BISECT), 0, 3, "a", "a.[]", (SUBR)bisect_init, (SUBR)bisect_a_a_kr},
+    { "bisect.K_K", S(BISECTARR), 0, 3, "k[]", "k[].[]", (SUBR)bisectarr_init, (SUBR)bisectarr_kr},
+    { "bisect.I_I", S(BISECTARR), 0, 1, "i[]", "i[].[]", (SUBR)bisectarr_ir},
+
+    { "bisect.tab_k_k", S(BISECTTAB), 0, 3, "k", "kkOO", (SUBR)bisecttab_init, (SUBR)bisecttab_k_k_kr},
+    { "bisect.tab_i_i", S(BISECTTAB), 0, 1, "i", "iioo", (SUBR)bisecttab_k_k_ir},
+    { "bisect.tab_a_a", S(BISECTTAB), 0, 3, "a", "akOO", (SUBR)bisecttab_init, (SUBR)bisecttab_a_a_kr},
+    { "bisect.tab_K_K", S(BISECTTAB_ARR), 0, 3, "k[]", "k[]kOO",
+      (SUBR)bisecttabarr_init, (SUBR)bisecttabarr_kr},
+
+    { "bisect.tab_I_I", S(BISECTTAB_ARR), 0, 1, "i[]", "i[]ioo",
+      (SUBR)bisecttabarr_ir},
+
+    { "ftfill.i", S(FILLTAB), 0, 1, "i", "m", (SUBR)filltab },
+    { "ftnew.i", S(FTNEW), 0, 1, "i", "io", (SUBR)ftnew },
+    //  "ftfill.arr_i", S(FTNEWARR), 0, 1, "i", "ii[]o", (SUBR)ftnew_arr },
 };
 
 LINKAGE

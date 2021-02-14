@@ -1,6 +1,6 @@
 {
     "name": "pathtools",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "csound_version": "6.14",
     "opcodes": [
       "findFileInPath",

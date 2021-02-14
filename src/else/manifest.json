@@ -3,6 +3,7 @@
     "opcodes": [
       "accum",
       "atstop",
+      "bisect",
       "crackle", 
       "defer",
       "deref",
@@ -12,6 +13,7 @@
       "frac2int",
       "ftsetparams",
       "initerror",
+      "interp1d",
       "lfnoise",
       "linenv",
       "memview",
@@ -29,7 +31,7 @@
       "uniqinstance",
       "xtracycles"
     ],
-    "version": "0.2.5",
+    "version": "0.2.6",
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
     "license": "LGPL",
