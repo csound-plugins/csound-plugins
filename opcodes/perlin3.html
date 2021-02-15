@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -109,6 +111,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -273,7 +279,6 @@ some trajectory through the co-ordinate space.</p>
 <span class="kt">k</span><span class="n">out</span>  <span class="n">perlin3</span> <span class="kt">k</span><span class="n">x</span><span class="p">,</span> <span class="kt">k</span><span class="n">y</span><span class="p">,</span> <span class="kt">k</span><span class="n">z</span>
 </code></pre></div>
 
-
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>kx</code>, <code>ky</code>, <code>kz</code>: the coordinates of a point in 3D space. In the current implementation the space wraps at 255 so any value is actually possible.</li>
@@ -326,8 +331,8 @@ some trajectory through the co-ordinate space.</p>
   <span class="kt">a</span><span class="n">per2</span> <span class="o">=</span> <span class="p">(</span><span class="kt">a</span><span class="n">per2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
 
   <span class="kt">i</span><span class="n">lagtime</span> <span class="o">=</span> <span class="mf">0.1</span>
-  <span class="kt">a</span><span class="n">1</span> <span class="o">=</span> <span class="kt">a</span><span class="n">sig</span><span class="o">*</span><span class="n">lag</span><span class="p">(</span><span class="kt">a</span><span class="n">per1</span><span class="p">,</span> <span class="kt">i</span><span class="n">lagtime</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">2</span> <span class="o">=</span> <span class="kt">a</span><span class="n">sig</span><span class="o">*</span><span class="n">lag</span><span class="p">(</span><span class="kt">a</span><span class="n">per2</span><span class="p">,</span> <span class="kt">i</span><span class="n">lagtime</span><span class="p">)</span>
+  <span class="kt">a</span><span class="n">1</span> <span class="o">=</span> <span class="kt">a</span><span class="n">sig</span><span class="o">*</span><span class="nb">lag</span><span class="p">(</span><span class="kt">a</span><span class="n">per1</span><span class="p">,</span> <span class="kt">i</span><span class="n">lagtime</span><span class="p">)</span>
+  <span class="kt">a</span><span class="n">2</span> <span class="o">=</span> <span class="kt">a</span><span class="n">sig</span><span class="o">*</span><span class="nb">lag</span><span class="p">(</span><span class="kt">a</span><span class="n">per2</span><span class="p">,</span> <span class="kt">i</span><span class="n">lagtime</span><span class="p">)</span>
   <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">2</span> <span class="nb">reverbsc</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">2</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">,</span> <span class="mi">12000</span>
   <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">2</span>
 
@@ -400,7 +405,6 @@ some trajectory through the co-ordinate space.</p>
 <span class="o">&lt;</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

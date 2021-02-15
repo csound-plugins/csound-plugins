@@ -23,7 +23,7 @@ body .cm { color: #408080; font-style: italic } /* Comment.Multiline */
 body .cp { color: #BC7A00 } /* Comment.Preproc */
 body .cpf { color: #408080; font-style: italic } /* Comment.PreprocFile */
 body .c1 { color: #408080; font-style: italic } /* Comment.Single */
-body .cs { color: #408080; font-style: italic } /* Comment.Special */
+body .cs { color: #408080 } /* Comment.Special */
 body .gd { color: #A00000 } /* Generic.Deleted */
 body .ge { font-style: italic } /* Generic.Emph */
 body .gr { color: #FF0000 } /* Generic.Error */

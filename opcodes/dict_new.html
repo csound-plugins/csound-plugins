@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -97,6 +99,8 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#args">Args</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#types">Types</a>
         <ul>
@@ -141,6 +145,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -283,17 +291,23 @@ of the note it was created in; or it can be <strong>global</strong>, in which ca
 deallocated</strong> when the note is released and is kept alive until either the end
 of the performance, or until freed via <a href="dict_free.html">dict_free</a></p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>idict dict_new Stype
+<div class="codehilite"><pre><span></span><code>idict dict_new Stype, icapacity=-1
 idict dict_new Stype, key0, value0, key1, value1, ...
 
 kdict dict_new Stype, key0, value0, key1, value1, ...
 </code></pre></div>
 
-
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>With the second variant it is possible to create a dict and give it initial values at the same time.</p>
 </div>
+<h2 id="args">Args</h2>
+<ul>
+<li><code>Stype</code>: the type of the dictionary, see below</li>
+<li><code>icapacity</code>: the initial size of the dictionary. If not given a sensible default is used. Dictionaries can
+    grow as they are filled, but since this requires memory allocation, it can be unsafe during performance</li>
+<li><code>key0, value0, ...</code>: initial key:value pairs</li>
+</ul>
 <h2 id="types">Types</h2>
 <p>The types of a dict are fixed at creation time and are specified via the <code>Stype</code> argument. To declare a dict as <code>global</code>, prefix the type with a <code>*</code>.</p>
 <table>
@@ -365,7 +379,6 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
       <span class="n">dict_free</span> <span class="kt">i</span><span class="n">args</span>
     <span class="kd">endin</span>
 </code></pre></div>
-
 
 <h2 id="arguments">Arguments</h2>
 <ul>
@@ -445,12 +458,10 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
-
 <h2 id="see-also">See also</h2>
 <ul>
 <li><a href="dict_free.html">dict_free</a></li>
 <li><a href="dict_set.html">dict_set</a></li>
-<li><a href="dict_newk.md">dict_newk</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>

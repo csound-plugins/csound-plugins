@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>dict_free - Csound Plugins</title>
+  <title>initerror - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "dict_free";
-    var mkdocs_page_input_path = "opcodes/dict_free.md";
+    var mkdocs_page_name = "initerror";
+    var mkdocs_page_input_path = "opcodes/initerror.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -80,27 +80,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="dict_free.html">dict_free</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
                     </li>
@@ -132,7 +112,29 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="initerror.html">initerror</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
@@ -254,7 +256,7 @@
         
       
     
-    <li>dict_free</li>
+    <li>initerror</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -265,92 +267,36 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="dict_free">dict_free</h1>
+                <h1 id="initerror">initerror</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Free a hashtable </p>
+<p>Throws an error message at init</p>
 <h2 id="description">Description</h2>
-<p>frees the hashtable either at init time or at the end of the note (similar to ftfree)
-A dict can only be freed if it was created as global (see <a href="dict_new.html">dict_new</a>).
-To be able to pass a dict between notes, a note can create a global dict and 
-pass its handle to another note. When the first note is released, the dict lives
-on (because it is global), and it will be either freed at the end of the performance
-or explicitely by calling <a href="dict_free.html">dict_free</a></p>
-<p><code>dict_free</code> executes only at <strong>init time</strong>. </p>
+<p>Use initerror to stop the current event with an init error</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>dict_free idict [, iwhen=1]
+<div class="codehilite"><pre><span></span><code>initerror Smessage
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>idict</code>: the handle of the dict to be freed</li>
-<li><code>iwhen</code>: similar to <code>ftfree</code><ul>
-<li>if <code>iwhen == 0</code> : free the dict now</li>
-<li>if <code>iwhen == 1</code> : free the dict at the end of this note (the default)</li>
+<li><code>Smessage</code>: the text message to show. Use sprintf to construct a message if needed</li>
 </ul>
-</li>
-</ul>
+<h3 id="output">Output</h3>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
 <li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-
-<span class="kd">instr</span> <span class="nf">1</span> 
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
-
-  <span class="c1">; set key a key:value pair</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>
-
-  <span class="c1">; retrieve the value</span>
-  <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
-
-  <span class="c1">; get a non-existent key, will output the default</span>
-  <span class="kt">k</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> 
-
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span> 
-
-  <span class="c1">; now create another dict, this one will outlive this note</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
-
-  <span class="c1">; schedule another inst, pass this dict</span>
-  <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict2</span>
-
-  <span class="nb">turnoff</span>
-
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">baz</span> <span class="o">=</span> <span class="n">dict_get</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">)</span>
-  <span class="nb">printf</span> <span class="s">&quot;instr 2, kbaz = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">baz</span>
-
-  <span class="c1">; free dict at the end of this note</span>
-  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>  
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="c1">; schedule 1, 0, 1</span>
-
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">2</span>
-
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<div class="codehilite"><pre><span></span><code><span class="k">if</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">&gt;</span> <span class="mi">128</span> <span class="k">then</span>
+    <span class="kt">i</span><span class="n">niterror</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s">&quot;Received an invalid midi value (</span><span class="si">%d</span><span class="s">)&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi</span><span class="p">)</span>
+<span class="k">endif</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
-<p><a href="dict_new.html">dict_new</a></p>
+<ul>
+<li><a href="throwerror.html">throwerror</a></li>
+</ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2020</p>
               
             </div>
           </div>
@@ -358,10 +304,10 @@ or explicitely by calling <a href="dict_free.html">dict_free</a></p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dict_get.html" class="btn btn-neutral float-right" title="dict_get">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="interp1d.html" class="btn btn-neutral float-right" title="interp1d">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="dict_exists.html" class="btn btn-neutral" title="dict_exists"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="getEnvVar.html" class="btn btn-neutral" title="getEnvVar"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -387,10 +333,10 @@ or explicitely by calling <a href="dict_free.html">dict_free</a></p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="dict_exists.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="getEnvVar.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="dict_get.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="interp1d.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

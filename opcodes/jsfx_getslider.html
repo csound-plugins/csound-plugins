@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -109,6 +111,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -275,13 +281,11 @@ in a pitch tracking plugin. </p>
 <div class="codehilite"><pre><span></span><code>slider7:0&lt;0,20,0.01&gt;Gain Reduction
 </code></pre></div>
 
-
 <p>This defines a control parameter with default value <code>0</code>, between <code>0</code> and <code>20</code>,
 with a precission (an increment) of <code>0.01</code> and a label "Gain Reduction". To read
 the value of that slider:</p>
 <div class="codehilite"><pre><span></span><code>kgainreduction = jsfx_getslider(ihandle, 7)
 </code></pre></div>
-
 
 <div class="admonition note jsfx sliders">
 <p class="admonition-title">Note</p>
@@ -301,7 +305,6 @@ See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, e
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>kvalue  jsfx_getslider ihandle, kid
 </code></pre></div>
-
 
 <h3 id="arguments">Arguments</h3>
 <ul>
@@ -415,7 +418,6 @@ See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, e
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

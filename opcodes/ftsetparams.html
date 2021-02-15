@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -129,6 +131,10 @@
     </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -268,7 +274,6 @@
 <div class="codehilite"><pre><span></span><code><span class="kt">f</span><span class="n">tsetparams</span> <span class="kt">i</span><span class="n">ft</span><span class="p">,</span> <span class="kt">i</span><span class="n">samplerate</span><span class="p">,</span> <span class="kt">i</span><span class="n">numchannels</span><span class="p">,</span> <span class="kt">i</span><span class="n">loopstart</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">basenote</span><span class="o">=</span><span class="mi">60</span>
 </code></pre></div>
 
-
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>ift</code>: the table number to modify</li>
@@ -297,11 +302,11 @@
 <span class="kt">gi</span><span class="n">func0</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;musicbox.flac&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
 <span class="kt">gi</span><span class="n">1</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">nsamp</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span>
-<span class="kt">f</span><span class="n">tslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
+<span class="nb">ftslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
 <span class="kt">f</span><span class="n">tsetparams</span> <span class="kt">gi</span><span class="n">1</span><span class="p">,</span> <span class="nb">ftsr</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">1</span>
 
 <span class="kt">gi</span><span class="n">2</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">nsamp</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span>
-<span class="kt">f</span><span class="n">tslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
+<span class="nb">ftslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
 <span class="kt">f</span><span class="n">tsetparams</span> <span class="kt">gi</span><span class="n">2</span><span class="p">,</span> <span class="nb">ftsr</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">1</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
@@ -324,14 +329,13 @@
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
-
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="http://www.csounds.com/manual/html/ftslice.html">ftslice</a></li>
-<li><a href="http://www.csounds.com/manual/html/ftslicei.html">ftslicei</a></li>
-<li><a href="http://www.csounds.com/manual/html/loscil.html">loscil</a></li>
-<li><a href="http://www.csounds.com/manual/html/ftsr.html">ftsr</a></li>
-<li><a href="http://www.csounds.com/manual/html/ftchnls.html">ftchnls</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/ftslice.html">ftslice</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/ftslicei.html">ftslicei</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/loscil.html">loscil</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/ftsr.html">ftsr</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/ftchnls.html">ftchnls</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2020</p>

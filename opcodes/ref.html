@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -109,6 +111,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -273,25 +279,23 @@ opcodes, allowing to modify an array in place, skip copying memory, etc.</p>
 <span class="kt">i</span><span class="n">Y</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
 </code></pre></div>
 
-
 <p>In the case above, <code>iY</code> shares the same memory as <code>iX</code> and any modification in
 one array will be visible in the other. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>iref ref xArray, [iextrarefs=0]
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="n">xArray</span><span class="p">,</span> <span class="p">[</span><span class="kt">i</span><span class="n">extrarefs</span><span class="o">=</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div>
-
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>xArray</code>: the array to be referenced</li>
-<li><code>iextrarefs</code>: use this for the <em>niche</em> case where a reference is passed to an
+<li><strong>xArray</strong>: the array to be referenced</li>
+<li><strong>iextrarefs</strong>: use this for the <em>niche</em> case where a reference is passed to an
   event scheduled at a point in time later that the end of the current event.
   Without this, the ref would go out of scope before the <code>deref</code> takes place. 
   Any extra ref must be matched with an extra deref (<code>kArr[] deref iref, 1</code>)</li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
-<li><code>iref</code>: an integer identifying the reference handle.</li>
+<li><strong>iref</strong>: an integer identifying the reference handle.</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
@@ -300,17 +304,11 @@ one array will be visible in the other. </p>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">m0</span>
-<span class="o">-</span><span class="n">d</span>
 <span class="o">--</span><span class="n">nosound</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
-<span class="cm">/*</span>
-
-<span class="cm">Example file for ref / deref </span>
-
-<span class="cm">*/</span>
+<span class="c1">;; Example file for ref - deref</span>
 
 <span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
 <span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
@@ -350,7 +348,7 @@ one array will be visible in the other. </p>
     <span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
     <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Zs</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;p1=2, iZs&quot;</span>
   <span class="k">else</span>
-    <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">    &gt;&gt;&gt; The reference has become invalid &lt;&lt;&lt; </span><span class="se">\n</span><span class="s">&quot;</span>
+    <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">    The reference has become invalid</span><span class="se">\n</span><span class="s">&quot;</span>
   <span class="k">endif</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
@@ -376,14 +374,14 @@ one array will be visible in the other. </p>
   <span class="c1">; starts after we end, we need an extra reference </span>
   <span class="nb">schedule</span> <span class="mi">4</span><span class="p">,</span> <span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span>
 
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot; &lt;&lt;&lt; instr. 3 finished &gt;&gt;&gt; </span><span class="se">\n</span><span class="s">&quot;</span>
+  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;  --- instr. 3 finished --- </span><span class="se">\n</span><span class="s">&quot;</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">4</span>
   <span class="nb">prints</span> <span class="s">&quot;instr. 4</span><span class="se">\n</span><span class="s">   &quot;</span>
   <span class="kt">k</span><span class="n">View</span><span class="p">[]</span> <span class="n">deref</span> <span class="vi">p4</span><span class="p">,</span> <span class="vi">p5</span>
   <span class="nb">printarray</span> <span class="kt">k</span><span class="n">View</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot; &lt;&lt;&lt; instr. 4 finished &gt;&gt;&gt; </span><span class="se">\n</span><span class="s">&quot;</span>
+  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot; --- instr. 4 finished --- </span><span class="se">\n</span><span class="s">&quot;</span>
   <span class="c1">; At deinition time the memory of the `iView` array is marked as deallocated.</span>
   <span class="c1">; The handle (a global structure created by the `ref` opcode) which owns the memory,</span>
   <span class="c1">; is signaled that no other clients of this data are alive. It deallocates the</span>
@@ -517,7 +515,7 @@ one array will be visible in the other. </p>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">8</span>
-  <span class="c1">; test / k arrays</span>
+  <span class="c1">; test k arrays</span>
   <span class="c1">; 1. A way to convert a i-array to a k-array by taking a reference</span>
   <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">99</span>
   <span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span> <span class="n">deref</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Xs</span><span class="p">)</span>
@@ -550,33 +548,15 @@ one array will be visible in the other. </p>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="n">Widgets</span><span class="o">&lt;/</span><span class="n">label</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
- <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">uuid</span><span class="o">/&gt;</span>
- <span class="o">&lt;</span><span class="n">bgcolor</span> <span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
- <span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>
 <li><a href="deref.html">deref</a></li>
 <li><a href="defer.html">defer</a></li>
-<li><a href="http://www.csounds.com/manual/html/schedule.html">schedule</a></li>
-<li><a href="http://www.csounds.com/manual/html/event.html">event</a></li>
-<li><a href="http://www.csounds.com/manual/html/release.html">release</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/schedule.html">schedule</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/event.html">event</a></li>
+<li><a href="http://www.csound.com/docs/manual/html/release.html">release</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>

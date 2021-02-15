@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -109,6 +111,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -274,7 +280,6 @@ the rest of the defined points.</p>
 <div class="codehilite"><pre><span></span><code><span class="nb">xout</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="kt">i</span><span class="n">sustindex</span><span class="p">,</span> <span class="kt">k</span><span class="n">val0</span><span class="p">,</span> <span class="p">[</span><span class="kt">k</span><span class="n">time1</span><span class="p">,</span> <span class="kt">k</span><span class="n">val1</span><span class="p">,</span> <span class="kt">k</span><span class="n">time2</span><span class="p">,</span> <span class="kt">k</span><span class="n">val2</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
 </code></pre></div>
 
-
 <h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>kgate</code>: whenever this switches from 0 to 1 a new envelope starts</li>
@@ -328,7 +333,7 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 <span class="nb">FLrun</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="n">trighold</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="nb">trighold</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">)</span>
     <span class="kt">k</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
     <span class="nb">printf</span> <span class="s">&quot;t: </span><span class="si">%f</span><span class="s">,  kenv: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">timeinstk</span><span class="p">(),</span> <span class="nb">timeinsts</span><span class="p">(),</span> <span class="kt">k</span><span class="n">env</span>
 
@@ -340,7 +345,7 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 <span class="kd">instr</span> <span class="nf">2</span>
     <span class="kt">i</span><span class="n">period</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="kt">i</span><span class="n">gatedur</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="n">trighold</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="kt">i</span><span class="n">period</span><span class="p">),</span> <span class="kt">i</span><span class="n">gatedur</span><span class="p">)</span>
+    <span class="kt">k</span><span class="n">gate</span> <span class="o">=</span> <span class="nb">trighold</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="kt">i</span><span class="n">period</span><span class="p">),</span> <span class="kt">i</span><span class="n">gatedur</span><span class="p">)</span>
     <span class="kt">a</span><span class="n">env</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mi">0</span>
     <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="kt">a</span><span class="n">env</span>
     <span class="nb">FLsetVal</span> <span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">gate</span><span class="p">),</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="kt">gi</span><span class="n">h1</span>
@@ -373,7 +378,6 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

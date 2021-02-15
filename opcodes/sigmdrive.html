@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -109,6 +111,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -277,17 +283,14 @@ different sigmoid equations are implemented.</p>
 <div class="codehilite"><pre><span></span><code>    <span class="n">out</span> <span class="o">=</span> <span class="n">tanh</span><span class="p">(</span><span class="n">in</span> <span class="o">*</span> <span class="n">drivefactor</span><span class="p">)</span>
 </code></pre></div>
 
-
 <h4 id="mode-1">mode 1</h4>
 <div class="codehilite"><pre><span></span><code>if in &gt; 0    -&gt; out = 1.0 - pow(1. - in, drivefactor)
 if in &lt;= 0   -&gt; out = pow(1. + x, drivefactor) - 1.0
 </code></pre></div>
 
-
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>    <span class="kt">a</span><span class="n">out</span> <span class="n">sigmdrive</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="n">xdrivefactor</span><span class="p">,</span> <span class="kt">k</span><span class="n">mode</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
-
 
 <h3 id="arguments">Arguments</h3>
 <ul>
@@ -351,7 +354,6 @@ if in &lt;= 0   -&gt; out = pow(1. + x, drivefactor) - 1.0
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

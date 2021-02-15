@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -109,6 +111,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -279,7 +285,6 @@ an instr number which can be used to create one</p>
 <span class="kt">i</span><span class="n">nstrnum</span>  <span class="n">uniqinstance</span> <span class="kt">S</span><span class="n">instrname</span>
 </code></pre></div>
 
-
 <h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>integer_instrnum</code>: the integer instrument number</li>
@@ -329,7 +334,7 @@ an instr number which can be used to create one</p>
   <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
     <span class="kt">k</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="kt">k</span><span class="n">inst</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="kt">k</span><span class="n">counter</span><span class="o">/</span><span class="mi">100</span>
-    <span class="n">printsk</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
+    <span class="nb">printsk</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
     <span class="nb">schedulek</span><span class="p">(</span><span class="kt">k</span><span class="n">inst</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
   <span class="k">endif</span>
 <span class="kd">endin</span>
@@ -388,7 +393,7 @@ an instr number which can be used to create one</p>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">20</span>
-  <span class="n">printsk</span> <span class="s">&quot;started </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span>
+  <span class="nb">printsk</span> <span class="s">&quot;started </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span>
   <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;finished </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p1</span>
 <span class="kd">endin</span>
 
@@ -402,7 +407,6 @@ an instr number which can be used to create one</p>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

@@ -66,6 +66,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
@@ -109,6 +111,10 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
                     </li>
@@ -267,15 +273,18 @@
 relative to the current working directory. Bear in mind that the current working 
 directory is not necessarily the directory of the csd being run but the directory 
 in which csound was started (either directly or via the API). </p>
+<p><code>pathAbsolute</code> will also expand <code>~</code> in unix platforms, so "~/Documents/foo.txt" will
+be expended to "/home/<user>/Documents/foo.txt" in linux and 
+"/Users/<user>/Documents/foo.txt" in macOS. Other environmental variables are NOT 
+expanded. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To calculate the absolute path in relation to the directory of the script
-being run, see <code>scriptDir</code></p>
+being run, see <code>scriptDir</code>.</p>
 </div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>Sabspath pathAbsolute Spath
 </code></pre></div>
-
 
 <h2 id="arguments">Arguments</h2>
 <ul>
@@ -312,10 +321,13 @@ being run, see <code>scriptDir</code></p>
     <span class="kt">S</span><span class="n">abs</span> <span class="o">=</span> <span class="n">pathAbsolute</span><span class="p">(</span><span class="kt">S</span><span class="n">path</span><span class="p">)</span>
     <span class="nb">prints</span> <span class="s">&quot;Path: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Absolute Path: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">abs</span>
 
-    <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;home/foo.ext&quot;</span>
+    <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;foo/bar.ext&quot;</span>
     <span class="kt">S</span><span class="n">abs</span> <span class="o">=</span> <span class="n">pathAbsolute</span><span class="p">(</span><span class="kt">S</span><span class="n">path</span><span class="p">)</span>
     <span class="nb">prints</span> <span class="s">&quot;Path: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Absolute Path: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">abs</span>
 
+    <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot; ~/Documents/mydoc.txt&quot;</span>
+    <span class="kt">S</span><span class="n">abs</span> <span class="o">=</span> <span class="n">pathAbsolute</span><span class="p">(</span><span class="kt">S</span><span class="n">path</span><span class="p">)</span>
+    <span class="nb">prints</span> <span class="s">&quot;Path: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Absolute Path: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">abs</span>
     <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
@@ -329,7 +341,6 @@ being run, see <code>scriptDir</code></p>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>
