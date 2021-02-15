@@ -101,8 +101,8 @@ i1 0 3
 
 ## See also
 
-* [release](http://www.csound.com/docs/manual/html/release.html)
-* [xtratim](http://www.csound.com/docs/manual/html/xtratim.html)
+* [release](http://www.csound.com/docs/manual/release.html)
+* [xtratim](http://www.csound.com/docs/manual/xtratim.html)
 * [defer](defer.md)
 
 ## Credits

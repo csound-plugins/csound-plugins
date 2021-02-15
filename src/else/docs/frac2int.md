@@ -80,7 +80,7 @@ i1 0 0.1
 
 ## See also
 
-* [frac](http://www.csound.com/docs/manual/html/frac.html)
+* [frac](http://www.csound.com/docs/manual/frac.html)
 
 ## Credits
 

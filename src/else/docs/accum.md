@@ -90,10 +90,10 @@ i1 0 0.1
 
 ## See also
 
-* [metro](http://www.csound.com/docs/manual/html/metro.html)
-* [changed](http://www.csound.com/docs/manual/html/changed.html)
-* [trighold](http://www.csound.com/docs/manual/html/trighold.html)
-* [printf](http://www.csound.com/docs/manual/html/printf.html)
+* [metro](http://www.csound.com/docs/manual/metro.html)
+* [changed](http://www.csound.com/docs/manual/changed.html)
+* [trighold](http://www.csound.com/docs/manual/trighold.html)
+* [printf](http://www.csound.com/docs/manual/printf.html)
 
 ## Credits
 

@@ -68,9 +68,9 @@ endif
 ## See also
 
 
-* [ftset](http://www.csound.com/docs/manual/html/ftset.html)
-* [ftslice](http://www.csound.com/docs/manual/html/ftslice.html)
-* [slicearray](http://www.csound.com/docs/manual/html/slicearray.html)
+* [ftset](http://www.csound.com/docs/manual/ftset.html)
+* [ftslice](http://www.csound.com/docs/manual/ftslice.html)
+* [slicearray](http://www.csound.com/docs/manual/slicearray.html)
 
 
 ## Credits

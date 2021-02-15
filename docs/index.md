@@ -80,6 +80,8 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [extendarray](opcodes/extendarray.md): Extend one array with the contents of a second array, in place 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
+* [ftfill](opcodes/ftfill.md): create a table and fill it with values (like fillarray but for f-tables) 
+* [ftnew](opcodes/ftnew.md): creates a new table of a given size 
 * [ftsetparams](opcodes/ftsetparams.md): Set metadata parameters of a table, as if it was loaded via GEN1 
 * [initerror](opcodes/initerror.md): Throws an error message at init 
 * [interp1d](opcodes/interp1d.md): Interpolate between elements of an array/table 

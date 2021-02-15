@@ -201,7 +201,7 @@ i "example4" 0 2
 ## See Also
 
 * [bisect](bisect.md)
-* [bpf](http://www.csound.com/docs/manual/html/bpf.html)
-* [linlin](http://www.csound.com/docs/manual/html/linlin.html)
-* [getrowlin](http://www.csound.com/docs/manual/html/getrowlin.html)
+* [bpf](http://www.csound.com/docs/manual/bpf.html)
+* [linlin](http://www.csound.com/docs/manual/linlin.html)
+* [getrowlin](http://www.csound.com/docs/manual/getrowlin.html)
 * [linenv](linenv.md)

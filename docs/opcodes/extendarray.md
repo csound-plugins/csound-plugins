@@ -43,10 +43,10 @@ extendarray iArr1, iArr2
 ## See also
 
 * [setslice](setslice.md)
-* [setrow](http://www.csound.com/docs/manual/html/setrow.html)
-* [slicearray](http://www.csound.com/docs/manual/html/slicearray.html))
-* [ftset](http://www.csound.com/docs/manual/html/ftset.html)
-* [ftslice](http://www.csound.com/docs/manual/html/ftslice.html)
+* [setrow](http://www.csound.com/docs/manual/setrow.html)
+* [slicearray](http://www.csound.com/docs/manual/slicearray.html))
+* [ftset](http://www.csound.com/docs/manual/ftset.html)
+* [ftslice](http://www.csound.com/docs/manual/ftslice.html)
 
 ## Credits
 

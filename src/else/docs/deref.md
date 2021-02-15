@@ -293,9 +293,9 @@ e 10
 
 * [ref](ref.md)
 * [defer](defer.md)
-* [schedule](http://www.csound.com/docs/manual/html/schedule.html)
-* [event](http://www.csound.com/docs/manual/html/event.html)
-* [release](http://www.csound.com/docs/manual/html/release.html)
+* [schedule](http://www.csound.com/docs/manual/schedule.html)
+* [event](http://www.csound.com/docs/manual/event.html)
+* [release](http://www.csound.com/docs/manual/release.html)
 
 ## Credits
 

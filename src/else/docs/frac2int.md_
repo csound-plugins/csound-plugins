@@ -53,7 +53,7 @@ ival2 frac2int ival, 1000  ; => 123
 
 ## See also
 
-* [frac](http://www.csound.com/docs/manual/html/frac.html)
+* [frac](http://www.csound.com/docs/manual/frac.html)
 
 ## Credits
 

@@ -78,11 +78,11 @@ schedule(2, 0, -1)
 
 ## See also
 
-* [ftslice](http://www.csound.com/docs/manual/html/ftslice.html)
-* [ftslicei](http://www.csound.com/docs/manual/html/ftslicei.html)
-* [loscil](http://www.csound.com/docs/manual/html/loscil.html)
-* [ftsr](http://www.csound.com/docs/manual/html/ftsr.html)
-* [ftchnls](http://www.csound.com/docs/manual/html/ftchnls.html)
+* [ftslice](http://www.csound.com/docs/manual/ftslice.html)
+* [ftslicei](http://www.csound.com/docs/manual/ftslicei.html)
+* [loscil](http://www.csound.com/docs/manual/loscil.html)
+* [ftsr](http://www.csound.com/docs/manual/ftsr.html)
+* [ftchnls](http://www.csound.com/docs/manual/ftchnls.html)
 
 ## Credits
 
