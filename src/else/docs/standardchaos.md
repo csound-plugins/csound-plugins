@@ -37,7 +37,8 @@ the following difference equations;
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -107,6 +108,7 @@ i1 0 100
 </bsbPanel>
 <bsbPresets>
 </bsbPresets>
+
 
 
 ```

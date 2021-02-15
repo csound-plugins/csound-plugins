@@ -43,7 +43,8 @@ aout diode_ringmod ain, kfreq, kdiode=0, kfeedback=0, knonlinear=0, koversample=
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 
@@ -158,6 +159,7 @@ i 100 0 3600
 </bsbPanel>
 <bsbPresets>
 </bsbPresets>
+
 
 
 ```

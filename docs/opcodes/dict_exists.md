@@ -32,7 +32,8 @@ Returns 1 if the dict exists, 0 otherwise
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -89,6 +90,7 @@ i 2 0 1
 i 3 4 4
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

@@ -61,7 +61,8 @@ given opcode. The same applies for the output arguments
 
 [LISTEN](https://raw.githubusercontent.com/gesellkammer/csound-plugins/master/src/poly/examples/polyseq.mp3)
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -149,6 +150,7 @@ i 2 5 20
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

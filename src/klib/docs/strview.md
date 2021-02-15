@@ -34,7 +34,8 @@ string returned by `strview` should not be modified. This is not enforced.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -109,6 +110,7 @@ i "test_same_idx" 0 1
 ; i "test_strview" 0 1
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

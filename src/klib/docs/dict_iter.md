@@ -71,7 +71,8 @@ break:
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -129,6 +130,7 @@ i 1 0 0.05
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

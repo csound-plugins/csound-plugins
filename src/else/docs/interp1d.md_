@@ -16,14 +16,23 @@ floor, exponential and cubic.
 Together with `bisect` it can be used to generate any possible 
 breakpoint-function configuration.
 
+**NB**: interp1d performs the opossite operation of `bisect`
+
+**NB2**: when used with a table the `param` value can be given within the string, 
+as "exp=1.5" or "smooth=0.7". For example, `kout = interp1d(kidx, itab, "exp=1.5")`
+
+!!! Note
+
+    At the moment the interpolation mode is set at init time and can't be modified
+
 ## Syntax
 
 ```csound
-kout   interp1d kidx, xarr[], Smode="linear"
-aout   interp1d aidx, xarr[], Smode="linear"
-iout   interp1d iidx, iarr[], Smode="linear"
-kout[] interp1d kidx[], xarr[], Smode="linear"
-iout[] interp1d iidx[], iarr[], Smode="linear"
+kout   interp1d kidx, xarr[], Smode="linear", kparam=0
+aout   interp1d aidx, xarr[], Smode="linear", kparam=0
+iout   interp1d iidx, iarr[], Smode="linear", kparam=0
+kout[] interp1d kidx[], xarr[], Smode="linear", kparam=0
+iout[] interp1d iidx[], iarr[], Smode="linear", kparam=0
 
 kout   interp1d kidx, ktab, Smode="linear", kstep=1, koffset=0
 aout   interp1d aidx, ktab, Smode="linear", kstep=1, koffset=0
@@ -32,24 +41,23 @@ kout[] interp1d kidx[], ktab, Smode="linear", kstep=1, koffset=0
 iout[] interp1d iidx[], ktab, Smode="linear", kstep=1, koffset=0
 ```
     
-**NB**: mode can also be given as a number (see below)
-**NB2**: interp1d performs the opossite operation of `bisect`
-
 ## Arguments
 
 * `idx`: the index into the array/table. For example, using linear interpolation (see mode)
     an index of 1.5 will interpolate halfway between arr[1] and arr[2] 
 * `arr`: the array (1D) holding the data. 
 * `tab`: the table holding the data
-* `mode`: the interpolation mode. "linear", "cos", "floor", "cubic" or "exp=XX" where XX 
-    stands for the exponential desired. The mode can also be given as k-value, where
-    0:linear, -1:cos, -2:floor, -3: cubic, mode>0: exponential with
-    the value as exponent. All modes except cubic perform piecewise interpolation. cubic 
-    interpolation needs at least 4 elements. 
+* `mode`: the interpolation mode. Possible interpolations modes are: "linear", "cos", "floor", 
+  "cubic", "smooth" (smoothstep, see https://en.wikipedia.org/wiki/Smoothstep), 
+  "smoother" (perlin's smootherstep) or "exp" (exponential). "smoother" interpolation is almost
+  equal to "smooth" with param=0.7.
+* `param`: a parameter used by the interpolation mode. In "exp" mode, param sets the exponent
+  (2 will result in a quadratic curve). In "smooth" mode, param sets the number of extra
+  smoothsteps (default=0). Fractional smoothsteps are possible (see )
         
 ## Output
 
-* `out`: the result of[I] interpolating the array/table at the given index.  
+* `out`: the result of interpolating the array/table at the given index.
 
 ## Examples
 
@@ -59,7 +67,7 @@ iout[] interp1d iidx[], ktab, Smode="linear", kstep=1, koffset=0
 ## See Also
 
 * [bisect](bisect.md)
-* [bpf](http://www.csounds.com/manual/html/bpf.html)
-* [linlin](http://www.csounds.com/manual/html/linlin.html)
-* [getrowlin](http://www.csounds.com/manual/html/getrowlin.html)
+* [bpf](http://www.csound.com/docs/manual/html/bpf.html)
+* [linlin](http://www.csound.com/docs/manual/html/linlin.html)
+* [getrowlin](http://www.csound.com/docs/manual/html/getrowlin.html)
 * [linenv](linenv.md)

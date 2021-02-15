@@ -12,10 +12,16 @@ relative to the current working directory. Bear in mind that the current working
 directory is not necessarily the directory of the csd being run but the directory 
 in which csound was started (either directly or via the API). 
 
+`pathAbsolute` will also expand `~` in unix platforms, so "~/Documents/foo.txt" will
+be expended to "/home/<user>/Documents/foo.txt" in linux and 
+"/Users/<user>/Documents/foo.txt" in macOS. Other environmental variables are NOT 
+expanded. 
+
+
 !!! Note
 
     To calculate the absolute path in relation to the directory of the script
-    being run, see `scriptDir`
+    being run, see `scriptDir`.
 
 ## Syntax
 
@@ -35,7 +41,8 @@ in which csound was started (either directly or via the API).
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -59,10 +66,13 @@ instr 1
     Sabs = pathAbsolute(Spath)
     prints "Path: \"%s\", Absolute Path: \"%s\" \n", Spath, Sabs
 
-    Spath = "home/foo.ext"
+    Spath = "foo/bar.ext"
     Sabs = pathAbsolute(Spath)
     prints "Path: \"%s\", Absolute Path: \"%s\" \n", Spath, Sabs
-    
+
+    Spath = " ~/Documents/mydoc.txt"
+    Sabs = pathAbsolute(Spath)
+    prints "Path: \"%s\", Absolute Path: \"%s\" \n", Spath, Sabs
     turnoff
 endin
 
@@ -75,6 +85,7 @@ i1 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

@@ -38,7 +38,8 @@ extends the duration of an event by a given time.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -95,12 +96,13 @@ i1 0 3
 </CsoundSynthesizer>
 
 
+
 ```
 
 ## See also
 
-* [release](http://www.csounds.com/manual/html/release.html)
-* [xtratim](http://www.csounds.com/manual/html/xtratim.html)
+* [release](http://www.csound.com/docs/manual/html/release.html)
+* [xtratim](http://www.csound.com/docs/manual/html/xtratim.html)
 * [defer](defer.md)
 
 ## Credits

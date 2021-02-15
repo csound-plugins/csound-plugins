@@ -35,7 +35,8 @@ aout crackle kp
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -86,6 +87,7 @@ i 1 0 15
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

@@ -29,7 +29,8 @@ See [pathSplitExtk](pathSplitExtk.md) for a performance time version
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -67,6 +68,7 @@ i1 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

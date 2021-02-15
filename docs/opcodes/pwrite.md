@@ -54,7 +54,8 @@ pwrite instrnum:i, index:i|k, value:i|k
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -152,6 +153,7 @@ schedule "example2", 0, 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

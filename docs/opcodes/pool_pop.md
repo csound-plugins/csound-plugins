@@ -35,7 +35,8 @@ using it the value is returned to the pool with `pool_push`.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -156,6 +157,7 @@ schedule "example1", 0, -1
 </CsScore>
 
 </CsoundSynthesizer>
+
 
 ```
 

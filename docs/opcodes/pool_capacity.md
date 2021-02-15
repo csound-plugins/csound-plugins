@@ -45,7 +45,8 @@ size, see [pool_size](pool_size.md) for that)
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -82,6 +83,7 @@ i1 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

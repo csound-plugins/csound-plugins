@@ -51,7 +51,8 @@ kView[]  memview kSource[] [, istart=0, iend=0]
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -166,6 +167,7 @@ i3 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

@@ -50,7 +50,8 @@ kout, kfinished ramptrig ktrig, kdur, kvaluepost=1, kvaluepre=0
 ## Examples
 
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -109,6 +110,7 @@ i1 0 10
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

@@ -70,7 +70,8 @@ an opcode like `aout oscili 0.1, kfreq` will output an array of audio channels. 
 
 [LISTEN](https://raw.githubusercontent.com/gesellkammer/csound-plugins/master/src/poly/examples/poly.mp3)
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -205,6 +206,7 @@ i 2 9 50
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

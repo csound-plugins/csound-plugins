@@ -44,7 +44,8 @@ different sigmoid equations are implemented.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -92,6 +93,7 @@ i1 0 100
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

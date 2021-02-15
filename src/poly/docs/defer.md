@@ -58,7 +58,8 @@ without output make sense in this context. Useful opcodes are `print`, `prints`,
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -123,6 +124,7 @@ e 3
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

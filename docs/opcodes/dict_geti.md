@@ -28,7 +28,8 @@ init-time only. See [dict_get](dict_get.md) for any further details
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -71,6 +72,7 @@ i 1 0 0.01
 f 0 1
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

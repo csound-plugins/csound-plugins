@@ -44,7 +44,8 @@ a pool of variable size is created.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -88,6 +89,7 @@ e 5
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

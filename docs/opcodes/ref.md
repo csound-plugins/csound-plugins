@@ -26,19 +26,23 @@ one array will be visible in the other.
 
 ## Syntax
 
-    iref ref xArray, [iextrarefs=0]
+```csound
+
+iref ref xArray, [iextrarefs=0]
+
+```
 
 ## Arguments
 
-* `xArray`: the array to be referenced
-* `iextrarefs`: use this for the *niche* case where a reference is passed to an
+* **xArray**: the array to be referenced
+* **iextrarefs**: use this for the *niche* case where a reference is passed to an
   event scheduled at a point in time later that the end of the current event.
   Without this, the ref would go out of scope before the `deref` takes place. 
   Any extra ref must be matched with an extra deref (`kArr[] deref iref, 1`)
 
 ## Output
 
-* `iref`: an integer identifying the reference handle.
+* **iref**: an integer identifying the reference handle.
 
 ## Execution Time
 
@@ -46,21 +50,16 @@ one array will be visible in the other.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
--m0
--d
 --nosound
 </CsOptions>
 <CsInstruments>
 
-/*
-
-Example file for ref / deref 
-
-*/
+;; Example file for ref - deref
 
 sr     = 44100
 ksmps  = 64
@@ -100,7 +99,7 @@ instr 2
     iZs[] deref iref
     printarray iZs, "", "p1=2, iZs"
   else
-    prints "\n    >>> The reference has become invalid <<< \n"
+    prints "\n    The reference has become invalid\n"
   endif
   turnoff
 endin
@@ -126,14 +125,14 @@ instr 3
   ; starts after we end, we need an extra reference 
   schedule 4, p3+1, 0.1, ref(kXs, 1), 1
   
-  defer "prints", " <<< instr. 3 finished >>> \n"
+  defer "prints", "  --- instr. 3 finished --- \n"
 endin
 
 instr 4
   prints "instr. 4\n   "
   kView[] deref p4, p5
   printarray kView
-  defer "prints", " <<< instr. 4 finished >>> \n"
+  defer "prints", " --- instr. 4 finished --- \n"
   ; At deinition time the memory of the `iView` array is marked as deallocated.
   ; The handle (a global structure created by the `ref` opcode) which owns the memory,
   ; is signaled that no other clients of this data are alive. It deallocates the
@@ -267,7 +266,7 @@ instr 7
 endin
 
 instr 8
-  ; test / k arrays
+  ; test k arrays
   ; 1. A way to convert a i-array to a k-array by taking a reference
   iXs[] genarray 0, 99
   kXs[] deref ref(iXs)
@@ -300,35 +299,18 @@ e 10
 </CsScore>
 
 </CsoundSynthesizer>
-<bsbPanel>
- <label>Widgets</label>
- <objectName/>
- <x>0</x>
- <y>0</y>
- <width>0</width>
- <height>0</height>
- <visible>true</visible>
- <uuid/>
- <bgcolor mode="nobackground">
-  <r>255</r>
-  <g>255</g>
-  <b>255</b>
- </bgcolor>
-</bsbPanel>
-<bsbPresets>
-</bsbPresets>
+
 
 
 ```
-
 
 ## See also
 
 * [deref](deref.md)
 * [defer](defer.md)
-* [schedule](http://www.csounds.com/manual/html/schedule.html)
-* [event](http://www.csounds.com/manual/html/event.html)
-* [release](http://www.csounds.com/manual/html/release.html)
+* [schedule](http://www.csound.com/docs/manual/html/schedule.html)
+* [event](http://www.csound.com/docs/manual/html/event.html)
+* [release](http://www.csound.com/docs/manual/html/release.html)
 
 ## Credits
 

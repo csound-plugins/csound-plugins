@@ -66,7 +66,8 @@ Afterwords, slider values can be read via `jsfx_getslider`
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -152,6 +153,7 @@ i1 0 3600
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

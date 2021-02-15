@@ -48,7 +48,8 @@ via `jsfx`.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -147,6 +148,7 @@ i1 0 3600
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

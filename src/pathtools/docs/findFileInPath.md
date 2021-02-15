@@ -28,7 +28,8 @@ loading a sample. Returns the absolute path
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -75,6 +76,7 @@ i1 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

@@ -53,6 +53,7 @@ printarray iA
 kB[] init 10
 ; if the condition is met setslice will set the even indexes
 ; between 0 to 6 of kB to -1 
+
 if kvalue = 1 then
     setslice kB, -1, 0, 6, 2
 endif
@@ -67,9 +68,9 @@ endif
 ## See also
 
 
-* [ftset](http://www.csounds.com/manual/html/ftset.html)
-* [ftslice](http://www.csounds.com/manual/html/ftslice.html)
-* [slicearray](http://www.csounds.com/manual/html/slicearray.html)
+* [ftset](http://www.csound.com/docs/manual/html/ftset.html)
+* [ftslice](http://www.csound.com/docs/manual/html/ftslice.html)
+* [slicearray](http://www.csound.com/docs/manual/html/slicearray.html)
 
 
 ## Credits

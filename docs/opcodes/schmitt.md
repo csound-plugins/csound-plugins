@@ -49,7 +49,8 @@ xout  schmitt xin, khigh, klow
 
 ![](assets/schmitt.gif)
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -102,6 +103,7 @@ i1 0 100
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

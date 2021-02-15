@@ -28,7 +28,8 @@ Given a path `/path/to/filename.txt`, split it in `/path/to` and `filename.txt`.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -66,6 +67,7 @@ i1 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

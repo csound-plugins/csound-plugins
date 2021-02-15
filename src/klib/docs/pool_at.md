@@ -37,7 +37,8 @@ the size of the pool (the number of items in it, not the capacity, see
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -85,6 +86,7 @@ i1 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

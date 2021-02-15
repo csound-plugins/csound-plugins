@@ -36,7 +36,8 @@ kout  perlin3 kx, ky, kz
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 
@@ -150,6 +151,7 @@ i "perlin3" 0 300
 </bsbPanel>
 <bsbPresets>
 </bsbPresets>
+
 
 
 ```

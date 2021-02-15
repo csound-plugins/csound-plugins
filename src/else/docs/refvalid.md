@@ -84,9 +84,9 @@ endin
 * [deref](deref.md)
 * [ref](ref.md)
 * [defer](defer.md)
-* [schedule](http://www.csounds.com/manual/html/schedule.html)
-* [event](http://www.csounds.com/manual/html/event.html)
-* [release](http://www.csounds.com/manual/html/release.html)
+* [schedule](http://www.csound.com/docs/manual/html/schedule.html)
+* [event](http://www.csound.com/docs/manual/html/event.html)
+* [release](http://www.csound.com/docs/manual/html/release.html)
 
 ## Credits
 

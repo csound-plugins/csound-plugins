@@ -56,7 +56,7 @@ Multiple (parallel or sequential) instances of an opcode
 
 ## jsfx
 
-A csound interface to the opensource implementation of jsfx
+A csound interface to the opensource implementation of jsfx (a jitted language for dsp)
 
 * [jsfx](opcodes/jsfx.md): Instantiates and runs a jsfx script 
 * [jsfx_new](opcodes/jsfx_new.md): Instantiates a jsfx script 
@@ -72,6 +72,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 
 * [accum](opcodes/accum.md): Simple accumulator of scalar values 
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
+* [bisect](opcodes/bisect.md): Returns the fractional index of a value within a sorted array / tab 
 * [crackle](opcodes/crackle.md): generates noise based on a chaotic equation 
 * [defer](opcodes/defer.md): Run an opcode at the end of an event 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
@@ -80,6 +81,8 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
 * [ftsetparams](opcodes/ftsetparams.md): Set metadata parameters of a table, as if it was loaded via GEN1 
+* [initerror](opcodes/initerror.md): Throws an error message at init 
+* [interp1d](opcodes/interp1d.md): Interpolate between elements of an array/table 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
 * [memview](opcodes/memview.md): Create a view into a table or another array 

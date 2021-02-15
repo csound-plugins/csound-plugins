@@ -50,7 +50,8 @@ output:i|k pread instrnum:i, index:i|k [, inotfound=-1]
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -95,6 +96,7 @@ i 2    1 0.1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

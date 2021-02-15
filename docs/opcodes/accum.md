@@ -24,20 +24,21 @@ aout accum kstep, initial=0, kreset=0
     
 ## Arguments
 
-* `kstep': the step to add. This value will be added at each iteration (at each k-cycle 
+* **kstep**: the step to add. This value will be added at each iteration (at each k-cycle 
     for `accum:k` and at each sample for `accum:a`)
-* `initial`: initial value of the accumulator
-* `kreset`: if 1, the accummulator is reset to the initial value
+* **initial**: initial value of the accumulator
+* **kreset**: if 1, the accummulator is reset to the initial value
 
 ## Output
 
-* `kout`: accumulated value
+* **kout**: accumulated value
 
 ## Execution Time
 
 * Init 
 
 ## Examples
+
 
 ```csound
 
@@ -54,9 +55,11 @@ if aindex[0] >= ilen - (ksmps*kspeed) then
 endif
 ifade = 1/ksmps
 out asig * linsegr(0, ifade, 1, ifade, 0)
+
 ```
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -81,15 +84,16 @@ i1 0 0.1
 </CsScore>
 </CsoundSynthesizer>
 
+
 ```
 
 
 ## See also
 
-* [metro](http://www.csounds.com/manual/html/metro.html)
-* [changed](http://www.csounds.com/manual/html/changed.html)
-* [trighold](http://www.csounds.com/manual/html/trighold.html)
-* [printf](http://www.csounds.com/manual/html/printf.html)
+* [metro](http://www.csound.com/docs/manual/html/metro.html)
+* [changed](http://www.csound.com/docs/manual/html/changed.html)
+* [trighold](http://www.csound.com/docs/manual/html/trighold.html)
+* [printf](http://www.csound.com/docs/manual/html/printf.html)
 
 ## Credits
 

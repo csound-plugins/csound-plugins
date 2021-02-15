@@ -2969,13 +2969,13 @@ static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
 /*
  * interparr
  *
- * kout  interparr kidx, kxs[], kmode=0
+ * kout  interparr kidx, kxs[], Smode="linear", kparam=0
  *
  * Interpolate between adjacent values of array kxs depending on the
  * index kidx. The fractional part of kidx is used for the interpolation
  * Used together with searchsorted can construct any bpf
  *
- * imode: 0=linear interp, -1=cos, > 0 = exponential
+ * Smode: one of "linear", "cos", "exp", "smooth", "floor"
  *
  * A normal bpf:
  * ky bpf kx, kxs[], kys[]   -> kidx searchsorted kx, kxs[]
@@ -2989,35 +2989,138 @@ static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
  * as arguments to the opcode.
  */
 
-static inline MYFLT _cubic_interpol(MYFLT frac, MYFLT ypre, MYFLT y0, MYFLT y1, MYFLT ypost) {
-    MYFLT frac2 = frac*frac;
-    MYFLT a0 = ypost - y1 - ypre + y0;
-    MYFLT a1 = ypre - y0 - a0;
-    MYFLT a2 = y1 - ypre;
-    MYFLT a3 = y0;
-    return a0*frac*frac2+a1*frac2+a2*frac+a3;
+enum InterpMethod {InterpError,
+                   InterpLinear,
+                   InterpCos,
+                   InterpFloor,
+                   InterpCubic,
+                   InterpExp,
+                   InterpSmooth,
+                   InterpSmoother
+                  };
+
+
+// t is a value that goes from 0 to 1 to interpolate in a C1 continuous way across
+// uniformly sampled data points.
+// when t is 0, this will return B.  When t is 1, this will return C.
+static inline MYFLT _cubic_interpol(MYFLT t, MYFLT A, MYFLT B, MYFLT C, MYFLT D) {
+    MYFLT a = -A/2.0 + (3.0*B)/2.0 - (3.0*C)/2.0 + D/2.0;
+    MYFLT b = A - (5.0*B)/2.0 + 2.0*C - D / 2.0;
+    MYFLT c = -A/2.0 + C/2.0;
+    MYFLT d = B;
+
+    return a*t*t*t + b*t*t + c*t + d;
 }
+
+static inline MYFLT _exp_interpol(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT expon) {
+    return y0 + (y1 - y0) * POWER(frac, expon);
+}
+
+static inline MYFLT _smooth_interpol2(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT param) {
+    MYFLT frac2 = frac*frac*(3 - 2*frac);
+    if(param > 0) {
+        for(int i=0; i<(int)param; i++) {
+            frac2 = frac2*frac2*(3 - 2*frac2);
+        }
+    }
+    return y0 + (y1 - y0) * frac2;
+}
+
+static inline MYFLT _smooth_interpol(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT param) {
+    if(param==0) {
+        MYFLT frac2 = frac*frac*(3 - 2*frac);
+        return y0 + (y1 - y0) * frac2;
+    }
+    MYFLT paramint;
+    MYFLT paramfrac = modf(param, &paramint);
+    MYFLT frac1 = frac*frac*(3-2*frac);
+    for(int i=0; i<(int)paramint; i++) {
+        frac1 = frac1*frac1*(3-2*frac1);
+    }
+    if(paramfrac == 0) {
+        return y0 + (y1 - y0) * frac1;
+    }
+    MYFLT frac2 = frac1*frac1*(3 - 2*frac1);
+    // MYFLT val0 = y0 + (y1 - y0) * frac1;
+    // MYFLT val1 = y0 + (y1 - y0) * frac2;
+    // return val0 + (val1-val0)*paramfrac;
+    // this is a simplified version of the above:
+    MYFLT ydiff = y0-y1;
+    return -frac1*ydiff + paramfrac*(frac1 - frac2)*ydiff + y0;
+}
+
+static inline MYFLT _smoother_interpol(MYFLT y0, MYFLT y1, MYFLT x, MYFLT param) {
+    // perlin's version of smoothstep, corresponds to ~0.7 smoothstep
+    MYFLT delta = x * x * x * (x * (x * 6. - 15.) + 10.);
+    return y0 + (y1-y0) * delta;
+}
+
 
 typedef struct {
     OPDS h;
     MYFLT *out;
     MYFLT *idx;
     ARRAYDAT *arr;
-    void *mode;
-    char modetype;
-    MYFLT modeval;
+    STRINGDAT *mode;
+    MYFLT *param;
+    enum InterpMethod method;
 } INTERPARR_x_xK;
 
 
+static enum InterpMethod _interp_parse_mode(char *s) {
+    if(!strcmp(s, "linear"))
+        return InterpLinear;
+    else if(!strcmp(s, "cos"))
+        return InterpCos;
+    else if(!strcmp(s, "floor"))
+        return InterpFloor;
+    else if(!strcmp(s, "cubic"))
+        return InterpCubic;
+    else if(!strcmp(s, "exp"))
+        return InterpExp;
+    else if(!strcmp(s, "smooth"))
+        return InterpSmooth;
+    else if(!strcmp(s, "smoother"))
+        return InterpSmoother;
+    return InterpError;
+}
+
+static enum InterpMethod _interp_parse_mode_with_param(char *s, MYFLT *param) {
+    if(!strcmp(s, "linear"))
+        return InterpLinear;
+    else if(!strcmp(s, "cos"))
+        return InterpCos;
+    else if(!strcmp(s, "floor"))
+        return InterpFloor;
+    else if(!strcmp(s, "cubic"))
+        return InterpCubic;
+    else if(!strncmp(s, "exp=", 4)) {
+        *param = atof(&s[4]);
+        return InterpExp;
+    }
+    else if(!strncmp(s, "smooth=", 7)) {
+        *param = atof(&(s[7]));
+        return InterpSmooth;
+    }
+    else if(!strcmp(s, "smooth")) {
+        *param = 0;
+        return InterpSmooth;
+    }
+    return InterpError;
+}
+
+
 static int32_t interparr_k_kK_init(CSOUND *csound, INTERPARR_x_xK *p) {
-    p->modetype = 'f';
+    IGN(csound);
+    p->method = p->mode != NULL ? _interp_parse_mode(p->mode->data) : InterpLinear;
     return OK;
 }
+
 
 static int32_t interparr_k_kK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
     IGN(csound);
     MYFLT idx = *p->idx;
-    MYFLT intpart, ypre, ypost, frac2, a0, a1, a2, a3;
+    MYFLT intpart, ypre, ypost;
     MYFLT frac = modf(idx, &intpart);
     MYFLT *data = p->arr->data;
     uint64_t len = p->arr->sizes[0];
@@ -3034,61 +3137,39 @@ static int32_t interparr_k_kK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
 
     MYFLT y0 = data[i];
     MYFLT y1 = data[i+1];
-    MYFLT mode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
-    if(mode >= 0) {
-        *p->out = y0 + (y1 - y0) * POWER(frac, mode);
-    } else {
-        switch(-(int)mode) {
-        case 0:   // linear
-            *p->out = y0 + (y1 - y0)*frac;
-            break;
-        case 1:  // cos
-            *p->out = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
-            break;
-        case 2:  // floor
-            *p->out = y0;
-            break;
-        case 3:  // cubic
-            ypre = i > 0 ? data[i-1] : y0;
-            ypost = len - i > 3 ? data[i+2] : y1;
-            *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
-            break;
-        }
+    switch(p->method) {
+    case InterpExp:
+        *p->out = _exp_interpol(y0, y1, frac, *p->param);
+        break;
+    case InterpLinear:
+        *p->out = y0 + (y1 - y0)*frac;
+        break;
+    case InterpCos:
+        *p->out = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+        break;
+    case InterpFloor:
+        *p->out = y0;
+        break;
+    case InterpCubic:
+        // this only is a true continuous shape is the x coord is periodic!
+        ypre = i > 0 ? data[i-1] : y0;
+        ypost = len - i > 2 ? data[i+2] : y1;
+        *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
+        break;
+    case InterpSmooth:
+        *p->out = _smooth_interpol(y0, y1, frac, *p->param);
+        break;
+    case InterpSmoother:
+        *p->out = _smoother_interpol(y0, y1, frac, *p->param);
+        break;
+    default:
+        *p->out = 0;
     }
     return OK;
 }
 
 static int32_t interparr_k_kK_ir(CSOUND *csound, INTERPARR_x_xK *p) {
     interparr_k_kK_init(csound, p);
-    return interparr_k_kK_kr(csound, p);
-}
-
-
-static MYFLT _interp_parse_mode(char *s) {
-    if(!strcmp(s, "linear"))
-        return 0;
-    else if(!strcmp(s, "cos"))
-        return -1;
-    else if(!strcmp(s, "floor"))
-        return -2;
-    else if(!strcmp(s, "cubic"))
-        return -3;
-    else if(!strncmp(s, "exp=", 4)) {
-        return atof(&s[4]);
-    }
-    return 0;
-}
-
-static int32_t interparr_k_kKS_init(CSOUND *csound, INTERPARR_x_xK *p) {
-    IGN(csound);
-    p->modetype = 's';
-    STRINGDAT *modestr = (STRINGDAT *)p->mode;
-    p->modeval = _interp_parse_mode(modestr->data);
-    return OK;
-}
-
-static int32_t interparr_k_kKS_ir(CSOUND *csound, INTERPARR_x_xK *p) {
-    interparr_k_kKS_init(csound, p);
     return interparr_k_kK_kr(csound, p);
 }
 
@@ -3102,7 +3183,8 @@ static int32_t interparr_a_aK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
-    MYFLT imode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
+    int method = p->method;
+    MYFLT param = *p->param;
     for(n=offset; n<nsmps; n++) {
         idx = in[n];
         intpart = modf(idx, &frac);
@@ -3119,14 +3201,28 @@ static int32_t interparr_a_aK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
 
         MYFLT y0 = data[i];
         MYFLT y1 = data[i+1];
-        if(imode == 0) {
+        switch(method) {
+        case InterpLinear:
             out[n] = y0 + (y1 - y0)*frac;
-        } else if(imode == -1) {
+            break;
+        case InterpCos:
             out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
-        } else if(imode >= 0) {
-            out[n] = y0 + (y1 - y0) * POWER(frac, imode);
-        } else if(imode == -2) {
+            break;
+        case InterpFloor:
             out[n] = y0;
+            break;
+        case InterpSmooth:
+            out[n] = _smooth_interpol(y0, y1, frac, param);
+            break;
+        case InterpSmoother:
+            out[n] = _smoother_interpol(y0, y1, frac, param);
+            break;
+        case InterpExp:
+            out[n] = _exp_interpol(y0, y1, frac, param);
+            break;
+        case InterpCubic:
+            out[n] = 0;
+            break;
         }
     }
     return OK;
@@ -3137,27 +3233,18 @@ typedef struct {
     ARRAYDAT *out;
     ARRAYDAT *idx;
     ARRAYDAT *arr;
-    void *mode;
-    char modetype;
-    MYFLT modeval;
+    STRINGDAT *mode;
+    MYFLT *param;
+    enum InterpMethod method;
 } INTERPARR_K_KK;
 
 static int32_t interparr_K_KK_init(CSOUND *csound, INTERPARR_K_KK *p) {
-    p->modetype = 'f';
+    p->method = p->mode != NULL ? _interp_parse_mode(p->mode->data) : InterpLinear;
     if(p->idx->dimensions > 1)
         return INITERR("idx array should be 1D");
     if(p->arr->dimensions > 1)
         return INITERR("data array should be 1D");
     tabinit(csound, p->out, p->idx->sizes[0]);
-    return OK;
-}
-
-static int32_t interparr_K_KKS_init(CSOUND *csound, INTERPARR_K_KK *p) {
-    if(interparr_K_KK_init(csound, p) != OK)
-        return NOTOK;
-    p->modetype = 's';
-    STRINGDAT *modestr = (STRINGDAT *)p->mode;
-    p->modeval = _interp_parse_mode(modestr->data);
     return OK;
 }
 
@@ -3169,13 +3256,8 @@ static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
     size_t len = p->arr->sizes[0];
     size_t numitems = p->idx->sizes[0];
     tabcheck(csound, p->out, numitems, &(p->h));
-    MYFLT imode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
-    int method;
-    if(imode > 0) {
-        method = 4;
-    } else {
-        method = -(int)imode;
-    }
+    int method = p->method;
+    MYFLT param = *p->param;
     MYFLT data0 = data[0];
     MYFLT data1 = data[len-1];
     for(size_t n=0; n < numitems; n++) {
@@ -3195,19 +3277,28 @@ static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
         MYFLT y0 = data[i];
         MYFLT y1 = data[i+1];
         switch (method) {
-        case 0:
+        case InterpLinear:
             out[n] = y0 + (y1 - y0)*frac;
             break;
-        case 1:
+        case InterpCos:
             out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
             break;
-        case 2:
+        case InterpFloor:
             out[n] = y0;
             break;
-        case 3:
+        case InterpCubic:
             ypre = i > 0 ? data[i-1] : y0;
             ypost = len - i > 3 ? data[i+2] : y1;
             out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
+            break;
+        case InterpExp:
+            out[n] = _exp_interpol(y0, y1, frac, param);
+            break;
+        case InterpSmooth:
+            out[n] = _smooth_interpol(y0, y1, frac, param);
+            break;
+        case InterpSmoother:
+            out[n] = _smoother_interpol(y0, y1, frac, param);
             break;
         default:
             out[n] = 0;
@@ -3221,21 +3312,17 @@ static int32_t interparr_K_KK_ir(CSOUND *csound, INTERPARR_K_KK *p) {
     return interparr_K_KK_kr(csound, p);
 }
 
-static int32_t interparr_K_KKS_ir(CSOUND *csound, INTERPARR_K_KK *p) {
-    interparr_K_KKS_init(csound, p);
-    return interparr_K_KK_kr(csound, p);
-}
 
 typedef struct {
     OPDS h;
     MYFLT *out;
     MYFLT *idx, *tabnum;
-    void *mode;
+    STRINGDAT *mode;
     MYFLT *step, *offset;
     FUNC *ftp;
     int lasttab;
-    char modetype;
-    MYFLT modeval;
+    MYFLT param;
+    enum InterpMethod method;
 } INTERPTAB;
 
 static int32_t interptab_init(CSOUND *csound, INTERPTAB *p) {
@@ -3249,16 +3336,10 @@ static int32_t interptab_init(CSOUND *csound, INTERPTAB *p) {
     p->lasttab = (int)*p->tabnum;
     if(*p->step <= 0)
         *p->step = 1;
-    p->modetype = 'f';
-    return OK;
-}
-
-static int32_t interptab_S_init(CSOUND *csound, INTERPTAB *p) {
-    if(interptab_init(csound, p) != OK)
-        return NOTOK;
-    p->modetype = 's';
-    STRINGDAT *modestr = (STRINGDAT *)p->mode;
-    p->modeval = _interp_parse_mode(modestr->data);
+    if(p->mode == NULL)
+        p->method = InterpLinear;
+    else
+        p->method = _interp_parse_mode_with_param(p->mode->data, &(p->param));
     return OK;
 }
 
@@ -3272,7 +3353,7 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
         return OK;
     }
 
-    MYFLT intpart, mu;
+    MYFLT intpart;
     MYFLT frac = modf(idx, &intpart);
 
     uint64_t len = p->ftp->flen;
@@ -3291,27 +3372,35 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
     }
     MYFLT y0 = data[i];
     MYFLT y1 = data[i+step];
-    MYFLT mode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
     MYFLT ypre, ypost;
-    if(mode >= 0) {
-        *p->out = y0 + (y1 - y0) * POWER(frac, mode);
-    } else {
-        switch(-(int)mode) {
-        case 0:   // linear
-            *p->out = y0 + (y1 - y0)*frac;
-            break;
-        case 1:  // cos
-            *p->out = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
-            break;
-        case 2:  // floor
-            *p->out = y0;
-            break;
-        case 3:  // cubic
-            ypre = i > 0 ? data[i-1] : y0;
-            ypost = len - i > 3 ? data[i+2] : y1;
-            *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
-            break;
-        }
+    switch(p->method) {
+    case InterpLinear:
+        *p->out = y0 + (y1 - y0)*frac;
+        break;
+    case InterpCos:
+        *p->out = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+        break;
+    case InterpFloor:
+        *p->out = y0;
+        break;
+    case InterpCubic:
+        ypre = i > 0 ? data[i-1] : y0;
+        ypost = len - i > 3 ? data[i+2] : y1;
+        *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
+        break;
+    case InterpSmooth:
+        *p->out = _smooth_interpol(y0, y1, frac, p->param);
+        break;
+    case InterpSmoother:
+        *p->out = _smoother_interpol(y0, y1, frac, p->param);
+        break;
+    case InterpExp:
+        *p->out = _exp_interpol(y0, y1, frac, p->param);
+        break;
+    default:
+        MSGF("Invalid interpolation mode: %s\n", p->mode->data);
+        *p->out = 0;
+        return NOTOK;
     }
     return OK;
 }
@@ -3321,13 +3410,6 @@ static int32_t interptab_ir(CSOUND *csound, INTERPTAB *p) {
         return NOTOK;
     return interptab_kr(csound, p);
 }
-
-static int32_t interptab_S_ir(CSOUND *csound, INTERPTAB *p) {
-    if(interptab_S_init(csound, p) == NOTOK)
-        return NOTOK;
-    return interptab_kr(csound, p);
-}
-
 
 static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
     IGN(csound);
@@ -3349,8 +3431,6 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
     }
 
     MYFLT *data = p->ftp->ftable;
-    MYFLT mode = p->modetype == 'f' ? *((MYFLT *)p->mode) : p->modeval;
-
     MYFLT idx, intpart, frac, y0, y1, ypre, ypost;
     uint64_t len = p->ftp->flen;
 
@@ -3360,8 +3440,9 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
     // we branch outside the loop depending on the interpolation mode
     MYFLT firstelem = data[0];
     MYFLT lastelem = data[len - step + taboffset];
-    if(mode == 0. || mode == 1.) {
-        // linear interp
+    MYFLT param = p->param;
+    switch(p->method) {
+    case InterpLinear:
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
@@ -3378,8 +3459,8 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
                 out[n] = y0 + (y1 - y0)*frac;
             }
         }
-    } else if (mode == -1. ) {
-        // cos interp
+        break;
+    case InterpCos:
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
@@ -3396,8 +3477,8 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
                 out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
             }
         }
-    } else if (mode > 0. ) {
-        // expon
+        break;
+    case InterpExp:
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
@@ -3411,11 +3492,11 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
             else {
                 y0 = data[i];
                 y1 = data[i+step];
-                out[n] = y0 + (y1 - y0) * POWER(frac, mode);
+                out[n] = _exp_interpol(y0, y1, frac, param);
             }
         }
-    } else if (mode == -2) {
-        // floor interp
+        break;
+    case InterpFloor:
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
@@ -3427,7 +3508,8 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
             else
                 out[n] = data[i];
         }
-    } else if (mode == -3) {  // cubic interpol
+        break;
+    case InterpCubic:
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
@@ -3446,10 +3528,41 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
                 out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
             }
         }
-    } else {
-        return PERFERRF("Interpolation mode should be 0 (linear), -1 (cos), -2 (floor),"
-                        "-3 (cubic) or a value > 0 for exponential interpolation "
-                        "(got %f)", mode);
+        break;
+    case InterpSmooth:
+        for(n=offset; n < nsmps; n++) {
+            idx = in[n];
+            frac = modf(idx, &intpart);
+            uint64_t i = (uint64_t)intpart * step + taboffset;
+            if(i <= 0)
+                out[n] = firstelem;
+            else if(i>= len - 1)
+                out[n] = lastelem;
+            else {
+                y0 = data[i];
+                y1 = data[i+step];
+                out[n] = _smooth_interpol(y0, y1, frac, param);
+            }
+        }
+        break;
+    case InterpSmoother:
+        for(n=offset; n < nsmps; n++) {
+            idx = in[n];
+            frac = modf(idx, &intpart);
+            uint64_t i = (uint64_t)intpart * step + taboffset;
+            if(i <= 0)
+                out[n] = firstelem;
+            else if(i>= len - 1)
+                out[n] = lastelem;
+            else {
+                y0 = data[i];
+                y1 = data[i+step];
+                out[n] = _smoother_interpol(y0, y1, frac, param);
+            }
+        }
+        break;
+    default:
+        return PERFERRF("Invalid interpolation method %s", p->mode->data);
     }
     return OK;
 }
@@ -4059,32 +4172,33 @@ static OENTRY localops[] = {
     { "perlin3.k_kkk", S(PERLIN3), 0, 3, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk},
     { "perlin3.a_aaa", S(PERLIN3), 0, 3, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa},
 
-    { "interp1d.k_kK", S(INTERPARR_x_xK), 0, 3, "k", "k.[]O", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr},
-    { "interp1d.k_kKS", S(INTERPARR_x_xK), 0, 3, "k", "k.[]S", (SUBR)interparr_k_kKS_init, (SUBR)interparr_k_kK_kr},
+    { "interp1d.k_kK", S(INTERPARR_x_xK), 0, 3, "k", "k.[]", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr},
+    { "interp1d.k_kKS", S(INTERPARR_x_xK), 0, 3, "k", "k.[]SO", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr},
 
-    { "interp1d.a_aK", S(INTERPARR_x_xK), 0, 3, "a", "a.[]O", (SUBR)interparr_k_kK_init, (SUBR)interparr_a_aK_kr},
-    { "interp1d.a_aKS", S(INTERPARR_x_xK), 0, 3, "a", "a.[]S", (SUBR)interparr_k_kKS_init, (SUBR)interparr_a_aK_kr},
+    { "interp1d.a_aKS", S(INTERPARR_x_xK), 0, 3, "a", "a.[]", (SUBR)interparr_k_kK_init, (SUBR)interparr_a_aK_kr},
+    { "interp1d.a_aK", S(INTERPARR_x_xK), 0, 3, "a", "a.[]SO", (SUBR)interparr_k_kK_init, (SUBR)interparr_a_aK_kr},
 
-    { "interp1d.i_iI", S(INTERPARR_x_xK), 0, 1, "i", "ii[]o", (SUBR)interparr_k_kK_ir},
-    { "interp1d.i_iIS", S(INTERPARR_x_xK), 0, 1, "i", "ii[]S", (SUBR)interparr_k_kKS_ir},
+    { "interp1d.i_iI", S(INTERPARR_x_xK), 0, 1, "i", "ii[]", (SUBR)interparr_k_kK_ir},
+    { "interp1d.i_iIS", S(INTERPARR_x_xK), 0, 1, "i", "ii[]So", (SUBR)interparr_k_kK_ir},
 
-    { "interp1d.K_KK", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]O", (SUBR)interparr_K_KK_init, (SUBR)interparr_K_KK_kr},
-    { "interp1d.K_KKS", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]S", (SUBR)interparr_K_KKS_init, (SUBR)interparr_K_KK_kr},
+    { "interp1d.K_KK", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]", (SUBR)interparr_K_KK_init, (SUBR)interparr_K_KK_kr},
+    { "interp1d.K_KKS", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]SO", (SUBR)interparr_K_KK_init, (SUBR)interparr_K_KK_kr},
 
-    { "interp1d.I_II", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]o", (SUBR)interparr_K_KK_ir},
-    { "interp1d.I_IIS", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]S", (SUBR)interparr_K_KKS_ir},
+    { "interp1d.I_II", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]", (SUBR)interparr_K_KK_ir},
+    { "interp1d.I_IIS", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]So", (SUBR)interparr_K_KK_ir},
 
     // kout interptab kin, ktab, kmode=0, kstep=1, koffset=0
-    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kkOPO", (SUBR)interptab_init, (SUBR)interptab_kr},
-    { "interp1d.kS", S(INTERPTAB), 0, 3, "k", "kkOPS", (SUBR)interptab_S_init, (SUBR)interptab_kr},
+    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kkSPO", (SUBR)interptab_init, (SUBR)interptab_kr},
+    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kk", (SUBR)interptab_init, (SUBR)interptab_kr},
 
-    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "iiopo", (SUBR)interptab_ir},
-    { "interp1d.iS", S(INTERPTAB), 0, 1, "i", "iiSpo", (SUBR)interptab_S_ir},
+    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "iiSpo", (SUBR)interptab_ir},
+    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "ii", (SUBR)interptab_ir},
 
-    { "interp1d.a",  S(INTERPTAB), 0, 3, "k", "kkOPO", (SUBR)interptab_init, (SUBR)interptab_a_a_kr},
-    { "interp1d.aS", S(INTERPTAB), 0, 3, "k", "kkSPO", (SUBR)interptab_S_init, (SUBR)interptab_a_a_kr},
+    { "interp1d.a",  S(INTERPTAB), 0, 3, "a", "akSPO", (SUBR)interptab_init, (SUBR)interptab_a_a_kr},
+    { "interp1d.a",  S(INTERPTAB), 0, 3, "a", "ak", (SUBR)interptab_init, (SUBR)interptab_a_a_kr},
 
-    // TODO : kout[] interp1d kin[], ktab, kmode=0,kstep=1, koffset=0
+
+    // TODO : kout[] interp1d kin[], ktab, Smode=0,kstep=1, koffset=0
 
 
     { "bisect.k_k", S(BISECT), 0, 3, "k", "k.[]", (SUBR)bisect_init, (SUBR)bisect_kr},

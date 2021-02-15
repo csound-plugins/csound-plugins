@@ -44,7 +44,8 @@ instrnum  uniqinstance Sinstrname
 ## Examples
 
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -152,6 +153,7 @@ i "example1" 0 10
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

@@ -111,7 +111,8 @@ i 1 0 2
 </CsoundSynthesizer> 
 ```
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -393,6 +394,7 @@ i 200 0 1
 f 0 1
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

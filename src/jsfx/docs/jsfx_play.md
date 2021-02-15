@@ -49,7 +49,8 @@ compiles the script and returns a handle.
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -148,6 +149,7 @@ i1 0 3600
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

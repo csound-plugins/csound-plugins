@@ -150,7 +150,6 @@ i 1 0 2
 
 * [dict_free](dict_free.md)
 * [dict_set](dict_set.md)
-* [dict_newk](dict_newk.md)
 
 
 ## Credits

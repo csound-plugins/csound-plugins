@@ -49,7 +49,8 @@ depending on the type definition of the array
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -110,6 +111,7 @@ endin
 i 1 0 0.1
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

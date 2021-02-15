@@ -34,8 +34,16 @@ templatestr = open(args.templatefile).read()
 examplestr = open(examplefile).read()
 
 examplecode = open(examplefile).read()
-examplestr = f"```csound \n\n{examplecode}\n\n```"
-
+# examplestr = f"```csound \n\n{examplecode}\n\n```"
+examplestr = "\n".join([
+    "```csound",
+    "",
+    "",
+    examplecode,
+    "",
+    "",
+    "```"
+])
 filledstr = templatestr.format(example=examplestr)
 outfile = args.outfile or os.path.splitext(args.templatefile)[0] + '.md'
 open(outfile, "w").write(filledstr)

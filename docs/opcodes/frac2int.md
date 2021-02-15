@@ -48,7 +48,8 @@ ival2 frac2int ival, 1000  ; => 123
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -73,12 +74,13 @@ i1 0 0.1
 </CsScore>
 </CsoundSynthesizer>
 
+
 ```
 
 
 ## See also
 
-* [frac](http://www.csounds.com/manual/html/frac.html)
+* [frac](http://www.csound.com/docs/manual/html/frac.html)
 
 ## Credits
 

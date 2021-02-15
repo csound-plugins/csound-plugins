@@ -37,7 +37,8 @@ filling the pool with values from 1 to the given size
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -96,6 +97,7 @@ i "test2" 0.2 0.1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

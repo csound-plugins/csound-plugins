@@ -43,7 +43,8 @@ as many segments as desired. `ktimex` values are defined as time interval betwee
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 
@@ -121,6 +122,7 @@ endin
 i4 0 100
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

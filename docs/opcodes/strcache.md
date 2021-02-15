@@ -45,7 +45,8 @@ the input variable
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -120,6 +121,7 @@ i "test_same_idx" 0 1
 ; i "test_strview" 0 1
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

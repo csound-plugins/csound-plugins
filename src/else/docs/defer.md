@@ -79,10 +79,10 @@ f 0 4
 ## See also
 
 * [defer](defer.md)
-* [schedule](http://www.csounds.com/manual/html/schedule.html)
-* [event](http://www.csounds.com/manual/html/event.html)
-* [release](http://www.csounds.com/manual/html/release.html)
-* [xtratim](http://www.csounds.com/manual/html/xtratim.html)
+* [schedule](http://www.csound.com/docs/manual/html/schedule.html)
+* [event](http://www.csound.com/docs/manual/html/event.html)
+* [release](http://www.csound.com/docs/manual/html/release.html)
+* [xtratim](http://www.csound.com/docs/manual/html/xtratim.html)
 
 ## Credits
 

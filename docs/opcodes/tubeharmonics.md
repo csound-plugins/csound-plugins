@@ -38,7 +38,8 @@ A port of `REAPER`'s "Tube Harmonics" jsfx plugin
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -128,6 +129,7 @@ i1 0 300
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

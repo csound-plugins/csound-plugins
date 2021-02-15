@@ -36,7 +36,8 @@ If kinterp==1, then output is the result of interpolation between two generated 
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -84,6 +85,7 @@ i1 0 100
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```
