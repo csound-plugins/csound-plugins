@@ -108,6 +108,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
@@ -277,6 +281,7 @@ the script being run. For example, if csound is launched as:</p>
 <div class="codehilite"><pre><span></span><code>$ /home/foo/&gt; csound subdir/myscript.csd
 </code></pre></div>
 
+
 <p>The current working dir is <code>/home/foo</code>, whereas the script directory
 is <code>/home/foo/subdir</code></p>
 <p>This is useful when communicating to another process which is not aware of
@@ -285,6 +290,7 @@ the script being run</p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>Spath scriptDir
 </code></pre></div>
+
 
 <h2 id="arguments">Arguments</h2>
 <h2 id="output">Output</h2>
@@ -299,6 +305,7 @@ the script being run</p>
 <div class="codehilite"><pre><span></span><code><span class="kt">S</span><span class="n">path</span> <span class="n">scriptDir</span>
 <span class="nb">prints</span> <span class="s">&quot;The script is being run from this folder: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span>
 </code></pre></div>
+
 
 <h2 id="see-also">See also</h2>
 <ul>

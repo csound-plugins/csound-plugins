@@ -108,6 +108,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
@@ -295,6 +299,7 @@ as "exp=1.5" or "smooth=0.7". For example, <code>kout = interp1d(kidx, itab, "ex
 <span class="kt">i</span><span class="n">out</span><span class="p">[]</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">i</span><span class="n">idx</span><span class="p">[],</span> <span class="kt">k</span><span class="n">tab</span><span class="p">,</span> <span class="kt">S</span><span class="n">mode</span><span class="o">=</span><span class="s">&quot;linear&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
 
+
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>idx</code>: the index into the array/table. For example, using linear interpolation (see mode)
@@ -365,7 +370,7 @@ as "exp=1.5" or "smooth=0.7". For example, <code>kout = interp1d(kidx, itab, "ex
     <span class="c1">; scan ixs at k-rate</span>
     <span class="kt">k</span><span class="n">idx</span> <span class="o">=</span> <span class="nb">line</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="nb">lenarray</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">xs</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="kt">k</span><span class="n">out2</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">xs</span>
-    <span class="nb">println</span> <span class="s">&quot;kidx: </span><span class="si">%f</span><span class="s">, kout2: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">k</span><span class="n">out2</span>
+    <span class="n">println</span> <span class="s">&quot;kidx: </span><span class="si">%f</span><span class="s">, kout2: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">k</span><span class="n">out2</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">example2</span>
@@ -380,7 +385,7 @@ as "exp=1.5" or "smooth=0.7". For example, <code>kout = interp1d(kidx, itab, "ex
     <span class="kt">a</span><span class="n">amp</span> <span class="nb">interp</span> <span class="kt">k</span><span class="n">amp</span>
     <span class="kt">a</span><span class="n">1</span> <span class="nb">oscili</span> <span class="kt">a</span><span class="n">amp</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi1</span><span class="p">,</span> <span class="s">&quot;cubic&quot;</span><span class="p">))</span>
     <span class="kt">a</span><span class="n">2</span> <span class="nb">oscili</span> <span class="kt">a</span><span class="n">amp</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi2</span><span class="p">))</span>
-    <span class="nb">println</span> <span class="s">&quot;amp: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">rms</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">a</span><span class="n">amp</span><span class="p">)</span>
+    <span class="n">println</span> <span class="s">&quot;amp: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">rms</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">a</span><span class="n">amp</span><span class="p">)</span>
     <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">2</span>
 <span class="kd">endin</span>
 
@@ -420,7 +425,7 @@ as "exp=1.5" or "smooth=0.7". For example, <code>kout = interp1d(kidx, itab, "ex
     <span class="kt">k</span><span class="n">lin</span> <span class="o">=</span> <span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;linear&quot;</span><span class="p">)</span>
     <span class="kt">k</span><span class="n">cos</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;cos&quot;</span>
     <span class="kt">k</span><span class="n">floor</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;floor&quot;</span>
-    <span class="kt">k</span><span class="n">cub</span> <span class="o">=</span> <span class="nb">lag</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;cubic&quot;</span><span class="p">),</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="kt">k</span><span class="n">cub</span> <span class="o">=</span> <span class="n">lag</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;cubic&quot;</span><span class="p">),</span> <span class="mf">0.1</span><span class="p">)</span>
     <span class="kt">k</span><span class="n">exp</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;exp&quot;</span><span class="p">,</span> <span class="mi">2</span>
     <span class="kt">k</span><span class="n">smooth</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;smooth&quot;</span><span class="p">,</span> <span class="mi">0</span> 
     <span class="kt">k</span><span class="n">smooth2</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">ys</span><span class="p">,</span> <span class="s">&quot;smooth&quot;</span><span class="p">,</span> <span class="mi">1</span>
@@ -444,12 +449,13 @@ as "exp=1.5" or "smooth=0.7". For example, <code>kout = interp1d(kidx, itab, "ex
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
+
 <h2 id="see-also">See Also</h2>
 <ul>
 <li><a href="bisect.html">bisect</a></li>
-<li><a href="http://www.csound.com/docs/manual/html/bpf.html">bpf</a></li>
-<li><a href="http://www.csound.com/docs/manual/html/linlin.html">linlin</a></li>
-<li><a href="http://www.csound.com/docs/manual/html/getrowlin.html">getrowlin</a></li>
+<li><a href="http://www.csound.com/docs/manual/bpf.html">bpf</a></li>
+<li><a href="http://www.csound.com/docs/manual/linlin.html">linlin</a></li>
+<li><a href="http://www.csound.com/docs/manual/getrowlin.html">getrowlin</a></li>
 <li><a href="linenv.html">linenv</a></li>
 </ul>
               

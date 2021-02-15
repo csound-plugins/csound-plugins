@@ -108,6 +108,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
@@ -281,6 +285,7 @@ it is possible to use <code>poly</code> like this:</p>
 <span class="kt">a</span><span class="n">Out</span><span class="p">[]</span> <span class="n">poly</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;oscili&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span>
 </code></pre></div>
 
+
 <p>Notice that it is possible to set one value for each instance, as given by <code>kFreqs</code>, or
 one value to be shared by all instances, as given by the amplitude <code>0.1</code>. By changing
 the array <code>kFreqs</code> it is possible to modify the frequency of each oscillator.</p>
@@ -300,6 +305,7 @@ for example), use <a href="poly0.html">poly0</a></p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>out1[], [ out2[], ... ] poly inuminstances, Sopcode, xarg0, [xarg1, ...]
 </code></pre></div>
+
 
 <h2 id="arguments">Arguments</h2>
 <ul>
@@ -453,6 +459,7 @@ an opcode like <code>aout oscili 0.1, kfreq</code> will output an array of audio
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
+
 
 <h2 id="see-also">See also</h2>
 <ul>

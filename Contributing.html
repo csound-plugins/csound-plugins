@@ -110,6 +110,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/getEnvVar.html">getEnvVar</a>
@@ -264,6 +268,7 @@ The tree can be structured as follows:</p>
     bar.md
 </code></pre></div>
 
+
 <p>For each opcode defined in mylib.c there should be an example <code>opcode.csd</code> 
 and a manual page <code>opcode.md</code>. Optionally it is possible to include a README.md
 where a short description of the opcodes in this library is given </p>
@@ -274,6 +279,7 @@ a simple CMakeLists.txt would suffice:</p>
 <div class="codehilite"><pre><span></span><code>make_plugin(mylib src/mylib.c)
 </code></pre></div>
 
+
 <h1 id="installation">Installation</h1>
 <p>At the root folder of this repository, do</p>
 <div class="codehilite"><pre><span></span><code>mkdir build
@@ -282,6 +288,7 @@ cmake ..
 make
 sudo make install
 </code></pre></div>
+
 
 <h1 id="manifest">Manifest</h1>
 <p>A manifest is used to automate documentation of the opcodes (wiki, pdf documentation, etc).
@@ -296,6 +303,7 @@ The manifest is a .json file. It should have the minimal form: </p>
     <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://github.com/...&quot;</span>
 <span class="p">}</span>
 </code></pre></div>
+
 
 <p>In this case, three opcodes are defined, and these names should correspond to
 the .csd example living inside of the <code>examples</code> folder, and a .md file 

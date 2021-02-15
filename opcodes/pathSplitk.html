@@ -108,6 +108,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
@@ -274,6 +278,7 @@
 <div class="codehilite"><pre><span></span><code>Sdirectory, Sbase pathSplitk Spath
 </code></pre></div>
 
+
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><code>Spath</code>: The path to split</li>
@@ -302,15 +307,15 @@
 <span class="kd">instr</span> <span class="nf">1</span>
     <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;/home/bar/filename.ext&quot;</span>
     <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span> <span class="n">pathSplitk</span> <span class="kt">S</span><span class="n">path</span>
-    <span class="nb">printsk</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
+    <span class="n">printsk</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
 
     <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;filename.ext&quot;</span>
     <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span> <span class="n">pathSplitk</span> <span class="kt">S</span><span class="n">path</span>
-    <span class="nb">printsk</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
+    <span class="n">printsk</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
 
     <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;/filename.ext&quot;</span>
     <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span> <span class="n">pathSplitk</span> <span class="kt">S</span><span class="n">path</span>
-    <span class="nb">printsk</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
+    <span class="n">printsk</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
 
     <span class="nb">turnoff</span>
 <span class="kd">endin</span>
@@ -321,6 +326,7 @@
 
 <span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
 </code></pre></div>
+
 
 <p></CsScore>
 </CsoundSynthesizer></p>

@@ -124,6 +124,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
@@ -292,6 +296,7 @@ interpolation methods</p>
 <span class="kt">i</span><span class="n">idx</span><span class="p">[]</span> <span class="n">bisect</span>  <span class="kt">i</span><span class="n">val</span><span class="p">[],</span> <span class="kt">i</span><span class="n">tab</span><span class="p">,</span> <span class="kt">i</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
 
+
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><strong>kval</strong>: the value to quiery within arr  </li>
@@ -384,7 +389,7 @@ interpolation methods</p>
     <span class="kt">a</span><span class="n">amp</span> <span class="nb">interp</span> <span class="kt">k</span><span class="n">amp</span>
     <span class="kt">a</span><span class="n">1</span> <span class="nb">oscili</span> <span class="kt">a</span><span class="n">amp</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi1</span><span class="p">,</span> <span class="s">&quot;cubic&quot;</span><span class="p">))</span>
     <span class="kt">a</span><span class="n">2</span> <span class="nb">oscili</span> <span class="kt">a</span><span class="n">amp</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi2</span><span class="p">))</span>
-    <span class="nb">println</span> <span class="s">&quot;amp: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">rms</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">a</span><span class="n">amp</span><span class="p">)</span>
+    <span class="n">println</span> <span class="s">&quot;amp: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">rms</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">a</span><span class="n">amp</span><span class="p">)</span>
     <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">2</span>
 <span class="kd">endin</span>
 
@@ -425,6 +430,7 @@ interpolation methods</p>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
+
 
 <h2 id="see-also">See Also</h2>
 <ul>

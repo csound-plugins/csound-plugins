@@ -130,6 +130,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
@@ -286,6 +290,7 @@ Svalue dict_geti idict, Skey  ; (init time version)
 Svalue dict_get idict, kkey
 </code></pre></div>
 
+
 <p>The type of key and value depend on the type definition of the <code>dict</code>, see <a href="dict_new">dict_new</a></p>
 <p><code>dict_get</code> executes at <strong>i-time</strong> and <strong>k-time</strong> depending on the output value</p>
 <div class="admonition note">
@@ -371,6 +376,7 @@ For this case also, <code>dict_get</code> runs at k-time. Use <code>dict_geti</c
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
 </code></pre></div>
+
 
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
@@ -653,6 +659,7 @@ For this case also, <code>dict_get</code> runs at k-time. Use <code>dict_geti</c
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
+
 
 <h2 id="see-also">See also</h2>
 <ul>

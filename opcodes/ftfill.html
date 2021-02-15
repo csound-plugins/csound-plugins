@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>refvalid - Csound Plugins</title>
+  <title>ftfill - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "refvalid";
-    var mkdocs_page_input_path = "opcodes/refvalid.md";
+    var mkdocs_page_name = "ftfill";
+    var mkdocs_page_input_path = "opcodes/ftfill.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -108,7 +108,27 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="ftfill.html">ftfill</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
                     </li>
@@ -182,27 +202,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="ref.html">ref</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="refvalid.html">refvalid</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="refvalid.html">refvalid</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="schmitt.html">schmitt</a>
                     </li>
@@ -258,7 +258,7 @@
         
       
     
-    <li>refvalid</li>
+    <li>ftfill</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -269,83 +269,98 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="refvalid">refvalid</h1>
+                <h1 id="ftfill">ftfill</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Queries if a reference is valid</p>
+<p>create a table and fill it with values (like fillarray but for f-tables)</p>
 <h2 id="description">Description</h2>
-<p><code>ref</code> and <code>deref</code> implement a mechanism to pass a reference to any object,
-allowing to share a variable across instruments, with opcodes, etc. A reference
-is a proxy to an axisting variable / array. A reference is reference counted and
-deallocates itself when it falls out of scope without being referenced by any
-object. Since a reference is just an integer, <code>refvalid</code> can be used to check if
-the given reference index corresponds to a valid reference</p>
+<p><code>ftfill</code> is a shortcut opcode to create a table and fill it with values.
+It explicitely disallows the user to set the table-number manually. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">out</span> <span class="n">refvalid</span> <span class="kt">i</span><span class="n">ref</span>
-<span class="kt">k</span><span class="n">out</span> <span class="n">refvalid</span> <span class="kt">k</span><span class="n">ref</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">tabnum</span> <span class="kt">f</span><span class="n">tfill</span> <span class="kt">i</span><span class="n">0</span><span class="p">,</span> <span class="p">[</span><span class="kt">i</span><span class="n">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">2</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
 </code></pre></div>
 
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>iref</code> / <code>kout</code>: an integer identifying the reference handle, as passed via <a href="ref.html">ref</a></li>
+<li><strong>ix</strong>: The value(s) to place in the f-table</li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
-<li><code>ìout</code> / <code>kout</code>: 1 if the reference is valid, 0 otherwise</li>
+<li><strong>itabnum</strong>: the number of the generated f-table</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init</li>
-<li>Performance</li>
+<li>Init </li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">m0</span>
-<span class="o">-</span><span class="n">d</span>
+<span class="c1">; -odac</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+
+<span class="cm">/*</span>
+
+<span class="cm">Description</span>
+<span class="cm">===========</span>
+
+<span class="cm">ftfill creates a table and fills it with values. Like fillarray, but for f-tables.</span>
+
+
+<span class="cm">Syntax</span>
+<span class="cm">======</span>
+
+<span class="cm">    itabnum ftfill x0, [x1, x2, ...]</span>
+
+<span class="cm">**NB**: this is the same as ``itabnum ftgen 0, 0, 0, -2, x0, x1, x2, ...``</span>
+
+<span class="cm">*/</span>
+
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">freq</span><span class="p">)</span>
+<span class="kd">instr</span> <span class="nf">example1</span>
+    <span class="kt">i</span><span class="n">time2midi1</span> <span class="kt">f</span><span class="n">tfill</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">62</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">62</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">67</span>
+    <span class="kt">i</span><span class="n">time2midi2</span> <span class="kt">f</span><span class="n">tfill</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">59</span>
+    <span class="nb">ftprint</span> <span class="kt">i</span><span class="n">time2midi1</span>
+    <span class="nb">ftfree</span> <span class="kt">i</span><span class="n">time2midi1</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="nb">ftfree</span> <span class="kt">i</span><span class="n">time2midi2</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="c1">; step=2, bisect the column 0.</span>
+    <span class="kt">k</span><span class="n">t</span> <span class="o">=</span> <span class="nb">timeinsts</span><span class="p">()</span> 
+    <span class="kt">k</span><span class="n">idx1</span> <span class="n">bisect</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="kt">i</span><span class="n">time2midi1</span><span class="p">,</span> <span class="mi">2</span>
+    <span class="kt">k</span><span class="n">idx2</span> <span class="n">bisect</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="kt">i</span><span class="n">time2midi2</span><span class="p">,</span> <span class="mi">2</span>
+
+    <span class="c1">; -1: cosine interpolation, step size=2, offset=1</span>
+    <span class="kt">k</span><span class="n">midi1</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx1</span><span class="p">,</span> <span class="kt">i</span><span class="n">time2midi1</span><span class="p">,</span> <span class="s">&quot;cos&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="kt">k</span><span class="n">midi2</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx2</span><span class="p">,</span> <span class="kt">i</span><span class="n">time2midi2</span><span class="p">,</span> <span class="s">&quot;cos&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span>
+
+    <span class="kt">a</span><span class="n">0</span> <span class="nb">squinewave</span> <span class="nb">a</span><span class="p">(</span><span class="nb">mtof</span><span class="p">(</span><span class="kt">k</span><span class="n">midi1</span><span class="p">)),</span> <span class="nb">a</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="nb">a</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="kt">a</span><span class="n">1</span> <span class="nb">squinewave</span> <span class="nb">a</span><span class="p">(</span><span class="nb">mtof</span><span class="p">(</span><span class="kt">k</span><span class="n">midi2</span><span class="p">)),</span> <span class="nb">a</span><span class="p">(</span><span class="mf">0.2</span><span class="p">),</span> <span class="nb">a</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="kt">i</span><span class="n">gain</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="kt">i</span><span class="n">fade</span> <span class="o">=</span> <span class="mf">0.2</span>
+    <span class="kt">a</span><span class="n">env</span> <span class="o">=</span> <span class="nb">linseg</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">fade</span><span class="p">,</span> <span class="kt">i</span><span class="n">gain</span><span class="p">,</span> <span class="vi">p3</span><span class="o">-</span><span class="kt">i</span><span class="n">fade</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="kt">i</span><span class="n">gain</span><span class="p">,</span> <span class="kt">i</span><span class="n">fade</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">1</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span>
 <span class="kd">endin</span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="k">if</span> <span class="n">refvalid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="n">deref</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span>
-  <span class="k">else</span>
-    <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="mi">1000</span>
-  <span class="k">endif</span>
-  <span class="kt">a</span><span class="n">sig</span> <span class="nb">vco2</span> <span class="mf">0.2</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
-  <span class="nb">schedule</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">)</span>
-<span class="kd">endin</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
-<span class="kd">instr</span> <span class="nf">3</span>
-  <span class="k">if</span> <span class="n">refvalid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="kt">a</span><span class="n">in</span> <span class="n">deref</span> <span class="vi">p4</span>
-  <span class="k">else</span>
-    <span class="kt">a</span><span class="n">in</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">endif</span>
-  <span class="kt">a</span><span class="n">out</span> <span class="nb">lpf18</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.2</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
-<span class="kd">endin</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="nb">i</span> <span class="s">&quot;example1&quot;</span> <span class="mi">0</span> <span class="mi">1</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="deref.html">deref</a></li>
-<li><a href="ref.html">ref</a></li>
-<li><a href="defer.html">defer</a></li>
-<li><a href="http://www.csound.com/docs/manual/schedule.html">schedule</a></li>
-<li><a href="http://www.csound.com/docs/manual/event.html">event</a></li>
-<li><a href="http://www.csound.com/docs/manual/release.html">release</a></li>
+<li><a href="http://www.csound.com/docs/manual/ftgen.html">ftgen</a></li>
+<li><a href="http://www.csound.com/docs/manual/fillarray.html">fillarray</a></li>
+<li><a href="ftnew.html">ftnew</a></li>
+<li><a href="http://www.csound.com/docs/manual/ftfree.html">ftfree</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -356,10 +371,10 @@ the given reference index corresponds to a valid reference</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="schmitt.html" class="btn btn-neutral float-right" title="schmitt">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="ftnew.html" class="btn btn-neutral float-right" title="ftnew">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="ref.html" class="btn btn-neutral" title="ref"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="frac2int.html" class="btn btn-neutral" title="frac2int"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -385,10 +400,10 @@ the given reference index corresponds to a valid reference</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="ref.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="frac2int.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="schmitt.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="ftnew.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

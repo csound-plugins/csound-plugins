@@ -108,6 +108,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
@@ -274,6 +278,7 @@ This operation is done in place. It is the equivalent of this code:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">array</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">:</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 </code></pre></div>
 
+
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code><span class="n">setslice</span> <span class="kt">i</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">i</span><span class="n">value</span> <span class="p">[,</span> <span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">setslice</span> <span class="kt">k</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">k</span><span class="n">value</span> <span class="p">[,</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span>
@@ -282,6 +287,7 @@ This operation is done in place. It is the equivalent of this code:</p>
 <span class="n">setslice</span> <span class="kt">k</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">k</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
 <span class="n">setslice</span> <span class="kt">S</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">S</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
+
 
 <h2 id="arguments">Arguments</h2>
 <ul>
@@ -316,11 +322,12 @@ This operation is done in place. It is the equivalent of this code:</p>
 <span class="c1">; kB: -1, 0, -1, 0, -1, 0, 0, 0, 0, 0</span>
 </code></pre></div>
 
+
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="http://www.csound.com/docs/manual/html/ftset.html">ftset</a></li>
-<li><a href="http://www.csound.com/docs/manual/html/ftslice.html">ftslice</a></li>
-<li><a href="http://www.csound.com/docs/manual/html/slicearray.html">slicearray</a></li>
+<li><a href="http://www.csound.com/docs/manual/ftset.html">ftset</a></li>
+<li><a href="http://www.csound.com/docs/manual/ftslice.html">ftslice</a></li>
+<li><a href="http://www.csound.com/docs/manual/slicearray.html">slicearray</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2020</p>
