@@ -1452,11 +1452,14 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
         khash_t(khIntFlt) *h = g->handles[idx].hashtab;
         CHECK_HASHTAB_EXISTS(h);
         k = kh_get(khIntFlt, h, key);
+        printf(">>> removing key %d with index %d\n", key, k);
         if(k != kh_end(h)) {
             // key exists, remove item
+            printf("Remove!\n");
             kh_del(khIntFlt, h, k);
             handle->counter++;
         }
+        fflush(stdout);
     } else if(khtype == khIntStr) {
         khash_t(khIntStr) *h = g->handles[idx].hashtab;
         CHECK_HASHTAB_EXISTS(h);
@@ -3325,9 +3328,9 @@ static OENTRY localops[] = {
     { "dict_set.is_k", S(DICT_SET_is), 0, 3, "",  "ikS",
       (SUBR)dict_set_is_0, (SUBR)dict_set_is },
 
-    { "dict_set.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
-    { "dict_set.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i },
-    { "dict_set.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
+    { "dict_del.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i },
+    { "dict_del.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
+    { "dict_del.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
     // { "dict_del", S(DICT_DEL_s), 0, 1, "", "iS", (SUBR)dict_del_s_atstop},
     // { "dict_del", S(DICT_DEL_s), 0, 1, "", "ii", (SUBR)dict_del_i_atstop},
 

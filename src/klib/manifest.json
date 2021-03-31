@@ -3,7 +3,7 @@
     "version": "1.1.0",
     "csound_version": "6.15",
     "opcodes": [
-      "dict_new",
+        "dict_new",
         "dict_free",
         "dict_get",
         "dict_geti",
@@ -13,6 +13,7 @@
         "dict_exists",
         "dict_print",
         "dict_iter",
+        "dict_del",
         "sref",
         "sderef",
         "pool_new",
