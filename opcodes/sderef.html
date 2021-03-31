@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>strcache - Csound Plugins</title>
+  <title>sderef - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "strcache";
-    var mkdocs_page_input_path = "opcodes/strcache.md";
+    var mkdocs_page_name = "sderef";
+    var mkdocs_page_input_path = "opcodes/sderef.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -102,13 +102,17 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="extendarray.html">extendarray</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="file_exists.html">file_exists</a>
+                    <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfind.html">ftfind</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
                     </li>
@@ -166,6 +170,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pool_gen.html">pool_gen</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_isfull.html">pool_isfull</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="pool_new.html">pool_new</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pool_pop.html">pool_pop</a>
@@ -188,13 +194,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="scriptDir.html">scriptDir</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="standardchaos.html">standardchaos</a>
-                    </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="strcache.html">strcache</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="sderef.html">sderef</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
     </li>
@@ -214,7 +214,15 @@
     </li>
     </ul>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="strview.html">strview</a>
+                    <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="standardchaos.html">standardchaos</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
                     </li>
@@ -228,7 +236,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="uniqinstance.html">uniqinstance</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="xtracycles.html">xtracycles</a>
+                    <li class="toctree-l1"><a class="reference internal" href="zeroarray.html">zeroarray</a>
                     </li>
                 </ul>
       </div>
@@ -256,7 +264,7 @@
         
       
     
-    <li>strcache</li>
+    <li>sderef</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -267,32 +275,19 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="strcache">strcache</h1>
+                <h1 id="sderef">sderef</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Put a string into the global cache or retrieve a string from the cache</p>
+<p>Retrieves a read-only string from the cache</p>
 <h2 id="description">Description</h2>
-<p><code>strcache</code> implements a global string cache. This can be useful in situations
-where a string needs to be stored/passed but only numbers are allowed (for
-example, when using the <code>event</code> opcode, or to be able to mix numbers and strings
-inside an array). It behaves similar to the <code>strset</code> / <code>strget</code> opcodes but
-automatically assigns an index to each distinct string inside the cache.</p>
-<p><code>strcache</code> executes both at <strong>i-time</strong> and <strong>k-time</strong>, depending on the type of
-the input variable</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It is guaranteed that passing twice the same string will return the same
-index.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The same opcode is used for creating a reference to a string and from
-converting that reference back to a string.</p>
-</div>
+<p><code>sref</code>/<code>sderef</code> implement a global string cache. This can be useful in
+situations where a string needs to be stored/passed but only numbers are allowed
+(for example, when using the <code>event</code> opcode, or to be able to mix numbers and
+strings inside an array). It behaves similar to the <code>strset</code> / <code>strget</code> opcodes
+but automatically assigns an index to each distinct string inside the cache. The
+string returned by <code>sderef</code> should not be modified. This is not enforced.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>Sstr strcache idx
-Sstr strcache kdx
-idx  strcache Sstr
-kdx  strcache Sstr
+<div class="codehilite"><pre><span></span><code>Sstr sderef idx
+Sstr sderef kdx
 </code></pre></div>
 
 
@@ -304,7 +299,6 @@ kdx  strcache Sstr
 <h3 id="execution-time">Execution Time</h3>
 <ul>
 <li>Init</li>
-<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -316,54 +310,54 @@ kdx  strcache Sstr
 
 <span class="cm">/*</span>
 
-<span class="cm">Example file for strcache / strview</span>
+<span class="cm">Example file for sref / sderef</span>
 
 <span class="cm">*/</span>
 
-<span class="c1">; Use strcache to pass multiple strings between instruments</span>
+<span class="c1">; Use sref to pass multiple strings between instruments</span>
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
+  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
   <span class="c1">;; get a read-only string from the cache</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="n">strview</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="n">strview</span> <span class="vi">p5</span>
+  <span class="kt">S</span><span class="n">1</span> <span class="n">sderef</span> <span class="vi">p4</span>
+  <span class="kt">S</span><span class="n">2</span> <span class="n">sderef</span> <span class="vi">p5</span>
   <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-<span class="c1">;; Use strcache to store strings inside a numeric array</span>
+<span class="c1">;; Use sref to store strings inside a numeric array</span>
 <span class="kd">instr</span> <span class="nf">3</span>
-  <span class="kt">i</span><span class="n">Struct</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;Bach&quot;</span><span class="p">),</span> <span class="mi">1675</span><span class="p">,</span> <span class="mi">1750</span>
-  <span class="nb">prints</span> <span class="s">&quot;Name = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">i</span><span class="n">Struct</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+  <span class="kt">i</span><span class="n">Struct</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;Bach&quot;</span><span class="p">),</span> <span class="mi">1675</span><span class="p">,</span> <span class="mi">1750</span>
+  <span class="nb">prints</span> <span class="s">&quot;Name = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">Struct</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="kd">endin</span>
 
-<span class="c1">;; If the string does not need to be modified, strview</span>
-<span class="c1">;; can be used instead of strcache to retrieve a string</span>
+<span class="c1">;; If the string does not need to be modified, sderef</span>
+<span class="c1">;; can be used instead of sref to retrieve a string</span>
 <span class="c1">;; from the cache. In this case, the string is not allocated,</span>
 <span class="c1">;; it only points to the version inside the cache. </span>
 <span class="kd">instr</span> <span class="nf">4</span>
   <span class="kt">S</span><span class="n">1</span> <span class="o">=</span> <span class="s">&quot;foo bar&quot;</span>
-  <span class="kt">i</span><span class="n">S1</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">S1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
   <span class="c1">;; S2 is a read-only view of the cached S1.</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">i</span><span class="n">S1</span><span class="p">)</span>
+  <span class="kt">S</span><span class="n">2</span> <span class="o">=</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">S1</span><span class="p">)</span>
   <span class="nb">prints</span> <span class="s">&quot;S2 = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">test_same_idx</span>
-  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
-  <span class="kt">i</span><span class="n">dx2</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">dx2</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
   <span class="nb">prints</span> <span class="s">&quot;These indices should be the same: idx1=</span><span class="si">%d</span><span class="s">, idx2=</span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx2</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-<span class="kd">instr</span> <span class="nf">test_strview</span>
+<span class="kd">instr</span> <span class="nf">test_sderef</span>
   <span class="kt">S</span><span class="n">1</span> <span class="o">=</span> <span class="s">&quot;uniquestring&quot;</span>
-  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">strcache</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
-  <span class="kt">S</span><span class="n">view</span> <span class="o">=</span> <span class="n">strview</span><span class="p">(</span><span class="kt">i</span><span class="n">dx1</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
+  <span class="kt">S</span><span class="n">view</span> <span class="o">=</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">dx1</span><span class="p">)</span>
   <span class="nb">prints</span> <span class="s">&quot;Sview = &#39;</span><span class="si">%s</span><span class="s">&#39; (should be &#39;</span><span class="si">%s</span><span class="s">&#39;) </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">view</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
@@ -377,14 +371,14 @@ kdx  strcache Sstr
 <span class="c1">; i 4 + 0.1</span>
 <span class="nb">i</span> <span class="s">&quot;test_same_idx&quot;</span> <span class="mi">0</span> <span class="mi">1</span>
 
-<span class="c1">; i &quot;test_strview&quot; 0 1</span>
+<span class="c1">; i &quot;test_sderef&quot; 0 1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2020</p>
               
             </div>
           </div>
@@ -392,10 +386,10 @@ kdx  strcache Sstr
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="strview.html" class="btn btn-neutral float-right" title="strview">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="setslice.html" class="btn btn-neutral float-right" title="setslice">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="standardchaos.html" class="btn btn-neutral" title="standardchaos"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="scriptDir.html" class="btn btn-neutral" title="scriptDir"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -421,10 +415,10 @@ kdx  strcache Sstr
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="standardchaos.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="scriptDir.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="strview.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="setslice.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

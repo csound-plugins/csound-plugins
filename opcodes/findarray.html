@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>channelStateSave - Csound Plugins</title>
+  <title>findarray - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "channelStateSave";
-    var mkdocs_page_input_path = "opcodes/channelStateSave.md";
+    var mkdocs_page_name = "findarray";
+    var mkdocs_page_input_path = "opcodes/findarray.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -70,25 +70,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="channelStateSave.html">channelStateSave</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#initialization">Initialization</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#performance">Performance</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#example">Example</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="crackle.html">crackle</a>
                     </li>
@@ -124,7 +106,27 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="findarray.html">findarray</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
                     </li>
@@ -264,7 +266,7 @@
         
       
     
-    <li>channelStateSave</li>
+    <li>findarray</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -275,94 +277,91 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="channelstatesave">channelStateSave</h1>
+                <h1 id="findarray">findarray</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Saves all channel data to file </p>
+<p>Find an element in an array</p>
 <h2 id="description">Description</h2>
-<p>This opcode will save the value of each channel declared in a Csound orchestra to a JSON file on disk. It can be used with the <code>channelStateRecall</code> opcode to create a robust preset system.    </p>
+<p><code>findarray</code> finds the index of an element in an array. If the element is not found
+it returns -1</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">Res</span> <span class="n">channelStateSave</span> <span class="kt">S</span><span class="n">Filename</span>
-<span class="kt">k</span><span class="n">Res</span> <span class="n">channelStateSave</span> <span class="kt">S</span><span class="n">Filename</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">index</span> <span class="kt">f</span><span class="n">indarray</span> <span class="kt">i</span><span class="n">arr</span><span class="p">,</span> <span class="kt">i</span><span class="n">val</span><span class="p">,</span> <span class="kt">i</span><span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-12</span>
+<span class="kt">k</span><span class="n">index</span> <span class="kt">f</span><span class="n">indarray</span> <span class="kt">k</span><span class="n">arr</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span><span class="p">,</span> <span class="kt">i</span><span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-12</span>
 </code></pre></div>
 
 
-<h2 id="initialization">Initialization</h2>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><strong>iRes</strong> -- 1 for success, 0 for fail</li>
-<li><strong>SFilename</strong> -- filename</li>
+<li><strong>iarr</strong> / <strong>karr</strong>: A 1D scalar array</li>
+<li><strong>itolerance</strong>: A tolerance value. When using floats it is not recommended to 
+check for equality but to check if two values are close enough</li>
 </ul>
-<h2 id="performance">Performance</h2>
+<h2 id="output">Output</h2>
 <ul>
-<li><strong>kRes</strong> -- 1 for success, 0 for fail</li>
-<li><strong>SFilename</strong> -- filename</li>
+<li><strong>iindex</strong> / <strong>kindex</strong>: the index of the value inside the array, or -1 if the value is not found</li>
 </ul>
-<h2 id="example">Example</h2>
-<p>This example shows channelStateSave being used to save the current states of a all Cabbage widgets to disk. The states can be recalled using the <code>channelStateRecall</code> opcode. </p>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">Cabbage</span><span class="o">&gt;</span>
-<span class="kt">f</span><span class="n">orm</span> <span class="n">caption</span><span class="p">(</span><span class="s">&quot;Presets&quot;</span><span class="p">)</span> <span class="n">size</span><span class="p">(</span><span class="mi">370</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">colour</span><span class="p">(</span><span class="mi">58</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">182</span><span class="p">),</span> <span class="n">pluginid</span><span class="p">(</span><span class="s">&quot;fsad&quot;</span><span class="p">)</span>
-<span class="kt">k</span><span class="n">eyboard</span> <span class="n">bounds</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">345</span><span class="p">,</span> <span class="mi">95</span><span class="p">)</span>
-<span class="n">rslider</span> <span class="n">bounds</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">79</span><span class="p">),</span> <span class="n">channel</span><span class="p">(</span><span class="s">&quot;att&quot;</span><span class="p">),</span> <span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span> <span class="n">text</span><span class="p">(</span><span class="s">&quot;Att.&quot;</span><span class="p">)</span>
-<span class="n">rslider</span> <span class="n">bounds</span><span class="p">(</span><span class="mi">98</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">79</span><span class="p">),</span> <span class="n">channel</span><span class="p">(</span><span class="s">&quot;dec&quot;</span><span class="p">),</span> <span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">),</span> <span class="n">text</span><span class="p">(</span><span class="s">&quot;Dec.&quot;</span><span class="p">)</span>
-<span class="n">rslider</span> <span class="n">bounds</span><span class="p">(</span><span class="mi">184</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">79</span><span class="p">),</span> <span class="n">channel</span><span class="p">(</span><span class="s">&quot;sus&quot;</span><span class="p">),</span> <span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">),</span> <span class="n">text</span><span class="p">(</span><span class="s">&quot;Sus.&quot;</span><span class="p">)</span>
-<span class="n">rslider</span> <span class="n">bounds</span><span class="p">(</span><span class="mi">270</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">79</span><span class="p">),</span> <span class="n">channel</span><span class="p">(</span><span class="s">&quot;rel&quot;</span><span class="p">),</span> <span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">),</span> <span class="n">text</span><span class="p">(</span><span class="s">&quot;Rel.&quot;</span><span class="p">)</span>
-<span class="n">combobox</span> <span class="n">bounds</span><span class="p">(</span><span class="mi">92</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">226</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="n">populate</span><span class="p">(</span><span class="s">&quot;*.txt&quot;</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">),</span> <span class="n">channel</span><span class="p">(</span><span class="s">&quot;recallCombo&quot;</span><span class="p">),</span> <span class="n">channeltype</span><span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">),</span> <span class="kt">i</span><span class="n">dentchannel</span><span class="p">(</span><span class="s">&quot;recallComboIdent&quot;</span><span class="p">)</span>
-<span class="nb">button</span> <span class="n">bounds</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span> <span class="n">channel</span><span class="p">(</span><span class="s">&quot;triggerSave&quot;</span><span class="p">),</span> <span class="n">text</span><span class="p">(</span><span class="s">&quot;Save state&quot;</span><span class="p">)</span>
-<span class="o">&lt;/</span><span class="n">Cabbage</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<h2 id="execution-time">Execution Time</h2>
+<ul>
+<li>Init </li>
+<li>Performance</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">n</span> <span class="o">-</span><span class="n">d</span> <span class="o">-+</span><span class="n">rtmidi</span><span class="o">=</span><span class="n">NULL</span> <span class="o">-</span><span class="n">M0</span> <span class="o">--</span><span class="n">midi</span><span class="o">-</span><span class="kt">k</span><span class="n">ey</span><span class="o">-</span><span class="n">cps</span><span class="o">=</span><span class="mi">4</span> <span class="o">--</span><span class="n">midi</span><span class="o">-</span><span class="n">velocity</span><span class="o">-</span><span class="kt">a</span><span class="n">mp</span><span class="o">=</span><span class="mi">5</span> 
+<span class="o">--</span><span class="n">nosound</span>
+<span class="c1">; -odac</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="c1">; Initialize the global variables. </span>
-<span class="c1">;sr is set by the host</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
+
+<span class="cm">/*</span>
+
+<span class="cm">Description</span>
+<span class="cm">===========</span>
+
+<span class="cm">findarray return the index of the first element which is equal to the </span>
+<span class="cm">given number. If the number is not found, the return value is -1</span>
+
+<span class="cm">Syntax</span>
+<span class="cm">======</span>
+
+<span class="cm">    kidx findarray karray[], kvalue/ivalue [, iepsilon=1e-12]</span>
+<span class="cm">    kidx findarray iarray[], kvalue [, iepsilon=1e-12]</span>
+<span class="cm">    idx  findarray iarray[], ivalue [, iepsilon=1e-12]</span>
+
+<span class="cm">*/</span>
+
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
-
-<span class="kt">gk</span><span class="n">FileNumber</span> <span class="nb">init</span> <span class="mi">10</span>
-
-<span class="kd">instr</span> <span class="nf">1</span>
-   <span class="kt">k</span><span class="n">Env</span> <span class="nb">madsr</span> <span class="nb">chnget</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;att&quot;</span><span class="p">),</span> <span class="nb">chnget</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;dec&quot;</span><span class="p">),</span> <span class="nb">chnget</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;sus&quot;</span><span class="p">),</span> <span class="nb">chnget</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;rel&quot;</span><span class="p">)</span>
-   <span class="kt">a</span><span class="n">Out</span> <span class="nb">vco2</span> <span class="kt">k</span><span class="n">Env</span><span class="o">*</span><span class="vi">p5</span><span class="p">,</span> <span class="vi">p4</span>
-   <span class="nb">outs</span> <span class="kt">a</span><span class="n">Out</span><span class="p">,</span> <span class="kt">a</span><span class="n">Out</span>
-<span class="kd">endin</span>
+<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
 <span class="kd">instr</span> <span class="nf">10</span>
-   <span class="kt">S</span><span class="n">Filename</span> <span class="nb">chnget</span> <span class="s">&quot;recallCombo&quot;</span>
-   <span class="k">if</span> <span class="nb">changed2</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">S</span><span class="n">Filename</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-      <span class="kt">S</span><span class="n">IgnoreChannels</span><span class="p">[]</span> <span class="nb">init</span> <span class="mi">2</span>
-      <span class="kt">S</span><span class="n">IgnoreChannels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;triggerSave&quot;</span>
-      <span class="kt">S</span><span class="n">IgnoreChannels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;recallCombo&quot;</span>
-      <span class="kt">k</span><span class="n">Ok</span> <span class="o">=</span> <span class="n">channelStateRecall</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="kt">S</span><span class="n">Filename</span><span class="p">,</span> <span class="kt">S</span><span class="n">IgnoreChannels</span><span class="p">)</span>
-   <span class="k">endif</span>
+    <span class="kt">k</span><span class="n">arr</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.8</span>
+    <span class="kt">k</span><span class="n">idx</span> <span class="kt">f</span><span class="n">indarray</span> <span class="kt">k</span><span class="n">arr</span><span class="p">,</span> <span class="mf">0.3</span>
+    <span class="n">println</span> <span class="s">&quot;kidx: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span>
 
-   <span class="k">if</span> <span class="nb">changed</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="nb">chnget</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="s">&quot;triggerSave&quot;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-      <span class="kt">S</span><span class="n">Path</span> <span class="o">=</span> <span class="nb">chnget</span><span class="p">:</span><span class="kt">S</span><span class="p">(</span><span class="s">&quot;CSD_PATH&quot;</span><span class="p">)</span>
-      <span class="kt">S</span><span class="n">Filename</span> <span class="o">=</span> <span class="nb">sprintfk</span><span class="p">:</span><span class="kt">S</span><span class="p">(</span><span class="s">&quot;PresetTest</span><span class="si">%d</span><span class="s">.txt&quot;</span><span class="p">,</span> <span class="kt">gk</span><span class="n">FileNumber</span><span class="p">)</span>
-      <span class="nb">printks</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">S</span><span class="n">Filename</span>
-      <span class="kt">k</span><span class="n">Ok</span> <span class="o">=</span> <span class="n">channelStateSave</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="kt">S</span><span class="n">Filename</span><span class="p">)</span>
-      <span class="kt">gk</span><span class="n">FileNumber</span><span class="o">+=</span><span class="mi">1</span>
-      <span class="nb">chnset</span> <span class="s">&quot;refreshfiles()&quot;</span><span class="p">,</span> <span class="s">&quot;recallComboIdent&quot;</span>
-    <span class="k">endif</span>
+    <span class="kt">k</span><span class="n">arr2</span><span class="p">[]</span> <span class="nb">genarray_i</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mf">0.1</span>
+    <span class="kt">k</span><span class="n">idx2</span> <span class="kt">f</span><span class="n">indarray</span> <span class="kt">k</span><span class="n">arr2</span><span class="p">,</span> <span class="mf">70.8</span>
+    <span class="n">println</span> <span class="s">&quot;kidx2: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx2</span>
+    <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="c1">;causes Csound to run for about 7000 years...</span>
-<span class="kt">i</span><span class="n">10</span> <span class="mi">0</span> <span class="n">z</span>
+
+<span class="nb">i</span> <span class="mi">10</span> <span class="mi">0</span> <span class="mf">0.1</span>
+
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 
-<h2 id="see-also">See Also</h2>
+<h2 id="see-also">See also</h2>
 <ul>
-<li><a href="channelStateRecall.html">channelStateRecall</a></li>
+<li><a href="ftfind.html">ftfind</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Author: Rory Walsh
-2019</p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div>
@@ -370,10 +369,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="crackle.html" class="btn btn-neutral float-right" title="crackle">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="frac2int.html" class="btn btn-neutral float-right" title="frac2int">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="channelStateRecall.html" class="btn btn-neutral" title="channelStateRecall"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="findFileInPath.html" class="btn btn-neutral" title="findFileInPath"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -399,10 +398,10 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="channelStateRecall.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="findFileInPath.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="crackle.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="frac2int.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

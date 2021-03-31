@@ -104,13 +104,17 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/extendarray.html">extendarray</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="opcodes/file_exists.html">file_exists</a>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/fileexists.html">file_exists</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/findFileInPath.html">findFileInPath</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/findarray.html">findarray</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/frac2int.html">frac2int</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/ftfind.html">ftfind</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/ftnew.html">ftnew</a>
                     </li>
@@ -168,6 +172,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/pool_gen.html">pool_gen</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/pool_isfull.html">pool_isfull</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/pool_new.html">pool_new</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/pool_pop.html">pool_pop</a>
@@ -190,15 +196,17 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/scriptDir.html">scriptDir</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/sderef.html">sderef</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/setslice.html">setslice</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/sigmdrive.html">sigmdrive</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/sref.html">sref</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/standardchaos.html">standardchaos</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="opcodes/strcache.html">strcache</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="opcodes/strview.html">strview</a>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/sysPlatform.html">sysPlatform</a>
                     </li>
@@ -212,7 +220,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/uniqinstance.html">uniqinstance</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="opcodes/xtracycles.html">xtracycles</a>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/zeroarray.html">zeroarray</a>
                     </li>
                 </ul>
       </div>
@@ -265,8 +273,8 @@
 <li><a href="opcodes/dict_exists.html">dict_exists</a>: Returns 1 if the dict exists, 0 otherwise </li>
 <li><a href="opcodes/dict_print.html">dict_print</a>: Prints the contents of a dict </li>
 <li><a href="opcodes/dict_iter.html">dict_iter</a>: Iterate over the key-value pairs of a dict </li>
-<li><a href="opcodes/strcache.html">strcache</a>: Put a string into the global cache or retrieve a string from the cache </li>
-<li><a href="opcodes/strview.html">strview</a>: Retrieves a read-only string from the cache </li>
+<li><a href="opcodes/sref.html">sref</a>: Insert a string into a global registry and return a reference to it </li>
+<li><a href="opcodes/sderef.html">sderef</a>: Retrieves a read-only string from the cache </li>
 <li><a href="opcodes/pool_new.html">pool_new</a>: Create an empty  pool </li>
 <li><a href="opcodes/pool_gen.html">pool_gen</a>: Create a pool and fill it with values </li>
 <li><a href="opcodes/pool_pop.html">pool_pop</a>: Pop (get) an item from a pool </li>
@@ -274,6 +282,7 @@
 <li><a href="opcodes/pool_size.html">pool_size</a>: Returns the size of a pool </li>
 <li><a href="opcodes/pool_capacity.html">pool_capacity</a>: Returns the capacity of a pool </li>
 <li><a href="opcodes/pool_at.html">pool_at</a>: Returns the item of a pool at a given index </li>
+<li><a href="opcodes/pool_isfull.html">pool_isfull</a>: Returns 1 if the pool is full </li>
 </ul>
 <h2 id="rory">rory</h2>
 <p>Miscellaneous opcodes for channel state save, triggers and others</p>
@@ -302,7 +311,7 @@
 <li><a href="opcodes/tubeharmonics.html">tubeharmonics</a>: A distortion with control for odd/even harmonics </li>
 </ul>
 <h2 id="else">else</h2>
-<p>Collection of miscellaneous plugins, most ports of supercollider, puredata/else or jsfx</p>
+<p>Collection of miscellaneous plugins</p>
 <ul>
 <li><a href="opcodes/accum.html">accum</a>: Simple accumulator of scalar values </li>
 <li><a href="opcodes/atstop.html">atstop</a>: Schedule an instrument at the end of the current instrument </li>
@@ -312,9 +321,11 @@
 <li><a href="opcodes/deref.html">deref</a>: Dereference a previously created reference to a variable </li>
 <li><a href="opcodes/diode_ringmod.html">diode_ringmod</a>: A ring modulator with optional non-linearities </li>
 <li><a href="opcodes/extendarray.html">extendarray</a>: Extend one array with the contents of a second array, in place </li>
-<li><a href="opcodes/file_exists.html">file_exists</a>: Returns 1 if a file exists and can be read </li>
+<li><a href="opcodes/fileexists.html">fileexists</a>: Returns 1 if a file exists and can be read </li>
+<li><a href="opcodes/findarray.html">findarray</a>: Find an element in an array </li>
 <li><a href="opcodes/frac2int.html">frac2int</a>: Convert the fractional part of a number into an integer </li>
 <li><a href="opcodes/ftfill.html">ftfill</a>: create a table and fill it with values (like fillarray but for f-tables) </li>
+<li><a href="opcodes/ftfind.html">ftfind</a>: Find an element in a table </li>
 <li><a href="opcodes/ftnew.html">ftnew</a>: creates a new table of a given size </li>
 <li><a href="opcodes/ftsetparams.html">ftsetparams</a>: Set metadata parameters of a table, as if it was loaded via GEN1 </li>
 <li><a href="opcodes/initerror.html">initerror</a>: Throws an error message at init </li>
@@ -334,7 +345,7 @@
 <li><a href="opcodes/standardchaos.html">standardchaos</a>: Standard map chaotic generator </li>
 <li><a href="opcodes/throwerror.html">throwerror</a>: Throws an error message at performance or init </li>
 <li><a href="opcodes/uniqinstance.html">uniqinstance</a>: Return an fractional instrument number which is not in use </li>
-<li><a href="opcodes/xtracycles.html">xtracycles</a>: Returns the number of extra performance cycles for an event </li>
+<li><a href="opcodes/zeroarray.html">zeroarray</a>: Zero all elements in an array </li>
 </ul>
 <h2 id="pathtools">pathtools</h2>
 <p>Cross-platform path handling</p>
@@ -351,6 +362,7 @@
 <li><a href="opcodes/pathSplitExtk.html">pathSplitExtk</a>: Split a path into prefix and extension at performance time </li>
 <li><a href="opcodes/scriptDir.html">scriptDir</a>: Get the directory of the loaded orc/csd file </li>
 <li><a href="opcodes/sysPlatform.html">sysPlatform</a>: Get a string description of the current system platform </li>
+<li><a href="opcodes/strsplit.html">strsplit</a>: Split a string at a given separator </li>
 </ul>
               
             </div>
