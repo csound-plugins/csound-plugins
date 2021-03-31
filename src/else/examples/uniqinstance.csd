@@ -40,7 +40,7 @@ endin
 instr 2
   instrnum10 uniqinstance 10
   prints "Unique instance of 10= %f\n", instrnum10
-  instrnum11 uniqinstance 11
+  instrnum11 uniqinstance 11, 1000
   prints "Unique instance of 11= %f\n", instrnum11
   turnoff
 endin
@@ -68,10 +68,10 @@ instr example2
   prints ">>>>>>>>>>>>>>>>>>> example2 \n"
   i0 = 0
   istep = 0.01
-  idur  = 1.0   ; 100 simultaneous instances
-  ; idur  = 2.0   ; 200 simultaneous instances
+  imaxinstances = 100
+  idur = istep * imaxinstances
   while i0 < 1000 do
-    schedule "scheduniq", i0*istep, idur, 20
+    schedule "scheduniq", i0*istep, idur, 20, imaxinstances
     i0 += 1
   od
   imaxdur = 2000 * istep + idur
@@ -80,27 +80,37 @@ endin
 
 instr scheduniq
   inum = p4
-  inum2 = uniqinstance(inum, 100)
+  imax = p5
+  inum2 = uniqinstance(inum, imax)
   if inum2 < 0 then
     prints "<<<<< Could not find unique instance >>>>>\n"
   else
     schedule inum2, 0, p3
-    prints "active now=%d, inum=%f \n", active(0), inum2
+    prints "active now=%d, inum=%f \n", active(inum), inum2
   endif
   turnoff
 endin
 
 instr 20
-  printsk "started %f\n", p1
+  prints "started %f\n", p1
   defer "prints", "finished %f \n", p1
+endin
+
+; -----------------------
+; Text what happens if called with a non-existent instr
+instr example3
+    inum = uniqinstance(234)
+    print inum
+    turnoff
 endin
 
 </CsInstruments>
 
 <CsScore>
 
-i "example1" 0 10 
+; i "example1" 0 10 
 ; i "example2" 0 10
+i "example3" 0 0.1
 
 </CsScore>
 </CsoundSynthesizer>

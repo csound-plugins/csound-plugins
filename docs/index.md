@@ -23,8 +23,8 @@ A hashtable for csound
 * [dict_exists](opcodes/dict_exists.md): Returns 1 if the dict exists, 0 otherwise 
 * [dict_print](opcodes/dict_print.md): Prints the contents of a dict 
 * [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
-* [strcache](opcodes/strcache.md): Put a string into the global cache or retrieve a string from the cache 
-* [strview](opcodes/strview.md): Retrieves a read-only string from the cache 
+* [sref](opcodes/sref.md): Insert a string into a global registry and return a reference to it 
+* [sderef](opcodes/sderef.md): Retrieves a read-only string from the cache 
 * [pool_new](opcodes/pool_new.md): Create an empty  pool 
 * [pool_gen](opcodes/pool_gen.md): Create a pool and fill it with values 
 * [pool_pop](opcodes/pool_pop.md): Pop (get) an item from a pool 
@@ -32,6 +32,7 @@ A hashtable for csound
 * [pool_size](opcodes/pool_size.md): Returns the size of a pool 
 * [pool_capacity](opcodes/pool_capacity.md): Returns the capacity of a pool 
 * [pool_at](opcodes/pool_at.md): Returns the item of a pool at a given index 
+* [pool_isfull](opcodes/pool_isfull.md): Returns 1 if the pool is full 
 
 
 ## rory
@@ -68,7 +69,7 @@ A csound interface to the opensource implementation of jsfx (a jitted language f
 
 ## else
 
-Collection of miscellaneous plugins, most ports of supercollider, puredata/else or jsfx
+Collection of miscellaneous plugins
 
 * [accum](opcodes/accum.md): Simple accumulator of scalar values 
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
@@ -78,9 +79,11 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
 * [extendarray](opcodes/extendarray.md): Extend one array with the contents of a second array, in place 
-* [file_exists](opcodes/file_exists.md): Returns 1 if a file exists and can be read 
+* [fileexists](opcodes/fileexists.md): Returns 1 if a file exists and can be read 
+* [findarray](opcodes/findarray.md): Find an element in an array 
 * [frac2int](opcodes/frac2int.md): Convert the fractional part of a number into an integer 
 * [ftfill](opcodes/ftfill.md): create a table and fill it with values (like fillarray but for f-tables) 
+* [ftfind](opcodes/ftfind.md): Find an element in a table 
 * [ftnew](opcodes/ftnew.md): creates a new table of a given size 
 * [ftsetparams](opcodes/ftsetparams.md): Set metadata parameters of a table, as if it was loaded via GEN1 
 * [initerror](opcodes/initerror.md): Throws an error message at init 
@@ -100,7 +103,7 @@ Collection of miscellaneous plugins, most ports of supercollider, puredata/else 
 * [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
 * [throwerror](opcodes/throwerror.md): Throws an error message at performance or init 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
-* [xtracycles](opcodes/xtracycles.md): Returns the number of extra performance cycles for an event 
+* [zeroarray](opcodes/zeroarray.md): Zero all elements in an array 
 
 
 ## pathtools
@@ -119,6 +122,7 @@ Cross-platform path handling
 * [pathSplitExtk](opcodes/pathSplitExtk.md): Split a path into prefix and extension at performance time 
 * [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
 * [sysPlatform](opcodes/sysPlatform.md): Get a string description of the current system platform 
+* [strsplit](opcodes/strsplit.md): Split a string at a given separator 
 
 
 

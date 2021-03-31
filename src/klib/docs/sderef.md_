@@ -1,4 +1,4 @@
-# strview
+# sderef
 
 ## Abstract
 
@@ -7,20 +7,17 @@ Retrieves a read-only string from the cache
 
 ## Description
 
-`strcache`/`strview` implement a global string cache. This can be useful in
+`sref`/`sderef` implement a global string cache. This can be useful in
 situations where a string needs to be stored/passed but only numbers are allowed
 (for example, when using the `event` opcode, or to be able to mix numbers and
 strings inside an array). It behaves similar to the `strset` / `strget` opcodes
 but automatically assigns an index to each distinct string inside the cache. The
-string returned by `strview` should not be modified. This is not enforced.
-
-
-`strview` executes at **i-time**.
-
+string returned by `sderef` should not be modified. This is not enforced.
 
 ## Syntax
 
-    Sstr strview  idx
+    Sstr sderef idx
+    Sstr sderef kdx
 
 ### Arguments
 

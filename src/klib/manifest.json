@@ -1,7 +1,7 @@
 {
     "name": "klib",
-    "version": "0.2.4",
-    "csound_version": "6.14",
+    "version": "1.1.0",
+    "csound_version": "6.15",
     "opcodes": [
       "dict_new",
         "dict_free",
@@ -13,15 +13,16 @@
         "dict_exists",
         "dict_print",
         "dict_iter",
-        "strcache",
-        "strview",
+        "sref",
+        "sderef",
         "pool_new",
         "pool_gen",
         "pool_pop",
         "pool_push",
         "pool_size",
         "pool_capacity",
-        "pool_at"
+        "pool_at",
+        "pool_isfull"
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",

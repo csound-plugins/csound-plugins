@@ -1681,6 +1681,9 @@ pread_i(CSOUND *csound, PREAD *p) {
  *        were found
  */
 
+enum PwriteStatus { FirstRun, InstanceNotFound, InstanceFound, NoOp };
+
+
 typedef struct {
     OPDS h;
     // inputs
@@ -1694,7 +1697,7 @@ typedef struct {
     INSTRTXT *instrtxt;   // used in broadcasting mode, a pointer to the instrument template
     int maxpfield;        // max pfield accepted by the instrument
     int broadcasting;     // are we broadcasting?
-    int found;            // have we found any matching instances?
+    enum PwriteStatus status;
     CS_VAR_MEM *pfields;  // a pointer to the instance pfield, when doing exact matching
 } PWRITE;
 
@@ -1751,7 +1754,7 @@ pwrite_initcommon(CSOUND *csound, PWRITE *p) {
     p->p1 = p1;
     p->broadcasting = floor(p1) == p1;
     p->numpairs = (csound->GetInputArgCnt(p) - 1) / 2;
-    p->found = -1;
+    p->status = FirstRun;
     p->instrtxt = NULL;
     return OK;
 }
@@ -1759,13 +1762,32 @@ pwrite_initcommon(CSOUND *csound, PWRITE *p) {
 
 static int32_t
 pwrite_perf(CSOUND *csound, PWRITE *p) {
-    if(p->found == -1 || (p->found == 0 && p->retry))
-        p->found = pwrite_search(csound, p);
-    if(!p->found)
+    if(p->status == NoOp)
         return OK;
+    if(p->status == FirstRun) {
+        if(pwrite_search(csound, p))
+            p->status = InstanceFound;
+        else {
+            p->status = p->retry ? InstanceNotFound : NoOp;
+            return OK;
+        }
+    } else if (p->status == InstanceNotFound && p->retry) {
+        if(pwrite_search(csound, p))
+            p->status = InstanceFound;
+        else
+            return OK;
+    }
+    if(p->status != InstanceFound) {
+        return PERFERR("This should not happen!");
+    }
 
     if (!p->broadcasting) {
-        pwrite_writevalues(csound, p, p->pfields);
+        if(p->instr->actflg) {
+            pwrite_writevalues(csound, p, p->pfields);
+        } else {
+            // the instr is not active anymore
+            p->status = NoOp;
+        }
         return OK;
     }
     // broadcasting mode
@@ -2122,13 +2144,24 @@ array_set_slice(CSOUND *csound, ARRSETSLICE *p) {
     int32_t start = (int32_t)*p->start;
     int32_t end = (int32_t)*p->end;
     int32_t step = (int32_t)*p->step;
+    int32_t ksmps = p->h.insdshead->ksmps;
     MYFLT value = *p->value;
     if(end == 0) {
         end = p->in->sizes[0];
     }
     MYFLT *data = p->in->data;
-    for(int i=start; i<end; i+=step) {
-        data[i] = value;
+    char vartype = p->in->arrayType->varTypeName[0];
+    switch(vartype) {
+    case 'i':
+    case 'k':
+        for(int i=start; i<end; i+=step) {
+            data[i] = value;
+        }
+        break;
+    case 'a':
+        for(int i=start*ksmps; i<end*ksmps; i+=step) {
+            data[i] = value;
+        }
     }
     return OK;
 }
@@ -3319,6 +3352,7 @@ typedef struct {
     MYFLT *idx, *tabnum;
     STRINGDAT *mode;
     MYFLT *step, *offset;
+
     FUNC *ftp;
     int lasttab;
     MYFLT param;
@@ -3347,9 +3381,10 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
     IGN(csound);
     MYFLT idx = *p->idx;
     MYFLT *data = p->ftp->ftable;
+    int32_t taboffset = (int32_t)*p->offset;
 
     if (idx <= 0) {
-        *p->out = data[0];
+        *p->out = data[taboffset];
         return OK;
     }
 
@@ -3358,7 +3393,6 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
 
     uint64_t len = p->ftp->flen;
     int32_t step = (int32_t)*p->step;
-    int32_t taboffset = (int32_t)*p->offset;
     uint64_t i = (uint64_t)intpart * step + taboffset;
 
     if (i >= len - 1) {
@@ -3430,7 +3464,7 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         return PERFERRF("step cannot be less than 1, got %lu", step);
     }
 
-    MYFLT *data = p->ftp->ftable;
+    MYFLT *data = &(p->ftp->ftable[taboffset]);
     MYFLT idx, intpart, frac, y0, y1, ypre, ypost;
     uint64_t len = p->ftp->flen;
 
@@ -3439,14 +3473,14 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
 
     // we branch outside the loop depending on the interpolation mode
     MYFLT firstelem = data[0];
-    MYFLT lastelem = data[len - step + taboffset];
+    MYFLT lastelem = data[len - step];
     MYFLT param = p->param;
     switch(p->method) {
     case InterpLinear:
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step + taboffset;
+            uint64_t i = (uint64_t)intpart * step;
             if(i <= 0)
                 out[n] = firstelem;
             else if(i>= len - 1)
@@ -3464,7 +3498,7 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step + taboffset;
+            uint64_t i = (uint64_t)intpart * step;
             if(i <= 0)
                 out[n] = firstelem;
             else if(i>= len - 1)
@@ -3482,7 +3516,7 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step + taboffset;
+            uint64_t i = (uint64_t)intpart * step ;
             if(i <= 0)
                 out[n] = firstelem;
             else if(i>= len - 1)
@@ -3500,7 +3534,7 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step + taboffset;
+            uint64_t i = (uint64_t)intpart * step;
             if(i <= 0)
                 out[n] = firstelem;
             else if(i>= len - 1)
@@ -3513,7 +3547,7 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step + taboffset;
+            uint64_t i = (uint64_t)intpart * step;
             if(i <= 0)
                 out[n] = firstelem;
             else if(i>= len - 1)
@@ -3533,7 +3567,7 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step + taboffset;
+            uint64_t i = (uint64_t)intpart * step;
             if(i <= 0)
                 out[n] = firstelem;
             else if(i>= len - 1)
@@ -3549,7 +3583,7 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
             frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step + taboffset;
+            uint64_t i = (uint64_t)intpart * step;
             if(i <= 0)
                 out[n] = firstelem;
             else if(i>= len - 1)
@@ -4070,6 +4104,106 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
     return OK;
 }
 
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *arr;
+    
+} ZEROARR;
+
+static int32_t zeroarr_perf(CSOUND *csound, ZEROARR *p) {
+    MYFLT *data = p->arr->data;
+    size_t numbytes = p->arr->allocated;
+    // TODO: zero only the used part of an array
+    memset(data, 0, numbytes);
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *arr;
+    MYFLT *idx;
+    MYFLT *insig;
+} MIXARRAY1;
+
+// Mix an audio source with an element of an audio array
+// mixarray ga_dest, kidx, asource
+// this is the same as: ga_dest[kidx] = ga_dest[kidx] + asource
+static int32_t mixarray_perf(CSOUND *csound, MIXARRAY1 *p) {
+    int idx = (int)*p->idx;
+    if(idx > p->arr->sizes[0]) {
+        PERFERRF("Index %d out of bounds (len=%d)", idx, p->arr->sizes[0]);
+        return NOTOK;
+    }
+    int ksmps = p->h.insdshead->ksmps;
+    size_t samp0 = idx * ksmps;
+    MYFLT *dest = &(p->arr->data[samp0]);
+    MYFLT *source = p->insig;
+    for(int i=0; i<ksmps; i++ ) {
+        dest[i] += source[i];
+    }
+    return OK;
+}
+
+typedef struct {
+	OPDS h;
+	MYFLT *outidx;
+	MYFLT *ftnum;
+	MYFLT *x;
+	MYFLT *tolerance;
+} FTINDEX;
+
+static int32_t ftindex_perf(CSOUND *csound, FTINDEX *p) {
+	MYFLT x = *p->x;
+	MYFLT tolerance = *p->tolerance;
+	FUNC *ftp = csound->FTnp2Find(csound, p->ftnum);
+    if (UNLIKELY(ftp == NULL)) {
+        MSGF("table %d not found", (int)*p->ftnum);
+        return NOTOK;
+    }
+	if(tolerance <= 0) {
+		tolerance = 1e-12;
+	}
+	MYFLT *data = ftp->ftable;
+	size_t len = ftp->flen;
+	for(size_t i=0; i<len; i++) {
+		if(fabs(data[i] - x) < tolerance ) {
+			*p->outidx = i;
+			return OK;
+		}
+	}
+	*p->outidx = -1.0;
+	return OK;
+}
+
+
+typedef struct {
+	OPDS h;
+	MYFLT *outidx;
+	ARRAYDAT *arr;
+	MYFLT *x;
+	MYFLT *tolerance;
+} FINDARR;
+
+static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
+    // p->h.insdshead->instr->psetdata
+    MYFLT *data = p->arr->data;
+	MYFLT x = *p->x;
+	MYFLT tolerance = *p->tolerance;
+	if(tolerance <= 0) {
+		tolerance = 1e-12;
+	}
+	for(size_t i=0; i<p->arr->sizes[0]; i++) {
+		if(fabs(data[i] - x) < tolerance ) {
+			*p->outidx = i;
+			return OK;
+		}
+	}
+	*p->outidx = -1.0;
+	return OK;
+}
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -4158,6 +4292,7 @@ static OENTRY localops[] = {
 
     { "setslice.i", S(ARRSETSLICE), 0, 1, "", "i[]ioop", (SUBR)array_set_slice},
     { "setslice.k", S(ARRSETSLICE), 0, 2, "", "k[]kOOP", NULL, (SUBR)array_set_slice},
+    { "setslice.a", S(ARRSETSLICE), 0, 2, "", "a[]kOOP", NULL, (SUBR)array_set_slice},
 
     { "setslice.i[]", S(_AAk), 0, 1, "", "i[]i[]i", (SUBR)setslice_array_k_init_i},
     { "setslice.k[]", S(_AAk), 0, 3, "", "k[]k[]k", (SUBR)setslice_array_k_init_k, (SUBR)setslice_array_k},
@@ -4219,6 +4354,14 @@ static OENTRY localops[] = {
     { "ftfill.i", S(FILLTAB), 0, 1, "i", "m", (SUBR)filltab },
     { "ftnew.i", S(FTNEW), 0, 1, "i", "io", (SUBR)ftnew },
     //  "ftfill.arr_i", S(FTNEWARR), 0, 1, "i", "ii[]o", (SUBR)ftnew_arr },
+    { "zeroarray.k", S(ZEROARR), 0, 2, "", "k[]", NULL, (SUBR)zeroarr_perf},
+    { "zeroarray.a", S(ZEROARR), 0, 2, "", "a[]", NULL, (SUBR)zeroarr_perf},
+    { "zeroarray.i", S(ZEROARR), 0, 1, "", "i[]", (SUBR)zeroarr_perf},
+    { "mixarray.a", S(ZEROARR), 0, 2, "", "a[]ka", NULL, (SUBR)mixarray_perf},
+    { "findarray.k", S(FINDARR), 0, 2, "k", ".[]kj", NULL, (SUBR)findarr_perf},
+    { "findarray.i", S(FINDARR), 0, 1, "i", "i[]ij", (SUBR)findarr_perf},
+    { "ftfind.k", S(FTINDEX), 0, 2, "k", "kkj", NULL, (SUBR)ftindex_perf},
+    { "ftfind.i", S(FTINDEX), 0, 1, "i", "iij", (SUBR)ftindex_perf},
 };
 
 LINKAGE

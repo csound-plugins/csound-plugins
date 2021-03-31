@@ -26,9 +26,18 @@ generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
 
 opcodes to handle paths and filenames in a cross-platform manner
 
+----------------
+
+# Documentation of all plugins
+
+Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
+
+
 # Download
 
-Binaries can be installed via [risset](https://github.com/csound-plugins/risset)
+Binaries can be installed via [risset](https://github.com/csound-plugins/risset) or downloaded
+from https://github.com/csound-plugins/csound-plugins/releases
+
 
 # Installation from source
 
@@ -84,6 +93,3 @@ make
 make install
 ```
 
-# Documentation of all plugins
-
-Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)

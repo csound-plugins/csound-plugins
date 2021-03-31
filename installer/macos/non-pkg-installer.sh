@@ -5,7 +5,7 @@
 # This installer script, when run, installs the plugins in the correct
 # Opcodes64 folder.
 
-PLUGINS_VERSION=0.2
+PLUGINS_VERSION=$(cat ../../VERSION)
 CSOUND_VERSION=6.14
 MACOS_VERSION=10.14
 VERSION="$CSOUND_VERSION-$PLUGINS_VERSION-macos$MACOS_VERSION"

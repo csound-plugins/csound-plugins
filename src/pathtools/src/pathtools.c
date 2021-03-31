@@ -31,6 +31,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <ctype.h>
+#include "arrays.h"
 
 #if defined(WIN32) || defined(__MINGW32__) || defined(_WIN32)
     #define OS_WIN32
@@ -181,6 +182,57 @@ static void stringdat_copy_literal(CSOUND *csound, STRINGDAT *dest, const char *
 static void stringdat_clear(CSOUND *csound, STRINGDAT *s) {
     _string_ensure(csound, s, 1);
     s->data[0] = '\0';
+}
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *parts;
+    STRINGDAT *s;
+    STRINGDAT *sep;
+} STRSPLIT;
+
+static inline char *strsubdup(CSOUND *csound, char *src, int64_t start, int64_t len) {
+    char *dest = csound->Malloc(csound, len+1);
+    memcpy(dest, src+start, len);
+    dest[len] = '\0';
+    return dest;
+}
+
+static int32_t string_split(CSOUND *csound, STRSPLIT *p) {
+    int numseps = 0;
+    const int maxseps = 1000;
+    int32_t separator_starts[maxseps];
+    char *sep = p->sep->data;
+    int seplen = strlen(sep);
+    char *s = p->s->data;
+    char *ptr = s;
+    while (1) {
+        ptr = strstr(ptr, sep);
+        if(ptr == NULL)
+            break;
+        int32_t offset = ptr - s;
+        separator_starts[numseps] = offset;
+        numseps += 1;
+        if(numseps >= maxseps) {
+            return INITERRF("Too many separators in string %s", s);
+        }
+        ptr += seplen;
+    }
+    tabinit(csound, p->parts, numseps+1);
+    STRINGDAT *parts = (STRINGDAT *)p->parts->data;
+    int64_t start = 0;
+    int64_t partlen;
+    for(int i=0; i<numseps; i++) {
+        partlen = separator_starts[i] - start;
+        parts[i].size = partlen + 1;
+        parts[i].data = strsubdup(csound, s, start, partlen);
+        start = separator_starts[i] + seplen;
+    }
+    // last part
+    partlen = strlen(s+start);
+    parts[numseps].size = partlen+1;
+    parts[numseps].data = strsubdup(csound, s, start, partlen);
+    return OK;
 }
 
 
@@ -503,7 +555,8 @@ static OENTRY localops[] = {
     { "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar },
     { "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript },
     { "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative },
-    { "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform}
+    { "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform},
+    { "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split}
 };
 
 LINKAGE

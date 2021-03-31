@@ -19,6 +19,9 @@ If the instance ceases to exist during another instrument is modifying
 its pfield values, nothing happens. `pwrite` notices that the instance
 is not active anymore and becomes a `NOOP`.
 
+**NB**: in order for pwrite to have any effect, the instrument in question should
+have an assignment of the sort `kfreq = p5`. 
+
 ### Exact instance vs Broadcasting
 
 If `instrnum` is a fractional instrument number, pwrite will only affect
@@ -36,21 +39,25 @@ changes to **ALL** instruments with the same integer number.
 
 ```csound
 
-pwrite instrnum:i, index:i|k, value:i|k
+pwrite instrnum:i, index:i|k, value:i|k, [index2, value2, ...]
 
 ```
     
 ### Arguments
 
-* `instrnum`: the (fractional) instrument number to modify
-* `iindex` / `kindex`: the index of the pfield to modify. 
-  If kindex is 4, then p4 will be modified
-* `ivalue` / `kvalue`: the new value of the given pfield
+* `instrnum` (init only): the (fractional) instrument number to modify
+* `index` (i-, k-): the index of the pfield to modify. If kindex is 4, then p4 will be modified
+* `value` (i-, k-): the new value of the given pfield
+
+!!! Note
+
+    Multiple index:value pairs can be modified simultaneously
+
 
 ### Execution Time
 
 * Init (if index and value are i-values)
-* Performance (if either index or value are k-variables)
+* Performance (if any index or value are k-variables)
 
 ## Examples
 

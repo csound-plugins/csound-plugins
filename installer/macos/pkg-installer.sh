@@ -7,7 +7,8 @@ rm -fr ./build
 mkdir build && cd build
 
 PROJNAME="Csound6-Plugins"
-OWNVERSION=6.14.1
+OWVERSION=$(cat ../../VERSION)
+
 IDENTIFIER="com.csound.csound6Environment.csoundPlugins"
 OPCODES64="/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64"
 DEST_DYLIBS="$OPCODES64/Extra"

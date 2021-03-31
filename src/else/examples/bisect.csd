@@ -92,8 +92,8 @@ instr example2
     kidx2 bisect kt, itime2midi2, 2
         
     ; -1: cosine interpolation, step size=2, offset=1
-    kmidi1 interp1d kidx1, itime2midi1, -1, 2, 1
-    kmidi2 interp1d kidx2, itime2midi2, -1, 2, 1
+    kmidi1 interp1d kidx1, itime2midi1, "cos", 2, 1
+    kmidi2 interp1d kidx2, itime2midi2, "cos", 2, 1
         
     a0 squinewave a(mtof(kmidi1)), a(0.1), a(0.1)
     a1 squinewave a(mtof(kmidi2)), a(0.2), a(0.5)
@@ -103,15 +103,23 @@ instr example2
     outch 1, a0*aenv, 2, a1*aenv
 endin
 
+instr test1
+    icurve ftfill 1, 60, 3, 65, 4, 60
+    kt timeinsts
+    kidx bisect kt, icurve, 2
+    kmidi interp1d kidx, k(icurve), "linear", 2, 1
+    println "kt: %f, kidx: %f, kmidi: %f", kt, kidx, kmidi
+endin
+
 </CsInstruments>
 
 <CsScore>
 
 ; Uncomment to perform each example
 
-i "example1" 0 10
+;i "example1" 0 10
 ;i "example2"  0 7
-
+i "test1" 0 5
 
 </CsScore>
 </CsoundSynthesizer>

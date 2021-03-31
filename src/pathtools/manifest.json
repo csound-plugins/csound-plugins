@@ -19,7 +19,8 @@
       "pathSplitExtk",
 
       "scriptDir",
-      "sysPlatform"
+      "sysPlatform",
+      "strsplit"
             
     ],
     "author": "Eduardo Moguillansky",

@@ -1,4 +1,4 @@
-# strview
+# sderef
 
 ## Abstract
 
@@ -7,20 +7,17 @@ Retrieves a read-only string from the cache
 
 ## Description
 
-`strcache`/`strview` implement a global string cache. This can be useful in
+`sref`/`sderef` implement a global string cache. This can be useful in
 situations where a string needs to be stored/passed but only numbers are allowed
 (for example, when using the `event` opcode, or to be able to mix numbers and
 strings inside an array). It behaves similar to the `strset` / `strget` opcodes
 but automatically assigns an index to each distinct string inside the cache. The
-string returned by `strview` should not be modified. This is not enforced.
-
-
-`strview` executes at **i-time**.
-
+string returned by `sderef` should not be modified. This is not enforced.
 
 ## Syntax
 
-    Sstr strview  idx
+    Sstr sderef idx
+    Sstr sderef kdx
 
 ### Arguments
 
@@ -46,54 +43,54 @@ string returned by `strview` should not be modified. This is not enforced.
 
 /*
 
-Example file for strcache / strview
+Example file for sref / sderef
 
 */
 
-; Use strcache to pass multiple strings between instruments
+; Use sref to pass multiple strings between instruments
 instr 1
-  event_i "i", 2, 0, -1, strcache("foo"), strcache("bar")
+  event_i "i", 2, 0, -1, sref("foo"), sref("bar")
   turnoff
 endin
 
 instr 2
   ;; get a read-only string from the cache
-  S1 strview p4
-  S2 strview p5
+  S1 sderef p4
+  S2 sderef p5
   prints "S1=%s   S2=%s \n", S1, S2
   turnoff
 endin
 
-;; Use strcache to store strings inside a numeric array
+;; Use sref to store strings inside a numeric array
 instr 3
-  iStruct[] fillarray strcache("Bach"), 1675, 1750
-  prints "Name = %s\n", strcache(iStruct[0])
+  iStruct[] fillarray sref("Bach"), 1675, 1750
+  prints "Name = %s\n", sderef(iStruct[0])
 endin
 
-;; If the string does not need to be modified, strview
-;; can be used instead of strcache to retrieve a string
+;; If the string does not need to be modified, sderef
+;; can be used instead of sref to retrieve a string
 ;; from the cache. In this case, the string is not allocated,
 ;; it only points to the version inside the cache. 
 instr 4
   S1 = "foo bar"
-  iS1 = strcache(S1)
+  iS1 = sref(S1)
   ;; S2 is a read-only view of the cached S1.
-  S2 = strcache(iS1)
+  S2 = sderef(iS1)
   prints "S2 = %s \n", S2
   turnoff
 endin
   
 instr test_same_idx
-  idx1 = strcache("foo")
-  idx2 = strcache("foo")
+  idx1 = sref("foo")
+  idx2 = sref("foo")
   prints "These indices should be the same: idx1=%d, idx2=%d \n", idx1, idx2
   turnoff
 endin
 
-instr test_strview
+instr test_sderef
   S1 = "uniquestring"
-  idx1 = strcache(S1)
-  Sview = strview(idx1)
+  idx1 = sref(S1)
+  Sview = sderef(idx1)
   prints "Sview = '%s' (should be '%s') \n", Sview, S1
   turnoff
 endin
@@ -107,7 +104,7 @@ endin
 ; i 4 + 0.1
 i "test_same_idx" 0 1
 
-; i "test_strview" 0 1
+; i "test_sderef" 0 1
 </CsScore>
 </CsoundSynthesizer>
 
