@@ -512,31 +512,6 @@ static inline HASH_GLOBALS* dict_globals(CSOUND *csound) {
     return g;
 }
 
-/**
- * find a free index to create a new dict. Will grow the internal array if more
- * room is needed. Returns -1 if failed
- *
- * TODO: use a pool instead of linear searching
- */
-static inline i32
-dict_getfreeslot_(HASH_GLOBALS *g) {
-    HANDLE *handles = g->handles;
-    for(ui32 i=1; i<g->maxhandles; i++) {
-        if(handles[i].hashtab == NULL)
-            return i;
-    }
-    // no free slots, we need to grow!
-    CSOUND *csound = g->csound;
-    ui32 numhandles = g->maxhandles * 2;
-    LOCK(g);
-    g->handles = csound->ReAlloc(csound, g->handles, sizeof(HANDLE)*numhandles);
-    if (g->handles == NULL)
-        return 0;
-    ui32 idx = g->maxhandles;
-    g->maxhandles = numhandles;
-    UNLOCK(g);
-    return idx;
-}
 
 static inline void
 _init_handle(HANDLE *h) {
@@ -1452,10 +1427,8 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
         khash_t(khIntFlt) *h = g->handles[idx].hashtab;
         CHECK_HASHTAB_EXISTS(h);
         k = kh_get(khIntFlt, h, key);
-        printf(">>> removing key %d with index %d\n", key, k);
         if(k != kh_end(h)) {
             // key exists, remove item
-            printf("Remove!\n");
             kh_del(khIntFlt, h, k);
             handle->counter++;
         }
@@ -3171,15 +3144,14 @@ pool_capacity_i(CSOUND *csound, POOL_1 *p) {
 
 static i32
 pool_isfull_perf(CSOUND *csound, POOL_1 *p) {
-    *p->out = p->handle->size == p->handle->allocated;
+    *p->out = p->handle->size == p->handle->allocated ? 1. : 0.;
     return OK;
 }
 
 static i32
 pool_isfull_i(CSOUND *csound, POOL_1 *p) {
     pool_1_init(csound, p);
-    pool_isfull_perf(csound, p);
-    return OK;
+    return pool_isfull_perf(csound, p);
 }
 
 
@@ -3354,8 +3326,8 @@ static OENTRY localops[] = {
     { "dict_iter", S(DICT_ITER), 0, 3, "kkk", "iP",
       (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf},
 
-    { "dict_size", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
-    { "dict_size", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_size_0},
+    { "dict_size.k", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
+    { "dict_size.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_size_0},
 
     { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists },
 
@@ -3371,7 +3343,6 @@ static OENTRY localops[] = {
     { "sderef.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview_i},
     { "sderef.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)sview_init, (SUBR)sview_k},
 
-
     { "strpeek.i", S(STRPEEK), 0, 1, "S", "i", (SUBR)strpeek_i },
 
     { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen},
@@ -3386,12 +3357,13 @@ static OENTRY localops[] = {
     { "pool_capacity.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_capacity_i},
     { "pool_capacity.k", S(POOL_1), 0, 3, "k", "i",
       (SUBR)pool_1_init, (SUBR)pool_capacity_perf},
+
     { "pool_size.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_size_i},
     { "pool_size.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf},
 
     { "pool_isfull.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_isfull_i},
     { "pool_isfull.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_isfull_perf},
-                
+
     { "pool_at.i", S(POOL_1), 0, 1, "i", "ii", (SUBR)pool_at_i},
     { "pool_at.k", S(POOL_1), 0, 3, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf},
 

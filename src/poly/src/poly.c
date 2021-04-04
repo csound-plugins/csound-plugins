@@ -318,14 +318,23 @@ get_signature(CSOUND *csound, void **args, ui32 numargs, char *dest) {
         case 'S':
             dest[i] = 's';
             break;
+        case 'i':
         case 'c':
+        case 'j':
         case 'p':
+        case 'q':
+        case 'h':
+        case 'v':
             dest[i] = 'i';
             break;
-        case 'i':
         case 'k':
+        case 'O':
+        case 'J':
+        case 'P':
+            dest[i] = 'k';
+            break;
         case 'a':
-            dest[i] = c;
+            dest[i] = 'a';
             break;
         case '[':
             arr = (ARRAYDAT *)args[i];
@@ -334,7 +343,24 @@ get_signature(CSOUND *csound, void **args, ui32 numargs, char *dest) {
             break;
         case 'Z':
             // alternating k and a
-            printf("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n");
+            for(ui32 j=i; j < numargs; j++) {
+                dest[j] = (j-i)%2 == 0 ? 'k' : 'a';
+            }
+            break;
+        case 'z':
+        case 'M':
+            // multiple inputs of k-type
+            // set this and all remaining args to 'k'
+            for(ui32 j=i; j < numargs; j++) {
+                dest[j] = 'k';
+            }
+            break;
+        case 'm':
+            // multiple inputs, i-type
+            // set this and all remaining args to 'k'
+            for(ui32 j=i; j < numargs; j++) {
+                dest[j] = 'i';
+            }
             break;
 
         default:

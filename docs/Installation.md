@@ -1,5 +1,11 @@
 # Installation
 
+## Binaries
+
+Binary releases are available from https://github.com/csound-plugins/csound-plugins/releases
+
+
+
 ## From Source
 
 
