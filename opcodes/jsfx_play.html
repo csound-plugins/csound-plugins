@@ -288,25 +288,25 @@
 <p><code>jsfx_play</code> calls the actual sample processing code defined in a jsfx script. 
 The script must have been initialized via <code>jsfx_new</code>, which instantiates and 
 compiles the script and returns a handle. </p>
-<div class="admonition note jsfx">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">jsfx</p>
 <p><code>jsfx</code> is an audio programming language implemented primarily as part of the DAW <code>REAPER</code>. 
 It is a scriptiong language with a built-in compiler which translates it to 
 machine code on the fly. It allows the user to operate at the sample level (like 
 defining an udo with <code>setksmps 1</code> but more efficient). It is around 2x to 2.5x slower
 than hand-coded C.</p>
 </div>
-<p>!!! Note jsfx input / output</p>
-<div class="codehilite"><pre><span></span><code>A jsfx script has a certain number of audio input / output channels. The number of
+<div class="admonition note">
+<p class="admonition-title">jsfx input / output</p>
+<p>A jsfx script has a certain number of audio input / output channels. The number of
 audio inputs / outputs passed to the script does not need to match the number of 
 channels defined in the script but it is advised to do so. More precisely, if a plugin
 is stereo, passing only one channel will not reduce the work performed by the plugin.
-A plugin also defines a series of &quot;sliders&quot;, which are parameters operating at 
+A plugin also defines a series of "sliders", which are parameters operating at 
 control rate. A script can also use these sliders to send control values back, which 
-can be read in csound via [jsfx_getslider]
-See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
-</code></pre></div>
-
+can be read in csound via <a href="jsfx_getslider.html">jsfx_getslider</a>
+See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.</p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>a1 [, a2, a3, ...] jsfx_play ihandle, ain1 [, ain2, ain3, ...]
 </code></pre></div>

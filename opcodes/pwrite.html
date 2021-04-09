@@ -190,6 +190,10 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#dynamic-pfields">Dynamic pfields</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#behaviour">Behaviour</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#exact-instance-vs-broadcasting">Exact instance vs Broadcasting</a>
     </li>
         </ul>
@@ -289,6 +293,10 @@
 <h2 id="description">Description</h2>
 <p><code>pwrite</code> can be used to modify the value of a pfield of a running instance 
 (possibly a fractional instrument number).</p>
+<h3 id="dynamic-pfields">Dynamic pfields</h3>
+<p>In order for pwrite to have any effect, the instrument in question should
+have an assignment of the sort <code>kfreq = p5</code>. </p>
+<h3 id="behaviour">Behaviour</h3>
 <p>A matching instance is searched at performance time, so that its
 behaviour can be controlled via <code>if</code> or <code>timout</code> statements.</p>
 <p>If no active instance is found, search is retried until a matching
@@ -296,15 +304,13 @@ instance is found. To avoid retrying, set <code>instrnum</code> to a negative va
 <p>If the instance ceases to exist during another instrument is modifying
 its pfield values, nothing happens. <code>pwrite</code> notices that the instance
 is not active anymore and becomes a <code>NOOP</code>.</p>
-<p><strong>NB</strong>: in order for pwrite to have any effect, the instrument in question should
-have an assignment of the sort <code>kfreq = p5</code>. </p>
 <h3 id="exact-instance-vs-broadcasting">Exact instance vs Broadcasting</h3>
 <p>If <code>instrnum</code> is a fractional instrument number, pwrite will only affect
 the first instance matching this exact number.</p>
 <p>If <code>instrnum</code> is set to an integer number, <code>pwrite</code> will <strong>broadcast</strong> the
 changes to <strong>ALL</strong> instruments with the same integer number.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
 <p>Setting a value of a pfield out of range will result in a 
 performance error. </p>
 </div>
@@ -318,8 +324,8 @@ performance error. </p>
 <li><code>index</code> (i-, k-): the index of the pfield to modify. If kindex is 4, then p4 will be modified</li>
 <li><code>value</code> (i-, k-): the new value of the given pfield</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
 <p>Multiple index:value pairs can be modified simultaneously</p>
 </div>
 <h3 id="execution-time">Execution Time</h3>

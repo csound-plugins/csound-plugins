@@ -291,16 +291,16 @@ in this plugin, <code>jsfx</code>, which allows to compile and control a jsfx pl
 opcode. As an alternative, it is also possible to decouple these actions, first 
 compiling a script (see <a href="jsfx_new.html">jsfx_new</a>) and then calling <code>jsfx_setslider</code> and <code>jsfx_play</code>.
 Afterwords, slider values can be read via <code>jsfx_getslider</code></p>
-<div class="admonition note jsfx">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">jsfx</p>
 <p><code>jsfx</code> is an audio programming language implemented pritarily as part of the DAW <code>REAPER</code>. 
 It is a scriptiong language with a built-in jit compiler which translates it to 
 machine code on the fly. It allows the user to operate at the sample level (like 
 defining an udo with <code>setksmps 1</code> but more efficient). It is around 2x to 2.5x slower
 than hand-coded C.</p>
 </div>
-<div class="admonition note jsfx inputs and outputs">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">jsfx inputs and outputs</p>
 <p>A jsfx script has a certain number of audio input / output channels, and a series of 
 "sliders", which are parameters operating at control rate. A script can also use
 these sliders to send control values, which can be read in csound via <a href="jsfx_getslider.html">jsfx_getslider</a>

@@ -284,16 +284,17 @@
 <p>Returns the absolute path of a file</p>
 <h2 id="description">Description</h2>
 <p>If a relative path is given as argument, pathAbsolute returns the absolute path
-relative to the current working directory. Bear in mind that the current working 
-directory is not necessarily the directory of the csd being run but the directory 
-in which csound was started (either directly or via the API). </p>
+relative to the current working directory.</p>
 <p><code>pathAbsolute</code> will also expand <code>~</code> in unix platforms, so "~/Documents/foo.txt" will
-be expended to "/home/<user>/Documents/foo.txt" in linux and 
-"/Users/<user>/Documents/foo.txt" in macOS. Other environmental variables are NOT 
+be expended to <code>"/home/&lt;user&gt;/Documents/foo.txt"</code> in linux and 
+<code>"/Users/&lt;user&gt;/Documents/foo.txt"</code> in macOS. Other environmental variables are NOT 
 expanded. </p>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>To calculate the absolute path in relation to the directory of the script
+<p class="admonition-title">Current working directory vs script directory</p>
+<p>Bear in mind that the current working 
+directory is not necessarily the directory of the csd being run but the directory 
+in which csound was started (either directly or via the API). 
+To calculate the absolute path in relation to the directory of the script
 being run, see <code>scriptDir</code>.</p>
 </div>
 <h2 id="syntax">Syntax</h2>

@@ -289,21 +289,21 @@
 a handle which can be used to modify control values and perform audio io. It
 is also possible to instantiate and play a script with only one opcode
 via <code>jsfx</code>.</p>
-<div class="admonition note jsfx">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">jsfx</p>
 <p><code>jsfx</code> is an audio programming language implemented pritarily as part of the DAW <code>REAPER</code>. 
 It is a scriptiong language with a built-in jit compiler which translates it to 
 machine code on the fly. It allows the user to operate at the sample level (like 
 defining an udo with <code>setksmps 1</code> but more efficient). It is around 2x to 2.5x slower
 than hand-coded C.</p>
 </div>
-<p>!!! Note jsfx input / output</p>
-<div class="codehilite"><pre><span></span><code>A jsfx script has a certain number of audio input / output channels, and a series of 
-&quot;sliders&quot;, which are parameters operating at control rate. A script can also use
-these sliders to send control values, which can be read in csound via [jsfx_getslider]
-See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
-</code></pre></div>
-
+<div class="admonition note">
+<p class="admonition-title">jsfx input / output</p>
+<p>A jsfx script has a certain number of audio input / output channels, and a series of 
+"sliders", which are parameters operating at control rate. A script can also use
+these sliders to send control values, which can be read in csound via <a href="jsfx_getslider.html">jsfx_getslider</a>
+See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.</p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>ihandle jsfx_new Spath
 </code></pre></div>

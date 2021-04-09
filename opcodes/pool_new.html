@@ -293,9 +293,10 @@ must be first filled with values via <code>pool_push</code>. If a size is given,
 the given size is allocated and the size can't be modified. If no size is given,
 a pool of variable size is created.</p>
 <div class="admonition note">
-<p class="admonition-title">Note</p>
+<p class="admonition-title">Variable size / fixed size</p>
 <p>A variable size pool produces allocations during performance, which might be
-a  problem in certain situations / architectures.</p>
+a problem in certain situations / architectures or when running in <code>--realtime</code>
+mode. </p>
 </div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>ipool pool_new isize=0

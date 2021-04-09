@@ -301,11 +301,11 @@ Svalue dict_get idict, kkey
 </code></pre></div>
 
 <p>The type of key and value depend on the type definition of the <code>dict</code>, see <a href="dict_new">dict_new</a></p>
-<p><code>dict_get</code> executes at <strong>i-time</strong> and <strong>k-time</strong> depending on the output value</p>
+<p><code>dict_get</code> executes at <strong>i-time</strong> and <strong>k-time</strong> depending on the output value. In the case of 
+a dict of type "str:str" <code>dict_get</code> runs at k-time. Use <code>dict_geti</code> for an init time version</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In the case of a dict of type "str:str", dict_get returns an empty string if the key is not found
-For this case also, <code>dict_get</code> runs at k-time. Use <code>dict_geti</code> for an init time version</p>
+<p>In the case of a dict of type "str:str", dict_get returns an empty string if the key is not found</p>
 </div>
 <h2 id="arguments">Arguments</h2>
 <ul>

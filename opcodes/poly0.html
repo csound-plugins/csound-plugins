@@ -171,10 +171,6 @@
     <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
     </li>
@@ -304,16 +300,10 @@ one value to be shared by all instances, as given by the amplitude <code>0.1</co
 the array <code>kFreqs</code> it is possible to modify the frequency of each oscillator.</p>
 <p>It is of course possible to chain multiple <code>poly0</code>s to generate complex effect chains,
 and <code>poly0</code> can also be used with k-values.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
 <p>At the moment <code>poly0</code> works <strong>only</strong> with <strong>builtin opcodes</strong>. This might change
 in the future</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>for limitations in the type system of csound, <code>poly0</code> works with all opcodes
-which have at least one output. For opcodes with no outputs (like <code>outch</code>,
-for example), use <a href="poly0.html">poly0</a></p>
 </div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>poly0 inuminstances, Sopcode, xarg0, [xarg1, ...]
@@ -331,7 +321,6 @@ given opcode. The same applies for the output arguments</p>
 <p><strong>NB</strong>: output arguments are always arrays, input arguments can be arrays, in which
 case they must be at least the size of <code>inuminstances</code>, or scalars, in which case
 the same value is shared by multiple instances</p>
-<h3 id="output">Output</h3>
 <h2 id="examples">Examples</h2>
 <p>See <a href="poly.html">poly</a> for examples</p>
 <h2 id="see-also">See also</h2>
