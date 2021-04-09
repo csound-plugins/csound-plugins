@@ -138,6 +138,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="linenv.html">linenv</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="loadmtx.html">loadmtx</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="memview.html">memview</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -291,13 +293,11 @@ opcodes, allowing to modify an array in place, skip copying memory, etc.</p>
 <span class="kt">i</span><span class="n">Y</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
 </code></pre></div>
 
-
 <p>In the case above, <code>iY</code> shares the same memory as <code>iX</code> and any modification in
 one array will be visible in the other. </p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="n">xArray</span><span class="p">,</span> <span class="p">[</span><span class="kt">i</span><span class="n">extrarefs</span><span class="o">=</span><span class="mi">0</span><span class="p">]</span>
 </code></pre></div>
-
 
 <h2 id="arguments">Arguments</h2>
 <ul>
@@ -563,7 +563,6 @@ one array will be visible in the other. </p>
 
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

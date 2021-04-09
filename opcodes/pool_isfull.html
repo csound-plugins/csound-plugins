@@ -138,6 +138,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="linenv.html">linenv</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="loadmtx.html">loadmtx</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="memview.html">memview</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -304,7 +306,6 @@ time, use the functional style <code>pool_isfull:i(ipool)</code> or <code>pool_i
 k_isfull pool_isfull ipool
 </code></pre></div>
 
-
 <h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>ipool</code>: the pool to push the value to</li>
@@ -341,12 +342,13 @@ k_isfull pool_isfull ipool
   <span class="c1">; create a pull of fixed size, filled with the integers 0 to 9</span>
   <span class="kt">i</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">10</span>
   <span class="kt">i</span><span class="n">1</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="n">pool_push</span> <span class="kt">i</span><span class="n">1</span>
-  <span class="k">if</span> <span class="n">pool_isfull</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+  <span class="n">pool_push</span> <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">1</span>
+
+  <span class="k">if</span> <span class="n">pool_isfull</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
     <span class="nb">prints</span> <span class="s">&quot;pool is full</span><span class="se">\n</span><span class="s">&quot;</span>
   <span class="k">endif</span>
   <span class="c1">; this should fail</span>
-  <span class="n">pool_push</span> <span class="mi">10</span>
+  <span class="n">pool_push</span> <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="mi">10</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
@@ -359,7 +361,6 @@ k_isfull pool_isfull ipool
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

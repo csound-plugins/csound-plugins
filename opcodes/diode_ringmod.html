@@ -162,6 +162,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="linenv.html">linenv</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="loadmtx.html">loadmtx</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="memview.html">memview</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -292,13 +294,11 @@ stage.</p>
 <div class="codehilite"><pre><span></span><code>Sinewave : Diode Rect (abs(x)*2-0.2) : _ * Input : Feedback
 </code></pre></div>
 
-
 <p><code>knonlinearities</code> controls the amount of jitter in the carrier's freq and feedback amount.
 <code>diode_ringmod</code> is a port of Loser's ringmodulator jsfx plugin distributed with <code>REAPER</code></p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">out</span> <span class="n">diode_ringmod</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="kt">k</span><span class="n">diode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">feedback</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">nonlinear</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">oversample</span><span class="o">=</span><span class="mi">0</span>
 </code></pre></div>
-
 
 <h3 id="arguments">Arguments</h3>
 <ul>
@@ -432,7 +432,6 @@ stage.</p>
 <span class="o">&lt;</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
 </code></pre></div>
-
 
 <h2 id="see-also">See also</h2>
 <ul>

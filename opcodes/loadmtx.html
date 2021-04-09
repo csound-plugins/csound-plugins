@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>pool_pop - Csound Plugins</title>
+  <title>loadmtx - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "pool_pop";
-    var mkdocs_page_input_path = "opcodes/pool_pop.md";
+    var mkdocs_page_name = "loadmtx";
+    var mkdocs_page_input_path = "opcodes/loadmtx.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -138,7 +138,27 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="linenv.html">linenv</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="loadmtx.html">loadmtx</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="loadmtx.html">loadmtx</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="memview.html">memview</a>
                     </li>
@@ -176,29 +196,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pool_new.html">pool_new</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="pool_pop.html">pool_pop</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_pop.html">pool_pop</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pool_push.html">pool_push</a>
                     </li>
@@ -270,7 +268,7 @@
         
       
     
-    <li>pool_pop</li>
+    <li>loadmtx</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -281,39 +279,35 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="pool_pop">pool_pop</h1>
+                <h1 id="loadmtx">loadmtx</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Pop (get) an item from a pool</p>
+<p>Load an array (of any number of dimensions) saved as a .npy file</p>
 <h2 id="description">Description</h2>
-<p>A pool is actually a stack of numbers, based on an array.</p>
-<p>The pool_ opcodes implement a stack of numbers. This is useful when assigning
-ids to resources, like assigning fractional numbers to instrument instances to
-access them individually. To get a value, call <code>pool_pop</code> and when finished
-using it the value is returned to the pool with <code>pool_push</code>.</p>
+<p><code>loadmtx</code> loads an array saved as a .npy file. A .npy file holds a possibly multidimensional
+array of either int or float type, with members of 32 or 64 bits. This opcodes converts all such
+formats to a float array of the same shape. For more information on the <code>.npy</code> format, see
+<a href="https://numpy.org/devdocs/reference/generated/numpy.lib.format.html">https://numpy.org/devdocs/reference/generated/numpy.lib.format.html</a></p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>ivalue pool_pop ipool [, iifempty=-1]
-kvalue pool_pop ipool [, kifempty=-1]
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">Arr</span><span class="p">[]</span> <span class="n">loadmtx</span> <span class="kt">S</span><span class="n">path</span>
+<span class="kt">k</span><span class="n">Arr</span><span class="p">[]</span> <span class="n">loadmtx</span> <span class="kt">S</span><span class="n">path</span>
 </code></pre></div>
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ipool</code>: the pool to push the value to</li>
-<li><code>iifempty</code> / <code>kifempty</code>: this value is returned if the pool is empty. </li>
+<li><strong>Spath</strong>: the path to the saved .npy file</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>ivalue</code> / <code>kvalue</code>: the value to push</li>
+<li><strong>iArr</strong> / <strong>kArr</strong>: the data as an array.</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init</li>
-<li>Performance</li>
+<li>Init </li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">--</span><span class="n">nosound</span>
-<span class="o">-</span><span class="n">m0</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -322,125 +316,39 @@ kvalue pool_pop ipool [, kifempty=-1]
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="c1">; create a global pool for all instances</span>
-<span class="kt">gi</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+    <span class="kt">i</span><span class="n">A</span><span class="p">[]</span> <span class="n">loadmtx</span> <span class="s">&quot;test-float64.npy&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">i</span><span class="n">A</span>
 
-<span class="c1">; create audio buses</span>
-<span class="kt">gi</span><span class="n">numbuses</span> <span class="o">=</span> <span class="mi">200</span>
-<span class="nb">zakinit</span> <span class="kt">gi</span><span class="n">numbuses</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="kt">i</span><span class="n">B</span><span class="p">[]</span> <span class="n">loadmtx</span> <span class="s">&quot;test-2D.npy&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">i</span><span class="n">B</span>
 
-<span class="c1">; a pool of buses</span>
-<span class="kt">gi</span><span class="n">buses</span> <span class="n">pool_gen</span> <span class="kt">gi</span><span class="n">numbuses</span>
+    <span class="kt">i</span><span class="n">C</span><span class="p">[]</span> <span class="n">loadmtx</span> <span class="s">&quot;test-int.npy&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">i</span><span class="n">C</span>
 
-<span class="c1">; release item back to instance pool, print a message</span>
-<span class="c1">; when that happens</span>
-<span class="kd">opcode</span> <span class="nf">pool_release_instance</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">ii</span>
-  <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">p1</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">val</span> <span class="o">=</span> <span class="kt">f</span><span class="n">rac2int</span><span class="p">(</span><span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="n">pool_capacity</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">))</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;releasing back to pool </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">val</span>
-  <span class="n">pool_push</span> <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">val</span><span class="p">,</span> <span class="mi">1</span>
-<span class="kd">endop</span>
-
-<span class="kd">instr</span> <span class="nf">exit</span>
-  <span class="nb">exitnow</span>
+    <span class="nb">turnoff</span>
 <span class="kd">endin</span>
-
-<span class="c1">; schedule and control audio generator</span>
-<span class="kd">instr</span> <span class="nf">controlsaw</span>
-  <span class="c1">; get an unused bus</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">buses</span><span class="p">)</span>
-  <span class="nb">prints</span> <span class="s">&quot;Using bus </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span>
-  <span class="kt">i</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">i</span><span class="n">cap</span> <span class="n">pool_capacity</span> <span class="kt">gi</span><span class="n">pool</span>
-
-  <span class="c1">; get a unique instance number for &quot;saw&quot; instrument</span>
-  <span class="kt">i</span><span class="n">saw</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;saw&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span> <span class="o">/</span> <span class="kt">i</span><span class="n">cap</span>
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">saw</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span>
-
-  <span class="c1">; modulate the frequency</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">saw</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">linseg</span><span class="p">(</span><span class="kt">i</span><span class="n">freq</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">*</span><span class="mf">0.1</span><span class="p">)</span>
-
-  <span class="c1">; get a unique instance number for filter instrument</span>
-  <span class="kt">i</span><span class="n">filter</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;filter&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span> <span class="o">/</span> <span class="kt">i</span><span class="n">cap</span>
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">filter</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="mi">100</span>
-
-  <span class="c1">; modulate its cutoff freq.</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">filter</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">linseg</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
-
-  <span class="c1">; release bus back to pool when finished (notice the 1 at the end)</span>
-  <span class="c1">; we could have done</span>
-  <span class="c1">;  defer &quot;pool_push&quot;, gibuses, ibus</span>
-  <span class="n">pool_push</span> <span class="kt">gi</span><span class="n">buses</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="mi">1</span>
-<span class="kd">endin</span>
-
-
-<span class="kd">instr</span> <span class="nf">saw</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">i</span><span class="n">amp</span>  <span class="o">=</span> <span class="mf">0.02</span>
-  <span class="kt">i</span><span class="n">fade</span> <span class="o">=</span> <span class="mf">0.05</span>
-  <span class="kt">a</span><span class="n">0</span>  <span class="o">=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">cosseg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-  <span class="c1">; write audio to bus</span>
-  <span class="nb">zawm</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span>
-
-  <span class="c1">; release instance back to the pool</span>
-  <span class="nf">pool_release_instance</span> <span class="kt">gi</span><span class="n">pool</span><span class="p">,</span> <span class="vi">p1</span>
-<span class="kd">endin</span>
-
-<span class="c1">; filter audio in bus, output to the outside world</span>
-<span class="kd">instr</span> <span class="nf">filter</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">zar</span> <span class="kt">i</span><span class="n">bus</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">zdf_ladder</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="mi">18</span>
-  <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="p">+</span><span class="nf">example1</span>
-  <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">10</span>                          <span class="c1">; dur of each note</span>
-  <span class="kt">i</span><span class="n">offset</span> <span class="o">=</span> <span class="mf">0.6</span>                      <span class="c1">; offset between notes</span>
-  <span class="kt">i</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">100</span>  <span class="c1">; begin freq. of gliss. for each note</span>
-
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Freqs</span>
-
-  <span class="c1">; create a note for each frequency</span>
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Freqs</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nb">schedule</span> <span class="s">&quot;controlsaw&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">Freqs</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
-
-  <span class="c1">; clear zak </span>
-  <span class="nb">zacl</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">numbuses</span>
-
-  <span class="c1">; schedule exit</span>
-  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span> <span class="o">+</span> <span class="kt">i</span><span class="n">dur</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-<span class="kd">endin</span>
-
-<span class="nb">schedule</span> <span class="s">&quot;example1&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="c1">; f0 3600</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="pool_push.html">pool_push</a></li>
-<li><a href="pool_new.html">pool_new</a></li>
-<li><a href="pool_gen.html">pool_gen</a></li>
-<li><a href="pool_size.html">pool_size</a></li>
-<li><a href="pool_capacity,md">pool_capacity</a></li>
+<li><a href="http://www.csound.com/docs/manual/ftgen.html">ftgen</a></li>
+<li><a href="http://www.csound.com/docs/manual/fillarray.html">fillarray</a></li>
+<li><a href="ftnew.html">ftnew</a></li>
+<li><a href="http://www.csound.com/docs/manual/ftfree.html">ftfree</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div>
@@ -448,10 +356,10 @@ kvalue pool_pop ipool [, kifempty=-1]
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="pool_push.html" class="btn btn-neutral float-right" title="pool_push">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="memview.html" class="btn btn-neutral float-right" title="memview">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="pool_new.html" class="btn btn-neutral" title="pool_new"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="linenv.html" class="btn btn-neutral" title="linenv"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -477,10 +385,10 @@ kvalue pool_pop ipool [, kifempty=-1]
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="pool_new.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="linenv.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="pool_push.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="memview.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
