@@ -19,7 +19,8 @@ CMakeFiles/
 *.a
 .#*
 installer/win/dlls
-installer/osx/dylibs
+installer/macos/dylibs
+installer/macos/release
 buildwin/*
 ~*
 .~*

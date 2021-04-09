@@ -1,7 +1,7 @@
 #!/bin/bash
 VERSION=$(cat ../../VERSION)
 
-DLLFOLDER=../../release/win
+DLLFOLDER=dlls
 
 echo "Csound Plugins version: $VERSION"
 

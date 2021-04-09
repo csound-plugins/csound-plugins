@@ -17,12 +17,13 @@ A hashtable for csound
 * [dict_free](opcodes/dict_free.md): Free a hashtable 
 * [dict_get](opcodes/dict_get.md): Get a value from a hashtable 
 * [dict_geti](opcodes/dict_geti.md): Get a string value from a hashtable at init time 
-* [dict_set](opcodes/dict_set.md): Set (or remove) a value from a hashtable 
+* [dict_set](opcodes/dict_set.md): Set a value from a hashtable 
 * [dict_size](opcodes/dict_size.md): Returns the number of key:value pairs in a dict 
 * [dict_query](opcodes/dict_query.md): Query different properties of a dict 
 * [dict_exists](opcodes/dict_exists.md): Returns 1 if the dict exists, 0 otherwise 
 * [dict_print](opcodes/dict_print.md): Prints the contents of a dict 
 * [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
+* [dict_del](opcodes/dict_del.md): ? 
 * [sref](opcodes/sref.md): Insert a string into a global registry and return a reference to it 
 * [sderef](opcodes/sderef.md): Retrieves a read-only string from the cache 
 * [pool_new](opcodes/pool_new.md): Create an empty  pool 
@@ -90,6 +91,7 @@ Collection of miscellaneous plugins
 * [interp1d](opcodes/interp1d.md): Interpolate between elements of an array/table 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
+* [loadmtx](opcodes/loadmtx.md): Load an array (of any number of dimensions) saved as a .npy file 
 * [memview](opcodes/memview.md): Create a view into a table or another array 
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 

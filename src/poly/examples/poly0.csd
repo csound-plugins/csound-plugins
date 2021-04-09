@@ -78,12 +78,12 @@ instr 2
   kLfoFreqs[] = iFreqs * kf 
   
   ; multiple noise instances, amplitude modulated
-  aA[]    poly inum, "noise", 0.5, 0.3
+  aA[]    poly inum, "noise", 0.01, 0.5
   aAmps[] poly inum, "oscili", 1, kLfoFreqs*0.6
   aA *= aAmps
 
   ; filter noise with bandpass 
-  kQ linsegb 0.5, p3*0.5, 0.02, p3, 0.0001
+  kQ linsegb 0.5, p3*0.5, 0.02, p3, 0.001
   kBands[] = kFreqs * kQ
   aB[] poly inum, "resonr", aA, kFreqs, kBands
   

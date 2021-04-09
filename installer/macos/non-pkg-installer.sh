@@ -6,12 +6,12 @@
 # Opcodes64 folder.
 
 PLUGINS_VERSION=$(cat ../../VERSION)
-CSOUND_VERSION=6.14
+CSOUND_VERSION=6.15
 MACOS_VERSION=10.14
 VERSION="$CSOUND_VERSION-$PLUGINS_VERSION-macos$MACOS_VERSION"
 
 BUILD_DIR=build
-DYLIBS_DIR=../../build
+DYLIBS_DIR=dylibs
 RELEASE_DIR=release
 ROOT_OPCODES64=/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64
 HOME_OPCODES64='$HOME/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64'

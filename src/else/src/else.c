@@ -4206,6 +4206,143 @@ static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+// iarr[] loadmtx "foo.npy"
+typedef struct {
+    OPDS h;
+    ARRAYDAT *out;
+    STRINGDAT *path;
+} LOADMTX_ARR;
+
+
+int64_t strfind(char *s, char *subs) {
+    char *s2 = strstr(s, subs);
+    if(s2 != NULL) {
+        return s2 - s;
+    }
+    return -1;
+}
+
+typedef struct {
+    size_t word_size;
+    int numdimensions;
+    int sizes[8];
+    int is_fortran_order;
+    int is_little_endian;
+    char type;
+} npy_header;
+
+// returns 0 if ok, 1 if error
+int _parse_npy_header(FILE* fp, npy_header *h) {
+    //std::string magic_string(buffer,6);
+    char buffer[256];
+    size_t res = fread(buffer, sizeof(char), 11, fp);
+    if(res != 11)
+        return 1;
+    char *header = fgets(buffer, 256, fp);
+    int64_t loc1, loc2;
+    //fortran order
+    // loc1 = header.find("fortran_order")+16;
+    loc1 = strfind(header, "fortran_order")+16;
+    // fortran_order = (header.substr(loc1,4) == "True" ? true : false);
+    h->is_fortran_order = strncmp(header+loc1, "True", 4) == 0;
+    //shape: "shape": (4, 5 [,...])
+    loc1 = strfind(header, "(");
+    loc2 = strfind(header, ")");
+    int numdims = 0;
+    char *s = header + loc1 + 1;
+    char *send = header + loc2;
+    char *next = NULL;
+    for (;;) {
+        int64_t num = strtol(s, &next, 10);
+        if (s==send)
+            break;
+        h->sizes[numdims] = (int)num;
+        numdims += 1;
+        if(numdims > 8) {
+            return 1;
+        }
+        s = next;
+        // skip comma
+        for(; s < send & *s == ','; s++);
+    }
+    h->numdimensions = numdims;
+    //endian, word size, data type
+    //byte order code | stands for not applicable.
+    //not sure when this applies except for byte array
+    loc1 = strfind(header, "descr")+9;
+    h->is_little_endian = (header[loc1] == '<' || header[loc1] == '|' ? 1 : 0);
+    h->type = header[loc1+1]; // 'i', 'f';
+    h->word_size = strtol(header+loc1+2, &next, 10);
+    return 0;
+}
+
+int load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr) {
+    npy_header header;
+    int err = _parse_npy_header(fp, &header);
+    if(err)
+        return err;
+    size_t numitems = 1;
+    for(int i=0; i<header.numdimensions; i++)
+        numitems = numitems*header.sizes[i];
+    tabinit(csound, arr, numitems);
+    size_t numbytes = header.word_size * numitems;
+    size_t nread = 0;
+    if(header.type == 'f') {
+        if(header.word_size == 8) {
+            nread = fread(arr->data, 1, numbytes, fp);
+            if (nread != numbytes) return 2;
+        } else if(header.word_size == 4) {
+            float *tmp = (float*)malloc(numbytes);
+            nread = fread(tmp, 1, numbytes, fp);
+            if (nread != numbytes) return 2;
+            for(size_t i=0; i<numitems; i++) {
+                arr->data[i] = (MYFLT)tmp[i];
+            }
+            free(tmp);
+        } else
+            return 4;
+    } else if(header.type == 'i') {
+        if(header.word_size == 8) {
+            int64_t *tmp = (int64_t*)malloc(numbytes);
+            nread = fread(tmp, 1, numbytes, fp);
+            if (nread != numbytes) return 2;
+            for(size_t i=0; i<numitems; i++) {
+                arr->data[i] = (MYFLT)tmp[i];
+            }
+            free(tmp);
+        } else if (header.word_size == 4) {
+            int32_t *tmp = (int32_t*)malloc(numbytes);
+            nread = fread(tmp, 1, numbytes, fp);
+            if (nread != numbytes) return 2;
+            for(size_t i=0; i<numitems; i++) {
+                arr->data[i] = (MYFLT)tmp[i];
+            }
+            free(tmp);
+        }
+    }
+    arr->dimensions = header.numdimensions;
+    if(header.numdimensions > 1) {
+        csound->Free(csound, arr->sizes);
+        csound->Calloc(csound, sizeof(int32_t)*arr->dimensions);
+        for(int i=0; i<header.numdimensions; i++)
+            arr->sizes[i] = header.sizes[i];
+    }
+
+    return 0;
+}
+
+
+static int32_t loadmtx(CSOUND *csound, LOADMTX_ARR *p) {
+    FILE* fp = fopen(p->path->data, "rb");
+    if(fp == NULL) {
+        return INITERRF("File %s not found", p->path->data);
+    }
+    int err = load_npy_file(csound, fp, p->out);
+    fclose(fp);
+    return OK;
+}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 #define S(x) sizeof(x)
 
@@ -4362,6 +4499,9 @@ static OENTRY localops[] = {
     { "findarray.i", S(FINDARR), 0, 1, "i", "i[]ij", (SUBR)findarr_perf},
     { "ftfind.k", S(FTINDEX), 0, 2, "k", "kkj", NULL, (SUBR)ftindex_perf},
     { "ftfind.i", S(FTINDEX), 0, 1, "i", "iij", (SUBR)ftindex_perf},
+    { "loadmtx.k", S(LOADMTX_ARR), 0, 1, "k[]", "S", (SUBR)loadmtx},
+    { "loadmtx.i", S(LOADMTX_ARR), 0, 1, "i[]", "S", (SUBR)loadmtx},
+
 };
 
 LINKAGE
