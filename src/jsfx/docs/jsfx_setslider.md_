@@ -17,14 +17,16 @@ used by the script. A slider definition in a jsfx script has the form:
 This defines a control parameter with default value `1.5`, between `0` and `4`,
 with a precission (an increment) of `0.01` and a label "Copression Ratio". 
 
-    kcomprat = 2.5
-    jsfx_setslider ihandle, 3, kcomprat
+```csound
+kcomprat = 2.5
+jsfx_setslider ihandle, 3, kcomprat
+```
     
 The code above will set the slider #3 (the index passed corresponds with the 
 slider number) to the value of `kcomprat`
 The value of any slider can be read via `jsfx_getvalue` (only one value at a time).
 
-!!! Note many sliders
+!!! Note "many sliders"
 
     It is possible to call jsfx_setslider with any number of sliders. It is not
     necessary to set all the sliders defined in the script. Any slider
@@ -33,7 +35,7 @@ The value of any slider can be read via `jsfx_getvalue` (only one value at a tim
     quantized to the increment in the slider definition. To disable any quantization,
     set the increment to 0 in the jsfx script
 
-!!! Note jsfx
+!!! Note "jsfx"
 
     `jsfx` is an audio programming language implemented primarily as part of the DAW `REAPER`. 
     It is a scriptiong language with a built-in compiler which translates it to 
@@ -42,10 +44,13 @@ The value of any slider can be read via `jsfx_getvalue` (only one value at a tim
     than hand-coded C.
     See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
 
+
 ## Syntax
 
-    jsfx_setslider ihandle, id1, kval1 [, id2, kval2, id3, kval3, ...]
-    
+```csound
+
+jsfx_setslider ihandle, id1, kval1 [, id2, kval2, id3, kval3, ...]
+```    
     
 ### Arguments
 

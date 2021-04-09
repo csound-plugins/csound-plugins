@@ -11,7 +11,7 @@ Processes audio through a jsfx script
 The script must have been initialized via `jsfx_new`, which instantiates and 
 compiles the script and returns a handle. 
 
-!!! Note jsfx
+!!! note "jsfx"
 
     `jsfx` is an audio programming language implemented primarily as part of the DAW `REAPER`. 
     It is a scriptiong language with a built-in compiler which translates it to 
@@ -19,7 +19,7 @@ compiles the script and returns a handle.
     defining an udo with `setksmps 1` but more efficient). It is around 2x to 2.5x slower
     than hand-coded C.
     
-!!! Note jsfx input / output
+!!! Note "jsfx input / output"
 
     A jsfx script has a certain number of audio input / output channels. The number of
     audio inputs / outputs passed to the script does not need to match the number of 

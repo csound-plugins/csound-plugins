@@ -15,7 +15,7 @@ opcode. As an alternative, it is also possible to decouple these actions, first
 compiling a script (see [jsfx_new]) and then calling `jsfx_setslider` and `jsfx_play`.
 Afterwords, slider values can be read via `jsfx_getslider`
 
-!!! Note jsfx
+!!! Note "jsfx"
 
     `jsfx` is an audio programming language implemented pritarily as part of the DAW `REAPER`. 
     It is a scriptiong language with a built-in jit compiler which translates it to 
@@ -24,7 +24,7 @@ Afterwords, slider values can be read via `jsfx_getslider`
     than hand-coded C.
 
     
-!!! Note jsfx inputs and outputs
+!!! Note "jsfx inputs and outputs"
 
     A jsfx script has a certain number of audio input / output channels, and a series of 
     "sliders", which are parameters operating at control rate. A script can also use

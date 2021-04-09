@@ -41,8 +41,6 @@ atstop Sinstrname [, idelay=0, idur=-1, p4, p5, ...]
 
 ```          
 
-> `atstop` executes only at **init time**. 
-    
 ## Arguments
 
 * `instrnum` / `Sintrname`: the number or the name of the instr to be scheduled

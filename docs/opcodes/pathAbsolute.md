@@ -8,20 +8,22 @@ Returns the absolute path of a file
 ## Description
 
 If a relative path is given as argument, pathAbsolute returns the absolute path
-relative to the current working directory. Bear in mind that the current working 
-directory is not necessarily the directory of the csd being run but the directory 
-in which csound was started (either directly or via the API). 
+relative to the current working directory.
 
 `pathAbsolute` will also expand `~` in unix platforms, so "~/Documents/foo.txt" will
-be expended to "/home/<user>/Documents/foo.txt" in linux and 
-"/Users/<user>/Documents/foo.txt" in macOS. Other environmental variables are NOT 
+be expended to `"/home/<user>/Documents/foo.txt"` in linux and 
+`"/Users/<user>/Documents/foo.txt"` in macOS. Other environmental variables are NOT 
 expanded. 
 
 
-!!! Note
+!!! note "Current working directory vs script directory" 
 
+    Bear in mind that the current working 
+    directory is not necessarily the directory of the csd being run but the directory 
+    in which csound was started (either directly or via the API). 
     To calculate the absolute path in relation to the directory of the script
     being run, see `scriptDir`.
+
 
 ## Syntax
 

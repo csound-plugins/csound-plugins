@@ -17,10 +17,11 @@ the given size is allocated and the size can't be modified. If no size is given,
 a pool of variable size is created.
 
 
-!!! Note
+!!! Note "Variable size / fixed size"
 
     A variable size pool produces allocations during performance, which might be
-    a  problem in certain situations / architectures.
+    a problem in certain situations / architectures or when running in `--realtime`
+    mode. 
 
 
 ## Syntax

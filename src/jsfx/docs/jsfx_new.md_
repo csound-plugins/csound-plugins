@@ -12,7 +12,7 @@ a handle which can be used to modify control values and perform audio io. It
 is also possible to instantiate and play a script with only one opcode
 via `jsfx`.
 
-!!! Note jsfx
+!!! note "jsfx"
 
     `jsfx` is an audio programming language implemented pritarily as part of the DAW `REAPER`. 
     It is a scriptiong language with a built-in jit compiler which translates it to 
@@ -20,7 +20,7 @@ via `jsfx`.
     defining an udo with `setksmps 1` but more efficient). It is around 2x to 2.5x slower
     than hand-coded C.
     
-!!! Note jsfx input / output
+!!! note "jsfx input / output"
 
     A jsfx script has a certain number of audio input / output channels, and a series of 
     "sliders", which are parameters operating at control rate. A script can also use

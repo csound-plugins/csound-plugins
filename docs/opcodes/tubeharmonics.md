@@ -14,10 +14,10 @@ A port of `REAPER`'s "Tube Harmonics" jsfx plugin
 
 ## Syntax
 
-    aout tubeharmonics ain, keven, kodd, kfluctuation=0, kindrive=0, koutdrive=0, kgain=0
-
+```csound
+aout tubeharmonics ain, keven, kodd, kfluctuation=0, kindrive=0, koutdrive=0, kgain=0
+```
     
-
 ### Arguments
 
 * `ain`: the input signal

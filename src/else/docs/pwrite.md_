@@ -9,6 +9,15 @@ Modify pfield values of an active instrument instance
 `pwrite` can be used to modify the value of a pfield of a running instance 
 (possibly a fractional instrument number).
 
+
+### Dynamic pfields
+
+In order for pwrite to have any effect, the instrument in question should
+have an assignment of the sort `kfreq = p5`. 
+
+
+### Behaviour
+
 A matching instance is searched at performance time, so that its
 behaviour can be controlled via `if` or `timout` statements.
 
@@ -19,9 +28,6 @@ If the instance ceases to exist during another instrument is modifying
 its pfield values, nothing happens. `pwrite` notices that the instance
 is not active anymore and becomes a `NOOP`.
 
-**NB**: in order for pwrite to have any effect, the instrument in question should
-have an assignment of the sort `kfreq = p5`. 
-
 ### Exact instance vs Broadcasting
 
 If `instrnum` is a fractional instrument number, pwrite will only affect
@@ -30,7 +36,7 @@ the first instance matching this exact number.
 If `instrnum` is set to an integer number, `pwrite` will **broadcast** the
 changes to **ALL** instruments with the same integer number.
 
-!!! Note
+!!! warning
 
     Setting a value of a pfield out of range will result in a 
     performance error. 
@@ -49,7 +55,8 @@ pwrite instrnum:i, index:i|k, value:i|k, [index2, value2, ...]
 * `index` (i-, k-): the index of the pfield to modify. If kindex is 4, then p4 will be modified
 * `value` (i-, k-): the new value of the given pfield
 
-!!! Note
+
+!!! info
 
     Multiple index:value pairs can be modified simultaneously
 

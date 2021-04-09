@@ -31,7 +31,7 @@ the array `kFreqs` it is possible to modify the frequency of each oscillator.
 It is of course possible to chain multiple `poly`s to generate complex effect chains,
 and `poly` can also be used with k-values.
 
-!!! Note
+!!! warning
 
     At the moment `poly` works **only** with **builtin opcodes**. This might change
     in the future

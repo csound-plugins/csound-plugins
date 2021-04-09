@@ -25,6 +25,7 @@ aSigs[] poly 10, "oscili", 0.1, kFreqs
 aLs[], aRs[] poly 10, "pan2", aSigs, iPans
 poly0 10, "outch", 1, aLs
 poly0 10, "outch", 2, aRs
+
 ```
 
 Notice that it is possible to set one value for each instance, as given by `kFreqs`, or
@@ -34,20 +35,17 @@ the array `kFreqs` it is possible to modify the frequency of each oscillator.
 It is of course possible to chain multiple `poly0`s to generate complex effect chains,
 and `poly0` can also be used with k-values.
 
-!!! Note
+!!! warning
 
     At the moment `poly0` works **only** with **builtin opcodes**. This might change
     in the future
 
-!!! Note
-
-    for limitations in the type system of csound, `poly0` works with all opcodes
-    which have at least one output. For opcodes with no outputs (like `outch`,
-    for example), use [poly0](poly0.md)
 
 ## Syntax
 
+
     poly0 inuminstances, Sopcode, xarg0, [xarg1, ...]
+
 
 ## Arguments
 
@@ -62,8 +60,6 @@ given opcode. The same applies for the output arguments
 **NB**: output arguments are always arrays, input arguments can be arrays, in which
 case they must be at least the size of `inuminstances`, or scalars, in which case
 the same value is shared by multiple instances
-
-### Output
 
 ## Examples
 

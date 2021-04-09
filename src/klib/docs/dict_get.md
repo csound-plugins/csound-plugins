@@ -24,13 +24,13 @@ for number values)
     
 The type of key and value depend on the type definition of the `dict`, see [dict_new](dict_new)
 
-`dict_get` executes at **i-time** and **k-time** depending on the output value
- 
+`dict_get` executes at **i-time** and **k-time** depending on the output value. In the case of 
+a dict of type "str:str" `dict_get` runs at k-time. Use `dict_geti` for an init time version
 
+ 
 !!! Note
 
     In the case of a dict of type "str:str", dict_get returns an empty string if the key is not found
-    For this case also, `dict_get` runs at k-time. Use `dict_geti` for an init time version
 
 ## Arguments
 

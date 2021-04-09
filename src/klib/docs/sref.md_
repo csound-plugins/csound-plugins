@@ -12,21 +12,22 @@ example, when using the `event` opcode, or to be able to mix numbers and strings
 inside an array). It behaves similar to the `strset` / `strget` opcodes but
 automatically assigns an index to each distinct string inside the cache. 
 
+To retrieve an internalized string, use `sderef`. The returned string should
+not be modified since it is a "view" of the original string. 
+
 
 !!! Note
 
     It is guaranteed that passing twice the same string will return the same
     index.
 
-!!! Note
-
-    To retrieve an internalized string, use `sderef`. The returned string should
-    not be modified since it is a "view" of the original string. 
-
 ## Syntax
 
+```csound
+    
     idx  sref Sstr
     kdx  sref Sstr
+```
 
 ### Arguments
 
