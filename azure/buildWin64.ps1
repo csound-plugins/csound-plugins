@@ -2,7 +2,7 @@ $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MS
 
 dir
 cd c:/
-Invoke-WebRequest -Uri "https://github.com/csound/csound/releases/download/6.14.0/Csound6.14.0-Windows_x64-binaries.zip" -Outfile winx64-binaries.zip
+Invoke-WebRequest -Uri "https://github.com/csound/csound/releases/download/6.15.0/csound-windows_x86_64-6.15.0-binaries.zip" -Outfile winx64-binaries.zip
 7z.exe x winx64-binaries.zip -o"C:/Program Files/Csound6_x64"
 cd "C:/Program Files/Csound6_x64"
 dir
