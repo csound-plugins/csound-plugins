@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -x
+
+VERSION=$(cat ../VERSION)
+echo "VERSION: '$VERSION'"
+
+DROP=$(realpath ~/Downloads/drop.zip)
+
+rootpath=$(realpath "$0")
+root=$(realpath $(dirname "$rootpath")/..)
+echo $root
+
+OUTPUTDIR=$(realpath ../release/v$VERSION)
+
+mkdir -p $OUTPUTDIR
+
+cd ~/tmp
+rm -fr ~/tmp/drop*
+
+cp "$DROP" ~/tmp
+ls -l 
+aunpack drop.zip
+cd drop/Linux
+
+LINUXZIP=csound-plugins--$VERSION--linux.zip
+apack "$LINUXZIP" *
+cp "$LINUXZIP" "$OUTPUTDIR"
+
+cd ..
+cd MacOS
+
+MACOSZIP=csound-plugins--$VERSION--macOS.zip
+apack "$MACOSZIP" *
+cp "$MACOSZIP" "$OUTPUTDIR"
+
+
+cd "$root"
+scripts/cross-compile-win.sh
+cd buildwin
+
+WINZIP=csound-plugins--$VERSION--win64.zip
+apack "$WINZIP" *
+cp "$WINZIP" "$OUTPUTDIR"
+
+echo "Binaries are in $OUTPUTDIR"
+ls -l "$OUTPUTDIR"
