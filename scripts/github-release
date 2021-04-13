@@ -45,3 +45,11 @@ cp "$WINZIP" "$OUTPUTDIR"
 
 echo "Binaries are in $OUTPUTDIR"
 ls -l "$OUTPUTDIR"
+
+echo "---------------------------"
+echo " Making release in github"
+echo "---------------------------"
+
+git tag v$VERSION
+git push --tags
+gh release create v$VERSION $OUTPUTDIR/*
