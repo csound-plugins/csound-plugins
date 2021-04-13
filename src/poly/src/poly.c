@@ -396,6 +396,7 @@ MYFLT get_default_value(char c) {
     case 'm':
     case 'M':
     case 'N':
+    case 'z':
     case 'Z':
     case '*':
     case '?':
@@ -420,18 +421,28 @@ handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
     char c;
     MYFLT default_value;
     void **inargs = &(handle->state->args[p->num_output_args]);
-    // opc_numins: the TOTAL number of inputs expected by opcode
-    // num_input_args: the number of inputs actually passed to poly
-    for(col = firstcol; col < p->opc_numins; col++) {
+    /* opc_numins: the TOTAL number of inputs expected by opcode
+       num_input_args: the number of inputs actually passed to poly
+       opc_numins can be lower than num_input_args, because of varargs
+       (m, z, ...)
+    */
+    size_t max_args = max(p->opc_numins, p->num_input_args);
+    // for(col = firstcol; col < p->opc_numins; col++) {
+    for(col = firstcol; col < max_args; col++) {
         // handle->state->inargs[col] = &(handle->indata[col]);
+        // point inargs to handle->indata
         inargs[col] = &(handle->indata[col]);
-        c = p->opc->intypes[col];
-        default_value = get_default_value(c);
-        if((i32)default_value == default_fail)
-            return INITERRF(Str("failed to parse signature (%s), char failed: '%c'"),
-                            p->opc->intypes, c);
-        if((i32)default_value != default_unset)
-            handle->indata[col] = default_value;
+        if(col < p->opc_numins) {
+            c = p->opc->intypes[col];
+            default_value = get_default_value(c);
+            if((i32)default_value == default_fail)
+                return INITERRF(Str("handle_set_inputs: failed to parse signature (%s),"
+                                    "char failed: '%c', index %d"),
+                                p->opc->intypes, c, col);
+            if((i32)default_value != default_unset)
+                handle->indata[col] = default_value;
+        }
+
     }
 
     for(col=firstcol; col<p->num_input_args; col++) {
@@ -598,8 +609,11 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     if(get_signature(csound, p->inargs, p->num_input_args, p->in_signature) != OK)
         return INITERR(Str("could not parse input signature"));
 
-    if(get_signature(csound, p->args, p->num_output_args, p->out_signature) != OK)
-        return INITERR(Str("could not parse output signature"));
+
+    if(p->num_output_args > 0) {
+        if(get_signature(csound, p->args, p->num_output_args, p->out_signature) != OK)
+            return INITERR(Str("could not parse output signature"));
+    }
 
     // the target signature is just our signature without any arrays
     // str_tolower(opc_insig, p->in_signature);
@@ -715,7 +729,8 @@ static i32 poly1_deinit(CSOUND *csound, POLY1 *p) {
 static i32 poly1_perf(CSOUND *csound, POLY1 *p) {
     ARRAYDAT *arr;
     char *in_signature = p->in_signature;
-    ui32 col, i, numcols = p->num_input_args;
+    ui32 col, i;
+    ui32 numcols = p->num_input_args;
     if(UNLIKELY(p->opc->kopadr == NULL))
         return PERFERRF(Str("opcode %s has no performance callback!"),
                         p->opcode_name->data);
@@ -736,8 +751,10 @@ static i32 poly1_perf(CSOUND *csound, POLY1 *p) {
 
     for(i=0; i<p->num_instances; i++) {
         OPCHANDLE *handle = &(p->handles[i]);
+
         if(UNLIKELY(handle == NULL))
             return PERFERRF(Str("handle %d is invalid"), i);
+
         for(col=p->firstcol; col<numcols; col++) {
             char c = in_signature[col];
             if(c == 'K' || c == 'I') {
@@ -748,8 +765,11 @@ static i32 poly1_perf(CSOUND *csound, POLY1 *p) {
                 // scalar, copy value to internal storage
                 handle->indata[col] = *((MYFLT*)(p->inargs[col]));
             }
+
         }
+
         p->opc->kopadr(csound, (void*)handle->state);
+
     }
     return OK;
 }
@@ -822,7 +842,6 @@ static i32 polyseq_signature_check(CSOUND *csound, POLY1 *p) {
 
 static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
     ui32 i;
-    i32 ret;
     char opc_outsig[64];    // out signature used to find the opcode
     char opc_insig[64];     // in signature used to find opcode
 
@@ -837,12 +856,10 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
     if(str_in_list(p->opcode_name->data, poly_blacklist))
         return INITERRF(Str("Opcode %s not supported"), p->opcode_name->data);
 
-    ret = get_signature(csound, p->inargs, p->num_input_args, p->in_signature);
-    if(ret != OK)
+    if(get_signature(csound, p->inargs, p->num_input_args, p->in_signature) != OK)
         return INITERR(Str("Couldn't parse input signature"));
 
-    ret = get_signature(csound, p->args, p->num_output_args, p->out_signature);
-    if(ret != OK)
+    if(get_signature(csound, p->args, p->num_output_args, p->out_signature) != OK)
         return INITERR(Str("Couldn't parse output signature"));
 
     // the target signature is just our signature without any arrays (thus lowercase)
@@ -1014,7 +1031,7 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
     // copy args
     void **inargs = &(state->args[0]);
     // opc_numins: the number of inputs expected by the opcode according
-    // to its own signature. NB: in the cases of m, M, *, etc, the opcode
+    // to its own signature. NB: in the cases of m, M, z, *, etc, the opcode
     // can in fact take more arguments.
 
     int max_args = max(p->opc_numins, p->num_input_args);
@@ -1030,7 +1047,6 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
                             p->opc->intypes, c);
 
         if((i32)default_value != default_unset) {
-            printf("setting default # %d (%c) to %f \n", i, c, default_value);
             *(MYFLT*)inargs[i] = default_value;
         }
     }
