@@ -14,16 +14,18 @@ See [Installation](Installation.md)
 A hashtable for csound
 
 * [dict_new](opcodes/dict_new.md): Create a hashtable 
+* [dict_dump](opcodes/dict_dump.md): Dumps the contents of this dict as a string 
 * [dict_free](opcodes/dict_free.md): Free a hashtable 
 * [dict_get](opcodes/dict_get.md): Get a value from a hashtable 
 * [dict_geti](opcodes/dict_geti.md): Get a string value from a hashtable at init time 
+* [dict_loadstr](opcodes/dict_loadstr.md): Creates and fills a new dict from a string definition 
 * [dict_set](opcodes/dict_set.md): Set a value from a hashtable 
 * [dict_size](opcodes/dict_size.md): Returns the number of key:value pairs in a dict 
 * [dict_query](opcodes/dict_query.md): Query different properties of a dict 
 * [dict_exists](opcodes/dict_exists.md): Returns 1 if the dict exists, 0 otherwise 
 * [dict_print](opcodes/dict_print.md): Prints the contents of a dict 
 * [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
-* [dict_del](opcodes/dict_del.md): ? 
+* [dict_del](opcodes/dict_del.md): Remove a key:value pair from a hashtable 
 * [sref](opcodes/sref.md): Insert a string into a global registry and return a reference to it 
 * [sderef](opcodes/sderef.md): Retrieves a read-only string from the cache 
 * [pool_new](opcodes/pool_new.md): Create an empty  pool 
@@ -125,6 +127,7 @@ Cross-platform path handling
 * [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
 * [sysPlatform](opcodes/sysPlatform.md): Get a string description of the current system platform 
 * [strsplit](opcodes/strsplit.md): Split a string at a given separator 
+* [sfreadmeta](opcodes/sfreadmeta.md): Read metadata from a soundfile 
 
 
 

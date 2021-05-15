@@ -22,16 +22,20 @@ This defines a control parameter with default value `0`, between `0` and `20`,
 with a precission (an increment) of `0.01` and a label "Gain Reduction". To read
 the value of that slider:
 
-    kgainreduction = jsfx_getslider(ihandle, 7)
+```csound
 
-!!! Note jsfx sliders
+kgainreduction = jsfx_getslider(ihandle, 7)
+
+```
+
+!!! Note "jsfx sliders"
 
     Any slider which is not set via jsfx_setslider retains its default value. A value will 
     always be confined to the range in the slider definition and will also be 
     quantized to the increment in the slider definition. To disable any quantization,
     set the increment to 0 in the jsfx script
 
-!!! Note jsfx
+!!! Note "jsfx"
 
     `jsfx` is an audio programming language implemented primarily as part of the DAW `REAPER`. 
     It is a scripting language with a built-in compiler which translates it to 
@@ -39,10 +43,14 @@ the value of that slider:
     `setksmps 1` but more efficient). It is around 2x to 2.5x slower than hand-coded C.
     See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
 
+
 ## Syntax
 
-    kvalue  jsfx_getslider ihandle, kid
-    
+```csound
+
+kvalue  jsfx_getslider ihandle, kid
+
+```    
     
 ### Arguments
 
@@ -59,7 +67,8 @@ the value of that slider:
 
 ## Examples
 
-```csound 
+```csound
+
 
 <CsoundSynthesizer>
 <CsOptions>
@@ -158,6 +167,7 @@ i1 0 3600
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 ```
 

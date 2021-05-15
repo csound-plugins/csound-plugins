@@ -204,6 +204,7 @@ typedef uint64_t ui64;
 #define KHASH_STRKEY_MAXSIZE 63
 #define HANDLES_INITIAL_SIZE 200
 #define DICT_INITIAL_SIZE 8
+#define FLOAT_FMT "%.10g"
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
@@ -307,14 +308,10 @@ kstr_set_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
 
 static inline void
 kstr_from_cstr(CSOUND *csound, kstring_t *ks, char *s) {
-    if(ks->s != NULL) {
-        size_t lens = strlen(s);
-        kstr_setn(csound, ks, s, lens);
-    } else {
-        ks->s = csound->Strdup(csound, s);
-        ks->l = strlen(s);
-        ks->m = ks->l + 1;
-    }
+    // this assumes that the ks string is not initialized,
+    ks->s = csound->Strdup(csound, s);
+    ks->l = strlen(s);
+    ks->m = ks->l + 1;
 }
 
 // init ks to s
@@ -945,23 +942,23 @@ strdef_to_intdef(STRINGDAT *s) {
  *   if or int:float   int -> float
  *   is or int:str     int -> str
  * 
- * if Stype starts with *, the dict is global and will not be deallocated
- * at the end of the event
  */
 
 
 static i32
 dict_new(CSOUND *csound, DICT_NEW *p) {
     p->g = dict_globals(csound);
-    int isglobal = strncmp(p->keyvaltype->data, "*", 1) == 0;
-    p->global = isglobal;
+    p->global = 1;
+    // All dicts are global now
+    p->global = 1;
     i32 khtype = strdef_to_intdef(p->keyvaltype);
     if(khtype < 0)
         return INITERR(Str("dict: type not understood."
-                           ". Expected one of 'sf', 'ss', 'if', 'is'"));
+                           " Expected one of 'str:float', 'str:str', 'int:float', "
+                           "'int:str', 'str:any'"));
     int capacity = DICT_INITIAL_SIZE;
     if(csound->GetInputArgCnt(p) == 2) {
-        // called as idict dict_new "*sf", icapacity
+        // called as idict dict_new "sf", icapacity
         capacity = (int)*(MYFLT*)p->inargs[0];
     }
     i32 idx = dict_make(csound, p->g, khtype, (i32) p->global, capacity);
@@ -1000,8 +997,8 @@ i64 stridx(const char *s, char c, size_t start) {
     return subs == NULL ? -1 : (subs - s);
 }
 
-i64 str_first_char_after(const char *s, size_t start) {
-    for(i64 i=start; i<strlen(s); i++) {
+i64 str_first_char_after(const char *s, size_t slen, size_t start) {
+    for(i64 i=start; i<slen; i++) {
         char c = s[i];
         if(c!=' ' && c!='\t' && c!='\n') {
             return i;
@@ -1011,7 +1008,7 @@ i64 str_first_char_after(const char *s, size_t start) {
     return -1;
 }
 
-i64 str_last_char_before(const char *s, size_t end) {
+i64 str_last_char_before(const char *s, size_t slen, size_t end) {
     for(i64 i=end-1; i >= 0; i--) {
         char c = s[i];
         if(c!=' ' && c!='\t' && c!='\n') {
@@ -1046,8 +1043,8 @@ dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
     char skey[80];
     char valuebuf[1000];
     char *svalue = valuebuf;
-
-    for(size_t i=0; i<strlen(s); i++) {
+    size_t slen = strlen(s);
+    for(size_t i=0; i<slen; i++) {
         char c = s[i];
         if(insidestr) {
             if(c == '\'')
@@ -1063,9 +1060,9 @@ dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
         }
     }
     // check last item
-    if(itemstart > itemend && itemstart < strlen(s)) {
+    if(itemstart > itemend && itemstart < slen) {
         starts[numitems] = itemstart;
-        ends[numitems] = strlen(s);
+        ends[numitems] = slen;
         numitems++;
     }
     for(size_t i=0; i<numitems; i++) {
@@ -1075,15 +1072,15 @@ dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
             return INITERRF("Item idx %lu in %s does not have separator :", i, s);
         }
 
-        size_t keystart = str_first_char_after(s, start);
-        size_t keyend = str_last_char_before(s, sepidx);
+        size_t keystart = str_first_char_after(s, slen, start);
+        size_t keyend = str_last_char_before(s, slen, sepidx);
         if(keystart < 0 || keyend < 0) {
             return INITERRF("Malformed key %lu (%s)", i, s);
         }
 
         strncpy0(skey, &s[keystart], keyend - keystart + 1);
-        size_t valuestart = str_first_char_after(s, sepidx+1);
-        size_t valueend = str_last_char_before(s, ends[i]);
+        size_t valuestart = str_first_char_after(s, slen, sepidx+1);
+        size_t valueend = str_last_char_before(s, slen, ends[i]);
         if(valuestart < 0 || valueend < 0) {
             return INITERRF("Malformed value %lu (%s)", i, s);
         }
@@ -2108,7 +2105,7 @@ print_hashtab_sf(CSOUND *csound, khash_t(khStrFlt) *h) {
     char line[256];
     for(khint_t k = kh_begin(h); k != kh_end(h); ++k) {
         if(!kh_exist(h, k)) continue;
-        chars += sprintf(line+chars, "%s: %.5f", kh_key(h, k), kh_val(h, k));
+        chars += sprintf(line+chars, "%s: "FLOAT_FMT, kh_key(h, k), kh_val(h, k));
         if(chars < linelength) {
             line[chars++] = ',';
             line[chars++] = ' ';
@@ -2145,7 +2142,7 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
         khash_t(khIntFlt) *h = handle->hashtab;
         for(k = kh_begin(h); k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
-            itemlength = sprintf(line+chars, "%d: %.5f", kh_key(h, k), kh_value(h, k));
+            itemlength = sprintf(line+chars, "%d: "FLOAT_FMT, kh_key(h, k), kh_value(h, k));
             chars += itemlength;
             if(chars + (item_maxlength - itemlength) <= linelength) {
                 for(int i=itemlength; i<item_maxlength; i++) {
@@ -2718,13 +2715,15 @@ static i32
 set_many_sa(CSOUND *csound, void**inargs, ui32 numargs, HANDLE *handle) {
     khash_t(khStrStr) *h1 = handle->hashtab;
     khash_t(khStrFlt) *h2 = handle->hashtab2;
+    STRINGDAT *svalue;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
         STRINGDAT *key = (STRINGDAT *)inargs[argidx];
         CS_TYPE *cstype = csound->GetTypeForArg(inargs[argidx+1]);
         char argtype = cstype->varTypeName[0];
         switch(argtype) {
         case 'S':
-            _set_ss(csound, h1, key->data, inargs[argidx+1]);
+            svalue = (STRINGDAT *)inargs[argidx+1];
+            _set_ss(csound, h1, key->data, svalue->data);
             break;
         case 'i':
         case 'c':   // constant
@@ -2772,6 +2771,120 @@ set_many_is(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
             kstr_set_from_stringdat(csound, ks, val);
     }
     handle->counter++;
+    return OK;
+}
+
+// Sout dict_dump idict
+// This is the complementary operation of dict_loadstr: it generates the definition
+// string from a dict
+/*
+ * keyA: numvalue,\n
+ * keyB: 'string value'
+ * ...
+ */
+
+typedef struct {
+    OPDS h;
+    STRINGDAT *sout;
+    MYFLT *dictidx;
+} DICT_DUMP;
+
+static i64 _dict_dump_sf(khash_t(khStrFlt) *h, char *buf, size_t buflen) {
+    const char *buforig = buf;
+    const char *key;
+    ui64 chars = 0;
+    if(h->size == 0) {
+        buf[0] = '\0';
+        return 0;
+    }
+    for(khint_t k=kh_begin(h); k != kh_end(h); ++k) {
+        if(!kh_exist(h, k)) continue;
+        key = kh_key(h, k);
+        MYFLT val = kh_val(h, k);
+        if(buflen < 80) {
+            return -1;
+        }
+        chars = sprintf(buf, "%s: "FLOAT_FMT, key, val);
+        buf += chars;
+        buflen -= chars;
+        *buf++ = ',';
+        *buf++ = '\n';
+    }
+    buf[-2] = '\0';
+    i64 outputlen = (buf - buforig) - 2;
+    return outputlen;
+}
+
+static i64 _dict_dump_ss(khash_t(khStrStr) *h, char *buf, size_t buflen) {
+    const char *buforig = buf;
+    const char *key;
+    kstring_t value;
+    ui64 chars = 0;
+    if(h->size == 0) {
+        buf[0] = '\0';
+        return 0;
+    }
+    for(khint_t k=kh_begin(h); k != kh_end(h); ++k) {
+        if(!kh_exist(h, k)) continue;
+        key = kh_key(h, k);
+        value = kh_val(h, k);
+        if(buflen < 80) {
+            return -1;
+        }
+        chars = sprintf(buf, "%s: '%s'", key, value.s);
+        buf += chars;
+        buflen -= chars;
+        *buf++ = ',';
+        *buf++ = '\n';
+    }
+    buf[-2] = '\0';
+    i64 outputlen = (buf - buforig) - 2;
+    return outputlen;
+}
+
+static i64 _dict_dump_sa(HANDLE *handle, char *buf, size_t buflen) {
+    i64 dumplen = _dict_dump_sf(handle->hashtab2, buf, buflen);
+    if(dumplen < 0) {
+        return -1;
+    }
+    if(dumplen > 0) {
+        buf[dumplen] = ',';
+        buf[dumplen+1] = '\n';
+    }
+    i64 dumplen2 = _dict_dump_ss(handle->hashtab, &buf[dumplen+2], buflen-dumplen-2);
+    if(dumplen2 < 0)
+        return -1;
+    return dumplen + dumplen2;
+}
+
+static i32 dict_dump(CSOUND *csound, DICT_DUMP *p) {
+    HASH_GLOBALS *g = dict_globals(csound);
+    ui32 idx = (ui32)*p->dictidx;
+    HANDLE *handle = get_handle_by_idx(g, idx);
+    if(handle == NULL) {
+        return INITERRF("Invalid dict handle %d", idx);
+    }
+    enum {buflen = 2000};
+    char buf[buflen];
+    i64 dumplen;
+    switch(handle->khtype) {
+    case khStrFlt:
+        dumplen = _dict_dump_sf(handle->hashtab, buf, buflen);
+        break;
+    case khStrStr:
+        dumplen = _dict_dump_ss(handle->hashtab, buf, buflen);
+        break;
+    case khStrAny:
+        dumplen = _dict_dump_sa(handle, buf, buflen);
+        break;
+    default:
+        return INITERRF("Dict type %s not supported", intdef_to_strdef(handle->khtype));
+    }
+    if(dumplen < 0) {
+        p->sout->data[0] = '\0';
+        return INITERR("Eror dumping dict");
+    }
+    stringdat_set(csound, p->sout, buf, dumplen);
     return OK;
 }
 
@@ -3495,7 +3608,7 @@ static OENTRY localops[] = {
     { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists },
 
     { "dict_loadstr", S(DICT_LOADSTR), 0, 1, "i", "S", (SUBR)dict_loadstr},
-
+    { "dict_dump", S(DICT_DUMP), 0, 1, "S", "i", (SUBR)dict_dump},
     // { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
     // { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
     { "sref.i_set", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },

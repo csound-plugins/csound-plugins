@@ -4,9 +4,11 @@
     "csound_version": "6.15",
     "opcodes": [
         "dict_new",
+        "dict_dump",
         "dict_free",
         "dict_get",
         "dict_geti",
+        "dict_loadstr",
         "dict_set",
         "dict_size",
         "dict_query",
