@@ -32,6 +32,8 @@
 #include <unistd.h>
 #include <ctype.h>
 #include "arrays.h"
+#include <sndfile.h>
+#include "cs_strlib.h"
 
 #if defined(WIN32) || defined(__MINGW32__) || defined(_WIN32)
     #define OS_WIN32
@@ -98,41 +100,6 @@ static inline char _get_path_delim() {
 }
 
 
-unsigned long next_power_of_two(unsigned long v) {
-    v--;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-    v++;
-    return v;
-}
-
-
-// like strncpy but really makes sure that the dest str is 0 terminated
-// dest should have allocated at least n+1
-static inline
-void strncpy0(char *dest, const char *src, size_t n) {
-    strncpy(dest, src, n);
-    dest[n] = '\0';
-}
-
-
-
-// make sure that the out string has enough allocated space to hold
-// a string of `size` chars (the \0 should be taken into account)
-// This can be run only at init time
-static int32_t _string_ensure(CSOUND *csound, STRINGDAT *s, size_t size) {
-    if (s->size >= (int)size)
-        return OK;
-    size = next_power_of_two(size);
-    s->data = csound->ReAlloc(csound, s->data, size);
-    s->size = (int)size;
-    return OK;
-}
-
-
 static int32_t _str_rfind(const char *s, char ch) {
     // find first occurrence of ch in s from right to left
     // returns -1 if not found
@@ -168,22 +135,6 @@ static void _path_make_native_inplace(char *s, size_t len) {
 }
 
 
-static void stringdat_copy_cstr(CSOUND *csound, STRINGDAT *dest, const char *src, size_t len) {
-    _string_ensure(csound, dest, len+1);
-    strncpy0(dest->data, src, len);
-}
-
-static void stringdat_copy_literal(CSOUND *csound, STRINGDAT *dest, const char *src) {
-    size_t len = strlen(src);
-    _string_ensure(csound, dest, len+1);
-    strncpy0(dest->data, src, len);
-}
-
-static void stringdat_clear(CSOUND *csound, STRINGDAT *s) {
-    _string_ensure(csound, s, 1);
-    s->data[0] = '\0';
-}
-
 typedef struct {
     OPDS h;
     ARRAYDAT *parts;
@@ -203,7 +154,7 @@ static int32_t string_split(CSOUND *csound, STRSPLIT *p) {
     const int maxseps = 1000;
     int32_t separator_starts[maxseps];
     char *sep = p->sep->data;
-    int seplen = strlen(sep);
+    size_t seplen = strlen(sep);
     char *s = p->s->data;
     char *ptr = s;
     while (1) {
@@ -374,7 +325,7 @@ static int32_t pathJoin(CSOUND *csound, S_SS *p) {
         return OK;
     }
     size_t soutlen = len1+len2+2;
-    _string_ensure(csound, p->Sout, soutlen);
+    string_ensure(csound, p->Sout, soutlen);
     strncpy0(p->Sout->data, p->S1->data, len1);
     if(p->Sout->data[len1-1] != sep) {
         p->Sout->data[len1] = sep;
@@ -416,7 +367,7 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
     if(p->s->data[0] == '~' && p->s->data[1] == sep) {
         char *home = getenv("HOME");
         size_t homelen = strlen(home);
-        _string_ensure(csound, p->Sout, slen + homelen + 10);
+        string_ensure(csound, p->Sout, slen + homelen + 10);
         strncpy0(p->Sout->data, home, homelen);
         strncpy0(p->Sout->data + homelen, p->s->data + 1, slen-1);
         return OK;
@@ -429,7 +380,7 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
         return OK;
     }
 
-    _string_ensure(csound, p->Sout, 1024);
+    string_ensure(csound, p->Sout, 1024);
     if (getcwd(p->Sout->data, p->Sout->size - slen - 2) == NULL) {
         stringdat_clear(csound, p->Sout);
         MSG("Could not get the current working directory\n");
@@ -438,7 +389,7 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
 
     // now concatenate the abs path
     size_t lenout = strlen(p->Sout->data);
-    _string_ensure(csound, p->Sout, lenout + 2 + slen);
+    string_ensure(csound, p->Sout, lenout + 2 + slen);
     char *outdata = p->Sout->data;
     if(outdata[lenout-1] != sep) {
         outdata[lenout] = sep;
@@ -537,6 +488,116 @@ static int32_t getPlatform(CSOUND *csound, S_ *p) {
 #endif
 }
 
+
+// Sstr sndfilemeta "sndfile.wav", Skey
+typedef struct {
+    OPDS h;
+    STRINGDAT *sout;
+    STRINGDAT *sndfile;
+    STRINGDAT *key;
+} SFREADMETA;
+
+
+static int sf_string_to_type(const char *key) {
+    int str_type;
+    if(!strcmp(key, "comment"))
+        str_type = SF_STR_COMMENT;
+    else if(!strcmp(key, "title"))
+        str_type = SF_STR_TITLE;
+    else if(!strcmp(key, "artist"))
+        str_type = SF_STR_ARTIST;
+    else if(!strcmp(key, "album"))
+        str_type = SF_STR_ALBUM;
+    else if(!strcmp(key, "tracknumber"))
+        str_type = SF_STR_TRACKNUMBER;
+    else if(!strcmp(key, "software"))
+        str_type = SF_STR_SOFTWARE;
+    else {
+        str_type = 0;
+    }
+    return str_type;
+}
+
+static const char * sf_strtype_to_string(int str_type) {
+    switch(str_type) {
+    case SF_STR_COMMENT:
+        return "comment";
+    case SF_STR_TITLE:
+        return "title";
+    case SF_STR_ARTIST:
+        return "artist";
+    case SF_STR_ALBUM:
+        return "album";
+    case SF_STR_TRACKNUMBER:
+        return "tracknumber";
+    default:
+        return NULL;
+    }
+}
+
+static int32_t sfreadmeta_i(CSOUND *csound, SFREADMETA *p) {
+    SNDFILE *file;
+    SF_INFO sfinfo;
+
+    char *key = p->key->data;
+    int str_type = sf_string_to_type(key);
+    if(str_type == 0)
+        return INITERRF("Key not supported: %s", key);
+
+    if ((file = sf_open (p->sndfile->data, SFM_READ, &sfinfo)) == NULL) {
+        return INITERRF("Error: Not able to open input file %s.\n", p->sndfile->data);
+    }
+    const char *svalue = sf_get_string(file, str_type);
+    if(svalue == NULL) {
+        stringdat_clear(csound, p->sout);
+        return OK;
+    }
+    size_t slen = strlen(svalue);
+    stringdat_copy_cstr(csound, p->sout, svalue, slen);
+    return OK;
+}
+
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *skeys;
+    ARRAYDAT *svalues;
+    STRINGDAT *sndfile;
+} SFREADMETA_SS;
+
+static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
+    SNDFILE *file;
+    SF_INFO sfinfo;
+    const char *skey, *svalue;
+    if ((file = sf_open (p->sndfile->data, SFM_READ, &sfinfo)) == NULL) {
+        return INITERRF("Error: Not able to open input file %s.\n", p->sndfile->data);
+    }
+    // first, count number of key:value pairs
+    int numpairs = 0;
+
+    for(int str_type=SF_STR_FIRST; str_type<SF_STR_LAST; str_type++) {
+        if(sf_get_string(file, str_type) != NULL)
+            numpairs++;
+    }
+    tabinit(csound, p->skeys, numpairs);
+    tabinit(csound, p->svalues, numpairs);
+    STRINGDAT *keys = (STRINGDAT *)p->skeys->data;
+    STRINGDAT *values = (STRINGDAT *)p->svalues->data;
+    size_t i=0;
+    for(int str_type=SF_STR_FIRST; str_type<SF_STR_LAST; str_type++) {
+        svalue = sf_get_string(file, str_type);
+        if(svalue == NULL)
+            continue;
+        skey = sf_strtype_to_string(str_type);
+        if(skey == NULL)
+            continue;
+        stringdat_copy_literal(csound, &keys[i], skey);
+        stringdat_copy_literal(csound, &values[i], svalue);
+        i++;
+    }
+    return OK;
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -556,7 +617,9 @@ static OENTRY localops[] = {
     { "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript },
     { "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative },
     { "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform},
-    { "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split}
+    { "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split},
+    { "sfreadmeta.i", S(SFREADMETA), 0, 1, "S", "SS", (SUBR)sfreadmeta_i},
+    { "sfreadmeta.S[]S[]", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss}
 };
 
 LINKAGE

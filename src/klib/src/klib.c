@@ -305,12 +305,22 @@ kstr_set_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
     kstr_setn(csound, ks, s->data, (ui32)strlen(s->data));
 }
 
+static inline void
+kstr_from_cstr(CSOUND *csound, kstring_t *ks, char *s) {
+    if(ks->s != NULL) {
+        size_t lens = strlen(s);
+        kstr_setn(csound, ks, s, lens);
+    } else {
+        ks->s = csound->Strdup(csound, s);
+        ks->l = strlen(s);
+        ks->m = ks->l + 1;
+    }
+}
+
 // init ks to s
 static inline void
 kstr_init_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
-    ks->s = csound->Strdup(csound, s->data);
-    ks->l = strlen(ks->s);
-    ks->m = ks->l + 1;
+    kstr_from_cstr(csound, ks, s->data);
 }
 
 // like strncpy but really makes sure that the dest str is 0 terminated
@@ -470,6 +480,12 @@ static i32 set_many_sf(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
 static i32 set_many_is(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
 static i32 set_many_if(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
 static i32 set_many_sa(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
+static inline void _set_ss(CSOUND *csound, khash_t(khStrStr) *h, const char*key, char *val);
+static inline void _set_sf(CSOUND *csound, khash_t(khStrFlt) *h, const char*key, MYFLT val);
+static void _set_sa_s(CSOUND *csound, HANDLE *handle, char *key, char *value);
+static void _set_sa_f(CSOUND *csound, HANDLE *handle, char *key, MYFLT value);
+
+
 
 /**
  * Create the globals struct. Will be called once, the first time one of the
@@ -933,6 +949,7 @@ strdef_to_intdef(STRINGDAT *s) {
  * at the end of the event
  */
 
+
 static i32
 dict_new(CSOUND *csound, DICT_NEW *p) {
     p->g = dict_globals(csound);
@@ -964,6 +981,134 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
     return OK;
 }
 
+
+typedef struct {
+    OPDS h;
+    MYFLT *idx;
+    STRINGDAT *str;
+} DICT_LOADSTR;
+
+
+i32 _strcount(const char *s, char c) {
+    i32 i;
+    for (i=0; s[i]; s[i]==c ? i++ : *s++);
+    return i;
+}
+
+i64 stridx(const char *s, char c, size_t start) {
+    char *subs = strchr(&s[start], c);
+    return subs == NULL ? -1 : (subs - s);
+}
+
+i64 str_first_char_after(const char *s, size_t start) {
+    for(i64 i=start; i<strlen(s); i++) {
+        char c = s[i];
+        if(c!=' ' && c!='\t' && c!='\n') {
+            return i;
+        }
+    }
+    // am empty string
+    return -1;
+}
+
+i64 str_last_char_before(const char *s, size_t end) {
+    for(i64 i=end-1; i >= 0; i--) {
+        char c = s[i];
+        if(c!=' ' && c!='\t' && c!='\n') {
+            return i;
+        }
+    }
+    // am empty string
+    return -1;
+}
+
+// idict dict_loadstr "foo: 10, bar: 'barvalue'"
+static i32
+dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
+    i32 numkeys = _strcount(p->str->data, ',');
+    HASH_GLOBALS *g = dict_globals(csound);
+    i32 idx = dict_make(csound, g, khStrAny, 1, numkeys);
+    if(idx < 0) {
+        return INITERRF("Failed to create a dict handle for str %s", p->str->data);
+    }
+    *p->idx = idx;
+    HANDLE *handle = &(g->handles[idx]);
+    CHECK_HANDLE(handle);
+
+    // now parse the str and set the pairs
+    int insidestr = 0;
+    const char *s = p->str->data;
+    size_t itemstart = 0;
+    size_t itemend = 0;
+    size_t starts[100];
+    size_t ends[100];
+    size_t numitems = 0;
+    char skey[80];
+    char valuebuf[1000];
+    char *svalue = valuebuf;
+
+    for(size_t i=0; i<strlen(s); i++) {
+        char c = s[i];
+        if(insidestr) {
+            if(c == '\'')
+                insidestr = 0;
+        } else if(c == ',') {
+            itemend = i;
+            starts[numitems] = itemstart;
+            ends[numitems] = itemend;
+            numitems++;
+            itemstart = i+1;
+        } else if(c=='\'') {
+            insidestr = 1;
+        }
+    }
+    // check last item
+    if(itemstart > itemend && itemstart < strlen(s)) {
+        starts[numitems] = itemstart;
+        ends[numitems] = strlen(s);
+        numitems++;
+    }
+    for(size_t i=0; i<numitems; i++) {
+        size_t start = starts[i];
+        size_t sepidx = stridx(s, ':', start);
+        if(sepidx < 0) {
+            return INITERRF("Item idx %lu in %s does not have separator :", i, s);
+        }
+
+        size_t keystart = str_first_char_after(s, start);
+        size_t keyend = str_last_char_before(s, sepidx);
+        if(keystart < 0 || keyend < 0) {
+            return INITERRF("Malformed key %lu (%s)", i, s);
+        }
+
+        strncpy0(skey, &s[keystart], keyend - keystart + 1);
+        size_t valuestart = str_first_char_after(s, sepidx+1);
+        size_t valueend = str_last_char_before(s, ends[i]);
+        if(valuestart < 0 || valueend < 0) {
+            return INITERRF("Malformed value %lu (%s)", i, s);
+        }
+        size_t lenvalue = valueend - valuestart + 1;
+        strncpy0(valuebuf, &s[valuestart], lenvalue);
+        int is_string_value = 0;
+        if(valuebuf[0] == '\'') {
+            if(valuebuf[lenvalue-1] != '\'')
+                return INITERRF("Malformed string value %s", valuebuf);
+            is_string_value = 1;
+            svalue[lenvalue-1] = '\0';
+            svalue++;
+        } else if(isalpha(valuebuf[0])) {
+            is_string_value = 1;
+        }
+
+        if(is_string_value) {
+            _set_sa_s(csound, handle, skey, svalue);
+            svalue = valuebuf;
+        } else {
+            _set_sa_f(csound, handle, skey, strtod(valuebuf, NULL));
+        }
+    }
+    return OK;
+}
 
 /**
  * check a multi-arg signature of the form: key, value, key, value, ...
@@ -1270,6 +1415,8 @@ dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
     kstr_set_from_stringdat(csound, ks, p->outval);
     return OK;
 }
+
+
 
 // hashtab_set ihandle, Skey, kvalue
 typedef struct {
@@ -1939,7 +2086,7 @@ void print_hashtab_ss(CSOUND *csound, khash_t(khStrStr) *h) {
         if(!kh_exist(h, k)) continue;
         chars += sprintf(line+chars, "%s: \"%s\"", kh_key(h, k), kh_val(h, k).s);
         if(chars < linelength) {
-            line[chars++] = ', ';
+            line[chars++] = ',';
             line[chars++] = ' ';
         } else {
             line[chars+1] = '\0';
@@ -2042,10 +2189,12 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
     } else if(khtype == khStrAny) {
         print_hashtab_ss(csound, handle->hashtab);
         print_hashtab_sf(csound, handle->hashtab2);
-    } else
-        return PERFERR(Str("dict: format not supported"));
+    } else {
+        char *fmt = intdef_to_strdef(khtype);
+        csound->ErrorMsg(csound, Str("dict format not supported: %d (%s)"), khtype, fmt);
+        return NOTOK;
+    }
     csound->MessageS(csound, CSOUNDMSG_ORCH, "}\n");
-
     return OK;
 }
 
@@ -2503,15 +2652,15 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
 
 
 static inline void
-_set_ss(CSOUND *csound, khash_t(khStrStr) *h, STRINGDAT *key, STRINGDAT *val) {
+_set_ss(CSOUND *csound, khash_t(khStrStr) *h, const char*key, char *val) {
     int absent;
-    khiter_t k = kh_put(khStrStr, h, key->data, &absent);
+    khiter_t k = kh_put(khStrStr, h, key, &absent);
     kstring_t *ks = &(h->vals[k]);
     if(absent) {
-        kh_key(h, k) = csound->Strdup(csound, key->data);
-        kstr_init_from_stringdat(csound, ks, val);
+        kh_key(h, k) = csound->Strdup(csound, key);
+        kstr_from_cstr(csound, ks, val);
     } else {
-        kstr_set_from_stringdat(csound, ks, val);
+        kstr_setn(csound, ks, val, strlen(val));
     }
 }
 
@@ -2522,18 +2671,18 @@ set_many_ss(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
         STRINGDAT *key = inargs[argidx];
         STRINGDAT *val = inargs[argidx+1];
-        _set_ss(csound, h, key, val);
+        _set_ss(csound, h, key->data, val->data);
     }
     handle->counter++;
     return OK;
 }
 
 static inline void
-_set_sf(CSOUND *csound, khash_t(khStrFlt) *h, STRINGDAT *key, MYFLT val) {
+_set_sf(CSOUND *csound, khash_t(khStrFlt) *h, const char *key, MYFLT val) {
     int absent;
-    khiter_t k = kh_put(khStrFlt, h, key->data, &absent);
+    khiter_t k = kh_put(khStrFlt, h, key, &absent);
     if(absent) {
-        kh_key(h, k) = csound->Strdup(csound, key->data);
+        kh_key(h, k) = csound->Strdup(csound, key);
     }
     kh_value(h, k) = val;
 }
@@ -2545,11 +2694,25 @@ set_many_sf(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
         STRINGDAT *key = (STRINGDAT *)inargs[argidx];
         // MYFLT val = *((MYFLT*)(inargs[argidx+1]));
         MYFLT val = *(MYFLT*)inargs[argidx+1];
-        _set_sf(csound, h, key, val);
+        _set_sf(csound, h, key->data, val);
     }
     handle->counter++;
     return OK;
 }
+
+
+void _set_sa_f(CSOUND *csound, HANDLE *handle, char *key, double value) {
+    // for a dict of type str:any, set a str:float pair
+    khash_t(khStrFlt) *h2 = handle->hashtab2;
+    _set_sf(csound, h2, key, value);
+}
+
+void _set_sa_s(CSOUND *csound, HANDLE *handle, char *key, char *value) {
+    // for a dict of type str:any, set a str:float pair
+    khash_t(khStrStr) *h = handle->hashtab;
+    _set_ss(csound, h, key, value);
+}
+
 
 static i32
 set_many_sa(CSOUND *csound, void**inargs, ui32 numargs, HANDLE *handle) {
@@ -2561,12 +2724,12 @@ set_many_sa(CSOUND *csound, void**inargs, ui32 numargs, HANDLE *handle) {
         char argtype = cstype->varTypeName[0];
         switch(argtype) {
         case 'S':
-            _set_ss(csound, h1, key, inargs[argidx+1]);
+            _set_ss(csound, h1, key->data, inargs[argidx+1]);
             break;
         case 'i':
         case 'c':   // constant
         case 'k':
-            _set_sf(csound, h2, key, *(MYFLT*)inargs[argidx+1]);
+            _set_sf(csound, h2, key->data, *(MYFLT*)inargs[argidx+1]);
             break;
         }
     }
@@ -3330,6 +3493,8 @@ static OENTRY localops[] = {
     { "dict_size.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_size_0},
 
     { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists },
+
+    { "dict_loadstr", S(DICT_LOADSTR), 0, 1, "i", "S", (SUBR)dict_loadstr},
 
     // { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
     // { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
