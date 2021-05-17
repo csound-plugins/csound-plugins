@@ -4206,12 +4206,12 @@ static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// iarr[] loadmtx "foo.npy"
+// iarr[] loadnpy "foo.npy"
 typedef struct {
     OPDS h;
     ARRAYDAT *out;
     STRINGDAT *path;
-} LOADMTX_ARR;
+} loadnpy_ARR;
 
 
 int64_t strfind(char *s, char *subs) {
@@ -4276,7 +4276,7 @@ int _parse_npy_header(FILE* fp, npy_header *h) {
     return 0;
 }
 
-int load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr) {
+static int32_t load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr) {
     npy_header header;
     int err = _parse_npy_header(fp, &header);
     if(err)
@@ -4289,35 +4289,42 @@ int load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr) {
     size_t nread = 0;
     if(header.type == 'f') {
         if(header.word_size == 8) {
+            // read directly into the array data
             nread = fread(arr->data, 1, numbytes, fp);
             if (nread != numbytes) return 2;
         } else if(header.word_size == 4) {
-            float *tmp = (float*)malloc(numbytes);
+            // float *tmp = (float*)malloc(numbytes);
+            float *tmp = (float*)csound->Malloc(csound, numbytes);
             nread = fread(tmp, 1, numbytes, fp);
             if (nread != numbytes) return 2;
             for(size_t i=0; i<numitems; i++) {
                 arr->data[i] = (MYFLT)tmp[i];
             }
-            free(tmp);
+            // free(tmp);
+            csound->Free(csound, tmp);
         } else
             return 4;
     } else if(header.type == 'i') {
         if(header.word_size == 8) {
-            int64_t *tmp = (int64_t*)malloc(numbytes);
+            // int64_t *tmp = (int64_t*)malloc(numbytes);
+            int64_t *tmp = (int64_t*)csound->Malloc(csound, numbytes);
             nread = fread(tmp, 1, numbytes, fp);
             if (nread != numbytes) return 2;
             for(size_t i=0; i<numitems; i++) {
                 arr->data[i] = (MYFLT)tmp[i];
             }
-            free(tmp);
+            // free(tmp);
+            csound->Free(csound, tmp);
         } else if (header.word_size == 4) {
-            int32_t *tmp = (int32_t*)malloc(numbytes);
+            // int32_t *tmp = (int32_t*)malloc(numbytes);
+            int32_t *tmp = (int32_t*)csound->Malloc(csound, numbytes);
             nread = fread(tmp, 1, numbytes, fp);
             if (nread != numbytes) return 2;
             for(size_t i=0; i<numitems; i++) {
                 arr->data[i] = (MYFLT)tmp[i];
             }
-            free(tmp);
+            // free(tmp);
+            csound->Free(csound, tmp);
         }
     }
     arr->dimensions = header.numdimensions;
@@ -4327,17 +4334,33 @@ int load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr) {
         for(int i=0; i<header.numdimensions; i++)
             arr->sizes[i] = header.sizes[i];
     }
-
     return 0;
 }
 
 
-static int32_t loadmtx(CSOUND *csound, LOADMTX_ARR *p) {
+static const char *_get_filename_ext(const char *filename) {
+    const char *dot = strrchr(filename, '.');
+    if(!dot || dot == filename) return "";
+    return dot + 1;
+}
+
+
+static int32_t loadnpy(CSOUND *csound, loadnpy_ARR *p) {
+    const char *ext = _get_filename_ext(p->path->data);
+    if(strncmp(ext, "npy", 3)) {
+       return INITERRF("Format should be npy, but got %s", ext);
+    }
+
     FILE* fp = fopen(p->path->data, "rb");
     if(fp == NULL) {
         return INITERRF("File %s not found", p->path->data);
     }
+
     int err = load_npy_file(csound, fp, p->out);
+    if(err != 0) {
+        return INITERRF("Could not load file, error: %d", err);
+    }
+
     fclose(fp);
     return OK;
 }
@@ -4502,8 +4525,8 @@ static OENTRY localops[] = {
     { "findarray.i", S(FINDARR), 0, 1, "i", "i[]ij", (SUBR)findarr_perf},
     { "ftfind.k", S(FTINDEX), 0, 2, "k", "kkj", NULL, (SUBR)ftindex_perf},
     { "ftfind.i", S(FTINDEX), 0, 1, "i", "iij", (SUBR)ftindex_perf},
-    { "loadmtx.k", S(LOADMTX_ARR), 0, 1, "k[]", "S", (SUBR)loadmtx},
-    { "loadmtx.i", S(LOADMTX_ARR), 0, 1, "i[]", "S", (SUBR)loadmtx},
+    { "loadnpy.k", S(loadnpy_ARR), 0, 1, "k[]", "S", (SUBR)loadnpy},
+    { "loadnpy.i", S(loadnpy_ARR), 0, 1, "i[]", "S", (SUBR)loadnpy},
 
 };
 

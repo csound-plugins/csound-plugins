@@ -74,6 +74,7 @@ instr test1
 endin
 
 instr test2
+  ; create a pool, fill with with numbers from 1 to 100 (inclusive)
   ipool pool_gen 1, 100
 
   isize pool_size ipool

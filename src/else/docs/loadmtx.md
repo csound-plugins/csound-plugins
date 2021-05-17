@@ -1,14 +1,16 @@
-# loadmtx
+# loadnpy
 
 ## Abstract
 
-Load an array (of any number of dimensions) saved as a .npy file
+Load an array saved in the npy format
 
 ## Description
 
-``loadmtx`` loads an array saved as a .npy file. A .npy file holds a possibly multidimensional
-array of either int or float type, with members of 32 or 64 bits. This opcodes converts all such
-formats to a float array of the same shape. For more information on the `.npy` format, see
+``loadnpy`` loads an array saved to disc in the npy format. A `.npy`
+file holds a possibly multidimensional array of either int or float
+type, with members of 32 or 64 bits. This opcodes converts all such
+formats to a float64 array of the same shape. For more information on
+the `.npy` format, see
 <https://numpy.org/devdocs/reference/generated/numpy.lib.format.html>
 
 ## Syntax
@@ -16,8 +18,8 @@ formats to a float array of the same shape. For more information on the `.npy` f
 
 ```csound
 
-iArr[] loadmtx Spath
-kArr[] loadmtx Spath
+iArr[] loadnpy Spath
+kArr[] loadnpy Spath
 
 ```
     
@@ -50,13 +52,13 @@ nchnls = 2
 0dbfs  = 1
 
 instr 1
-    iA[] loadmtx "test-float64.npy"
+    iA[] loadnpy "test-float64.npy"
     printarray iA
 
-    iB[] loadmtx "test-2D.npy"
+    iB[] loadnpy "test-2D.npy"
     printarray iB
 
-    iC[] loadmtx "test-int.npy"
+    iC[] loadnpy "test-int.npy"
     printarray iC
     
     turnoff
@@ -79,10 +81,13 @@ i1 0 1
 
 ## See also
 
+* [hdf5read](http://www.csound.com/docs/manual/hdf5read.html)
 * [ftgen](http://www.csound.com/docs/manual/ftgen.html)
 * [fillarray](http://www.csound.com/docs/manual/fillarray.html)
 * [ftnew](ftnew.md)
 * [ftfree](http://www.csound.com/docs/manual/ftfree.html)
+* [sfreadmeta](sfreadmeta.md)
+
 
 ## Credits
 

@@ -142,7 +142,8 @@ nchnls = 2
 instr 1
   ; create a local dict, mapping strings to numbers
   idict dict_new "sf"
-  
+  dict_free idict
+    
   ; set key a key:value pair
   dict_set idict, "bar", 123
 

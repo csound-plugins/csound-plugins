@@ -53,7 +53,8 @@ nchnls = 2
 instr 1
   ; create a local dict, mapping strings to numbers
   idict dict_new "sf"
-
+  dict_free idict
+  
   ; set key a key:value pair
   dict_set idict, "bar", 123
 
@@ -66,7 +67,7 @@ instr 1
   printf ">>>> bar: %f,  foo: %f \n", 1, kbar, kfoo
 
   ; now create another dict, this one will outlive this note
-  idict2 dict_new "*str:str", "baz", "bazvalue", "foo", "foovalue"
+  idict2 dict_new "str:str", "baz", "bazvalue", "foo", "foovalue"
 
   ; schedule another inst, pass this dict
   event "i", 2, 0, 1, idict2
@@ -110,7 +111,7 @@ ksmps  = 64
 nchnls = 2
 0dbfs  = 1
 
-gidict dict_new "*sf"
+gidict dict_new "sf"
 
 opcode argset, 0, iSk
   ip1, Sparam, kvalue xin

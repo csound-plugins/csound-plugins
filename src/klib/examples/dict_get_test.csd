@@ -10,7 +10,7 @@ nchnls = 2
 0dbfs  = 1
 
 instr 1
-  idict dict_new "*sf", "foobadooh", 1, "bar", 2, "baz", 0.5
+  idict dict_new "sf", "foobadooh", 1, "bar", 2, "baz", 0.5
   Skey = "foobadooh"
   k0 = 0
   while (k0 < 1000) do

@@ -72,7 +72,7 @@ instr 1
 endin
 
 instr 2
-  idict dict_new "*str:float", "foo", 1, "bar", 2
+  idict dict_new "str:float", "foo", 1, "bar", 2
   schedule 1, 0, p3, idict
   dict_set idict, "foo", linseg:k(1, p3, 2)
   dict_set idict, "bar", linseg:k(2, p3, 3)

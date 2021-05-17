@@ -10,7 +10,7 @@ A hashtable is a mapping from a key to a value. The `dict_` family of opcodes
 implement a hashtable mapping either strings or integers to strings or floats.
 `dict_del` removes a key:value pair from the hashtable. If both dict and key are
 i- variables, `dict_del` executes only at i-time. Otherwise it executes at every
-k- cycle. Use an `if` guard to prevent this, if so needed. To delete a key at the
+k- cycle. **Use an `if` guard to prevent this, if so needed**. To delete a key at the
 end of an event, use [defer](defer.md)
 
 ## Syntax
@@ -49,7 +49,8 @@ nchnls = 2
 instr 1
   ; create a local dict, mapping strings to numbers
   idict dict_new "sf"
-
+  dict_free idict
+  
   ; set key a key:value pair
   dict_set idict, "bar", 123
 

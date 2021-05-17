@@ -9,7 +9,7 @@ ksmps  = 64
 nchnls = 2
 0dbfs  = 1
 
-gidict dict_new "*sf"
+gidict dict_new "sf"
 
 opcode argset, 0, iSk
   ip1, Sparam, kvalue xin

@@ -1044,11 +1044,11 @@ dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
     char valuebuf[1000];
     char *svalue = valuebuf;
     size_t slen = strlen(s);
+    char quotetype = ' ';
     for(size_t i=0; i<slen; i++) {
         char c = s[i];
-        if(insidestr) {
-            if(c == '\'')
-                insidestr = 0;
+        if(insidestr && (c == '\'' || c == '"') && c == quotetype) {
+            insidestr = 0;
         } else if(c == ',') {
             itemend = i;
             starts[numitems] = itemstart;
@@ -1057,6 +1057,10 @@ dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
             itemstart = i+1;
         } else if(c=='\'') {
             insidestr = 1;
+            quotetype = '\'';
+        } else if(c=='"') {
+            insidestr = 1;
+            quotetype = '"';
         }
     }
     // check last item
@@ -1087,8 +1091,8 @@ dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
         size_t lenvalue = valueend - valuestart + 1;
         strncpy0(valuebuf, &s[valuestart], lenvalue);
         int is_string_value = 0;
-        if(valuebuf[0] == '\'') {
-            if(valuebuf[lenvalue-1] != '\'')
+        if(valuebuf[0] == '\'' || valuebuf[0] == '"') {
+            if(valuebuf[lenvalue-1] != valuebuf[0])
                 return INITERRF("Malformed string value %s", valuebuf);
             is_string_value = 1;
             svalue[lenvalue-1] = '\0';

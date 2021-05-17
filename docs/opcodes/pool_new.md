@@ -60,7 +60,7 @@ ksmps  = 64
 nchnls = 2
 0dbfs  = 1
 
-; create a global pool of fixed capacity
+; create an empty global pool of fixed capacity. 
 gipool pool_new 100
 
 instr 1
