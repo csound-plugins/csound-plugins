@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>dict_print - Csound Plugins</title>
+  <title>dict_loadstr - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "dict_print";
-    var mkdocs_page_input_path = "opcodes/dict_print.md";
+    var mkdocs_page_name = "dict_loadstr";
+    var mkdocs_page_input_path = "opcodes/dict_loadstr.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -92,11 +92,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
-                    </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="dict_print.html">dict_print</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="dict_loadstr.html">dict_loadstr</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
     </li>
@@ -115,6 +111,10 @@
     <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
     </li>
     </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_print.html">dict_print</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_query.html">dict_query</a>
                     </li>
@@ -274,7 +274,7 @@
         
       
     
-    <li>dict_print</li>
+    <li>dict_loadstr</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -285,73 +285,120 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="dict_print">dict_print</h1>
+                <h1 id="dict_loadstr">dict_loadstr</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Prints the contents of a dict</p>
+<p>Creates and fills a new dict from a string definition</p>
 <h2 id="description">Description</h2>
-<p><code>dict_print</code> can be used to print the contents of a dict, mostly for debugging
-purposes</p>
-<p><code>dict_print</code> can print both at <strong>i-time</strong> or <strong>k-time</strong></p>
+<p><code>dict_loadstr</code> creates a new dict and fills it from a string
+definition. Here is an example of such a string definition:</p>
+<div class="codehilite"><pre><span></span><code>&quot;keyA: 10, keyB: string value, keyC: &#39;quoted string&#39;&quot;
+</code></pre></div>
+
+<p>The dict created has the type <code>str:any</code>. The keys are always strings
+and the values can be either numbers or strings. Keys do not need to
+be quoted. Values only need to be quoted if a string value consists of
+only numbers or includes itself quotation marks. Quotations must be
+single quotations: <code>'</code></p>
+<p>The motivation behind this opcode is to be able to save a dictionary
+to a string, for example in the metadata of a soundfile, and be
+able to retrieve that as a dictionary inside csound</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>dict_print idict [, ktrig=1]
+<div class="codehilite"><pre><span></span><code>idict dict_loadstr Sdefinition
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
-<li><code>ktrig</code>: when to print the dict. Printing will take place whenever ktrig is -1 or 
-           if ktrig is a positive and higher than the last trig</li>
+<li><strong>Sdefinition</strong>: the string defining the key:value pairs</li>
+<li><strong>idict</strong>: the dict handle</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Init</li>
-<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">--</span><span class="n">nosound</span>
-
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="cm">/*</span>
+<span class="cm">  # Example file for dict_loadstr</span>
 
-<span class="kd">instr</span> <span class="nf">1</span> 
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">30</span>
-  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>
+<span class="cm">  ## dict_loadstr</span>
 
-  <span class="c1">; print with a metro</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foofoo&quot;</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="s">&quot;barbar&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazbaz&quot;</span>
+<span class="cm">    idict dict_loadstr Sdictdef</span>
 
-  <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">2</span>
-  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="kt">k</span><span class="n">trig</span>
+<span class="cm">  Create a new dict from a string definition of the form</span>
+<span class="cm">  &quot;keyA: valueA, keyB: valueB, ...&quot;</span>
 
+<span class="cm">  The dict creates has the type str:any, which means that the </span>
+<span class="cm">  keys are always strings and the values can be either numbers</span>
+<span class="cm">  or strings. Keys do not need to be quoted. Values only need to</span>
+<span class="cm">  be quoted if a string value consists of only numbers or includes</span>
+<span class="cm">  itself quotation marks. Quotations must be single quotations: `&#39;`</span>
+
+<span class="cm">  The motivation behind this opcode is to be able to save a dictionary</span>
+<span class="cm">  to a string, for example in the metadata of a soundfile, and be</span>
+<span class="cm">  able to retrieve that as a dictionary inside csound</span>
+
+<span class="cm">*/</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="kd">instr</span> <span class="nf">example1</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_loadstr</span> <span class="s">&quot;foo: 10,  bar :&#39;barvalue&#39;, </span><span class="se">\n</span><span class="s">baz: unquoted string&quot;</span>
+  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
+<span class="kd">instr</span> <span class="nf">example2</span>
+  <span class="c1">; Read the metadata of a .mtx first</span>
+  <span class="kt">S</span><span class="n">comment</span> <span class="n">sfreadmeta</span> <span class="s">&quot;test.mtx&quot;</span><span class="p">,</span> <span class="s">&quot;comment&quot;</span>
+  <span class="k">if</span> <span class="nb">strlen</span><span class="p">(</span><span class="kt">S</span><span class="n">comment</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">then</span>
+    <span class="kt">i</span><span class="n">niterror</span> <span class="s">&quot;The .mtx file has no metadata&quot;</span>
+  <span class="k">endif</span>
+  <span class="c1">; Parse the metadata as a dict</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_loadstr</span> <span class="kt">S</span><span class="n">comment</span>
+  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
+
+  <span class="c1">; Now we load the data itself. The mtx format consists of a flat array of floats</span>
+  <span class="c1">; where the first numbers include the dimensions of the matrix saved. </span>
+  <span class="c1">; As the columns metadata should show, the mtx file has a header:</span>
+  <span class="c1">; HeaderSize NumRows NumColumns [optionally other values] &lt;The matrix as a flat array&gt;</span>
+  <span class="c1">; The same header is duplicated in the metadata itself, so we can use that directly</span>
+  <span class="c1">; to make the code more self-documenting.</span>
+  <span class="kt">i</span><span class="n">tab</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;test.mtx&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+  <span class="c1">; If the data is needed as an array it is possible to create an alias via memview.</span>
+  <span class="c1">; Otherwise use tab2array to create a copy</span>
+  <span class="kt">i</span><span class="n">Arr</span><span class="p">[]</span> <span class="n">memview</span> <span class="kt">i</span><span class="n">tab</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;HeaderSize&quot;</span><span class="p">)</span>
+  <span class="c1">; iArr[] tab2array itab, dict_get:i(idict, &quot;HeaderSize&quot;)</span>
+
+  <span class="c1">; Now reshape the array to recreate the original matrix</span>
+  <span class="nb">reshapearray</span> <span class="kt">i</span><span class="n">Arr</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;NumRows&quot;</span><span class="p">),</span> <span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;NumColumns&quot;</span><span class="p">)</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Arr</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
-
+<span class="nb">i</span> <span class="s">&quot;example2&quot;</span> <span class="mi">0</span> <span class="mf">0.1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="dict_iter.html">dict_iter</a></li>
+<li><a href="dict_dump.html">dict_dump</a></li>
+<li><a href="dict_iter.html">dict_new</a></li>
 <li><a href="dict_set.html">dict_set</a></li>
-<li><a href="dict_query.html">dict_query</a></li>
+<li><a href="sfreadmeta.html">sfreadmeta</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div>
@@ -359,10 +406,10 @@ purposes</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dict_query.html" class="btn btn-neutral float-right" title="dict_query">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="dict_new.html" class="btn btn-neutral float-right" title="dict_new">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="dict_new.html" class="btn btn-neutral" title="dict_new"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="dict_iter.html" class="btn btn-neutral" title="dict_iter"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -388,10 +435,10 @@ purposes</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="dict_new.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="dict_iter.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="dict_query.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="dict_new.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

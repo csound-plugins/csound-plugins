@@ -78,6 +78,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
@@ -88,15 +92,13 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
+                    </li>
                     <li class="toctree-l1 current"><a class="reference internal current" href="dict_new.html">dict_new</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#local-vs-global">Local vs Global</a>
-    </li>
-        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
     </li>
@@ -234,6 +236,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -299,11 +303,9 @@
 <h2 id="description">Description</h2>
 <p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes
 implement a hashtable mapping either strings or integers to strings or floats.</p>
-<h3 id="local-vs-global">Local vs Global</h3>
-<p>A hashtable can be either <strong>local</strong>, in which case its lifespan is fixed to the lifespan
-of the note it was created in; or it can be <strong>global</strong>, in which case <strong>it is not
-deallocated</strong> when the note is released and is kept alive until either the end
-of the performance, or until freed via <a href="dict_free.html">dict_free</a></p>
+<p>A hashtable, similar to a table, is always <strong>global</strong>, even if it is
+assigned to a local variable. A dict is kept alive until either the
+end of the performance, or until freed via <a href="dict_free.html">dict_free</a></p>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code>idict dict_new Stype, icapacity=-1
 idict dict_new Stype, key0, value0, key1, value1, ...
@@ -313,23 +315,26 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>With the second variant it is possible to create a dict and give it initial values at the same time.</p>
+<p>With the second variant it is possible to create a dict and give it 
+initial values at the same time.</p>
 </div>
 <h2 id="args">Args</h2>
 <ul>
 <li><code>Stype</code>: the type of the dictionary, see below</li>
-<li><code>icapacity</code>: the initial size of the dictionary. If not given a sensible default is used. Dictionaries can
-    grow as they are filled, but since this requires memory allocation, it can be unsafe during performance</li>
+<li><code>icapacity</code>: the initial capacity of the dictionary (how much it can
+    grow without needing to reallocate memory). If not given a
+    sensible default is used. Dictionaries can grow as they are
+    filled, but since this requires memory allocation, it can be
+    unsafe during performance</li>
 <li><code>key0, value0, ...</code>: initial key:value pairs</li>
 </ul>
 <h2 id="types">Types</h2>
-<p>The types of a dict are fixed at creation time and are specified via the <code>Stype</code> argument. To declare a dict as <code>global</code>, prefix the type with a <code>*</code>.</p>
+<p>The types of a dict are fixed at creation time and are specified via
+the <code>Stype</code> argument. </p>
 <table>
 <thead>
 <tr>
 <th align="left">type</th>
-<th align="left">short</th>
-<th>as global</th>
 <th align="left">short</th>
 <th align="left">key</th>
 <th>value</th>
@@ -339,48 +344,40 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
 <tr>
 <td align="left"><code>str:float</code></td>
 <td align="left"><code>sf</code></td>
-<td><code>*str:float</code></td>
-<td align="left"><code>*sf</code></td>
 <td align="left">string</td>
 <td>float</td>
 </tr>
 <tr>
 <td align="left"><code>str:str</code></td>
 <td align="left"><code>ss</code></td>
-<td><code>*str:str</code></td>
-<td align="left"><code>*ss</code></td>
 <td align="left">string</td>
 <td>string</td>
 </tr>
 <tr>
 <td align="left"><code>int:float</code></td>
 <td align="left"><code>if</code></td>
-<td><code>*int:float</code></td>
-<td align="left"><code>*if</code></td>
 <td align="left">int</td>
 <td>float</td>
 </tr>
 <tr>
 <td align="left"><code>int:str</code></td>
 <td align="left"><code>is</code></td>
-<td><code>*int:str</code></td>
-<td align="left"><code>*is</code></td>
 <td align="left">int</td>
 <td>string</td>
 </tr>
 <tr>
 <td align="left"><code>str:any</code></td>
 <td align="left"><code>sa</code></td>
-<td><code>*str:any</code></td>
-<td align="left"><code>*sa</code></td>
 <td align="left">string</td>
-<td>any</td>
+<td>any (float or string</td>
 </tr>
 </tbody>
 </table>
 <h3 id="the-any-type">The "any type</h3>
-<p>A dict of the form <code>str:any</code> accepts strings as keys and can have both strings and numbers as values. This can be used to pass arguments to an instrument like</p>
-<div class="codehilite"><pre><span></span><code>    <span class="kt">i</span><span class="n">args</span> <span class="n">dict_new</span> <span class="s">&quot;*sa&quot;</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span><span class="p">,</span> <span class="mf">0.5</span>
+<p>A dict of the form <code>str:any</code> accepts strings as keys and can have both
+strings and numbers as values. This can be used to pass arguments to
+an instrument like</p>
+<div class="codehilite"><pre><span></span><code>    <span class="kt">i</span><span class="n">args</span> <span class="n">dict_new</span> <span class="s">&quot;str:any&quot;</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span><span class="p">,</span> <span class="mf">0.5</span>
     <span class="nb">schedule</span> <span class="s">&quot;myinstr&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">args</span>
 
     <span class="c1">; then, inside myinstr</span>
@@ -396,23 +393,22 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li>
-<p><code>Stype</code>: a string describing the type of the key and the value. See the table above.
-           <strong>NB</strong>: to declare the dict as global, prepend the type string with a <code>*</code>.</p>
-</li>
-<li>
-<p><code>key0</code>, <code>value0</code>, <code>key1</code>, <code>value1</code>, etc: initial pairs can be set at creation time, matching
-              the types declared with <code>Stype</code></p>
-</li>
+<li><strong>Stype</strong>: a string describing the type of the key and the value. See the table above.</li>
+<li><strong>keyx</strong>, valuex**: initial pairs can be set at creation time,
+  matching the types declared with <code>Stype</code></li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>idict</code>: identifies this dict with an integer. This integer can be passed around to another instrument and will always resolve to the same dict, as long as this dict is still alive. This can be checked via <code>dict_query idict, "exists"</code></li>
+<li><strong>idict</strong>: identifies this dict with an integer. This integer can be
+  passed around to another instrument and will always resolve to the
+  same dict, as long as this dict is still alive. This can be checked
+  via <code>iexists dict_exists idict</code> (<a href="dict_exists.html">dict_exists</a></li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
 <ul>
 <li>Init (the normal case)</li>
-<li>Performance (use this form when using dicts for passing named arguments to an event created at k-time)</li>
+<li>Performance (use this form when using dicts for passing named
+  arguments to an event created at k-time)</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -427,8 +423,11 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
+  <span class="c1">; a dict mapping strings to floats</span>
   <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
+
+  <span class="c1">; free the dict at the end of this note</span>
+  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span>
 
   <span class="c1">; set key a key:value pair</span>
   <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>
@@ -441,8 +440,8 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
 
   <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span>
 
-  <span class="c1">; now create another dict, this one will outlive this note</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;*str:str&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
+  <span class="c1">; now create another dict to be passed to another instr</span>
+  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;str:str&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
 
   <span class="c1">; schedule another inst, pass this dict</span>
   <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict2</span>
@@ -489,7 +488,7 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
         <a href="dict_print.html" class="btn btn-neutral float-right" title="dict_print">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="dict_iter.html" class="btn btn-neutral" title="dict_iter"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="dict_loadstr.html" class="btn btn-neutral" title="dict_loadstr"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -515,7 +514,7 @@ kdict dict_new Stype, key0, value0, key1, value1, ...
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="dict_iter.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="dict_loadstr.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
         <span style="margin-left: 15px"><a href="dict_print.html" style="color: #fcfcfc">Next &raquo;</a></span>

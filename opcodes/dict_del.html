@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>dict_print - Csound Plugins</title>
+  <title>dict_del - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "dict_print";
-    var mkdocs_page_input_path = "opcodes/dict_print.md";
+    var mkdocs_page_name = "dict_del";
+    var mkdocs_page_input_path = "opcodes/dict_del.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -78,7 +78,25 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="dict_del.html">dict_del</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example">Example</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
                     </li>
@@ -96,25 +114,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="dict_print.html">dict_print</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_print.html">dict_print</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_query.html">dict_query</a>
                     </li>
@@ -274,7 +274,7 @@
         
       
     
-    <li>dict_print</li>
+    <li>dict_del</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -285,33 +285,36 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="dict_print">dict_print</h1>
+                <h1 id="dict_del">dict_del</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Prints the contents of a dict</p>
+<p>Remove a key:value pair from a hashtable</p>
 <h2 id="description">Description</h2>
-<p><code>dict_print</code> can be used to print the contents of a dict, mostly for debugging
-purposes</p>
-<p><code>dict_print</code> can print both at <strong>i-time</strong> or <strong>k-time</strong></p>
+<p>A hashtable is a mapping from a key to a value. The <code>dict_</code> family of opcodes
+implement a hashtable mapping either strings or integers to strings or floats.
+<code>dict_del</code> removes a key:value pair from the hashtable. If both dict and key are
+i- variables, <code>dict_del</code> executes only at i-time. Otherwise it executes at every
+k- cycle. <strong>Use an <code>if</code> guard to prevent this, if so needed</strong>. To delete a key at the
+end of an event, use <a href="defer.html">defer</a></p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>dict_print idict [, ktrig=1]
+<div class="codehilite"><pre><span></span><code>dict_del idict, ikey      ; execution at i- time
+dict_del idict, kkey      ; execution at k- time
+dict_del idict, Skey      ; execution at k- time
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
-<li><code>ktrig</code>: when to print the dict. Printing will take place whenever ktrig is -1 or 
-           if ktrig is a positive and higher than the last trig</li>
+<li><code>idict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
+<li><code>ikey</code> / <code>kkey</code> / <code>Skey</code>: the key to remove</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Init</li>
 <li>Performance</li>
 </ul>
-<h2 id="examples">Examples</h2>
+<h2 id="example">Example</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
-<span class="o">--</span><span class="n">nosound</span>
+<span class="c1">; -odac  -iadc    ;;;RT audio out and in</span>
 
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -320,16 +323,19 @@ purposes</p>
 <span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 
-<span class="kd">instr</span> <span class="nf">1</span> 
+<span class="kd">instr</span> <span class="nf">1</span>
   <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">30</span>
-  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
+  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span>
 
-  <span class="c1">; print with a metro</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foofoo&quot;</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="s">&quot;barbar&quot;</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazbaz&quot;</span>
+  <span class="c1">; set key a key:value pair</span>
+  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>
 
-  <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">2</span>
-  <span class="n">print_dict</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="kt">k</span><span class="n">trig</span>
+  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
+
+  <span class="n">dict_del</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
+
+  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
 
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
@@ -338,20 +344,23 @@ purposes</p>
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">2</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="dict_iter.html">dict_iter</a></li>
+<li><a href="dict_new.html">dict_new</a></li>
+<li><a href="dict_get.html">dict_get</a></li>
 <li><a href="dict_set.html">dict_set</a></li>
-<li><a href="dict_query.html">dict_query</a></li>
+<li><a href="defer.html">defer</a></li>
+<li><a href="dict_free.html">dict_free</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2019
+Last update: 2021</p>
               
             </div>
           </div>
@@ -359,10 +368,10 @@ purposes</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="dict_query.html" class="btn btn-neutral float-right" title="dict_query">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="dict_dump.html" class="btn btn-neutral float-right" title="dict_dump">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="dict_new.html" class="btn btn-neutral" title="dict_new"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="deref.html" class="btn btn-neutral" title="deref"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -388,10 +397,10 @@ purposes</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="dict_new.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="deref.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="dict_query.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="dict_dump.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

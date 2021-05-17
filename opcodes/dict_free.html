@@ -78,6 +78,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
                     </li>
                     <li class="toctree-l1 current"><a class="reference internal current" href="dict_free.html">dict_free</a>
@@ -107,6 +111,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
                     </li>
@@ -220,6 +226,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -284,7 +292,6 @@
 <p>Free a hashtable </p>
 <h2 id="description">Description</h2>
 <p>frees the hashtable either at init time or at the end of the note (similar to ftfree)
-A dict can only be freed if it was created as global (see <a href="dict_new.html">dict_new</a>).
 To be able to pass a dict between notes, a note can create a global dict and 
 pass its handle to another note. When the first note is released, the dict lives
 on (because it is global), and it will be either freed at the end of the performance

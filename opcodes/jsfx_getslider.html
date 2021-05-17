@@ -78,6 +78,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
@@ -87,6 +91,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
                     </li>
@@ -222,6 +228,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -298,18 +306,18 @@ in a pitch tracking plugin. </p>
 <p>This defines a control parameter with default value <code>0</code>, between <code>0</code> and <code>20</code>,
 with a precission (an increment) of <code>0.01</code> and a label "Gain Reduction". To read
 the value of that slider:</p>
-<div class="codehilite"><pre><span></span><code>kgainreduction = jsfx_getslider(ihandle, 7)
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">gainreduction</span> <span class="o">=</span> <span class="n">jsfx_getslider</span><span class="p">(</span><span class="kt">i</span><span class="n">handle</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
 </code></pre></div>
 
-<div class="admonition note jsfx sliders">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">jsfx sliders</p>
 <p>Any slider which is not set via jsfx_setslider retains its default value. A value will 
 always be confined to the range in the slider definition and will also be 
 quantized to the increment in the slider definition. To disable any quantization,
 set the increment to 0 in the jsfx script</p>
 </div>
-<div class="admonition note jsfx">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">jsfx</p>
 <p><code>jsfx</code> is an audio programming language implemented primarily as part of the DAW <code>REAPER</code>. 
 It is a scripting language with a built-in compiler which translates it to 
 machine code. It allows to operate at the sample level (like defining an udo with 
@@ -317,7 +325,7 @@ machine code. It allows to operate at the sample level (like defining an udo wit
 See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>kvalue  jsfx_getslider ihandle, kid
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">value</span>  <span class="n">jsfx_getslider</span> <span class="kt">i</span><span class="n">handle</span><span class="p">,</span> <span class="kt">k</span><span class="n">id</span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>

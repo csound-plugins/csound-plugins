@@ -78,6 +78,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
@@ -109,6 +113,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
                     </li>
@@ -221,6 +227,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="sderef.html">sderef</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
@@ -414,6 +422,7 @@ a dict of type "str:str" <code>dict_get</code> runs at k-time. Use <code>dict_ge
 <span class="kd">instr</span> <span class="nf">1</span>
   <span class="c1">; create a local dict, mapping strings to numbers</span>
   <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
+  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span>
 
   <span class="c1">; set key a key:value pair</span>
   <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>

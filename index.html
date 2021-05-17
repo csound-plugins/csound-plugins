@@ -80,6 +80,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/deref.html">deref</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_del.html">dict_del</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_dump.html">dict_dump</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_exists.html">dict_exists</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_free.html">dict_free</a>
@@ -89,6 +93,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_geti.html">dict_geti</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_iter.html">dict_iter</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_loadstr.html">dict_loadstr</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/dict_new.html">dict_new</a>
                     </li>
@@ -202,6 +208,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/setslice.html">setslice</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/sfreadmeta.html">sfreadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/sref.html">sref</a>
@@ -266,16 +274,18 @@
 <p>A hashtable for csound</p>
 <ul>
 <li><a href="opcodes/dict_new.html">dict_new</a>: Create a hashtable </li>
+<li><a href="opcodes/dict_dump.html">dict_dump</a>: Dumps the contents of this dict as a string </li>
 <li><a href="opcodes/dict_free.html">dict_free</a>: Free a hashtable </li>
 <li><a href="opcodes/dict_get.html">dict_get</a>: Get a value from a hashtable </li>
 <li><a href="opcodes/dict_geti.html">dict_geti</a>: Get a string value from a hashtable at init time </li>
+<li><a href="opcodes/dict_loadstr.html">dict_loadstr</a>: Creates and fills a new dict from a string definition </li>
 <li><a href="opcodes/dict_set.html">dict_set</a>: Set a value from a hashtable </li>
 <li><a href="opcodes/dict_size.html">dict_size</a>: Returns the number of key:value pairs in a dict </li>
 <li><a href="opcodes/dict_query.html">dict_query</a>: Query different properties of a dict </li>
 <li><a href="opcodes/dict_exists.html">dict_exists</a>: Returns 1 if the dict exists, 0 otherwise </li>
 <li><a href="opcodes/dict_print.html">dict_print</a>: Prints the contents of a dict </li>
 <li><a href="opcodes/dict_iter.html">dict_iter</a>: Iterate over the key-value pairs of a dict </li>
-<li><a href="opcodes/dict_del.md">dict_del</a>: ? </li>
+<li><a href="opcodes/dict_del.html">dict_del</a>: Remove a key:value pair from a hashtable </li>
 <li><a href="opcodes/sref.html">sref</a>: Insert a string into a global registry and return a reference to it </li>
 <li><a href="opcodes/sderef.html">sderef</a>: Retrieves a read-only string from the cache </li>
 <li><a href="opcodes/pool_new.html">pool_new</a>: Create an empty  pool </li>
@@ -367,6 +377,7 @@
 <li><a href="opcodes/scriptDir.html">scriptDir</a>: Get the directory of the loaded orc/csd file </li>
 <li><a href="opcodes/sysPlatform.html">sysPlatform</a>: Get a string description of the current system platform </li>
 <li><a href="opcodes/strsplit.html">strsplit</a>: Split a string at a given separator </li>
+<li><a href="opcodes/sfreadmeta.html">sfreadmeta</a>: Read metadata from a soundfile </li>
 </ul>
               
             </div>

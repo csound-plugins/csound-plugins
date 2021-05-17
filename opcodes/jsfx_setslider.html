@@ -78,6 +78,10 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
@@ -87,6 +91,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
                     </li>
@@ -222,6 +228,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -294,15 +302,15 @@ used by the script. A slider definition in a jsfx script has the form:</p>
 
 <p>This defines a control parameter with default value <code>1.5</code>, between <code>0</code> and <code>4</code>,
 with a precission (an increment) of <code>0.01</code> and a label "Copression Ratio". </p>
-<div class="codehilite"><pre><span></span><code>kcomprat = 2.5
-jsfx_setslider ihandle, 3, kcomprat
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">comprat</span> <span class="o">=</span> <span class="mf">2.5</span>
+<span class="n">jsfx_setslider</span> <span class="kt">i</span><span class="n">handle</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">k</span><span class="n">comprat</span>
 </code></pre></div>
 
 <p>The code above will set the slider #3 (the index passed corresponds with the 
 slider number) to the value of <code>kcomprat</code>
 The value of any slider can be read via <code>jsfx_getvalue</code> (only one value at a time).</p>
-<div class="admonition note many sliders">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">many sliders</p>
 <p>It is possible to call jsfx_setslider with any number of sliders. It is not
 necessary to set all the sliders defined in the script. Any slider
 which is not set via jsfx_setslider retains its default value. A value will 
@@ -310,8 +318,8 @@ always be confined to the range in the slider definition and will also be
 quantized to the increment in the slider definition. To disable any quantization,
 set the increment to 0 in the jsfx script</p>
 </div>
-<div class="admonition note jsfx">
-<p class="admonition-title">Note</p>
+<div class="admonition note">
+<p class="admonition-title">jsfx</p>
 <p><code>jsfx</code> is an audio programming language implemented primarily as part of the DAW <code>REAPER</code>. 
 It is a scriptiong language with a built-in compiler which translates it to 
 machine code. It allows the user to operate at the sample level (like 
@@ -320,7 +328,7 @@ than hand-coded C.
 See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>jsfx_setslider ihandle, id1, kval1 [, id2, kval2, id3, kval3, ...]
+<div class="codehilite"><pre><span></span><code><span class="n">jsfx_setslider</span> <span class="kt">i</span><span class="n">handle</span><span class="p">,</span> <span class="kt">i</span><span class="n">d1</span><span class="p">,</span> <span class="kt">k</span><span class="n">val1</span> <span class="p">[,</span> <span class="kt">i</span><span class="n">d2</span><span class="p">,</span> <span class="kt">k</span><span class="n">val2</span><span class="p">,</span> <span class="kt">i</span><span class="n">d3</span><span class="p">,</span> <span class="kt">k</span><span class="n">val3</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
