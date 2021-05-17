@@ -138,7 +138,13 @@ endif()
 message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
 
 # -------------------------------------------------------------------
+if(WIN32)
+  # These paths are included for azure build
+  include_directories(AFTER SYSTEM "C:/Program Files/Csound6_x64/include")
+  link_directories("C:/Program Files/Csound6_x64/include")
+endif()
 
+# -------------------------------------------------------------------
 
 if(USE_DOUBLE)
   message(STATUS ">>> using doubles")

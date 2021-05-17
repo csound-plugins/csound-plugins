@@ -3,6 +3,8 @@
 # call it from the root directoriy of the project:
 # scripts/cross-compile-win.sh
 
+set -x
+
 c_plugins="poly;else;klib;pathtools"
 cpp_plugins=""
 
@@ -20,7 +22,6 @@ for plugin in $(echo $c_plugins | tr ';' ' '); do
     cd $PLUGIN_SRC
     ls -l
     echo " --- $plugin ---"
-    echo $CC -c -I/usr/local/include/csound $plugin.c
     $CC -c -I/usr/local/include/csound $plugin.c
     echo "--------"
     DLL=lib$plugin.dll

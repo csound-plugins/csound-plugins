@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include "arrays.h"
-#include <sndfile.h>
+#include "sndfile.h"
 #include "cs_strlib.h"
 
 #if defined(WIN32) || defined(__MINGW32__) || defined(_WIN32)
