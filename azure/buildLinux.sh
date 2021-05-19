@@ -53,7 +53,7 @@ sudo apt-get install nasm
 cd $SYSTEM_DEFAULTWORKINGDIRECTORY
 ls
 
-git submodue update --init --recursive --remote
+git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
 git submodule status --recursive
 
