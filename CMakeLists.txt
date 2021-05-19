@@ -26,8 +26,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # add_definitions(-DUSE_DOUBLE -DB64BIT)
 
 if (MSVC)
-    # warning level 4 and all warnings as errors
-    add_compile_options(/W4 /WX)
+    add_compile_options(/W3 /WX)
 else()
     # lots of warnings and all warnings as errors
     add_compile_options(-Wall -Wextra)
