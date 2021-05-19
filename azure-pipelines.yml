@@ -14,8 +14,8 @@ jobs:
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
- The Windows build involves running a powershell script
- to execute the Cake build script
+ # The Windows build involves running a powershell script
+ # to execute the Cake build script
   steps:
   - powershell: gci env:* | sort-object name | Format-Table -AutoSize
   - powershell: .\azure\buildWin64.ps1
