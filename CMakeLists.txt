@@ -20,7 +20,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 # set compilation flags
 # set(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS}  "-std=c++11")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-Wall -Wextra -DUSE_DOUBLE -DB64BIT")
+
+# set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-Wall -Wextra -DUSE_DOUBLE -DB64BIT")
+
+# add_definitions(-DUSE_DOUBLE -DB64BIT)
+
+if (MSVC)
+    # warning level 4 and all warnings as errors
+    add_compile_options(/W4 /WX)
+else()
+    # lots of warnings and all warnings as errors
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
 
 # options
 option(USE_LIB64 "Set to on to set installation dir for libs to lib64" OFF)
