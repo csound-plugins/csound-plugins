@@ -2,6 +2,10 @@ $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MS
 
 cd D:/a/1/s/
 
+git submodule update --init --recursive --remote
+git submodule foreach git pull origin master
+git submodule status --recursive
+
 mkdir build
 cd build
 
