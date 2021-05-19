@@ -176,7 +176,11 @@
 #include "csdl.h"
 #include "arrays.h"
 #include <math.h>
-// #include <unistd.h>
+
+#if defined(__linux__) || defined(__APPLE__)
+#include <unistd.h>
+#endif
+
 #include <ctype.h>
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
@@ -1235,13 +1239,16 @@ typedef struct {
 
 static int32_t file_exists_init(CSOUND *csound, FILE_EXISTS *p) {
     IGN(csound);
-    char *path = p->path->data;
-    if(access(path, F_OK) != -1 ) {
+#ifdef _WIN32
+    return NOTOK("This opcode is not supported in windows");
+#else
+    if(access(p->path->data, F_OK) != -1 ) {
         // file exists
         *p->out = 1;
     } else {
         *p->out = 0;
     }
+#endif
     return OK;
 }
 
