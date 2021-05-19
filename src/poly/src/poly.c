@@ -91,6 +91,19 @@ static inline int max(int a, int b) {
 }
 #endif
 
+
+// like strncpy but really makes sure that the dest str is 0 terminated
+// dest should have allocated at least n+1
+static inline void strncpy0(char *dest, const char *src, size_t n) {
+#ifdef _WIN32
+    strncpy_s(dest, n+1, src, n);
+#else
+    strncpy(dest, src, n);
+#endif
+    dest[n] = '\0';
+}
+
+
 /** put a copy of src in dest with all chars converted to uppercase */
 static void str_tolower(char *dest, char *src) {
     ui32 c = 0;
@@ -998,7 +1011,7 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
         return INITERRF("No output arguments supported, got %d", num_output_args);
     get_signature(csound, p->args, num_input_args, opc_insig);
     convert_multiplex_sig_to_single_sig(opc_insig, opc_insig);
-    strncpy(p->in_signature, opc_insig, POLY_MAXPARAMS-1);
+    strncpy0(p->in_signature, opc_insig, POLY_MAXPARAMS-1);
 
     p->num_input_args = num_input_args;
     OENTRY *opc = csound->find_opcode_new(csound, p->opcode_name->data,
