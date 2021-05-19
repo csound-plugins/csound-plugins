@@ -2047,7 +2047,7 @@ accum_perf_audio(CSOUND *csound, ACCUM *p) {
 
     SAMPLE_ACCURATE(out);
 
-    for(size_t n=offset; n<nsmps; n++) {
+    for(n=offset; n<nsmps; n++) {
         out[n] = value;
         value += step;
     }
@@ -4205,7 +4205,7 @@ static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
 	}
 	for(size_t i=0; i<p->arr->sizes[0]; i++) {
 		if(fabs(data[i] - x) < tolerance ) {
-			*p->outidx = i;
+            *p->outidx = (MYFLT)i;
 			return OK;
 		}
 	}
@@ -4273,7 +4273,7 @@ int _parse_npy_header(FILE* fp, npy_header *h) {
         }
         s = next;
         // skip comma
-        for(; s < send & *s == ','; s++);
+        for(; (s < send) & (*s == ','); s++);
     }
     h->numdimensions = numdims;
     //endian, word size, data type
