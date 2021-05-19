@@ -1240,7 +1240,7 @@ typedef struct {
 static int32_t file_exists_init(CSOUND *csound, FILE_EXISTS *p) {
     IGN(csound);
 #ifdef _WIN32
-    return NOTOK("This opcode is not supported in windows");
+    return INITERR("This opcode is not supported in windows");
 #else
     if(access(p->path->data, F_OK) != -1 ) {
         // file exists
