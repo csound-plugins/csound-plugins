@@ -19,7 +19,11 @@ unsigned long next_power_of_two(unsigned long v) {
 // like strncpy but really makes sure that the dest str is 0 terminated
 // dest should have allocated at least n+1
 static inline void strncpy0(char *dest, const char *src, size_t n) {
+#ifdef _WIN32
+    strncpy_s(dest, n+1, src, n);
+#else
     strncpy(dest, src, n);
+#endif
     dest[n] = '\0';
 }
 
@@ -29,11 +33,11 @@ static inline void strncpy0(char *dest, const char *src, size_t n) {
 // This can be run only at init time
 void string_ensure(CSOUND *csound, STRINGDAT *s, size_t size) {
     if (s->size >= (int)size)
-        return OK;
+        return;
     size = next_power_of_two(size);
     s->data = csound->ReAlloc(csound, s->data, size);
     s->size = (int)size;
-    return OK;
+    return;
 }
 
 
