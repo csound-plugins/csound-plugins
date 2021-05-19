@@ -10,7 +10,7 @@ trigger:
 # see https://docs.microsoft.com/en-us/azure/devops/pipelines/process/phases
 jobs:
 
- Run a build on Windows at the same time
+# Run a build on Windows at the same time
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
