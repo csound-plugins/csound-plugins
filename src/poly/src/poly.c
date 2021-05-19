@@ -85,9 +85,11 @@ typedef uint32_t ui32;
 //               Utilities
 // --------------------------------------------
 
+#ifndef WIN32
 static inline int max(int a, int b) {
     return a > b ? a : b;
 }
+#endif
 
 /** put a copy of src in dest with all chars converted to uppercase */
 static void str_tolower(char *dest, char *src) {
