@@ -151,7 +151,7 @@ static inline char *strsubdup(CSOUND *csound, char *src, int64_t start, int64_t 
 
 static int32_t string_split(CSOUND *csound, STRSPLIT *p) {
     int numseps = 0;
-    const int maxseps = 1000;
+    enum { maxseps = 1000 };
     int32_t separator_starts[maxseps];
     char *sep = p->sep->data;
     size_t seplen = strlen(sep);
