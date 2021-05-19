@@ -91,7 +91,7 @@ endin
 
 <CsScore>
 
-i1 0 3600
+i1 0.1 3600
 
 </CsScore>
 </CsoundSynthesizer>

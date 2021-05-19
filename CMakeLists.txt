@@ -30,7 +30,7 @@ set(BUILDING_CSOUND_PLUGINS ON)
 
 # ----------------------------------------------
 
-include(FindCsound)
+# include(FindCsound)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
@@ -138,13 +138,7 @@ endif()
 message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
 
 # -------------------------------------------------------------------
-if(WIN32)
-  # These paths are included for azure build
-  include_directories(AFTER SYSTEM "C:/Program Files/Csound6_x64/include")
-  link_directories("C:/Program Files/Csound6_x64/include")
-endif()
 
-# -------------------------------------------------------------------
 
 if(USE_DOUBLE)
   message(STATUS ">>> using doubles")
@@ -171,14 +165,14 @@ endif()
 # -------------------------------------------------------------------
   
 # Csound opcode build
-find_package(Csound)
+# find_package(Csound)
 
 
 set(BUILD_PLUGINS_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-if(NOT CSOUND_FOUND)
-  message(FATAL_ERROR "Csound installation not found")
-endif()
+#if(NOT CSOUND_FOUND)
+#  message(FATAL_ERROR "Csound installation not found")
+#endif()
 
 # pluginlib: name of the plugin
 # srcs: sources of the plugin
@@ -189,8 +183,10 @@ function(make_plugin pluginlib srcs)
   else()
     add_library(${pluginlib} MODULE ${srcs})
   endif()
-  target_include_directories(${pluginlib} PRIVATE ${CSOUND_INCLUDE_DIRS})
-
+  target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
+  target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
+  # target_include_directories(${pluginlib} PRIVATE ${CSOUND_INCLUDE_DIRS})
+  message(STATUS "csound include: ${CMAKE_SOURCE_DIR}/csound/include")
   set_target_properties(${pluginlib} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR})
@@ -211,3 +207,4 @@ message(STATUS "Building Opcodes")
 # make_plugin(poly src/poly/poly.c)
 
 ADD_ALL_SUBDIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
+
