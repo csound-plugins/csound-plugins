@@ -19,7 +19,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # set compilation flags
 # set(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS}  "-std=c++11")
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-fPIC -Wall -Wextra -DUSE_DOUBLE -DB64BIT")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-Wall -Wextra -DUSE_DOUBLE -DB64BIT")
 
 # options
 option(USE_LIB64 "Set to on to set installation dir for libs to lib64" OFF)
