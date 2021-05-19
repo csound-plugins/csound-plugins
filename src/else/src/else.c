@@ -2795,7 +2795,7 @@ static int32_t extendArray_k(CSOUND *csound, _AA *p) {
         STRINGDAT *srcstrs = (STRINGDAT*)p->B->data;
         for(int i=0; i<p->B->sizes[0]; i++) {
             char *srcstr = srcstrs[i].data;
-            deststrs[offset + i].size = strlen(srcstr);
+            deststrs[offset + i].size = (int)strlen(srcstr);
             deststrs[offset + i].data = csound->Strdup(csound, srcstr);
         }
     } else if(p->varTypeName == 'k' || p->varTypeName == 'i') {
@@ -2828,7 +2828,7 @@ static int32_t setslice_array_k(CSOUND *csound, _AAk *p) {
         STRINGDAT *srcstrs = (STRINGDAT*)p->B->data;
         for(int i=0; i<numitems; i++) {
             char *srcstr = srcstrs[i].data;
-            deststrs[offset + i].size = strlen(srcstr);
+            deststrs[offset + i].size = (int)strlen(srcstr);
             deststrs[offset + i].data = csound->Strdup(csound, srcstr);
         }
     } else if(p->varTypeName == 'k' || p->varTypeName == 'i') {
@@ -2846,11 +2846,13 @@ static int32_t setslice_array_k_init_i(CSOUND *csound, _AAk *p) {
 }
 
 static int32_t setslice_array_k_init_k(CSOUND *csound, _AAk *p) {
+    IGN(csound);
     p->varTypeName = 'k';
     return OK;
 }
 
 static int32_t setslice_array_k_init_S(CSOUND *csound, _AAk *p) {
+    IGN(csound);
     p->varTypeName = 'S';
     return OK;
 }
@@ -2883,9 +2885,10 @@ static double grad(int hash, double x, double y, double z) {
 }
 
 double perlin_noise(double x, double y, double z) {
-	int X = (int)floor(x) & 255,                  // FIND UNIT CUBE THAT
-        Y = (int)floor(y) & 255,                  // CONTAINS POINT.
-        Z = (int)floor(z) & 255;
+    // find unit cube that contains point
+    int X = (int)x & 255,
+        Y = (int)y & 255,
+        Z = (int)z & 255;
 	x -= floor(x);                                // FIND RELATIVE X,Y,Z
 	y -= floor(y);                                // OF POINT IN CUBE.
 	z -= floor(z);
