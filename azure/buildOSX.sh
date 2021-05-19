@@ -12,15 +12,6 @@ echo "BUILD_ARTIFACTSTAGINGDIRECTORY contents:"
 ls -1 $BUILD_ARTIFACTSTAGINGDIRECTORY
 
 
-# install Csound, didn't think this was needed, but Cmake fails without it..
-curl -L -o Csound6.14.0-MacOS_x86_64.dmg 'https://github.com/csound/csound/releases/download/6.14.0/Csound6.14.0-MacOS_x86_64.dmg'
-ls
-hdiutil attach Csound6.14.0-MacOS_x86_64.dmg
-cp -R /Volumes/Csound6.14.0/ Csound
-hdiutil detach /Volumes/Csound6.14.0/
-cd Csound
-sudo installer -pkg csound6.14.0-MacOS_x86_64.pkg -target /
-
 #return to main working dir after installing Csound
 cd $SYSTEM_DEFAULTWORKINGDIRECTORY
 
@@ -39,10 +30,18 @@ echo $PATH
 
 nasm --version
 
-mkdir build
-cd build
+brew install libsndfile
+
+# Update submodules
+git submodule update --init --recursive --remote
+git submodule foreach git pull origin master
+git submodule status --recursive
+
+# Now build plugins
+
+mkdir build & cd build
 cmake ..
-make
+make -j4
 ls
 mkdir $BUILD_ARTIFACTSTAGINGDIRECTORY/MacOS
 cp *.dylib $BUILD_ARTIFACTSTAGINGDIRECTORY/MacOs
