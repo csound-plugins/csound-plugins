@@ -18,8 +18,8 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # set compilation flags
-set(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS}  "-std=c++11")
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c99 -fPIC -Wall -Wextra -DUSE_DOUBLE -DB64BIT")
+# set(CMAKE_CXX_FLAGS  ${CMAKE_CXX_FLAGS}  "-std=c++11")
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-fPIC -Wall -Wextra -DUSE_DOUBLE -DB64BIT")
 
 # options
 option(USE_LIB64 "Set to on to set installation dir for libs to lib64" OFF)
@@ -39,7 +39,6 @@ include(CheckCXXCompilerFlag)
 function(addflag flag flagname)
   check_c_compiler_flag(${flag} ${flagname})
   if (${flagname})
-    # message(STATUS "Setting C flag ${flag}")    
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}" PARENT_SCOPE)
   endif()
   check_cxx_compiler_flag(${flag} CXX_${flagname})
@@ -76,13 +75,17 @@ MACRO(ADD_ALL_SUBDIRECTORIES directory)
   endforeach()
 ENDMACRO()
 
+if(CPP11)
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)    
+endif()
 
 
 # set optimization flags
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   add_definitions(-fvisibility=hidden)
   if(NATIVE)
-	add_definitions(-march=native)
+	  add_definitions(-march=native)
   endif()
   
   include(CheckCCompilerFlag)
@@ -92,12 +95,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   addflag(-msse2 HAS_SSE2)
   addflag(-mfgpath=sse HAS_FPMATH_SSE)
   
-  if(CPP11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	if(CMAKE_COMPILER_IS_CLANG)
-	  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-	endif()
-  endif()
 endif()
 
 if(MINGW)
@@ -187,6 +184,7 @@ function(make_plugin pluginlib srcs)
   target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
   # target_include_directories(${pluginlib} PRIVATE ${CSOUND_INCLUDE_DIRS})
   message(STATUS "csound include: ${CMAKE_SOURCE_DIR}/csound/include")
+  set_property(TARGET ${pluginlib} PROPERTY C_STANDARD 99)
   set_target_properties(${pluginlib} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR})
