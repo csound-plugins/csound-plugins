@@ -39,7 +39,8 @@ git submodule status --recursive
 
 # Now build plugins
 
-mkdir build & cd build
+mkdir build
+cd build
 cmake ..
 make -j4
 ls
