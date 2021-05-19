@@ -2,14 +2,12 @@
 
 set -x
 
-VERSION=$(cat ../VERSION)
-echo "VERSION: '$VERSION'"
+VERSION=$(cat ../VERSION.txt)
 
 DROP=$(realpath ~/Downloads/drop.zip)
 
 rootpath=$(realpath "$0")
 root=$(realpath $(dirname "$rootpath")/..)
-echo $root
 
 OUTPUTDIR=$(realpath ../release/v$VERSION)
 
@@ -20,6 +18,7 @@ rm -fr ~/tmp/drop*
 
 cp "$DROP" ~/tmp
 ls -l 
+
 aunpack drop.zip
 cd drop/Linux
 
