@@ -1,7 +1,8 @@
-#if(WIN32)
-#  set(VCPKG_TARGET_TRIPLET "x64-windows")
-#  set(CMAKE_TOOLCHAIN_FILE ${vcpkgpath}\scripts\buildsystems\vcpkg.cmake)
-#endif()
+if(WIN32)
+  set(VCPKG_TARGET_ARCHITECTURE x64)
+  set(VCPKG_TARGET_TRIPLET "x64-windows")
+  set(VCPKG_CRT_LINKAGE dynamic)
+endif()
 
 project("csound_plugins")
 
