@@ -16,14 +16,18 @@ jobs:
       - name: windows build
         if: runner.os == 'windows'
         run: |
+          vcpkg integrate install
           vcpkg install libsndfile:x64-windows
           vcpkg list
+          
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
           git submodule status --recursive
+
           mkdir build-windows
           cd build-windows
-          cmake -DBUILD_JSUSFX_OPCODES=OFF ..
+
+          cmake -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="${vcpkgpath}\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
           
           
