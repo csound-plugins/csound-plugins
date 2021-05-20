@@ -1,7 +1,7 @@
 $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"
 
 # Dependencies
-choco install libsndfile
+vcpkg install libsndfile:x64-windows
 
 # Build plugins
 
