@@ -1,6 +1,13 @@
 $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"
 
+# Dependencies
+choco install libsndfile
+
+# Build plugins
+
 cd D:/a/1/s/
+
+# Submodules
 
 git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
