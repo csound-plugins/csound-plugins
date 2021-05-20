@@ -150,7 +150,7 @@ message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
 
 if(USE_DOUBLE)
   message(STATUS ">>> using doubles")
-  
+  add_definitions(-DUSE_DOUBLE)
   if(APPLE)
     set(CSOUNDLIB "CsoundLib64")
     set(PLUGIN_INSTALL_DIR "${CS_FRAMEWORK_DEST}/${CSOUNDLIB}.framework/Versions/${APIVERSION}/Resources/Opcodes64")
@@ -178,24 +178,35 @@ endif()
 
 set(BUILD_PLUGINS_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-#if(NOT CSOUND_FOUND)
-#  message(FATAL_ERROR "Csound installation not found")
-#endif()
+function(add_shared_library target srcs)
+  if(APPLE)
+      add_library(${pluginlib} SHARED ${srcs})
+    else()
+      add_library(${pluginlib} MODULE ${srcs})
+    endif()
+endfunction(add_shared_library)
+
+function(make_c_plugin pluginlib srcs)
+  message(STATUS "make_c_plugin: ${pluginlib}")
+  add_shared_library(${pluginlib} ${srcs})
+  target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
+  # target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
+  set_property(TARGET ${pluginlib} PROPERTY C_STANDARD 99)
+  set_target_properties(${pluginlib} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR})
+  
+  install(TARGETS ${pluginlib}
+    LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}" )
+endfunction(make_c_plugin)
 
 # pluginlib: name of the plugin
 # srcs: sources of the plugin
 function(make_plugin pluginlib srcs)
   message(STATUS "make_plugin: ${pluginlib}")
-  if(APPLE)
-    add_library(${pluginlib} SHARED ${srcs})
-  else()
-    add_library(${pluginlib} MODULE ${srcs})
-  endif()
+  add_shared_library(${pluginlib} ${srcs})
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
-  target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
-  # target_include_directories(${pluginlib} PRIVATE ${CSOUND_INCLUDE_DIRS})
-  message(STATUS "csound include: ${CMAKE_SOURCE_DIR}/csound/include")
-  set_property(TARGET ${pluginlib} PROPERTY C_STANDARD 99)
+  # target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
   set_target_properties(${pluginlib} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR})
@@ -209,11 +220,6 @@ endfunction(make_plugin)
 message(STATUS "Building Opcodes")
 
 # ------------------------------------------------------------------------------------
-
-# add_subdirectory(src)
-
-# make_plugin(klib src/klib/klib.c)
-# make_plugin(poly src/poly/poly.c)
 
 ADD_ALL_SUBDIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
