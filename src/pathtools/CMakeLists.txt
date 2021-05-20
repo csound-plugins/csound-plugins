@@ -8,7 +8,7 @@ endif()
 make_c_plugin(pathtools src/pathtools.c)
 
 
-if(WIN32)
+if(WIN32XX)
   # sndfile should be installed via vcpkg
   message(STATUS ">>>>>>>>>>>>>>> Building using msvc")
   find_package(SndFile REQUIRED)
