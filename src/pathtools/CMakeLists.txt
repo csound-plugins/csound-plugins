@@ -9,7 +9,7 @@ make_c_plugin(pathtools src/pathtools.c)
 if(MSVC)
   # sndfile should be installed via vcpkg
   message(STATUS ">>>>>>>>>>>>>>> Building using msvc")
-  find_package(SndFile CONFIG REQUIRED)
+  find_package(SndFile REQUIRED)
   target_link_libraries(pathtools PRIVATE SndFile::sndfile)
 else()
   find_path(LIBSNDFILE_INCLUDE_DIRS sndfile.h)

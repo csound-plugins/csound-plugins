@@ -2,6 +2,7 @@ $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MS
 
 # Dependencies
 vcpkg install libsndfile:x64-windows
+vcpkg list
 
 # Build plugins
 
