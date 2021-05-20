@@ -4,11 +4,7 @@ if(NOT(BUILD_PATHTOOLS_OPCODES))
   return()
 endif()
 
-# make_c_plugin(pathtools src/pathtools.c)
-add_shared_library(pathtools src/pathtools.c)
-target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
-set_property(TARGET ${pluginlib} PROPERTY C_STANDARD 99)
- 
+make_c_plugin(pathtools src/pathtools.c)
 
 if(MSVC)
   # sndfile should be installed via vcpkg
