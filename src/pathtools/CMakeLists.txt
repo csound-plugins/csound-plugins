@@ -4,10 +4,15 @@ if(NOT(BUILD_PATHTOOLS_OPCODES))
   return()
 endif()
 
-make_c_plugin(pathtools src/pathtools.c)
+# make_c_plugin(pathtools src/pathtools.c)
+add_shared_library(pathtools src/pathtools.c)
+target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
+set_property(TARGET ${pluginlib} PROPERTY C_STANDARD 99)
+ 
 
 if(MSVC)
   # sndfile should be installed via vcpkg
+  message(STATUS ">>>>>>>>>>>>>>> Building using msvc")
   find_package(SndFile CONFIG REQUIRED)
   target_link_libraries(pathtools PRIVATE SndFile::sndfile)
 else()
