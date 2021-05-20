@@ -1,3 +1,8 @@
+#if(WIN32)
+#  set(VCPKG_TARGET_TRIPLET "x64-windows")
+#  set(CMAKE_TOOLCHAIN_FILE ${vcpkgpath}\scripts\buildsystems\vcpkg.cmake)
+#endif()
+
 project("csound_plugins")
 
 cmake_minimum_required(VERSION 3.8)

@@ -1,4 +1,4 @@
-$env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"
+# $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"
 
 # Dependencies
 vcpkg integrate install
@@ -18,7 +18,7 @@ git submodule status --recursive
 mkdir build
 cd build
 
-cmake -DBUILD_JSUSFX_OPCODES=OFF ..
+cmake -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE -DVCPKG_TARGET_TRIPLET x64-windows "${vcpkgpath}\scripts\buildsystems\vcpkg.cmake" ..
 cmake --build . --config Release --parallel 4
 # cmake -G "Visual Studio 15 2017 Win64" -DBUILD_JSUSFX_OPCODES=OFF ..
 # msbuild.exe Project.sln /property:Platform=x64 /property:Configuration=Release
