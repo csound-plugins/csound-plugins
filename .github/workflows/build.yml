@@ -38,9 +38,8 @@ jobs:
           git submodule foreach git pull origin master
           git submodule status --recursive
 
-          if (Test-Path build-windows) {
-            Remove-Item -Recurse -Force build-windows
-          }
+          Remove-Item -Recurse -Force -build-windows -ErrorAction Ignore
+
           mkdir build-windows
           cd build-windows
 
@@ -49,10 +48,9 @@ jobs:
           cmake --build . --config Release
 
           set-variable -name ARCHIVE -value "csound-plugins--win64.zip"
-          if (Test-Path $ARCHIVE) {
-            Remove-Item $ARCHIVE
-          }
-          rm Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
+          rm $ARCHIVE -ErrorAction Ignore
+
+          rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
           7z a $ARCHIVE ./Release/*.dll
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
