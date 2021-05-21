@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: Build plugins on $ {{ matrix.os }}
+    name: Build plugins on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -16,6 +16,7 @@ jobs:
       - name: windows build
         if: runner.os == 'windows'
         run: |
+          where.exe vcpkg
           vcpkg integrate install
           vcpkg install libsndfile:x64-windows
           vcpkg list
@@ -27,7 +28,9 @@ jobs:
           mkdir build-windows
           cd build-windows
 
-          cmake -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="${vcpkgpath}\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          echo "vcpkgpath: ${vcpkgpath}"
+          
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="${vcpkgpath}\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
           
           

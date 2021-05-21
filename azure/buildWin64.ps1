@@ -1,6 +1,7 @@
 # $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"
 
 # Dependencies
+where.exe vcpkg
 vcpkg integrate install
 vcpkg install libsndfile:x64-windows
 vcpkg list
@@ -18,7 +19,7 @@ git submodule status --recursive
 mkdir build
 cd build
 
-cmake -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="${vcpkgpath}\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows  ..
+cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="${vcpkgpath}\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows  ..
 cmake --build . --config Release --parallel 4
 # cmake -G "Visual Studio 15 2017 Win64" -DBUILD_JSUSFX_OPCODES=OFF ..
 # msbuild.exe Project.sln /property:Platform=x64 /property:Configuration=Release
