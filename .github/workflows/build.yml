@@ -79,7 +79,7 @@ jobs:
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
 
-          set-variable -name ARCHIVE -value "csound-plugins--win64.zip"
+          set-variable -name ARCHIVE -value "csound-plugins--${{ matrix.os }}.zip"
           rm $ARCHIVE -ErrorAction Ignore
 
           rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
@@ -88,17 +88,22 @@ jobs:
           7z l $ARCHIVE
           cp $ARCHIVE ../artifacts
 
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          # This is how it will be named on the release page. Put hatever name
+          # you like, remember that they need to be different for each platform.
+          # You can choose any build matrix parameters. For Rust I use the
+          # target triple.
+          asset_name: csound-plugins-${{ matrix.os }}
+          # The path to the file you want to upload.
+          asset_path: artifacts/csound-plugins--${{ matrix.os }}.zip
+          
       - uses: actions/upload-artifact@v2
         with:
           name: plugins
           path: artifacts/*.zip
            
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            artifacts/*  
           
