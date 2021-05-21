@@ -38,7 +38,7 @@ jobs:
           git submodule foreach git pull origin master
           git submodule status --recursive
 
-          Remove-Item -Recurse -Force -build-windows -ErrorAction Ignore
+          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
 
           mkdir build-windows
           cd build-windows
