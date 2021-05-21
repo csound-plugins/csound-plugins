@@ -92,11 +92,10 @@ jobs:
 
           cp $ARCHIVE ../artifacts
 
-
       - uses: actions/upload-artifact@v2
-         with:
-           name: plugins
-           path: artifacts/*.zip
+        with:
+          name: plugins
+          path: artifacts/*.zip
            
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
