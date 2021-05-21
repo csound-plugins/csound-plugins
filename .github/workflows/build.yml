@@ -27,7 +27,7 @@ jobs:
         run: |
           # where.exe vcpkg
           # vcpkg integrate install
-          $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
+          $VCPKG_ROOT\vcpkg.exe install libsndfile:x64-windows
           #vcpkg install libsndfile:x64-windows
           
           git submodule update --init --recursive --remote
