@@ -9,9 +9,32 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2019, ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
+
+      - name: linux build
+        if: runner.os == 'linux'
+        run: |
+          sudo apt-get install libsndfile1-dev
+          sudo apt-get install nasm
+          
+          git submodule update --init --recursive --remote
+          git submodule foreach git pull origin master
+          git submodule status --recursive
+
+          rm -fr build-linux
+          mkdir build-linux
+          cd build-linux
+
+          cmake -DSKIP_FAST_MATH=True ..
+          make -j4
+          ls
+          ARCHIVE=csound-plugins--linux.zip
+          7z a $ARCHIVE *.so
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          
 
       # Restore from cache the previously built ports. If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
       - name: Restore from cache and install vcpkg
@@ -66,5 +89,6 @@ jobs:
           title: "Development Build"
           files: |
             build-windows/csound-plugins--win64.zip
-            
+            build-linux/csound-plugins--linux.zip
+            build-macos/csound-plugins--macos.zip  
           
