@@ -39,9 +39,12 @@ jobs:
             Remove-Item $ARCHIVE
           }
           rm Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
-          7z a $ARCHIVE Release/*.dll
+          7z a $ARCHIVE ./Release/*.dll
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
+          ls
+          cd ..
+          ls
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
