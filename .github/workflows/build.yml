@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - run: mkdir -p artifacts
+      
       - name: linux build
         if: runner.os == 'linux'
         run: |
@@ -34,6 +36,13 @@ jobs:
           7z a $ARCHIVE *.so
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
+
+          cp $ARCHIVE ../artifacts
+
+          #cd ..
+          #mkdir -p release/latest
+          #cp build-linux/$ARCHIVE release/latest
+          #git cm "linux build"
           
 
       # Restore from cache the previously built ports. If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
@@ -81,6 +90,14 @@ jobs:
           cd ..
           ls
 
+          cp $ARCHIVE ../artifacts
+
+
+      - uses: actions/upload-artifact@v2
+         with:
+           name: plugins
+           path: artifacts/*.zip
+           
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -88,7 +105,5 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            build-windows/csound-plugins--win64.zip
-            build-linux/csound-plugins--linux.zip
-            build-macos/csound-plugins--macos.zip  
+            artifacts/*  
           
