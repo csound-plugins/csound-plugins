@@ -16,7 +16,7 @@ jobs:
       - name: windows build
         if: runner.os == 'windows'
         run: |
-          where.exe vcpkg
+          # where.exe vcpkg
           vcpkg integrate install
           vcpkg install libsndfile:x64-windows
           vcpkg list
@@ -28,10 +28,13 @@ jobs:
           mkdir build-windows
           cd build-windows
 
-          echo "vcpkgpath: ${vcpkgpath}"
-          
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
-          
-          
+
+          set-variable -name ARCHIVE -value "csound-plugins--win64.zip"
+          if (Test-Path $ARCHIVE) {
+            Remove-Item $ARCHIVE
+          }
+          7z a $ARCHIVE Release/*.dll
+          7z l $ARCHIVE
           
