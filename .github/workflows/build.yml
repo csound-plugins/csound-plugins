@@ -30,7 +30,7 @@ jobs:
 
           echo "vcpkgpath: ${vcpkgpath}"
           
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="${vcpkgpath}\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
           
           
