@@ -13,13 +13,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Restore from cache the previously built ports. If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
+      - name: Restore from cache and install vcpkg
+        if: runner.os == 'windows'
+        # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
+        uses: lukka/run-vcpkg@v6
+        with:
+          setupOnly: true
       - name: windows build
         if: runner.os == 'windows'
         run: |
           # where.exe vcpkg
-          vcpkg integrate install
-          vcpkg install libsndfile:x64-windows
-          vcpkg list
+          # vcpkg integrate install
+          $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
+          #vcpkg install libsndfile:x64-windows
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
@@ -31,7 +38,8 @@ jobs:
           mkdir build-windows
           cd build-windows
 
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
 
           set-variable -name ARCHIVE -value "csound-plugins--win64.zip"
@@ -53,6 +61,6 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            build-windows/$ARCHIVE
+            build-windows/csound-plugins--win64.zip
             
           
