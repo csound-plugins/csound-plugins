@@ -19,7 +19,9 @@ jobs:
         # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
         uses: lukka/run-vcpkg@v6
         with:
+          vcpkgGitCommitId: 0bf3923f9fab4001c00f0f429682a0853b5749e0
           setupOnly: true
+          
       - name: windows build
         if: runner.os == 'windows'
         run: |
