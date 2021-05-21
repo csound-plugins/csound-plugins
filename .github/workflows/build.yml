@@ -25,7 +25,7 @@ jobs:
           git submodule foreach git pull origin master
           git submodule status --recursive
 
-          if (Test_Path build-windows) {
+          if (Test-Path build-windows) {
             Remove-Item -Recurse -Force build-windows
           }
           mkdir build-windows
