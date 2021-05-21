@@ -25,8 +25,11 @@ jobs:
           git submodule foreach git pull origin master
           git submodule status --recursive
 
+          rm -r -fo build-windows
           mkdir build-windows
           cd build-windows
+
+          rm -r -fo Release
 
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
