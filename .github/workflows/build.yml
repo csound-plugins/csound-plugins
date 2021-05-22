@@ -1,7 +1,7 @@
-name: Build
+name: Build And Publish
 on: push
 jobs:
-  build:
+  - buildjob:
     name: Build plugins on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -91,20 +91,20 @@ jobs:
         with:
           name: plugins
           path: artifacts/*.zip
-             
-publishjob:
-  name: Publish artifacts as a release
-  if: contains(github.ref, 'tags/v')
-  needs: ["Build"]
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v2
+  
+  - publish:           
+    name: Publish artifacts as a release
+    if: contains(github.ref, 'tags/v')
+    needs: [buildjob]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
 
-    - name: Load Release URL File from release job
-      uses: actions/download-artifact@v2
-      with:
-        name: plugins
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v2
+        with:
+          name: plugins
 
-    - name: Display files
-      run: ls -R
-      working-directory: artifacts
+      - name: Display files
+        run: ls -R
+        working-directory: artifacts
