@@ -29,7 +29,6 @@
 
 #include "csdl.h"
 #include <math.h>
-// #include <unistd.h>
 #include <ctype.h>
 #include "arrays.h"
 #include "sndfile.h"
@@ -38,6 +37,16 @@
 #if defined(WIN32) || defined(__MINGW32__) || defined(_WIN32)
     #define OS_WIN32
 #endif
+
+
+#ifdef OS_WIN32
+#include <direct.h>
+#define getcurrdir _getcwd
+#else
+#include <unistd.h>
+#define getcurrdir getcwd
+#endif
+
 
 #define FORCE_FORWARD_SLASH
 
@@ -122,6 +131,7 @@ static void _str_replace_inplace(char *s, char orig, char replacement) {
 }
 
 
+/*
 static void _path_make_native_inplace(char *s, size_t len) {
 #ifdef OS_WIN32
     char wrongsep = '/';
@@ -132,6 +142,7 @@ static void _path_make_native_inplace(char *s, size_t len) {
 #endif
     _str_replace_inplace(s, sep, wrongsep);
 }
+*/
 
 
 typedef struct {
@@ -380,7 +391,7 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
     }
 
     string_ensure(csound, p->Sout, 1024);
-    if (getcwd(p->Sout->data, p->Sout->size - slen - 2) == NULL) {
+    if (getcurrdir(p->Sout->data, p->Sout->size - slen - 2) == NULL) {
         stringdat_clear(csound, p->Sout);
         MSG("Could not get the current working directory\n");
         return NOTOK;
