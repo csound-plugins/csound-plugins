@@ -1,7 +1,6 @@
 buildjob:
   name: Build
-  on:
-    push
+  on: push
   jobs:
     build:
       name: Build plugins on ${{ matrix.os }}
