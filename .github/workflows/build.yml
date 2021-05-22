@@ -1,7 +1,7 @@
 name: Build And Publish
 on: push
 jobs:
-  - buildjob:
+  buildjob:
     name: Build plugins on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -92,7 +92,7 @@ jobs:
           name: plugins
           path: artifacts/*.zip
   
-  - publish:           
+  publish:           
     name: Publish artifacts as a release
     if: contains(github.ref, 'tags/v')
     needs: [buildjob]
