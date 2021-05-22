@@ -10,9 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup
-        run: mkdir -p artifacts
-      
       - name: macos build
         if: runner.os == 'macOS'
         run: |
@@ -44,6 +41,7 @@ jobs:
           7z a $ARCHIVE *.dylib
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
+          mkdir -p artifacts
           cp $ARCHIVE ../artifacts
 
       - name: linux build
@@ -67,6 +65,7 @@ jobs:
           7z a $ARCHIVE *.so
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
+          mkdir -p artifacts
           cp $ARCHIVE ../artifacts
 
       # Windows: Restore from cache the previously built ports. 
@@ -112,6 +111,9 @@ jobs:
           7z a $ARCHIVE ./Release/*.dll
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
+          if(!(Test-Path artifacts)) {  
+            New-Item -ItemType directory -Path artifacts
+          }
           cp $ARCHIVE ../artifacts
 
       - uses: actions/upload-artifact@v2
