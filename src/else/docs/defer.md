@@ -59,8 +59,8 @@ nchnls = 2
 
 instr 1
   kt timeinsts
-  prints "Instr 1 started"
-  defer "prints", "Instr 1 stopped after %.3f seconds", kt
+  prints "Instr 1 started\n"
+  defer "prints", "Instr 1 stopped after %.3f seconds\n", kt
 endin
 
 
