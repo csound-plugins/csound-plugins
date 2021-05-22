@@ -1,4 +1,4 @@
-# loadmtx
+# loadnpy
 
 ## Abstract
 
@@ -6,7 +6,7 @@ Load an array (of any number of dimensions) saved as a .npy file
 
 ## Description
 
-``loadmtx`` loads an array saved as a .npy file. A .npy file holds a possibly multidimensional
+``loadnpy`` loads an array saved as a .npy file. A .npy file holds a possibly multidimensional
 array of either int or float type, with members of 32 or 64 bits. This opcodes converts all such
 formats to a float array of the same shape. For more information on the `.npy` format, see
 <https://numpy.org/devdocs/reference/generated/numpy.lib.format.html>
@@ -16,8 +16,8 @@ formats to a float array of the same shape. For more information on the `.npy` f
 
 ```csound
 
-iArr[] loadmtx Spath
-kArr[] loadmtx Spath
+iArr[] loadnpy Spath
+kArr[] loadnpy Spath
 
 ```
     
@@ -50,13 +50,13 @@ nchnls = 2
 0dbfs  = 1
 
 instr 1
-    iA[] loadmtx "test-float64.npy"
+    iA[] loadnpy "test-float64.npy"
     printarray iA
 
-    iB[] loadmtx "test-2D.npy"
+    iB[] loadnpy "test-2D.npy"
     printarray iB
 
-    iC[] loadmtx "test-int.npy"
+    iC[] loadnpy "test-int.npy"
     printarray iC
     
     turnoff

@@ -93,7 +93,7 @@ Collection of miscellaneous plugins
 * [interp1d](opcodes/interp1d.md): Interpolate between elements of an array/table 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
-* [loadmtx](opcodes/loadmtx.md): Load an array (of any number of dimensions) saved as a .npy file 
+* [loadnpy](opcodes/loadnpy.md): Load an array (of any number of dimensions) saved as a .npy file 
 * [memview](opcodes/memview.md): Create a view into a table or another array 
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 

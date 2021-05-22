@@ -20,7 +20,7 @@
       "interp1d",
       "lfnoise",
       "linenv",
-      "loadmtx",
+      "loadnpy",
       "memview",
       "perlin3",
       "pread",

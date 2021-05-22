@@ -10,13 +10,13 @@ nchnls = 2
 0dbfs  = 1
 
 instr 1
-    iA[] loadmtx "test-float64.npy"
+    iA[] loadnpy "test-float64.npy"
     printarray iA
 
-    iB[] loadmtx "test-2D.npy"
+    iB[] loadnpy "test-2D.npy"
     printarray iB
 
-    iC[] loadmtx "test-int.npy"
+    iC[] loadnpy "test-int.npy"
     printarray iC
     
     turnoff
