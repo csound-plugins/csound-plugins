@@ -93,6 +93,7 @@ jobs:
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
           git submodule status --recursive
+          ls
 
           Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
 
@@ -100,6 +101,9 @@ jobs:
           cd build-windows
 
           # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+
+          ls "$VCPKG_ROOT" -recurse
+
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
           ls Release
