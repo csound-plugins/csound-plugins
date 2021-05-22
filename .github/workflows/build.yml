@@ -41,8 +41,10 @@ jobs:
           7z a $ARCHIVE *.dylib
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
-          mkdir -p artifacts
+          mkdir -p ../artifacts
           cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
 
       - name: linux build
         if: runner.os == 'linux'
@@ -65,8 +67,10 @@ jobs:
           7z a $ARCHIVE *.so
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
-          mkdir -p artifacts
+          mkdir -p ../artifacts
           cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
 
       # Windows: Restore from cache the previously built ports. 
       # If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
@@ -107,7 +111,7 @@ jobs:
           echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
           ls "$VCPKG_ROOT" -recurse
 
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$env: VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
           ls Release
 
@@ -118,10 +122,11 @@ jobs:
           7z a $ARCHIVE ./Release/*.dll
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
-          if(!(Test-Path artifacts)) {  
-            New-Item -ItemType directory -Path artifacts
+          if(!(Test-Path ../artifacts)) {  
+            New-Item -ItemType directory -Path ../artifacts
           }
           cp $ARCHIVE ../artifacts
+          ls ../artifacts
 
       - uses: actions/upload-artifact@v2
         with:
