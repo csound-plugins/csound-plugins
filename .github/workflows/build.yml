@@ -1,96 +1,112 @@
-name: Build
+buildjob:
+  name: Build
+  on:
+    push
+  jobs:
+    build:
+      name: Build plugins on ${{ matrix.os }}
+      runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: [windows-2019, ubuntu-latest]
+      steps:
+        - uses: actions/checkout@v2
 
-on:
-  push
+        - run: mkdir -p artifacts
+        
+        - name: linux build
+          if: runner.os == 'linux'
+          run: |
+            sudo apt-get install libsndfile1-dev
+            sudo apt-get install nasm
+            
+            git submodule update --init --recursive --remote
+            git submodule foreach git pull origin master
+            git submodule status --recursive
 
-jobs:
-  build:
-    name: Build plugins on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-2019, ubuntu-latest]
-    steps:
-      - uses: actions/checkout@v2
+            rm -fr build-linux
+            mkdir build-linux
+            cd build-linux
 
-      - run: mkdir -p artifacts
-      
-      - name: linux build
-        if: runner.os == 'linux'
-        run: |
-          sudo apt-get install libsndfile1-dev
-          sudo apt-get install nasm
-          
-          git submodule update --init --recursive --remote
-          git submodule foreach git pull origin master
-          git submodule status --recursive
+            cmake -DSKIP_FAST_MATH=True ..
+            make -j4
+            ls
+            ARCHIVE=csound-plugins--linux.zip
+            7z a $ARCHIVE *.so
+            7z a $ARCHIVE ../assets/README.txt
+            7z l $ARCHIVE
 
-          rm -fr build-linux
-          mkdir build-linux
-          cd build-linux
+            cp $ARCHIVE ../artifacts
 
-          cmake -DSKIP_FAST_MATH=True ..
-          make -j4
-          ls
-          ARCHIVE=csound-plugins--linux.zip
-          7z a $ARCHIVE *.so
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
+            #cd ..
+            #mkdir -p release/latest
+            #cp build-linux/$ARCHIVE release/latest
+            #git cm "linux build"
+            
 
-          cp $ARCHIVE ../artifacts
+        # Restore from cache the previously built ports. If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
+        - name: Restore from cache and install vcpkg
+          if: runner.os == 'windows'
+          # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
+          uses: lukka/run-vcpkg@v6
+          with:
+            vcpkgArguments: libsndfile:x64-windows
+            vcpkgTriplet: x64-windows
+            vcpkgGitCommitId: "0bf3923f9fab4001c00f0f429682a0853b5749e0"
+            # setupOnly: true
+            
+        - name: windows build
+          if: runner.os == 'windows'
+          run: |
+            # where.exe vcpkg
+            # $VCPKG_ROOT/vcpkg integrate install
+            # vcpkg integrate install
+            # $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
 
-          #cd ..
-          #mkdir -p release/latest
-          #cp build-linux/$ARCHIVE release/latest
-          #git cm "linux build"
-          
+            #vcpkg install libsndfile:x64-windows
+            
+            git submodule update --init --recursive --remote
+            git submodule foreach git pull origin master
+            git submodule status --recursive
 
-      # Restore from cache the previously built ports. If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
-      - name: Restore from cache and install vcpkg
-        if: runner.os == 'windows'
-        # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
-        uses: lukka/run-vcpkg@v6
-        with:
-          vcpkgArguments: libsndfile:x64-windows
-          vcpkgTriplet: x64-windows
-          vcpkgGitCommitId: "0bf3923f9fab4001c00f0f429682a0853b5749e0"
-          # setupOnly: true
-          
-      - name: windows build
-        if: runner.os == 'windows'
-        run: |
-          # where.exe vcpkg
-          # $VCPKG_ROOT/vcpkg integrate install
-          # vcpkg integrate install
-          # $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
+            Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
 
-          #vcpkg install libsndfile:x64-windows
-          
-          git submodule update --init --recursive --remote
-          git submodule foreach git pull origin master
-          git submodule status --recursive
+            mkdir build-windows
+            cd build-windows
 
-          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
+            # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+            cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+            cmake --build . --config Release
 
-          mkdir build-windows
-          cd build-windows
+            set-variable -name ARCHIVE -value "csound-plugins--${{ matrix.os }}.zip"
+            rm $ARCHIVE -ErrorAction Ignore
 
-          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
-          cmake --build . --config Release
+            rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
+            7z a $ARCHIVE ./Release/*.dll
+            7z a $ARCHIVE ../assets/README.txt
+            7z l $ARCHIVE
 
-          set-variable -name ARCHIVE -value "csound-plugins--${{ matrix.os }}.zip"
-          rm $ARCHIVE -ErrorAction Ignore
+            New-Item -ItemType Directory -Force -Path ../artifacts
+            cp $ARCHIVE ../artifacts
 
-          rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
-          7z a $ARCHIVE ./Release/*.dll
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
-          cp $ARCHIVE ../artifacts
+        - uses: actions/upload-artifact@v2
+          with:
+            name: plugins
+            path: artifacts/*.zip
+             
+publishjob:
+  name: Publish artifacts as a release
+  if: contains(github.ref, 'tags/v')
+    needs: [buildjob]
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v2
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: plugins
-          path: artifacts/*.zip
-           
-          
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v2
+      with:
+        name: plugins
+
+    - name: Display files
+      run: ls -R
+      working-directory: artifacts
