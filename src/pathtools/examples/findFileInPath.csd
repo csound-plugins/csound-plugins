@@ -21,7 +21,7 @@ nchnls = 2
 
 instr 1
     ; find the directory of this script
-    Spath findFile "fileFind.csd"
+    Spath findFileInPath "fileFind.csd"
     Sdir, Sbase pathSplit Spath
     prints "Folder: %s \n", Sdir
 
