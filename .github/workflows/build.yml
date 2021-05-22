@@ -97,7 +97,7 @@ buildjob:
 publishjob:
   name: Publish artifacts as a release
   if: contains(github.ref, 'tags/v')
-    needs: [buildjob]
+  needs: [buildjob]
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v2
