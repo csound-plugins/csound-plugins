@@ -59,9 +59,15 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="Installation.html">Installation</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#compiled-binaries">Compiled Binaries</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#from-source">From Source</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a>
+    <li class="toctree-l3"><a class="reference internal" href="#linux">Linux</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#macos">MacOS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#windows">Windows</a>
     </li>
         </ul>
     </li>
@@ -272,21 +278,84 @@
             <div class="section">
               
                 <h1 id="installation">Installation</h1>
+<h2 id="compiled-binaries">Compiled Binaries</h2>
+<p>Binaries for all platforms can be found here: <a href="https://github.com/csound-plugins/csound-plugins/releases">https://github.com/csound-plugins/csound-plugins/releases</a>
+Download from a tagged release (<code>v1.x.y</code>) for a stable release, or use the development build, which
+is contains the latest version.</p>
+<p>A csound plugin is a shared library (<code>.dylib</code> in macOS, <code>.so</code> in Linux, <code>.dll</code> in windows) which
+is loaded by csound and contains multiple opcodes.</p>
+<p>In csound &gt;= 6.16, place the plugins in (create the folder if it does not exist):</p>
+<ul>
+<li>macOS: <code>~/Library/csound/6.0/plugins64</code></li>
+<li>Linux: <code>~/.local/lib/csound/6.0/plugins64</code></li>
+<li>Windows: <code>C:\Users\&lt;User&gt;\AppData\Local\csound\6.0\plugins64</code></li>
+</ul>
+<p>For previous versions, put the plugins along csound's own plugins (this folder should already exist
+and contain a multitude of files):</p>
+<ul>
+<li>macOS: <code>/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64</code> if csound was 
+  installed via the official installer, or 
+  <code>~/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64</code> if installed from source</li>
+<li>Linux: <code>/usr/local/lib/csound/plugins64-6.0</code> if installed from source, <code>/usr/lib/csound/plugins64-6.0</code> if
+  installed by the package manager</li>
+<li>Windows: <code>C:\Program Files\Csound6_x64\plugins64</code></li>
+</ul>
 <h2 id="from-source">From Source</h2>
 <p>The source lives at <a href="https://github.com/csound-plugins/csound-plugins">https://github.com/csound-plugins/csound-plugins</a></p>
-<h3 id="dependencies">Dependencies</h3>
-<ul>
-<li>a compiler</li>
-<li>cmake</li>
-<li>csound &gt;= 6.13</li>
-</ul>
-<div class="codehilite"><pre><span></span><code>git clone https://github.com/csound-plugins/csound-plugins
-cd csound-plugins
-mkdir build
-cd build
+<hr />
+<h3 id="linux">Linux</h3>
+<div class="codehilite"><pre><span></span><code>sudo apt-get install libsndfile1-dev nasm
+git clone https://github.com/csound-plugins/csound-plugins
+<span class="nb">cd</span> csound-plugins
+git submodule update --init --recursive --remote
+git submodule foreach git pull origin master
+mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
 cmake ..
-make 
+make -j4
 sudo make install
+</code></pre></div>
+
+<p>With csound &gt;= 6.16 the last step (<code>make install</code>) can be supplanted by:</p>
+<div class="codehilite"><pre><span></span><code>cp *.so ~/.local/lib/csound/6.0/plugins64
+</code></pre></div>
+
+<hr />
+<h3 id="macos">MacOS</h3>
+<div class="codehilite"><pre><span></span><code>brew install libsndfile
+curl -Ls -o nasm-2.14.02.zip <span class="s1">&#39;https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip&#39;</span>
+unzip nasm-2.14.02.zip
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>realpath nasm-2.14.02<span class="k">)</span><span class="s2">:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+git clone https://github.com/csound-plugins/csound-plugins
+<span class="nb">cd</span> csound-plugins
+git submodule update --init --recursive --remote
+git submodule foreach git pull origin master
+mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+cmake ..
+make -j4
+sudo make install
+</code></pre></div>
+
+<p>With csound &gt;= 6.16 the last step (<code>make install</code>) can be supplanted by:</p>
+<div class="codehilite"><pre><span></span><code>cp *.dylib ~/Library/csound/6.0/plugins64
+</code></pre></div>
+
+<hr />
+<h3 id="windows">Windows</h3>
+<p>Install vcpkg</p>
+<div class="codehilite"><pre><span></span><code><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">microsoft</span><span class="p">/</span><span class="n">vcpkg</span>
+<span class="p">.\</span><span class="n">vcpkg</span><span class="p">\</span><span class="n">bootstrap-vcpkg</span><span class="p">.</span><span class="n">bat</span>
+<span class="p">.\</span><span class="n">vcpkg</span><span class="p">\</span><span class="n">vcpkg</span> <span class="n">integrate</span> <span class="n">install</span>
+<span class="p">.\</span><span class="n">vcpkg</span><span class="p">\</span><span class="n">vcpkg</span> <span class="n">install</span> <span class="n">libsndfile</span><span class="err">:</span><span class="n">x64-windows</span>
+
+<span class="n">git</span> <span class="n">submodule</span> <span class="n">update</span> <span class="p">-</span><span class="n">-init</span> <span class="p">-</span><span class="n">-recursive</span> <span class="p">-</span><span class="n">-remote</span>
+<span class="n">git</span> <span class="n">submodule</span> <span class="k">foreach</span> <span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span> <span class="n">master</span>
+<span class="n">mkdir</span> <span class="n">build</span>
+<span class="nb">cd </span><span class="n">build</span>
+<span class="n">cmake</span> <span class="n">-A</span> <span class="n">x64</span> <span class="n">-DBUILD_JSUSFX_OPCODES</span><span class="p">=</span><span class="n">OFF</span> <span class="p">..</span>
+<span class="n">cmake</span> <span class="p">-</span><span class="n">-build</span> <span class="p">.</span> <span class="p">-</span><span class="n">-config</span> <span class="n">Release</span>
+<span class="nb">cp </span><span class="n">Release</span><span class="p">\*.</span><span class="n">dll</span> <span class="n">C</span><span class="err">:</span><span class="p">\</span><span class="n">Program</span> <span class="n">Files</span><span class="p">\</span><span class="n">Csound6_x64</span><span class="p">\</span><span class="n">plugins64</span>
+<span class="c"># Or copy to C:\Users\&lt;User&gt;\AppData\Local\csound\6.0\plugins64 if you want to install</span>
+<span class="c"># it only for the current user and csound &gt;= 6.16</span>
 </code></pre></div>
               
             </div>
