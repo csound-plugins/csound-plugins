@@ -16,10 +16,10 @@ jobs:
           curl -Ls -o nasm-2.14.02.zip 'https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip'
           unzip nasm-2.14.02.zip
           nasmdir=$PWD/nasm-2.14.02
-          cd $nasmdir
-          ls
-          sudo cp * /usr/local/bin
-          cd ..
+          # cd $nasmdir
+          # ls
+          # sudo cp * /usr/local/bin
+          # cd ..
 
           export PATH="$nasmdir:$PATH"
           nasm --version
