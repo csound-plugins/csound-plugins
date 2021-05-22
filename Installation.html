@@ -306,10 +306,10 @@ and contain a multitude of files):</p>
 <h3 id="linux">Linux</h3>
 <div class="codehilite"><pre><span></span><code>sudo apt-get install libsndfile1-dev nasm
 git clone https://github.com/csound-plugins/csound-plugins
-<span class="nb">cd</span> csound-plugins
+cd csound-plugins
 git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
-mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+mkdir build &amp;&amp; cd build
 cmake ..
 make -j4
 sudo make install
@@ -322,14 +322,14 @@ sudo make install
 <hr />
 <h3 id="macos">MacOS</h3>
 <div class="codehilite"><pre><span></span><code>brew install libsndfile
-curl -Ls -o nasm-2.14.02.zip <span class="s1">&#39;https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip&#39;</span>
+curl -Ls -o nasm-2.14.02.zip &#39;https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip&#39;
 unzip nasm-2.14.02.zip
-<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>realpath nasm-2.14.02<span class="k">)</span><span class="s2">:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+export PATH=&quot;$(realpath nasm-2.14.02):$PATH&quot;
 git clone https://github.com/csound-plugins/csound-plugins
-<span class="nb">cd</span> csound-plugins
+cd csound-plugins
 git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
-mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+mkdir build &amp;&amp; cd build
 cmake ..
 make -j4
 sudo make install
