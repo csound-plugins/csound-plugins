@@ -350,6 +350,76 @@ static int32_t pathJoin(CSOUND *csound, S_SS *p) {
     return OK;
 }
 
+// returns the length of the string in outbuf, or -1
+static int64_t _path_make_absolute(CSOUND *csound,
+                                   char *outbuf, size_t outbuflen,
+                                   char *path) {
+    size_t slen = strlen(path);
+    if(slen == 0) {
+        MSG("pathAbsolute: Path is empty\n");
+        return -1;
+    }
+    if(slen > outbuflen) {
+        MSG("pathAbsolute: Path two long!\n");
+        return -1;
+    }
+
+#ifdef OS_WIN32
+    if(p->s->data[0] == '/') {
+        MSG("Path is ambiguous. This looks like a unix absolute path (it starts with a\n"
+            " forward slash), but is not an absolute path in windows. Prepending the \n"
+            " current working directory will probably result in an invalid path\n");
+        return NOTOK;
+    }
+#endif
+
+    char sep = _get_path_separator();
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+    if(path[0] == '~' && path[1] == sep) {
+        char *home = getenv("HOME");
+        size_t homelen = strlen(home);
+        if(outbuflen < slen+homelen+10) {
+            return NOTOK;
+        }
+        strncpy0(outbuf, home, homelen);
+        strncpy0(outbuf+homelen, &path[1], slen-1);
+        return slen-1+homelen;
+    }
+#endif
+
+    int isabsolute = _path_is_absolute(path, slen);
+    if (isabsolute) {
+        strncpy0(outbuf, path, slen);
+        return slen;
+    }
+
+    if(outbuflen < 1024)
+        return -1;
+
+    if (getcurrdir(outbuf, outbuflen - slen - 2) == NULL) {
+        outbuf[0] = '\0';
+        MSG("Could not get the current working directory\n");
+        return -1;
+    }
+
+    // now concatenate the abs path
+    size_t lenout = strlen(outbuf);
+    if(outbuf[lenout-1] != sep) {
+        outbuf[lenout] = sep;
+        strncpy0(outbuf + (lenout + 1), path, slen);
+        lenout += slen + 1;
+    } else {
+        strncpy0(outbuf + lenout, path, slen);
+        lenout += slen;
+    }
+    return lenout;
+#ifdef OS_WIN32
+    _win32_normalize_path_slashes(p->Sout->data);
+#endif
+
+    return OK;
+}
 
 static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
     size_t slen = strlen(p->s->data);
@@ -416,16 +486,29 @@ static int32_t pathAbsolute(CSOUND *csound, S_S *p) {
     return OK;
 }
 
+// find file in path, resolve to an absolute path
 static int32_t findFile(CSOUND *csound, S_S *p) {
+    enum { buflen = 1024 };
+    char buf[buflen];
     char *outpath = csound->FindInputFile(csound, p->s->data, "SSDIR");
     if(outpath == NULL) {
         stringdat_clear(csound, p->Sout);
-    } else {
-        stringdat_copy_cstr(csound, p->Sout, outpath, strlen(outpath));
-        csound->Free(csound, outpath);
+        return OK;
     }
+    size_t outpathlen = strlen(outpath);
+    if(_path_is_absolute(outpath, outpathlen)) {
+        stringdat_copy_cstr(csound, p->Sout, outpath, strlen(outpath));
+    } else {
+        int64_t pathlen = _path_make_absolute(csound, buf, buflen, outpath);
+        if(pathlen < 0) {
+            return INITERRF("Could not convert path %s to absolute", outpath);
+        }
+        stringdat_copy_cstr(csound, p->Sout, buf, pathlen);
+    }
+    csound->Free(csound, outpath);
     return OK;
 }
+
 
 static int32_t getEnvVar(CSOUND *csound, S_S *p) {
     const char *val = csound->GetEnv(csound, p->s->data);
