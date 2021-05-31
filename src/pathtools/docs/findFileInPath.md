@@ -39,7 +39,7 @@ loading a sample. Returns the absolute path
 
 <CsInstruments>
 /*
-    Sabspath fileFind Sfile
+    Sabspath findFileInPath Sfile
 
     Searched for Sfile, first in the current directory, then in the
     directories specified in SSDIR. Returns the absolute path or 
@@ -54,15 +54,20 @@ nchnls = 2
 
 instr 1
     ; find the directory of this script
-    Spath findFile "fileFind.csd"
+    Spath findFileInPath "findFileInPath.csd"
+    if strlen(Spath) == 0 then
+      initerror "Could not find file"
+    endif
+    
     Sdir, Sbase pathSplit Spath
-    prints "Folder: %s \n", Sdir
+    prints "Spath: %s\nFolder: %s \n", Spath, Sdir
 
     Svalue getEnvVar "SSDIR"
     prints "SSDIR: %s \n", Svalue
  
     Sscriptdir scriptDir
     prints "Directory of current script: %s \n", Sscriptdir
+
     turnoff
 
 endin
