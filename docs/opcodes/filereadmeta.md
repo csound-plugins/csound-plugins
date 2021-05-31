@@ -1,4 +1,4 @@
-# sfreadmeta
+# filereadmeta
 
 ## Abstract
 
@@ -24,8 +24,8 @@ their corresponding values.
 
 ## Syntax
 
-    Svalue sfreadmeta Ssndfile, Skey
-    Skeys[], Svalues[] sfreadmeta Ssndfile
+    Svalue filereadmeta Ssndfile, Skey
+    Skeys[], Svalues[] filereadmeta Ssndfile
 
 ## Arguments
 
@@ -56,7 +56,7 @@ their corresponding values.
 
 <CsInstruments>
 /*
-    Svalue sfeadmeta Ssndfile, Skey
+    Svalue filereadmeta Ssndfile, Skey
 
     Read metadata from sndfile. Skey can be one of "comment", "title",
     "artist", "album", "tracknumber". If the given key is not present
@@ -65,15 +65,15 @@ their corresponding values.
 */
 
 instr 1
-    Scomment sfreadmeta "sfwithmeta.flac", "comment"
+    Scomment filereadmeta "sfwithmeta.flac", "comment"
     prints "Comment: %s\n", Scomment
-    Stitle sfreadmeta "sfwithmeta.flac", "artist"
+    Stitle filereadmeta "sfwithmeta.flac", "artist"
     prints "Artist: %s\n", Stitle
     turnoff
 endin
 
 instr 2
-    Skeys[], Svalues[] sfreadmeta "sfwithmeta.flac"
+    Skeys[], Svalues[] filereadmeta "sfwithmeta.flac"
     i0 = 0
     while i0 < lenarray(Skeys) do
       prints "%s = %s\n", Skeys[i0], Svalues[i0]

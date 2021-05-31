@@ -47,7 +47,7 @@ able to retrieve that as a dictionary inside csound
 * [dict_dump](dict_dump.md)
 * [dict_new](dict_iter.md)
 * [dict_set](dict_set.md)
-* [sfreadmeta](sfreadmeta.md)
+* [filereadmeta](filereadmeta.md)
 
 ## Credits
 

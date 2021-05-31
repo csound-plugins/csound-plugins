@@ -60,6 +60,16 @@ Multiple (parallel or sequential) instances of an opcode
 * [defer](opcodes/defer.md): Run an opcode at the end of current event 
 
 
+## beosc
+
+Band-enhanced oscillators based on the loris partial tracking model
+
+* [beosc](opcodes/beosc.md): Band-Enhanced Oscillator 
+* [beadsynt](opcodes/beadsynt.md): Band-Enhanced Oscillator-Bank 
+* [getrowlin](opcodes/getrowlin.md): opy a row from a 2D array or table, with interpolation between rows 
+* [tabrowlin](opcodes/tabrowlin.md): Copy a row from an f-table to another, interpolating between rows 
+
+
 ## jsfx
 
 A csound interface to the opensource implementation of jsfx (a jitted language for dsp)
@@ -80,7 +90,6 @@ Collection of miscellaneous plugins
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
 * [bisect](opcodes/bisect.md): Returns the fractional index of a value within a sorted array / tab 
 * [crackle](opcodes/crackle.md): generates noise based on a chaotic equation 
-* [defer](opcodes/defer.md): Run an opcode at the end of an event 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
 * [extendarray](opcodes/extendarray.md): Extend one array with the contents of a second array, in place 
@@ -129,7 +138,7 @@ Cross-platform path handling
 * [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
 * [sysPlatform](opcodes/sysPlatform.md): Get a string description of the current system platform 
 * [strsplit](opcodes/strsplit.md): Split a string at a given separator 
-* [sfreadmeta](opcodes/sfreadmeta.md): Read metadata from a soundfile 
+* [filereadmeta](opcodes/filereadmeta.md): Read metadata from a soundfile 
 
 
 

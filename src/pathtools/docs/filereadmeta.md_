@@ -1,4 +1,4 @@
-# sfreadmeta
+# filereadmeta
 
 ## Abstract
 
@@ -24,8 +24,8 @@ their corresponding values.
 
 ## Syntax
 
-    Svalue sfreadmeta Ssndfile, Skey
-    Skeys[], Svalues[] sfreadmeta Ssndfile
+    Svalue filereadmeta Ssndfile, Skey
+    Skeys[], Svalues[] filereadmeta Ssndfile
 
 ## Arguments
 

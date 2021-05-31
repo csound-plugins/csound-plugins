@@ -3,6 +3,8 @@
     "opcodes": [
       "beosc",
       "beadsynt",
+      "getrowlin",
+      "tabrowlin"
     ],
     "version": "1.0.0",
     "author": "Eduardo Moguillansky",

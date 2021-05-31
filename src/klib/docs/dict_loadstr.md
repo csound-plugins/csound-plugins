@@ -124,7 +124,7 @@ i "example2" 0 0.1
 * [dict_dump](dict_dump.md)
 * [dict_new](dict_iter.md)
 * [dict_set](dict_set.md)
-* [sfreadmeta](sfreadmeta.md)
+* [filereadmeta](filereadmeta.md)
 
 ## Credits
 

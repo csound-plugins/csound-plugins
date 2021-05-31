@@ -1,1 +1,0 @@
-For each opcode defined in the library there should be one example file with the name {opcode}.csd

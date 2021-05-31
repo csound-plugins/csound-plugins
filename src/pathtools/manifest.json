@@ -22,7 +22,7 @@
       "sysPlatform",
       "strsplit",
 
-      "sfreadmeta"
+      "filereadmeta"
             
     ],
     "author": "Eduardo Moguillansky",
