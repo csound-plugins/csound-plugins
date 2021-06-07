@@ -47,19 +47,22 @@ nchnls = 1
 0dbfs  = 1
 
 instr 1
-  idur1 = 8
   ifreq = 440
-  kfreq linseg ifreq, idur1, ifreq, idur1, ifreq*4, idur1, ifreq
-  kbw   cosseg     0, idur1, 1,     idur1, 1,       idur1, 0
+  kt = timeinsts()
+  imaxbw = 0.75
+  kfreq bpf kt, 0, ifreq, 5, ifreq,  10, ifreq*4, 15, ifreq
+  kbw   bpfcos kt, 0, 0,     5, imaxbw, 10, imaxbw,  15, 0, 18, 0, 20, 1
   ;          freq   bw   fn  phs              noisetype(0=uniform)
-  aout  beosc kfreq, kbw, -1, unirand:i(6.28), 0
-  aenv  linsegr 0, 0.1, 1, 0.1, 1, 0.1, 0
-  aout *= (aenv * 0.2)
+  aout  beosc kfreq, kbw^2, -1, 0, 1
+  kamp bpf kbw, 0, 1, 0.1, 0.9, 1, 0.25
+  aenv  cosseg 0, 0.2, 1, p3-0.4, 1, 0.15, 0
+  aenv *= interp(kamp*0.2)
+  aout *= aenv
   outch 1, aout
 endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 32
+i 1 0 20
 </CsScore>
 </CsoundSynthesizer> 

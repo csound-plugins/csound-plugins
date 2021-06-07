@@ -2,3 +2,6 @@
 	path = csound
 	url = https://github.com/csound/csound.git
 	branch = master
+[submodule "src/bformdec2/bformdec2"]
+	path = src/bformdec2/bformdec2
+	url = https://github.com/pzinemanas/bformdec2.git
