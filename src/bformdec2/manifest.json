@@ -1,7 +1,7 @@
 {
     "name": "bformdec2",
     "opcodes": [
-      "bformdec2",
+      "bformdec2"
     ],
     "version": "1.0.0",
     "author": "Pablo Zinemanas, Martic Rocamora, Luis Jure",
@@ -13,4 +13,3 @@
     "platforms": ["linux", "macos", "windows"],
     "url": "https://github.com/csound-plugins/csound-plugins"
 }
-

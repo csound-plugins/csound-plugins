@@ -70,6 +70,13 @@ Band-enhanced oscillators based on the loris partial tracking model
 * [tabrowlin](opcodes/tabrowlin.md): Copy a row from an f-table to another, interpolating between rows 
 
 
+## bformdec2
+
+An opcode for decoding ambisonics with dual-band decoding and near-field compensation
+
+* [bformdec2](opcodes/bformdec2.md): Ambisonics decoding with dual-band decoding and near-field compensation 
+
+
 ## jsfx
 
 A csound interface to the opensource implementation of jsfx (a jitted language for dsp)
