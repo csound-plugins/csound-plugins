@@ -66,6 +66,12 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bformdec2.html">bformdec2</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
@@ -110,6 +116,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
                     <li class="toctree-l1 current"><a class="reference internal current" href="findarray.html">findarray</a>
@@ -145,6 +153,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
                     </li>
@@ -226,8 +236,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -237,6 +245,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="tabrowlin.html">tabrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
                     </li>
@@ -346,11 +356,11 @@ check for equality but to check if two values are close enough</li>
 <span class="kd">instr</span> <span class="nf">10</span>
     <span class="kt">k</span><span class="n">arr</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.8</span>
     <span class="kt">k</span><span class="n">idx</span> <span class="kt">f</span><span class="n">indarray</span> <span class="kt">k</span><span class="n">arr</span><span class="p">,</span> <span class="mf">0.3</span>
-    <span class="n">println</span> <span class="s">&quot;kidx: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span>
+    <span class="nb">println</span> <span class="s">&quot;kidx: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span>
 
     <span class="kt">k</span><span class="n">arr2</span><span class="p">[]</span> <span class="nb">genarray_i</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mf">0.1</span>
     <span class="kt">k</span><span class="n">idx2</span> <span class="kt">f</span><span class="n">indarray</span> <span class="kt">k</span><span class="n">arr2</span><span class="p">,</span> <span class="mf">70.8</span>
-    <span class="n">println</span> <span class="s">&quot;kidx2: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx2</span>
+    <span class="nb">println</span> <span class="s">&quot;kidx2: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx2</span>
     <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 

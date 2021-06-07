@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>ramptrig - Csound Plugins</title>
+  <title>filereadmeta - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "ramptrig";
-    var mkdocs_page_input_path = "opcodes/ramptrig.md";
+    var mkdocs_page_name = "filereadmeta";
+    var mkdocs_page_input_path = "opcodes/filereadmeta.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -116,7 +116,27 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="filereadmeta.html">filereadmeta</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
@@ -202,29 +222,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pwrite.html">pwrite</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="ramptrig.html">ramptrig</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="ramptrig.html">ramptrig</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="ref.html">ref</a>
                     </li>
@@ -288,7 +286,7 @@
         
       
     
-    <li>ramptrig</li>
+    <li>filereadmeta</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -299,111 +297,100 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="ramptrig">ramptrig</h1>
+                <h1 id="filereadmeta">filereadmeta</h1>
 <h2 id="abstract">Abstract</h2>
-<p>A triggerable ramp between 0 and 1</p>
+<p>Read metadata from a soundfile</p>
 <h2 id="description">Description</h2>
-<p><code>ramptrig</code> is a phasor between 0 and 1, with the difference that it stops after
-reaching its end point. Whenever it is triggered it rewinds to 0 and starts
-ramping to 1 in the given duration. </p>
-<p>A trigger detected whenever the value is possitive and higher than the previous value.</p>
-<div class="admonition note">
-<p class="admonition-title">Usage as envelope generator</p>
-<p>Together with <code>bpf</code> this can be used to emulate supercollider's <code>Env</code> and <code>EnvGen</code>,
-where <code>ramptrig</code> is used as a triggerable phasor, passed as an argument to <code>bpf</code>,
-which generates the envelope. See examples</p>
-</div>
+<p>Reads metadata from a soundfile via libsndfile. Only a subset of keys, standardized
+across different fileformats is supported:</p>
+<ul>
+<li>title</li>
+<li>comment</li>
+<li>artist</li>
+<li>album</li>
+<li>tracknumber</li>
+<li>software</li>
+</ul>
+<p>The opcode has two forms: 1) a specific key is queried, in which case
+the opcode returns the string for that key, or an empty string if that
+key is not present; 2) no key is given and all the metadata is
+returned in two string arrays, one with all the keys and second with
+their corresponding values.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
-<span class="kt">a</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dir</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span>
-<span class="kt">k</span><span class="n">out</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code>Svalue filereadmeta Ssndfile, Skey
+Skeys[], Svalues[] filereadmeta Ssndfile
 </code></pre></div>
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ktrig</code>: whenever this is possitive and higher than last value, kout is rewinded to 0</li>
-<li><code>kdur</code>: the duration of the ramp</li>
-<li><code>ivaluepost</code>: value when ramp reaches its end (default=1)</li>
-<li><code>ivaluepre</code>: value previous to any trigger (default=0)</li>
+<li><strong>Ssndfile</strong>: the path to a soundfile</li>
+<li><strong>Skey</strong>: a metadata key to query</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>kout</code>: value of the ramp, between 0 and 1. It can also be <code>ivaluepost</code> or <code>ivaluepre</code> if 
-          these are set to any other value than the default</li>
-<li><code>kfinished</code>: will be one whenever the ramp reaches its end value. </li>
+<li><strong>Svalue</strong>: the string value for the given metadata key. It will be
+  empty if the key is not present</li>
+<li><strong>Skeys</strong>: the keys present in the metadata</li>
+<li><strong>Svalues</strong>: the string values corresponding to each key in <strong>Skeys</strong></li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Performance</li>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">--</span><span class="n">nosound</span>
 
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="c1">; This is the example file of ramptrig</span>
-<span class="c1">; ramptrig is a triggerable ramp from 0 to 1</span>
-<span class="c1">; xout ramptrig xtrig, kdur</span>
+<span class="cm">/*</span>
+<span class="cm">    Svalue filereadmeta Ssndfile, Skey</span>
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="cm">    Read metadata from sndfile. Skey can be one of &quot;comment&quot;, &quot;title&quot;,</span>
+<span class="cm">    &quot;artist&quot;, &quot;album&quot;, &quot;tracknumber&quot;. If the given key is not present</span>
+<span class="cm">    an empty value is returned. </span>
 
-<span class="c1">; Use Case #1: An envelope which can be retriggered</span>
+<span class="cm">*/</span>
+
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="c1">; Duration of envelope</span>
-    <span class="kt">k</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="c1">; This is the gate, could be any irregular signal, midi, osc, etc.    </span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mf">0.5</span>
-    <span class="c1">; Whenever ktrig is possitive and higher than previous value, </span>
-    <span class="c1">; kx ramps from 0 to 1 in kdur seconds</span>
-    <span class="kt">k</span><span class="n">x</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span>
-    <span class="c1">; actual envelope</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">x</span><span class="o">*</span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="nb">oscili</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span>
-    <span class="c1">; asig pinker</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+    <span class="kt">S</span><span class="n">comment</span> <span class="kt">f</span><span class="n">ilereadmeta</span> <span class="s">&quot;sfwithmeta.flac&quot;</span><span class="p">,</span> <span class="s">&quot;comment&quot;</span>
+    <span class="nb">prints</span> <span class="s">&quot;Comment: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">comment</span>
+    <span class="kt">S</span><span class="n">title</span> <span class="kt">f</span><span class="n">ilereadmeta</span> <span class="s">&quot;sfwithmeta.flac&quot;</span><span class="p">,</span> <span class="s">&quot;artist&quot;</span>
+    <span class="nb">prints</span> <span class="s">&quot;Artist: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">title</span>
+    <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
-<span class="c1">; Use Case #2: Use finished trigger to signal something</span>
 <span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">1</span><span class="o">/</span><span class="mi">4</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">delayk</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mf">0.5</span>
-    <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="kt">k</span><span class="n">phase</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mi">2</span>
-    <span class="nb">printf</span> <span class="s">&quot;finished! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">phase</span> <span class="o">*</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+    <span class="kt">S</span><span class="n">keys</span><span class="p">[],</span> <span class="kt">S</span><span class="n">values</span><span class="p">[]</span> <span class="kt">f</span><span class="n">ilereadmeta</span> <span class="s">&quot;sfwithmeta.flac&quot;</span>
+    <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">S</span><span class="n">keys</span><span class="p">)</span> <span class="k">do</span>
+      <span class="nb">prints</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">keys</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">],</span> <span class="kt">S</span><span class="n">values</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span>
+      <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">od</span>
 <span class="kd">endin</span>
-
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">10</span>
-<span class="c1">; i2 0 12</span>
-<span class="c1">; i3 0 20</span>
-<span class="c1">; f0 3600</span>
-
-
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="kt">i</span><span class="n">2</span> <span class="mi">0</span> <span class="mf">0.1</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="linenv.html">linenv</a></li>
-<li><a href="https://csound.com/docs/manual/trigphasor.html">trigphasor</a></li>
-<li><a href="https://csound.com/docs/manual/bpf.html">bpf</a></li>
+<li><a href="https://csound.com/docs/manual/filesr.html">filesr</a></li>
+<li><a href="https://csound.com/docs/manual/filenchnls.html">filenchnls</a></li>
+<li><a href="https://csound.com/docs/manual/filelen.html">filenlen</a></li>
+<li><a href="pathAbsolute.html">pathAbsolute</a></li>
+<li><a href="findFileInPath.html">findFileInPath</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div>
@@ -411,10 +398,10 @@ which generates the envelope. See examples</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="ref.html" class="btn btn-neutral float-right" title="ref">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="findFileInPath.html" class="btn btn-neutral float-right" title="findFileInPath">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="pwrite.html" class="btn btn-neutral" title="pwrite"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="fileexists.html" class="btn btn-neutral" title="file_exists"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -440,10 +427,10 @@ which generates the envelope. See examples</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="pwrite.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="fileexists.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="ref.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="findFileInPath.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

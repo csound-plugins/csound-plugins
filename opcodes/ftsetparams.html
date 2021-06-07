@@ -66,6 +66,12 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bformdec2.html">bformdec2</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
@@ -110,6 +116,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
@@ -145,6 +153,8 @@
     </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
                     </li>
@@ -226,8 +236,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -237,6 +245,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="tabrowlin.html">tabrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
                     </li>
@@ -324,11 +334,11 @@
 <span class="kt">gi</span><span class="n">func0</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;musicbox.flac&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
 <span class="kt">gi</span><span class="n">1</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">nsamp</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span>
-<span class="kt">f</span><span class="n">tslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
+<span class="nb">ftslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
 <span class="kt">f</span><span class="n">tsetparams</span> <span class="kt">gi</span><span class="n">1</span><span class="p">,</span> <span class="nb">ftsr</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">1</span>
 
 <span class="kt">gi</span><span class="n">2</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">nsamp</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span>
-<span class="kt">f</span><span class="n">tslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
+<span class="nb">ftslicei</span> <span class="kt">gi</span><span class="n">func0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
 <span class="kt">f</span><span class="n">tsetparams</span> <span class="kt">gi</span><span class="n">2</span><span class="p">,</span> <span class="nb">ftsr</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">gi</span><span class="n">func0</span><span class="p">),</span> <span class="mi">1</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>

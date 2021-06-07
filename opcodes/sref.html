@@ -66,6 +66,12 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bformdec2.html">bformdec2</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
@@ -110,6 +116,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
@@ -125,6 +133,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
                     </li>
@@ -206,8 +216,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1 current"><a class="reference internal current" href="sref.html">sref</a>
@@ -235,6 +243,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="tabrowlin.html">tabrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
                     </li>
@@ -350,20 +360,17 @@ index.</p>
   <span class="nb">prints</span> <span class="s">&quot;Name = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">Struct</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="kd">endin</span>
 
-<span class="c1">;; If the string does not need to be modified, sderef</span>
-<span class="c1">;; can be used instead of sref to retrieve a string</span>
-<span class="c1">;; from the cache. In this case, the string is not allocated,</span>
-<span class="c1">;; it only points to the version inside the cache. </span>
 <span class="kd">instr</span> <span class="nf">4</span>
   <span class="kt">S</span><span class="n">1</span> <span class="o">=</span> <span class="s">&quot;foo bar&quot;</span>
   <span class="kt">i</span><span class="n">S1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
-  <span class="c1">;; S2 is a read-only view of the cached S1.</span>
+  <span class="c1">;; S2 is a read-only view of the cached S1, it should not be modified</span>
   <span class="kt">S</span><span class="n">2</span> <span class="o">=</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">S1</span><span class="p">)</span>
   <span class="nb">prints</span> <span class="s">&quot;S2 = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
   <span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">test_same_idx</span>
+  <span class="c1">;; Calling sref with the same string should result in the same index</span>
   <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
   <span class="kt">i</span><span class="n">dx2</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
   <span class="nb">prints</span> <span class="s">&quot;These indices should be the same: idx1=</span><span class="si">%d</span><span class="s">, idx2=</span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx2</span>

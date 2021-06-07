@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>ramptrig - Csound Plugins</title>
+  <title>bformdec2 - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "ramptrig";
-    var mkdocs_page_input_path = "opcodes/ramptrig.md";
+    var mkdocs_page_name = "bformdec2";
+    var mkdocs_page_input_path = "opcodes/bformdec2.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -70,7 +70,41 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="bformdec2.html">bformdec2</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="bformdec2.html">bformdec2</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ambisonics">Ambisonics</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#dual-band-decoding">Dual-Band decoding</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#nearfield-compensation">Near–field compensation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#supported-setups">Supported setups</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reference">Reference</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
@@ -202,29 +236,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pwrite.html">pwrite</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="ramptrig.html">ramptrig</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="ramptrig.html">ramptrig</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="ref.html">ref</a>
                     </li>
@@ -288,7 +300,7 @@
         
       
     
-    <li>ramptrig</li>
+    <li>bformdec2</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -299,111 +311,154 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="ramptrig">ramptrig</h1>
+                <h1 id="bformdec2">bformdec2</h1>
 <h2 id="abstract">Abstract</h2>
-<p>A triggerable ramp between 0 and 1</p>
+<p>Ambisonics decoding with dual-band decoding and near-field compensation</p>
 <h2 id="description">Description</h2>
-<p><code>ramptrig</code> is a phasor between 0 and 1, with the difference that it stops after
-reaching its end point. Whenever it is triggered it rewinds to 0 and starts
-ramping to 1 in the given duration. </p>
-<p>A trigger detected whenever the value is possitive and higher than the previous value.</p>
+<p>This opcode performs ambisonics decoding with near–field compensation
+and uses a different decoding matrix for low and high frequencies. It
+also adds some features, such as additional loudspeaker array con-
+figurations (rectangle, hexagon) and a binaural output for headphones.</p>
+<h3 id="ambisonics">Ambisonics</h3>
+<p>Unlike traditional multichannel audio for spatialization in which each
+chan- nel corresponds to a given loudspeaker, the Ambisonics sound
+format (called B-format) contains a speaker-independent representation
+of a sound field. By means of an appropriate decoder, i.e. matched to
+the geometry of the loudspeaker array, this sound file can be played
+back in different speaker layouts.</p>
+<h4 id="dual-band-decoding">Dual-Band decoding</h4>
+<p>Given that no decoding approach is adequate for both high and low
+frequencies, many Ambisonics decoders split the B-format signals into
+(at least) two bands and use independent solutions for low and high
+frequencies. Then the output of each band is recombined to produce
+the audio signals for the loudspeakers. When
+combining the output of each band, different criteria can be used to
+deal with the signal’s level difference between the low and high
+frequencies, such as preserving the amplitude, the root–mean–square
+RMS level or the total energy.</p>
+<h4 id="nearfield-compensation">Near–field compensation</h4>
+<p>Another important aspect of an Ambisonics decoder is to provide near–field
+compensation. The recreation of the sound field at the central position holds
+under the hypothesis that the wavefronts are planar. Given the finite distance to
+the loudspeakers, the sound wavefronts at the listening position present instead
+a curvature, which produces a bass–boosting effect that has to be compensated.
+The compensation is essentially a high–pass filter, which depends on the order of
+reproduction and on the distance of the loudspeakers to the center of the array.</p>
 <div class="admonition note">
-<p class="admonition-title">Usage as envelope generator</p>
-<p>Together with <code>bpf</code> this can be used to emulate supercollider's <code>Env</code> and <code>EnvGen</code>,
-where <code>ramptrig</code> is used as a triggerable phasor, passed as an argument to <code>bpf</code>,
-which generates the envelope. See examples</p>
+<p class="admonition-title">Note</p>
+<p>To use HRTF files, as in the examplee, make sure that the HRTF files
+are in the same directory, or that the SADIR env variable is set and
+the HRTF files are places inside it. </p>
 </div>
+<h3 id="supported-setups">Supported setups</h3>
+<p>There are eight supported setups:</p>
+<ul>
+<li><strong>1</strong> - <em>Stereo</em>: L(90), R(-90); this is an M+S style stereo decode.</li>
+<li><strong>2</strong> - <em>Quad</em>: FL(45), BL(135), BR(-135), FR(-45). This is a first-order decode.</li>
+<li><strong>3</strong> - <em>5.0</em>: L(30), R(-30), C(0), BL(110), BR(-110). Note that many people do not actually use the angles above for their speaker arrays and a good decode for DVD etc can be achieved using the Quad configuration to feed L, R, BL and BR (leaving C silent).</li>
+<li><strong>4</strong> - <em>Octagon</em>: FFL(22.5), FLL(67.5), BLL(112.5), BBL(157.5), BBR(-157.5), BRR(-112.5), FRR(-67.5), FFR(-22.5). This is a first-, second- or third-order decode, depending on the number of input channels.</li>
+<li><strong>5</strong> - <em>Cube</em>: FLD(45,-35.26), FLU(45,35.26), BLD(135,-35.26), BLU(135,35.26), BRD(-135,-35.26), BRU(-135,35.26), FRD(-45,-35.26), FRU(-45,35.26). This is a first-order decode.</li>
+<li><strong>6</strong> - <em>Hexagon</em>: FL(30), L(90) BL(150), BR(-150), R(-90), FR(-30). This is a first- or second- order decode.</li>
+<li><strong>21</strong> - <em>2D binaural configuration</em>. This first decodes to a octagon configuration and then applies HRTF filters.</li>
+<li><strong>31</strong> - <em>3D binaural configuration</em>. This first decodes to a dodecahedron configuration and then applies HRTF filters.</li>
+</ul>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
-<span class="kt">a</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dir</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span>
-<span class="kt">k</span><span class="n">out</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">out</span><span class="p">[]</span> <span class="n">bformdec2</span> <span class="kt">i</span><span class="n">setup</span><span class="p">,</span> <span class="kt">a</span><span class="n">bform</span><span class="p">[],</span> <span class="p">[</span><span class="kt">i</span><span class="n">decoder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">distance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="kt">i</span><span class="n">mix</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">filel</span><span class="p">,</span> <span class="kt">i</span><span class="n">filer</span><span class="p">]</span>
 </code></pre></div>
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ktrig</code>: whenever this is possitive and higher than last value, kout is rewinded to 0</li>
-<li><code>kdur</code>: the duration of the ramp</li>
-<li><code>ivaluepost</code>: value when ramp reaches its end (default=1)</li>
-<li><code>ivaluepre</code>: value previous to any trigger (default=0)</li>
+<li><strong>isetup</strong>: loudspeaker setup. One o 1 (Stereo), 2 (Quad), 3 (5.0),
+  4 (Octagon), 5 (Cube), 6 (Hexagon), 21 (2D binaural), 31 (3D
+  binaural)</li>
+<li><strong>abform[]</strong>: input signal array in B-format</li>
+<li><strong>idecoder</strong>: decoder type. 0: Dual decoder (velocity and energy decoders using dual-band splitting), 1: Velocity decoder, 2: Energy decoder</li>
+<li><strong>idistance</strong>: select the distance (in meters) to the loudspeakers (radius in regular configuration). Default=1m</li>
+<li><strong>ifreq</strong>: cut frequenc of the band splitting filter (only has an effect if <code>idecoder</code> is 0), default=400Hz </li>
+<li><strong>imix</strong>: type of mix o the velocity and energy decoders' outputs (0: energy, 1: RMS, 2: Amplitude)</li>
+<li><strong>ifilel</strong>: left HRTF spectral data file</li>
+<li><strong>ifiler</strong>: right HRTF spectral data file</li>
 </ul>
-<h3 id="output">Output</h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Spectral datailes (based on the MIT HRTF database) shoud be in the current 
+directory, in the SADIR (see 
+<a href="http://www.csounds.com/manual/html/hrtfstat.html">hrtfstat documentation</a></p>
+</div>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>kout</code>: value of the ramp, between 0 and 1. It can also be <code>ivaluepost</code> or <code>ivaluepre</code> if 
-          these are set to any other value than the default</li>
-<li><code>kfinished</code>: will be one whenever the ramp reaches its end value. </li>
+<li><strong>aout[]</strong>: loudspeaker specific output signals</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<p>To run the example, make sure that the HRTF files are in the same directory, or that
+the SADIR env variable is set and the HRTF files are places inside it</p>
+<div class="codehilite"><pre><span></span><code>csound test_binaural.csd --env:SADIR=&lt;path to hrtf folder&gt;
+</code></pre></div>
 
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">-</span><span class="n">odac</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="c1">; This is the example file of ramptrig</span>
-<span class="c1">; ramptrig is a triggerable ramp from 0 to 1</span>
-<span class="c1">; xout ramptrig xtrig, kdur</span>
-
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="c1">; Use Case #1: An envelope which can be retriggered</span>
-<span class="kd">instr</span> <span class="nf">1</span>
-    <span class="c1">; Duration of envelope</span>
-    <span class="kt">k</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="c1">; This is the gate, could be any irregular signal, midi, osc, etc.    </span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mf">0.5</span>
-    <span class="c1">; Whenever ktrig is possitive and higher than previous value, </span>
-    <span class="c1">; kx ramps from 0 to 1 in kdur seconds</span>
-    <span class="kt">k</span><span class="n">x</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span>
-    <span class="c1">; actual envelope</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">x</span><span class="o">*</span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="nb">oscili</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span>
-    <span class="c1">; asig pinker</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
-<span class="kd">endin</span>
+<span class="c1">; Ambisonics order</span>
+<span class="kt">gi</span><span class="n">Order</span> <span class="o">=</span>   <span class="mi">1</span>
 
-<span class="c1">; Use Case #2: Use finished trigger to signal something</span>
-<span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">1</span><span class="o">/</span><span class="mi">4</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">delayk</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mf">0.5</span>
-    <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="kt">k</span><span class="n">phase</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mi">2</span>
-    <span class="nb">printf</span> <span class="s">&quot;finished! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">phase</span> <span class="o">*</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span> <span class="nf">1</span> 
+
+<span class="kt">i</span><span class="n">Setup</span>  <span class="nb">init</span> <span class="mi">21</span> <span class="c1">// binaural 2D</span>
+
+<span class="c1">; array Ambisonics</span>
+<span class="kt">i</span><span class="n">ArraySize</span>  <span class="o">=</span>   <span class="p">(</span><span class="kt">gi</span><span class="n">Order</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span>
+<span class="kt">a</span><span class="n">Ambi</span><span class="p">[]</span> <span class="nb">init</span>    <span class="kt">i</span><span class="n">ArraySize</span>
+
+<span class="c1">; output</span>
+<span class="kt">i</span><span class="n">OutSize</span>    <span class="nb">init</span>    <span class="vg">nchnls</span>
+<span class="kt">a</span><span class="n">Out</span><span class="p">[]</span>  <span class="nb">init</span>    <span class="kt">i</span><span class="n">OutSize</span>
+
+<span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>     <span class="nb">diskin</span> <span class="s">&quot;AJH_eight-positions.amb&quot;</span>
+
+<span class="kt">a</span><span class="n">Out</span> <span class="n">bformdec2</span> <span class="kt">i</span><span class="n">Setup</span><span class="p">,</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;hrtf-48000-left.dat&quot;</span><span class="p">,</span><span class="s">&quot;hrtf-48000-right.dat&quot;</span> <span class="c1">//order1</span>
+
+<span class="nb">outs</span> <span class="kt">a</span><span class="n">Out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kt">a</span><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="kd">endin</span> 
 
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
+
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">10</span>
-<span class="c1">; i2 0 12</span>
-<span class="c1">; i3 0 20</span>
-<span class="c1">; f0 3600</span>
-
+<span class="kt">i</span><span class="n">1</span>  <span class="mi">0</span>   <span class="mi">20</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="linenv.html">linenv</a></li>
-<li><a href="https://csound.com/docs/manual/trigphasor.html">trigphasor</a></li>
-<li><a href="https://csound.com/docs/manual/bpf.html">bpf</a></li>
+<li><a href="http://www.csound.com/docs/manual/bformenc.html">bformenc</a></li>
+<li><a href="http://www.csound.com/docs/manual/bformdec.html">bformdec</a></li>
+<li><a href="http://www.csound.com/docs/manual/bformenc1.html">bformenc1</a></li>
+<li><a href="http://www.csound.com/docs/manual/hrtfstat.html">hrtfstat</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Pablo Zinemanas, Martín Rocamora and Luis Jure, 2019</p>
+<h2 id="reference">Reference</h2>
+<p>Pablo Zinemanas, Martín Rocamora and Luis Jure. Improving Csound's Ambisonics decoders. Fifth International Csound Conference – ICSC2019. Italy, 2019</p>
+<p><a href="https://github.com/pzinemanas/bformdec2">https://github.com/pzinemanas/bformdec2</a></p>
               
             </div>
           </div>
@@ -411,10 +466,10 @@ which generates the envelope. See examples</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="ref.html" class="btn btn-neutral float-right" title="ref">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="bisect.html" class="btn btn-neutral float-right" title="bisect">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="pwrite.html" class="btn btn-neutral" title="pwrite"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="beosc.html" class="btn btn-neutral" title="beosc"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -440,10 +495,10 @@ which generates the envelope. See examples</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="pwrite.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="beosc.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="ref.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="bisect.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

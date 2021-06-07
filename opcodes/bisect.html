@@ -66,6 +66,12 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bformdec2.html">bformdec2</a>
+                    </li>
                     <li class="toctree-l1 current"><a class="reference internal current" href="bisect.html">bisect</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
@@ -126,6 +132,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
@@ -141,6 +149,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
                     </li>
@@ -222,8 +232,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -233,6 +241,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="tabrowlin.html">tabrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
                     </li>
@@ -406,7 +416,7 @@ interpolation methods</p>
     <span class="kt">a</span><span class="n">amp</span> <span class="nb">interp</span> <span class="kt">k</span><span class="n">amp</span>
     <span class="kt">a</span><span class="n">1</span> <span class="nb">oscili</span> <span class="kt">a</span><span class="n">amp</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi1</span><span class="p">,</span> <span class="s">&quot;cubic&quot;</span><span class="p">))</span>
     <span class="kt">a</span><span class="n">2</span> <span class="nb">oscili</span> <span class="kt">a</span><span class="n">amp</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">i</span><span class="n">nterp1d</span><span class="p">(</span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi2</span><span class="p">))</span>
-    <span class="n">println</span> <span class="s">&quot;amp: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">rms</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">a</span><span class="n">amp</span><span class="p">)</span>
+    <span class="nb">println</span> <span class="s">&quot;amp: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">rms</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">a</span><span class="n">amp</span><span class="p">)</span>
     <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">2</span>
 <span class="kd">endin</span>
 
@@ -439,7 +449,7 @@ interpolation methods</p>
     <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinsts</span>
     <span class="kt">k</span><span class="n">idx</span> <span class="n">bisect</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="kt">i</span><span class="n">curve</span><span class="p">,</span> <span class="mi">2</span>
     <span class="kt">k</span><span class="n">midi</span> <span class="kt">i</span><span class="n">nterp1d</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="nb">k</span><span class="p">(</span><span class="kt">i</span><span class="n">curve</span><span class="p">),</span> <span class="s">&quot;linear&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span>
-    <span class="n">println</span> <span class="s">&quot;kt: </span><span class="si">%f</span><span class="s">, kidx: </span><span class="si">%f</span><span class="s">, kmidi: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">k</span><span class="n">midi</span>
+    <span class="nb">println</span> <span class="s">&quot;kt: </span><span class="si">%f</span><span class="s">, kidx: </span><span class="si">%f</span><span class="s">, kmidi: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">k</span><span class="n">midi</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -474,7 +484,7 @@ interpolation methods</p>
         <a href="channelStateRecall.html" class="btn btn-neutral float-right" title="channelStateRecall">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="atstop.html" class="btn btn-neutral" title="atstop"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="bformdec2.html" class="btn btn-neutral" title="bformdec2"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -500,7 +510,7 @@ interpolation methods</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="atstop.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="bformdec2.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
         <span style="margin-left: 15px"><a href="channelStateRecall.html" style="color: #fcfcfc">Next &raquo;</a></span>

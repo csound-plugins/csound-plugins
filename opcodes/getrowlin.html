@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>ramptrig - Csound Plugins</title>
+  <title>getrowlin - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "ramptrig";
-    var mkdocs_page_input_path = "opcodes/ramptrig.md";
+    var mkdocs_page_name = "getrowlin";
+    var mkdocs_page_input_path = "opcodes/getrowlin.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -134,7 +134,27 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="getrowlin.html">getrowlin</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
                     </li>
@@ -202,29 +222,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pwrite.html">pwrite</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="ramptrig.html">ramptrig</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="ramptrig.html">ramptrig</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="ref.html">ref</a>
                     </li>
@@ -288,7 +286,7 @@
         
       
     
-    <li>ramptrig</li>
+    <li>getrowlin</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -299,108 +297,132 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="ramptrig">ramptrig</h1>
+                <h1 id="getrowlin">getrowlin</h1>
 <h2 id="abstract">Abstract</h2>
-<p>A triggerable ramp between 0 and 1</p>
+<p>opy a row from a 2D array or table, with interpolation between rows</p>
 <h2 id="description">Description</h2>
-<p><code>ramptrig</code> is a phasor between 0 and 1, with the difference that it stops after
-reaching its end point. Whenever it is triggered it rewinds to 0 and starts
-ramping to 1 in the given duration. </p>
-<p>A trigger detected whenever the value is possitive and higher than the previous value.</p>
-<div class="admonition note">
-<p class="admonition-title">Usage as envelope generator</p>
-<p>Together with <code>bpf</code> this can be used to emulate supercollider's <code>Env</code> and <code>EnvGen</code>,
-where <code>ramptrig</code> is used as a triggerable phasor, passed as an argument to <code>bpf</code>,
-which generates the envelope. See examples</p>
-</div>
+<p>Given a 2D array (i- or k- array), or a table representing a 2D
+matrix, get a row of this matrix (possibly a slice). If krow is not an
+integer, the values are the result of the interpolation between the
+two adjacent rows. Assuming such a 2D matrix containing multiple rows
+of sampled streams (for instance, the amplitudes of a set of
+oscillators, sampled at a regular interval), this opcode extracts one
+row of that data with linear interpolation between adjacent rows (if
+the row is not a round number) and places the result in a 1D array</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
-<span class="kt">a</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dir</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span>
-<span class="kt">k</span><span class="n">out</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">Mtx</span><span class="p">[],</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span> 
+<span class="kt">k</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">skip</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span>
 </code></pre></div>
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ktrig</code>: whenever this is possitive and higher than last value, kout is rewinded to 0</li>
-<li><code>kdur</code>: the duration of the ramp</li>
-<li><code>ivaluepost</code>: value when ramp reaches its end (default=1)</li>
-<li><code>ivaluepre</code>: value previous to any trigger (default=0)</li>
+<li><strong>kMtx[]</strong>: a 2D array</li>
+<li><strong>krow</strong>: the row to read (can be a fractional number, in which case
+  interpolation with the next row is performed)</li>
+<li><strong>kstart</strong>: start index to read from the row (default = 0) </li>
+<li><strong>kend</strong>: end index to read from the row (not inclusive) </li>
+<li><strong>kstep</strong>: step used to read the along the row (default = 1) </li>
+<li><strong>iskip</strong>: in the case of using a table as input, iskip indicates
+  the start of the sampled data (skipping a possible header in the
+  data) (default = 0)</li>
+<li><strong>inumcols</strong>: in the case of using a table as input, inumcols
+  indicates the number of columns of the 2D matrix.</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>kout</code>: value of the ramp, between 0 and 1. It can also be <code>ivaluepost</code> or <code>ivaluepre</code> if 
-          these are set to any other value than the default</li>
-<li><code>kfinished</code>: will be one whenever the ramp reaches its end value. </li>
+<li><strong>kOut[]</strong>: the interpolated row</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
 <li>Performance</li>
 </ul>
+<hr />
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
+<span class="o">-</span><span class="n">odac</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="c1">; This is the example file of ramptrig</span>
-<span class="c1">; ramptrig is a triggerable ramp from 0 to 1</span>
-<span class="c1">; xout ramptrig xtrig, kdur</span>
+
+<span class="cm">/*</span>
+
+<span class="cm">This example uses the analysis file fox.mtx which was produced with </span>
+<span class="cm">loristrck_pack, see https://github.com/gesellkammer/loristrck</span>
+<span class="cm">The file is in fact a wav file, with the difference that the wav format is used </span>
+<span class="cm">as a binary exchange format</span>
+
+<span class="cm">*/</span>
 
 <span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">128</span>
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mf">1.0</span>
 
-<span class="c1">; Use Case #1: An envelope which can be retriggered</span>
+<span class="kt">gi</span><span class="n">spectrum</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;fox.mtx&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="c1">; Duration of envelope</span>
-    <span class="kt">k</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="c1">; This is the gate, could be any irregular signal, midi, osc, etc.    </span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mf">0.5</span>
-    <span class="c1">; Whenever ktrig is possitive and higher than previous value, </span>
-    <span class="c1">; kx ramps from 0 to 1 in kdur seconds</span>
-    <span class="kt">k</span><span class="n">x</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span>
-    <span class="c1">; actual envelope</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">x</span><span class="o">*</span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="nb">oscili</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span>
-    <span class="c1">; asig pinker</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
+  <span class="kt">i</span><span class="n">fn</span> <span class="o">=</span> <span class="kt">gi</span><span class="n">spectrum</span>
+  <span class="kt">i</span><span class="n">skip</span>      <span class="nb">tab_i</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span>
+  <span class="kt">i</span><span class="n">numrows</span>   <span class="nb">tab_i</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span>
+  <span class="kt">i</span><span class="n">numcols</span>   <span class="nb">tab_i</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span>
+  <span class="kt">i</span><span class="n">t0</span> <span class="o">=</span> <span class="nb">tab_i</span><span class="p">(</span><span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">t1</span> <span class="o">=</span> <span class="nb">tab_i</span><span class="p">(</span><span class="kt">i</span><span class="n">skip</span><span class="o">+</span><span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">dt</span> <span class="o">=</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
+  <span class="kt">i</span><span class="n">numpartials</span> <span class="o">=</span> <span class="p">(</span><span class="kt">i</span><span class="n">numcols</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> 
+  <span class="kt">i</span><span class="n">maxrow</span> <span class="o">=</span> <span class="kt">i</span><span class="n">numrows</span> <span class="o">-</span> <span class="mi">2</span>
+  <span class="kt">i</span><span class="n">t</span> <span class="o">=</span> <span class="vg">ksmps</span> <span class="o">/</span> <span class="vg">sr</span>
+  <span class="kt">i</span><span class="n">gain</span> <span class="nb">init</span> <span class="mi">1</span>
+  <span class="kt">i</span><span class="n">speed</span> <span class="nb">init</span> <span class="mf">0.3</span>
+  <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="kt">i</span><span class="n">maxrow</span> <span class="o">*</span> <span class="kt">i</span><span class="n">dt</span> <span class="o">/</span> <span class="kt">i</span><span class="n">speed</span>
+  <span class="kt">k</span><span class="n">Gains</span><span class="p">[]</span> <span class="nb">init</span> <span class="kt">i</span><span class="n">numpartials</span>
+  <span class="kt">k</span><span class="n">filter</span> <span class="nb">init</span> <span class="mi">0</span>
+  <span class="kt">i</span><span class="n">freqscale</span> <span class="nb">init</span> <span class="mi">1</span>
+
+  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinsts</span>
+  <span class="kt">k</span><span class="n">playhead</span> <span class="o">=</span> <span class="nb">phasor</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">i</span><span class="n">speed</span><span class="o">/</span><span class="kt">i</span><span class="n">dur</span><span class="p">)</span><span class="o">*</span><span class="kt">i</span><span class="n">dur</span>
+  <span class="kt">k</span><span class="n">row</span> <span class="o">=</span> <span class="kt">k</span><span class="n">playhead</span> <span class="o">/</span> <span class="kt">i</span><span class="n">dt</span>
+  <span class="c1">; each row has the format frametime, freq0, amp0, bandwidth0, freq1, amp1, bandwidth1, ...</span>
+  <span class="kt">k</span><span class="n">F</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+  <span class="kt">k</span><span class="n">A</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+  <span class="kt">k</span><span class="n">B</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="kt">k</span><span class="n">t</span> <span class="o">&gt;</span> <span class="kt">i</span><span class="n">dur</span><span class="o">*</span><span class="mf">0.6</span><span class="p">)</span> <span class="k">then</span>
+    <span class="k">if</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+      <span class="nb">println</span> <span class="s">&quot;Applying filter: bandpass between 1000-1500 Hz&quot;</span>
+    <span class="k">endif</span>
+    <span class="kt">k</span><span class="n">filter</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="k">endif</span>
+
+  <span class="kt">i</span><span class="n">filterGain</span> <span class="o">=</span> <span class="mi">3</span>    
+  <span class="k">if</span> <span class="p">(</span><span class="kt">k</span><span class="n">filter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+    <span class="kt">k</span><span class="n">Gains</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">F</span><span class="p">,</span> <span class="mi">990</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="kt">i</span><span class="n">filterGain</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="kt">i</span><span class="n">filterGain</span><span class="p">,</span> <span class="mi">1510</span><span class="p">,</span> <span class="mf">0.01</span>
+    <span class="kt">k</span><span class="n">A</span> <span class="o">*=</span> <span class="kt">k</span><span class="n">Gains</span>
+  <span class="k">endif</span> 
+
+  <span class="kt">i</span><span class="n">flags</span> <span class="o">=</span> <span class="mi">0</span>    <span class="c1">; uniform noise, no interpolation</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="nb">beadsynt</span> <span class="kt">k</span><span class="n">F</span><span class="p">,</span> <span class="kt">k</span><span class="n">A</span><span class="p">,</span> <span class="kt">k</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">flags</span><span class="p">,</span> <span class="kt">i</span><span class="n">freqscale</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="kt">k</span><span class="n">t</span> <span class="o">&gt;</span> <span class="kt">i</span><span class="n">dur</span><span class="p">)</span> <span class="k">then</span>
+    <span class="nb">event</span> <span class="s">&quot;e&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+  <span class="k">endif</span>
+  <span class="kt">a</span><span class="n">env</span> <span class="nb">cosseg</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="kt">i</span><span class="n">gain</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="o">-</span><span class="mf">0.02</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="kt">i</span><span class="n">gain</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">env</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
 <span class="kd">endin</span>
 
-<span class="c1">; Use Case #2: Use finished trigger to signal something</span>
-<span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">1</span><span class="o">/</span><span class="mi">4</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">delayk</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mf">0.5</span>
-    <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="kt">k</span><span class="n">phase</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mi">2</span>
-    <span class="nb">printf</span> <span class="s">&quot;finished! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">phase</span> <span class="o">*</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
-<span class="kd">endin</span>
-
+<span class="nb">schedule</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">10</span>
-<span class="c1">; i2 0 12</span>
-<span class="c1">; i3 0 20</span>
-<span class="c1">; f0 3600</span>
-
-
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="linenv.html">linenv</a></li>
-<li><a href="https://csound.com/docs/manual/trigphasor.html">trigphasor</a></li>
-<li><a href="https://csound.com/docs/manual/bpf.html">bpf</a></li>
+<li><a href="tabrowlin.html">tabrowlin</a></li>
+<li><a href="http://www.csound.com/docs/manual/adsynt2.html">slicearray</a></li>
+<li><a href="beadsynt.html">beadsynt</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -411,10 +433,10 @@ which generates the envelope. See examples</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="ref.html" class="btn btn-neutral float-right" title="ref">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="initerror.html" class="btn btn-neutral float-right" title="initerror">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="pwrite.html" class="btn btn-neutral" title="pwrite"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="getEnvVar.html" class="btn btn-neutral" title="getEnvVar"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -440,10 +462,10 @@ which generates the envelope. See examples</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="pwrite.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="getEnvVar.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="ref.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="initerror.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

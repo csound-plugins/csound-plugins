@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>accum - Csound Plugins</title>
+  <title>beadsynt - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "accum";
-    var mkdocs_page_input_path = "opcodes/accum.md";
+    var mkdocs_page_name = "beadsynt";
+    var mkdocs_page_input_path = "opcodes/beadsynt.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -62,7 +62,11 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Opcodes</span></p>
                 <ul class="current">
-                    <li class="toctree-l1 current"><a class="reference internal current" href="accum.html">accum</a>
+                    <li class="toctree-l1"><a class="reference internal" href="accum.html">accum</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="beadsynt.html">beadsynt</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
     </li>
@@ -83,10 +87,6 @@
     <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
     </li>
     </ul>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
                     </li>
@@ -286,7 +286,7 @@
         
       
     
-    <li>accum</li>
+    <li>beadsynt</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -297,81 +297,146 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="accum">accum</h1>
+                <h1 id="beadsynt">beadsynt</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Simple accumulator of scalar values</p>
+<p>Band-Enhanced Oscillator-Bank</p>
 <h2 id="description">Description</h2>
-<p><code>accum</code> can be used together with <code>changed</code>, <code>changed2</code>, <code>metro</code>, etc, 
-to convert a binary trigger to an incremental one. Incremental triggers
-are used by many opcodes (<code>printf</code>, for example), so by doing <code>accum(changed(kvar))</code>
-it is possible to use binary triggers wherever an incremental trigger is expected.
-<code>accum</code> outputs its current value and increments it afterwords. </p>
+<p>Band-Enhanced oscillator-bank, a port of Loris' oscillator (based on
+Supercollider's Beadsynt). Can work both with arrays and tables. The
+band-enhanced family of opcodes (beosc, beadsynt) implement sound
+modeling and synthesis that preserves the elegance and malleability of
+a sinusoidal model, while accommodating sounds with noisy
+(non-sinusoidal) components. Analysis is done offline, with an
+enhanced McAulay-Quatieri (MQ) style analysis that extracts bandwidth
+information in addition to the sinusoidal parameters for each
+partial. To produce noisy components, we synthesize with sine wave
+oscillators that have been modified to allow the introduction of
+variable bandwidth.</p>
+<p>The synthesis can be controlled via a set of flags (see iflags),
+allowing to switch between unifrom or gaussian noise for the noise
+components, wavetable interpolation (switch off to save cpu), and
+freq. interpolation between k-cycles (switch off to save cpu)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>kFreqs[]</code>, <code>kAmps[]</code> and <code>kBws[]</code> must all be the same size 
+(this also holds true for <code>ifreqft</code>, <code>iampft</code> and <code>ibwft</code>) </p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="kt">k</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">nitial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">reset</span><span class="o">=</span><span class="mi">0</span>
-<span class="kt">a</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="kt">k</span><span class="n">step</span><span class="p">,</span> <span class="kt">i</span><span class="n">nitial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">reset</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">out</span> <span class="nb">beadsynt</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">[],</span> <span class="kt">k</span><span class="n">Amps</span><span class="p">[],</span> <span class="kt">k</span><span class="n">Bws</span><span class="p">[]</span> <span class="w">\</span>
+                   <span class="p">[,</span> <span class="kt">i</span><span class="n">numosc</span><span class="p">,</span> <span class="kt">i</span><span class="n">flags</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">phs</span><span class="o">=-</span><span class="mi">1</span> <span class="p">]</span>
+
+<span class="kt">a</span><span class="n">out</span> <span class="nb">beadsynt</span> <span class="kt">i</span><span class="n">freqft</span><span class="p">,</span> <span class="kt">i</span><span class="n">ampft</span><span class="p">,</span> <span class="kt">i</span><span class="n">bwft</span><span class="p">,</span> <span class="kt">i</span><span class="n">numosc</span> <span class="w">\</span>
+                   <span class="p">[,</span> <span class="kt">i</span><span class="n">flags</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">phs</span><span class="o">=-</span><span class="mi">1</span> <span class="p">]</span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><strong>kstep</strong>: the step to add. This value will be added at each iteration (at each k-cycle 
-    for <code>accum:k</code> and at each sample for <code>accum:a</code>)</li>
-<li><strong>initial</strong>: initial value of the accumulator</li>
-<li><strong>kreset</strong>: if 1, the accummulator is reset to the initial value</li>
+<li><strong>kFreqs[]</strong>: An array holding the frequencies of each partial </li>
+<li><strong>kAmps[]</strong>: An array holding the amplitudes of each partial </li>
+<li><strong>kBws[]</strong>: An array holding the bandwidths of each partial </li>
+<li><strong>kfreq</strong>: Freq. scaling, all frequencies are multiplied by this (default = 1) </li>
+<li><strong>kbw</strong>: Bandwidth scaling, all bandwidths are multiplied by this (default = 1)</li>
+<li><strong>inumosc</strong>: the number of partials to resynthesize. In the array case, it can be left unset.</li>
+<li><strong>ibwft</strong>: A table holding the bandwidths for each partial</li>
+<li><strong>iampft</strong>: A table holding the amplitudes for each partial</li>
+<li><strong>ifreqft</strong>: A table holding the frequencies for each partial</li>
+<li><strong>ifn</strong>: A table holding a sine wave (or -1 to use the builtin table) (default = -1)</li>
+<li><strong>iphs</strong>: Initial phase. -1: randomized, 0-1: initial phase, &gt;1: table number holding the phases (default = -1)</li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
-<li><strong>kout</strong>: accumulated value</li>
+<li><strong>aout</strong>: The generated sound</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init </li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="kt">a</span><span class="n">ccum</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>    <span class="c1">; outputs 0, 1, 2, 3, 4...</span>
-
-<span class="c1">; Play a sample with variable speed, stop the event when finished</span>
-<span class="kt">a</span><span class="n">index</span> <span class="kt">a</span><span class="n">ccum</span> <span class="mi">1</span>
-<span class="kt">k</span><span class="n">speed</span> <span class="o">=</span> <span class="nb">linseg</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="kt">i</span><span class="n">len</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="kt">i</span><span class="n">len</span> <span class="o">=</span> <span class="nb">ftlen</span><span class="p">(</span><span class="kt">i</span><span class="n">ft</span><span class="p">)</span>
-<span class="kt">a</span><span class="n">index</span> <span class="o">*=</span> <span class="kt">k</span><span class="n">speed</span>
-<span class="kt">a</span><span class="n">sig</span> <span class="nb">table3</span> <span class="kt">a</span><span class="n">index</span><span class="p">,</span> <span class="kt">i</span><span class="n">ft</span>
-<span class="k">if</span> <span class="kt">a</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="kt">i</span><span class="n">len</span> <span class="o">-</span> <span class="p">(</span><span class="vg">ksmps</span><span class="o">*</span><span class="kt">k</span><span class="n">speed</span><span class="p">)</span> <span class="k">then</span>
-    <span class="nb">turnoff</span>
-<span class="k">endif</span>
-<span class="kt">i</span><span class="n">fade</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="vg">ksmps</span>
-<span class="nb">out</span> <span class="kt">a</span><span class="n">sig</span> <span class="o">*</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">fade</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">fade</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</code></pre></div>
-
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
+<span class="o">-</span><span class="n">odac</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
+<span class="cm">/*</span>
+
+<span class="cm">This example uses the analysis file fox.mtx which was produced with </span>
+<span class="cm">loristrck_pack, see https://github.com/gesellkammer/loristrck</span>
+<span class="cm">The file is in fact a wav file, with the difference that the wav format is used </span>
+<span class="cm">as a binary exchange format</span>
+
+<span class="cm">*/</span>
+
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="kt">gi</span><span class="n">spectrum</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;fox.mtx&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">x</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">printf</span> <span class="s">&quot;kx=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">ccum</span><span class="p">(</span><span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">x</span><span class="p">)),</span> <span class="kt">k</span><span class="n">x</span>
-  <span class="c1">; the same without accum would only print the first time,</span>
-  <span class="c1">; since changed would return always 1 but printf expects an ever</span>
-  <span class="c1">; increasing trigger</span>
+  <span class="kt">i</span><span class="n">fn</span> <span class="o">=</span> <span class="kt">gi</span><span class="n">spectrum</span>
+  <span class="kt">i</span><span class="n">skip</span>      <span class="nb">tab_i</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span>
+  <span class="kt">i</span><span class="n">numrows</span>   <span class="nb">tab_i</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span>
+  <span class="kt">i</span><span class="n">numcols</span>   <span class="nb">tab_i</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span>
+  <span class="kt">i</span><span class="n">t0</span> <span class="o">=</span> <span class="nb">tab_i</span><span class="p">(</span><span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">t1</span> <span class="o">=</span> <span class="nb">tab_i</span><span class="p">(</span><span class="kt">i</span><span class="n">skip</span><span class="o">+</span><span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">dt</span> <span class="o">=</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
+  <span class="kt">i</span><span class="n">numpartials</span> <span class="o">=</span> <span class="p">(</span><span class="kt">i</span><span class="n">numcols</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> 
+  <span class="kt">i</span><span class="n">maxrow</span> <span class="o">=</span> <span class="kt">i</span><span class="n">numrows</span> <span class="o">-</span> <span class="mi">2</span>
+  <span class="kt">i</span><span class="n">t</span> <span class="o">=</span> <span class="vg">ksmps</span> <span class="o">/</span> <span class="vg">sr</span>
+  <span class="kt">i</span><span class="n">gain</span> <span class="nb">init</span> <span class="mi">1</span>
+  <span class="kt">i</span><span class="n">speed</span> <span class="nb">init</span> <span class="mf">0.3</span>
+  <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="kt">i</span><span class="n">maxrow</span> <span class="o">*</span> <span class="kt">i</span><span class="n">dt</span> <span class="o">/</span> <span class="kt">i</span><span class="n">speed</span>
+  <span class="kt">k</span><span class="n">Gains</span><span class="p">[]</span> <span class="nb">init</span> <span class="kt">i</span><span class="n">numpartials</span>
+  <span class="kt">k</span><span class="n">filter</span> <span class="nb">init</span> <span class="mi">0</span>
+  <span class="kt">i</span><span class="n">freqscale</span> <span class="nb">init</span> <span class="mi">1</span>
+
+  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinsts</span>
+  <span class="kt">k</span><span class="n">playhead</span> <span class="o">=</span> <span class="nb">phasor</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">i</span><span class="n">speed</span><span class="o">/</span><span class="kt">i</span><span class="n">dur</span><span class="p">)</span><span class="o">*</span><span class="kt">i</span><span class="n">dur</span>
+  <span class="kt">k</span><span class="n">row</span> <span class="o">=</span> <span class="kt">k</span><span class="n">playhead</span> <span class="o">/</span> <span class="kt">i</span><span class="n">dt</span>
+  <span class="c1">; each row has the format frametime, freq0, amp0, bandwidth0, freq1, amp1, bandwidth1, ...</span>
+  <span class="kt">k</span><span class="n">F</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+  <span class="kt">k</span><span class="n">A</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+  <span class="kt">k</span><span class="n">B</span><span class="p">[]</span> <span class="nb">getrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span><span class="p">,</span> <span class="kt">i</span><span class="n">skip</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="kt">k</span><span class="n">t</span> <span class="o">&gt;</span> <span class="kt">i</span><span class="n">dur</span><span class="o">*</span><span class="mf">0.6</span><span class="p">)</span> <span class="k">then</span>
+    <span class="k">if</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+      <span class="nb">println</span> <span class="s">&quot;Applying filter: bandpass between 1000-1500 Hz&quot;</span>
+    <span class="k">endif</span>
+    <span class="kt">k</span><span class="n">filter</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="k">endif</span>
+
+  <span class="kt">i</span><span class="n">filterGain</span> <span class="o">=</span> <span class="mi">3</span>    
+  <span class="k">if</span> <span class="p">(</span><span class="kt">k</span><span class="n">filter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+    <span class="kt">k</span><span class="n">Gains</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">F</span><span class="p">,</span> <span class="mi">990</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="kt">i</span><span class="n">filterGain</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="kt">i</span><span class="n">filterGain</span><span class="p">,</span> <span class="mi">1510</span><span class="p">,</span> <span class="mf">0.01</span>
+    <span class="kt">k</span><span class="n">A</span> <span class="o">*=</span> <span class="kt">k</span><span class="n">Gains</span>
+  <span class="k">endif</span> 
+
+  <span class="kt">i</span><span class="n">flags</span> <span class="o">=</span> <span class="mi">0</span>    <span class="c1">; uniform noise, no interpolation</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="nb">beadsynt</span> <span class="kt">k</span><span class="n">F</span><span class="p">,</span> <span class="kt">k</span><span class="n">A</span><span class="p">,</span> <span class="kt">k</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">flags</span><span class="p">,</span> <span class="kt">i</span><span class="n">freqscale</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="kt">k</span><span class="n">t</span> <span class="o">&gt;</span> <span class="kt">i</span><span class="n">dur</span><span class="p">)</span> <span class="k">then</span>
+    <span class="nb">event</span> <span class="s">&quot;e&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+  <span class="k">endif</span>
+  <span class="kt">a</span><span class="n">env</span> <span class="nb">cosseg</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="kt">i</span><span class="n">gain</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="o">-</span><span class="mf">0.02</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="kt">i</span><span class="n">gain</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">env</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
 <span class="kd">endin</span>
+
+<span class="nb">schedule</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
-
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="http://www.csound.com/docs/manual/metro.html">metro</a></li>
-<li><a href="http://www.csound.com/docs/manual/changed.html">changed</a></li>
-<li><a href="http://www.csound.com/docs/manual/trighold.html">trighold</a></li>
-<li><a href="http://www.csound.com/docs/manual/printf.html">printf</a></li>
+<li><a href="beosc.html">beosc</a></li>
+<li><a href="http://www.csound.com/docs/manual/adsynt2.html">adsynt2</a></li>
+<li><a href="http://www.csound.com/docs/manual/oscili.html">oscili</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
@@ -382,10 +447,10 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="atstop.html" class="btn btn-neutral float-right" title="atstop">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="beosc.html" class="btn btn-neutral float-right" title="beosc">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../Installation.html" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="atstop.html" class="btn btn-neutral" title="atstop"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -411,10 +476,10 @@ it is possible to use binary triggers wherever an incremental trigger is expecte
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../Installation.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="atstop.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="atstop.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="beosc.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

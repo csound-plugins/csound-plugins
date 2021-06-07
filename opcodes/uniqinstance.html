@@ -66,6 +66,12 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bformdec2.html">bformdec2</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
@@ -110,6 +116,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
@@ -125,6 +133,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
                     </li>
@@ -206,8 +216,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sfreadmeta.html">sfreadmeta</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
@@ -217,6 +225,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="tabrowlin.html">tabrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
                     </li>
@@ -356,7 +366,7 @@ an instr number which can be used to create one</p>
   <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
     <span class="kt">k</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="kt">k</span><span class="n">inst</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">+</span> <span class="kt">k</span><span class="n">counter</span><span class="o">/</span><span class="mi">100</span>
-    <span class="n">printsk</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
+    <span class="nb">printsk</span> <span class="s">&quot;kinst=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">inst</span>
     <span class="nb">schedulek</span><span class="p">(</span><span class="kt">k</span><span class="n">inst</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
   <span class="k">endif</span>
 <span class="kd">endin</span>

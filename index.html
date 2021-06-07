@@ -68,6 +68,12 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/bformdec2.html">bformdec2</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/bisect.html">bisect</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/channelStateRecall.html">channelStateRecall</a>
@@ -112,6 +118,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/fileexists.html">file_exists</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/filereadmeta.html">filereadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/findFileInPath.html">findFileInPath</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/findarray.html">findarray</a>
@@ -127,6 +135,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/getrowlin.html">getrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/initerror.html">initerror</a>
                     </li>
@@ -208,8 +218,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/setslice.html">setslice</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="opcodes/sfreadmeta.html">sfreadmeta</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/sref.html">sref</a>
@@ -219,6 +227,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/strsplit.html">strsplit</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="opcodes/tabrowlin.html">tabrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="opcodes/throwerror.html">throwerror</a>
                     </li>
@@ -314,6 +324,19 @@
 <li><a href="opcodes/poly0.html">poly0</a>: poly0 creates and controls multiple parallel version of an opcode with no outputs </li>
 <li><a href="opcodes/defer.html">defer</a>: Run an opcode at the end of current event </li>
 </ul>
+<h2 id="beosc">beosc</h2>
+<p>Band-enhanced oscillators based on the loris partial tracking model</p>
+<ul>
+<li><a href="opcodes/beosc.html">beosc</a>: Band-Enhanced Oscillator </li>
+<li><a href="opcodes/beadsynt.html">beadsynt</a>: Band-Enhanced Oscillator-Bank </li>
+<li><a href="opcodes/getrowlin.html">getrowlin</a>: opy a row from a 2D array or table, with interpolation between rows </li>
+<li><a href="opcodes/tabrowlin.html">tabrowlin</a>: Copy a row from an f-table to another, interpolating between rows </li>
+</ul>
+<h2 id="bformdec2">bformdec2</h2>
+<p>An opcode for decoding ambisonics with dual-band decoding and near-field compensation</p>
+<ul>
+<li><a href="opcodes/bformdec2.html">bformdec2</a>: Ambisonics decoding with dual-band decoding and near-field compensation </li>
+</ul>
 <h2 id="jsfx">jsfx</h2>
 <p>A csound interface to the opensource implementation of jsfx (a jitted language for dsp)</p>
 <ul>
@@ -331,7 +354,6 @@
 <li><a href="opcodes/atstop.html">atstop</a>: Schedule an instrument at the end of the current instrument </li>
 <li><a href="opcodes/bisect.html">bisect</a>: Returns the fractional index of a value within a sorted array / tab </li>
 <li><a href="opcodes/crackle.html">crackle</a>: generates noise based on a chaotic equation </li>
-<li><a href="opcodes/defer.html">defer</a>: Run an opcode at the end of an event </li>
 <li><a href="opcodes/deref.html">deref</a>: Dereference a previously created reference to a variable </li>
 <li><a href="opcodes/diode_ringmod.html">diode_ringmod</a>: A ring modulator with optional non-linearities </li>
 <li><a href="opcodes/extendarray.html">extendarray</a>: Extend one array with the contents of a second array, in place </li>
@@ -378,7 +400,7 @@
 <li><a href="opcodes/scriptDir.html">scriptDir</a>: Get the directory of the loaded orc/csd file </li>
 <li><a href="opcodes/sysPlatform.html">sysPlatform</a>: Get a string description of the current system platform </li>
 <li><a href="opcodes/strsplit.html">strsplit</a>: Split a string at a given separator </li>
-<li><a href="opcodes/sfreadmeta.html">sfreadmeta</a>: Read metadata from a soundfile </li>
+<li><a href="opcodes/filereadmeta.html">filereadmeta</a>: Read metadata from a soundfile </li>
 </ul>
               
             </div>

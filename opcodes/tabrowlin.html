@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>sfreadmeta - Csound Plugins</title>
+  <title>tabrowlin - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "sfreadmeta";
-    var mkdocs_page_input_path = "opcodes/sfreadmeta.md";
+    var mkdocs_page_name = "tabrowlin";
+    var mkdocs_page_input_path = "opcodes/tabrowlin.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -66,6 +66,12 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bformdec2.html">bformdec2</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
@@ -110,6 +116,8 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
                     </li>
+                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
@@ -125,6 +133,8 @@
                     <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
                     </li>
@@ -206,7 +216,17 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="sfreadmeta.html">sfreadmeta</a>
+                    <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="standardchaos.html">standardchaos</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="tabrowlin.html">tabrowlin</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
     </li>
@@ -227,16 +247,6 @@
     <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
     </li>
     </ul>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="standardchaos.html">standardchaos</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
                     </li>
@@ -276,7 +286,7 @@
         
       
     
-    <li>sfreadmeta</li>
+    <li>tabrowlin</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -287,100 +297,93 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="sfreadmeta">sfreadmeta</h1>
+                <h1 id="tabrowlin">tabrowlin</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Read metadata from a soundfile</p>
+<p>Copy a row from an f-table to another, interpolating between rows</p>
 <h2 id="description">Description</h2>
-<p>Reads metadata from a soundfile via libsndfile. Only a subset of keys, standardized
-across different fileformats is supported:</p>
-<ul>
-<li>title</li>
-<li>comment</li>
-<li>artist</li>
-<li>album</li>
-<li>tracknumber</li>
-<li>software</li>
-</ul>
-<p>The opcode has two forms: 1) a specific key is queried, in which case
-the opcode returns the string for that key, or an empty string if that
-key is not present; 2) no key is given and all the metadata is
-returned in two string arrays, one with all the keys and second with
-their corresponding values.</p>
+<p>This opcode assumes the use of a table, which is a simple 1D array, to
+hold a 2D matrix with a given row length.  Assuming such a 2D table
+containing multiple rows of sampled streams (for instance, the
+amplitudes of a set of oscilators, sampled at a regular interval),
+this opcode can extract one row (or a slice of a row) of that data
+with linear interpolation between adjacent rows (if row is not a whole
+number) and place the result in another table</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>Svalue sfreadmeta Ssndfile, Skey
-Skeys[], Svalues[] sfreadmeta Ssndfile
+<div class="codehilite"><pre><span></span><code><span class="nb">tabrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">fnsrc</span><span class="p">,</span> <span class="kt">i</span><span class="n">fndest</span><span class="p">,</span> <span class="kt">i</span><span class="n">numcols</span> <span class="p">[,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><strong>Ssndfile</strong>: the path to a soundfile</li>
-<li><strong>Skey</strong>: a metadata key to query</li>
+<li><strong>krow</strong>: the row to read. It can be a fractional number, in which case the row will be linearly interpolated with the next row </li>
+<li><strong>ifnsrc</strong>: The table index to copy data from</li>
+<li><strong>ifndest</strong>: The table index to copy data to (should be able to old one row of data)</li>
+<li><strong>inumcols</strong>: The number of columns a row has, in the source table</li>
+<li><strong>ioffset</strong>: an offset to where the 2D data starts (used to skip a header, if present)</li>
+<li><strong>istart</strong>: start index to read from (refers to the row)</li>
+<li><strong>iend</strong>: end index to read from the row (not inclusive, can't exceed inumcols)</li>
+<li><strong>istep</strong>: step used to read along the row</li>
 </ul>
 <h2 id="output">Output</h2>
-<ul>
-<li><strong>Svalue</strong>: the string value for the given metadata key. It will be
-  empty if the key is not present</li>
-<li><strong>Skeys</strong>: the keys present in the metadata</li>
-<li><strong>Svalues</strong>: the string values corresponding to each key in <strong>Skeys</strong></li>
-</ul>
+<p>This opcode has no outputs. The interpolated data is placed in <strong>ifndest</strong></p>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
-
+<span class="o">-</span><span class="n">odac</span>     <span class="c1">;;;realtime audio out</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="cm">/*</span>
-<span class="cm">    Svalue sfeadmeta Ssndfile, Skey</span>
 
-<span class="cm">    Read metadata from sndfile. Skey can be one of &quot;comment&quot;, &quot;title&quot;,</span>
-<span class="cm">    &quot;artist&quot;, &quot;album&quot;, &quot;tracknumber&quot;. If the given key is not present</span>
-<span class="cm">    an empty value is returned. </span>
+
+<span class="cm">/* </span>
+
+<span class="cm">If reading out of bounds a PerformanceError will be raised. Because we</span>
+<span class="cm">interpolate between rows, the last row that can be read is</span>
+
+<span class="cm">  maxrow = (ftlen(ifnsrc)-ioffset)/inumcols - 2</span>
 
 <span class="cm">*/</span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">S</span><span class="n">comment</span> <span class="n">sfreadmeta</span> <span class="s">&quot;sfwithmeta.flac&quot;</span><span class="p">,</span> <span class="s">&quot;comment&quot;</span>
-    <span class="nb">prints</span> <span class="s">&quot;Comment: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">comment</span>
-    <span class="kt">S</span><span class="n">title</span> <span class="n">sfreadmeta</span> <span class="s">&quot;sfwithmeta.flac&quot;</span><span class="p">,</span> <span class="s">&quot;artist&quot;</span>
-    <span class="nb">prints</span> <span class="s">&quot;Artist: </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">title</span>
-    <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">S</span><span class="n">keys</span><span class="p">[],</span> <span class="kt">S</span><span class="n">values</span><span class="p">[]</span> <span class="n">sfreadmeta</span> <span class="s">&quot;sfwithmeta.flac&quot;</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">S</span><span class="n">keys</span><span class="p">)</span> <span class="k">do</span>
-      <span class="nb">prints</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">keys</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">],</span> <span class="kt">S</span><span class="n">values</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span>
-      <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">od</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="c1">; just a simple test of the bare functionality</span>
+  <span class="c1">; generate a 4x3 table</span>
+  <span class="kt">i</span><span class="n">source</span> <span class="nb">ftgentmp</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="w">\</span>
+       <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">,</span>   <span class="w">\</span>
+      <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span>   <span class="w">\</span>
+      <span class="mi">20</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">23</span>
+  <span class="c1">; create an empty table able to hold one row (4 elements)</span>
+  <span class="kt">i</span><span class="n">dest</span> <span class="nb">ftgentmp</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span>
+  <span class="nb">print</span> <span class="nb">ftlen</span><span class="p">(</span><span class="kt">i</span><span class="n">source</span><span class="p">)</span>
+  <span class="c1">; we exceed the max. row to show what happens (the row is clipped</span>
+  <span class="c1">; to the max row possible and a message is printed to show the error)</span>
+  <span class="kt">k</span><span class="n">row</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">2.05</span>
+  <span class="nb">printk2</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="mi">20</span>
+  <span class="nb">tabrowlin</span> <span class="kt">k</span><span class="n">row</span><span class="p">,</span> <span class="kt">i</span><span class="n">source</span><span class="p">,</span> <span class="kt">i</span><span class="n">dest</span><span class="p">,</span> <span class="mi">4</span>
+  <span class="nb">ftprint</span> <span class="kt">i</span><span class="n">dest</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
-<span class="kt">i</span><span class="n">2</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">2</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="https://csound.com/docs/manual/filesr.html">filesr</a></li>
-<li><a href="https://csound.com/docs/manual/filenchnls.html">filenchnls</a></li>
-<li><a href="https://csound.com/docs/manual/filelen.html">filenlen</a></li>
-<li><a href="pathAbsolute.html">pathAbsolute</a></li>
-<li><a href="findFileInPath.html">findFileInPath</a></li>
+<li><a href="getrowlin.html">getrowlin</a></li>
+<li><a href="http://www.csound.com/docs/manual/adsynt2.html">slicearray</a></li>
+<li><a href="beadsynt.html">beadsynt</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2021</p>
+<p>Eduardo Moguillansky, 2019</p>
               
             </div>
           </div>
@@ -388,10 +391,10 @@ Skeys[], Svalues[] sfreadmeta Ssndfile
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="sigmdrive.html" class="btn btn-neutral float-right" title="sigmdrive">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="throwerror.html" class="btn btn-neutral float-right" title="throwerror">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="setslice.html" class="btn btn-neutral" title="setslice"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="sysPlatform.html" class="btn btn-neutral" title="sysPlatform"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -417,10 +420,10 @@ Skeys[], Svalues[] sfreadmeta Ssndfile
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="setslice.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="sysPlatform.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="sigmdrive.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="throwerror.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
