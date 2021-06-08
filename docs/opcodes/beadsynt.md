@@ -29,6 +29,23 @@ freq. interpolation between k-cycles (switch off to save cpu)
     `kFreqs[]`, `kAmps[]` and `kBws[]` must all be the same size 
     (this also holds true for `ifreqft`, `iampft` and `ibwft`) 
 
+### Flags
+
+The **iflags** value controls a series of behaviours. It controls the
+noise shape used for the residual spectrum (uniform or gaussian
+noise); whether to use linear interpolation in the oscillator; and if
+the frequency value of an oscillator is interpolated within a
+performance pass (relevant if frequencies are changing fast and ksmps
+is high)
+
+
+| iflags | Description                                               |
+|--------|-----------------------------------------------------------|
+| +1     | Uniform noise / Gaussian noise                            |
+| +2     | Fast (no interpolation) oscillator / Linear interpolation |
+| +4     | No frequency interpolation / Frequency interpolation      |
+
+
 
 ## Syntax
 
@@ -52,6 +69,7 @@ aout beadsynt ifreqft, iampft, ibwft, inumosc \
 * **kfreq**: Freq. scaling, all frequencies are multiplied by this (default = 1) 
 * **kbw**: Bandwidth scaling, all bandwidths are multiplied by this (default = 1)
 * **inumosc**: the number of partials to resynthesize. In the array case, it can be left unset.
+* **iflags**: flags controlling oscillator quality, noise type and frequency interpolation. See table
 * **ibwft**: A table holding the bandwidths for each partial
 * **iampft**: A table holding the amplitudes for each partial
 * **ifreqft**: A table holding the frequencies for each partial
@@ -133,7 +151,7 @@ instr 1
     kA *= kGains
   endif 
    
-  iflags = 0    ; uniform noise, no interpolation
+  iflags = 7  ; max. quality
   aout beadsynt kF, kA, kB, -1, iflags, ifreqscale
    
   if(kt > idur) then
