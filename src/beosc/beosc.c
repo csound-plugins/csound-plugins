@@ -44,9 +44,20 @@
 
 */
 
+/* Note to self
+
+   For future reference, the fast integer oscillator implemented in beadsynt depends
+   on constants defined in csound itself: the ftable fields `lomask` and `lobits` as
+   well as `PHMASK`. For these to work the macro B64BIT needs to be defined if we are
+   compiling with double samples. This is done in CMakeLists.txt
+
+   Without that macro defined the oscillator in beadsynt will be wrong and result in a
+   saw tooth wave
+*/
+
 #include "csdl.h"
 #include "arrays.h"
-#include "emugens_common.h"
+#include "../common/_common.h"
 
 // -------------------------------------------------------------------------
 
@@ -353,7 +364,7 @@ beosc_kkiii(CSOUND *csound, BEOSC *p) {
           (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
         out[n] = lookup(table0, phase, lomask)  \
           * (bw1 + ( y3 * bw2 ));
-            phase += phaseinc;
+        phase += phaseinc;
       }
       break;
     case 2:
@@ -745,6 +756,8 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
       return INITERR(Str("beadsynt: not initialised"));
 
     ftp = p->ftp;
+    MYFLT sampledur = 1/csound->GetSr(csound);
+
     ftpdata  = ftp->ftable;
     lobits   = ftp->lobits;
     lodiv    = ftp->lodiv;
@@ -816,6 +829,7 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
             y0  = y1; y1 = y2; y2 = y3;
             y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
               (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+
             sample  = *(ftpdata + (phs >> lobits)) * ampnow;
             out[n] += sample * (bw1 + (y3*bw2));
             phs    += inc;
@@ -955,7 +969,9 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
         case 1:  // 001
           for (n=offset; n<nsmps; n++) {
             out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
+            // out[n] += lookup(ftpdata, phs, lomask2) * ampnow;
             phs    += inc; phs &= PHMASK; ampnow += ampinc;
+            // phs    += inc2; ampnow += ampinc;
           }
           break;
         case 2:  // 010

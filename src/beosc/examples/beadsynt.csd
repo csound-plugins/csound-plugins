@@ -95,6 +95,8 @@ instr 1
   kA[] getrowlin krow, ifn, inumcols, iskip, 2, 0, 3
   kB[] getrowlin krow, ifn, inumcols, iskip, 3, 0, 3
 
+  ; println "Frame time: %f, kt: %f", tab:k(iskip+inumcols*floor(krow), ifn), kt
+
   if(kt > idur*0.6) then
     if metro(0) == 1 then
       println "Applying filter: bandpass between 1000-1500 Hz"
@@ -115,7 +117,7 @@ instr 1
     event "e", 0, 0, 0
   endif
   aenv cosseg 0, 0.02, igain, idur-0.02-0.1, igain, 0.1, 0
-  aout *= aenv
+  ; aout *= aenv
   outs aout, aout
 endin
 

@@ -97,6 +97,13 @@ if(CPP11)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)    
 endif()
 
+check_cxx_compiler_flag(-fvisibility=hidden HAS_CXX_VISIBILITY_HIDDEN)
+if (HAS_VISIBILITY_HIDDEN)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+endif()
+if (HAS_CXX_VISIBILITY_HIDDEN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+endif()
 
 # set optimization flags
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
@@ -113,6 +120,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   addflag(-mfgpath=sse HAS_FPMATH_SSE)
   
 endif()
+
+
 
 if(MINGW)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
@@ -157,6 +166,7 @@ message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
 if(USE_DOUBLE)
   message(STATUS ">>> using doubles")
   add_definitions(-DUSE_DOUBLE)
+  add_definitions(-DB64BIT)
   if(APPLE)
     set(CSOUNDLIB "CsoundLib64")
     set(PLUGIN_INSTALL_DIR "${CS_FRAMEWORK_DEST}/${CSOUNDLIB}.framework/Versions/${APIVERSION}/Resources/Opcodes64")
