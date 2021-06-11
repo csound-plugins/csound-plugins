@@ -98,6 +98,7 @@ Collection of miscellaneous plugins
 * [bisect](opcodes/bisect.md): Returns the fractional index of a value within a sorted array / tab 
 * [crackle](opcodes/crackle.md): generates noise based on a chaotic equation 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
+* [detectsilence](opcodes/detectsilence.md): Detect when input falls below an amplitude threshold 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
 * [extendarray](opcodes/extendarray.md): Extend one array with the contents of a second array, in place 
 * [fileexists](opcodes/fileexists.md): Returns 1 if a file exists and can be read 

@@ -1,0 +1,53 @@
+# detectsilence
+
+## Abstract
+
+Detect when input falls below an amplitude threshold
+
+## Description
+
+When the absolute value of the input signal remains below the
+threshold for a given window of time, output 1. Otherwise, output 0.
+This can be used to detect the end of a sample or the end of a complex
+envelope
+
+`detectsilence` is a port of SuperCollider's `DetectSilence` UGen
+(<https://doc.sccode.org/Classes/DetectSilence.html>)
+
+## Syntax
+
+```csound
+
+kout detectsilence asig, kthresh=0.0001, ktime=0.1
+
+```
+
+## Arguments
+
+* **asig**: the audio signal to analyze
+* **kthresh**: the amplitude threshold
+* **ktime**: the time period the signal should stay below the threshold
+
+## Output
+
+* **kout**: 1 if the signal has been below the threshold for the given time, 0 otherwise
+
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [follow2](http://www.csound.com/docs/manual/follow2.html)
+* [rms](http://www.csound.com/docs/manual/rms.html)
+
+
+## Credits
+
+Eduardo Moguillansky, 2021

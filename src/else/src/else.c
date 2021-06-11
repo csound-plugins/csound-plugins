@@ -4375,7 +4375,87 @@ static int32_t loadnpy(CSOUND *csound, loadnpy_ARR *p) {
     return OK;
 }
 
+// ---------------
+// DetectSilence - ported from supercollider
+// ksilenceDetected detectSilence ain, kamp=-1, ktime=-1 (k, aJJ)
+// in: audio, amp: 0.0001, time: 0.1
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *ain;
+    MYFLT *kthresh;
+    MYFLT *ktime;
+    int32_t counter;
+} DETECT_SILENCE;
 
+static int32_t detectSilence_init(CSOUND *csound, DETECT_SILENCE *p) {
+    p->counter = -1;
+    return OK;
+}
+
+static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
+    MYFLT thresh = *p->kthresh;
+    if(thresh < 0)
+        thresh = 0.0001;
+    MYFLT ktime = *p->ktime;
+    if(ktime < 0)
+        ktime = 0.1;
+
+    int endCounter = (int32_t)(csound->GetSr(csound) * ktime);
+    int counter = p->counter;
+    // printf("endCounter: %d, counter: %d \n", endCounter, counter);
+
+    MYFLT val;
+    MYFLT out = 0.;
+    MYFLT *in = p->ain;
+
+    uint32_t n, nsmps = CS_KSMPS;
+    uint32_t offset = p->h.insdshead->ksmps_offset;
+
+    for(n=offset; n<nsmps; n++) {
+        val = fabs(*in++);
+        if(val > thresh) {
+            counter = 0;
+        } else if(counter >= 0) {
+            if(++counter >= endCounter) {
+                out = 1.;
+                break;
+            }
+        }
+    }
+    p->counter = counter;
+    *p->out = out;
+    return OK;
+}
+
+static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
+    MYFLT thresh = *p->kthresh;
+    MYFLT ktime = *p->ktime;
+    int endCounter = (int32_t)(csound->GetSr(csound) * ktime);
+    int counter = p->counter;
+    MYFLT val;
+    MYFLT *in = p->ain;
+    MYFLT *out = p->out;
+
+    AUDIO_OPCODE(csound, p);
+    AUDIO_OUTPUT(out);
+
+    for(n=offset; n<nsmps; n++) {
+        val = fabs(*in++);
+        if(val > thresh) {
+            counter = 0;
+            *out++ = 0.;
+        } else if(counter >= 0) {
+            if(++counter >= endCounter) {
+                *out++ = 1.;
+            } else {
+                *out++ = 0.;
+            }
+        } else
+            *out++ = 0.;
+    }
+    return OK;
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4537,7 +4617,8 @@ static OENTRY localops[] = {
     { "ftfind.i", S(FTINDEX), 0, 1, "i", "iij", (SUBR)ftindex_perf},
     { "loadnpy.k", S(loadnpy_ARR), 0, 1, "k[]", "S", (SUBR)loadnpy},
     { "loadnpy.i", S(loadnpy_ARR), 0, 1, "i[]", "S", (SUBR)loadnpy},
-
+    { "detectsilence.k", S(DETECT_SILENCE), 0, 3, "k", "aJJ",
+      (SUBR)detectSilence_init, (SUBR)detectSilence_k_a},
 };
 
 LINKAGE

@@ -39,12 +39,15 @@ performance pass (relevant if frequencies are changing fast and ksmps
 is high)
 
 
-| iflags | Description                                               |
-|--------|-----------------------------------------------------------|
-| +1     | Uniform noise / Gaussian noise                            |
-| +2     | Fast (no interpolation) oscillator / Linear interpolation |
-| +4     | No frequency interpolation / Frequency interpolation      |
 
+| iflags    | Description                                                |
+|:--------- |:---------------------------------------------------------- |
+| +1        | Uniform noise / Gaussian noise                             |
+| +2        | Fast (no interpolation) oscillator / Linear interpolation  |
+| +4        | No frequency interpolation / Frequency interpolation       |
+
+
+------
 
 
 ## Syntax
