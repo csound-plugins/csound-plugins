@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>pool_gen - Csound Plugins</title>
+  <title>detectsilence - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "pool_gen";
-    var mkdocs_page_input_path = "opcodes/pool_gen.md";
+    var mkdocs_page_name = "detectsilence";
+    var mkdocs_page_input_path = "opcodes/detectsilence.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -84,7 +84,27 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="detectsilence.html">detectsilence</a>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="detectsilence.html">detectsilence</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
                     </li>
@@ -188,29 +208,7 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pool_capacity.html">pool_capacity</a>
                     </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="pool_gen.html">pool_gen</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_gen.html">pool_gen</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="pool_isfull.html">pool_isfull</a>
                     </li>
@@ -290,7 +288,7 @@
         
       
     
-    <li>pool_gen</li>
+    <li>detectsilence</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -301,40 +299,39 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="pool_gen">pool_gen</h1>
+                <h1 id="detectsilence">detectsilence</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Create a pool and fill it with values</p>
+<p>Detect when input falls below an amplitude threshold</p>
 <h2 id="description">Description</h2>
-<p>A pool is actually a stack of numbers, based on an array.</p>
-<p>The pool_ opcodes implement a stack of numbers. This is useful when assigning
-ids to resources, like assigning fractional numbers to instrument instances to
-access them individually. <code>pool_gen</code> creates a pool of values of a given size by
-filling the pool with values from 1 to the given size</p>
+<p>When the absolute value of the input signal remains below the
+threshold for a given window of time, output 1. Otherwise, output 0.
+This can be used to detect the end of a sample or the end of a complex
+envelope</p>
+<p><code>detectsilence</code> is a port of SuperCollider's <code>DetectSilence</code> UGen
+(<a href="https://doc.sccode.org/Classes/DetectSilence.html">https://doc.sccode.org/Classes/DetectSilence.html</a>)</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>ipool pool_gen isize
-ipool pool_gen istart, iend
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">detectsilence</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">k</span><span class="n">thresh</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="kt">k</span><span class="n">time</span><span class="o">=</span><span class="mf">0.1</span>
 </code></pre></div>
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>isize</code>: the size of the pool.</li>
-<li><code>istart</code>: the start item</li>
-<li><code>iend</code>: the end item (inclusive)</li>
+<li><strong>asig</strong>: the audio signal to analyze</li>
+<li><strong>kthresh</strong>: the amplitude threshold</li>
+<li><strong>ktime</strong>: the time period the signal should stay below the threshold</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>ipool</code>: an index identifying this pool. This index is used when calling any
-  <code>pool</code> opcode</li>
+<li><strong>kout</strong>: 1 if the signal has been below the threshold for the given time, 0 otherwise</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
-<span class="o">-</span><span class="n">m0</span>
+<span class="o">-</span><span class="n">odac</span> 
+
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -343,49 +340,27 @@ ipool pool_gen istart, iend
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="kd">opcode</span> <span class="nf">pool_print</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">i</span>
-  <span class="kt">i</span><span class="n">pool</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="kt">i</span><span class="n">size</span> <span class="o">=</span> <span class="n">pool_size</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">size</span> <span class="k">do</span>
-    <span class="kt">i</span><span class="n">val</span> <span class="o">=</span> <span class="n">pool_at</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="kt">i</span><span class="n">val</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
-<span class="kd">endop</span>
-
-<span class="kd">instr</span> <span class="nf">test1</span>
-  <span class="kt">i</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">100</span>
-
-  <span class="kt">i</span><span class="n">size</span> <span class="n">pool_size</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="kt">i</span><span class="n">capacity</span> <span class="n">pool_capacity</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="nb">print</span> <span class="kt">i</span><span class="n">size</span>
-  <span class="nb">print</span> <span class="kt">i</span><span class="n">capacity</span>
-  <span class="nf">pool_print</span> <span class="kt">i</span><span class="n">pool</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">test2</span>
-  <span class="c1">; create a pool, fill with with numbers from 1 to 100 (inclusive)</span>
-  <span class="kt">i</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span>
-
-  <span class="kt">i</span><span class="n">size</span> <span class="n">pool_size</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="kt">i</span><span class="n">capacity</span> <span class="n">pool_capacity</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="nb">print</span> <span class="kt">i</span><span class="n">size</span>
-  <span class="nb">print</span> <span class="kt">i</span><span class="n">capacity</span>
-  <span class="nf">pool_print</span> <span class="kt">i</span><span class="n">pool</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">sep</span>
-  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">--------------------------------</span><span class="se">\n\n</span><span class="s">&quot;</span>
-  <span class="c1">; turnoff</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">a</span><span class="n">sig</span> <span class="nb">oscili</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span>
+  <span class="kt">a</span><span class="n">env</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span> <span class="c1">; total 0.1+1.9+1=3</span>
+  <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">env</span>
+  <span class="kt">k</span><span class="n">finished</span> <span class="o">=</span> <span class="n">detectsilence</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="nb">db</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">),</span> <span class="mf">0.1</span><span class="p">)</span>
+  <span class="kt">k</span><span class="n">ms</span> <span class="o">=</span> <span class="nb">timeinsts</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span>
+  <span class="k">if</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="nb">printsk</span> <span class="s">&quot;</span><span class="se">\r</span><span class="s"> Elapsed time: </span><span class="si">%.2f</span><span class="s"> ms, env: </span><span class="si">%.5f</span><span class="s">         &quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">ms</span><span class="p">,</span> <span class="kt">a</span><span class="n">env</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">endif</span>
+  <span class="k">if</span> <span class="kt">k</span><span class="n">finished</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="nb">turnoff</span>
+  <span class="k">endif</span>
+  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">Instrument exited after </span><span class="si">%.2f</span><span class="s"> ms</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">ms</span> 
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="nb">i</span> <span class="s">&quot;test1&quot;</span> <span class="mi">0</span>   <span class="mf">0.1</span>
-<span class="nb">i</span> <span class="s">&quot;sep&quot;</span>   <span class="mf">0.1</span> <span class="mf">0.1</span>
-<span class="nb">i</span> <span class="s">&quot;test2&quot;</span> <span class="mf">0.2</span> <span class="mf">0.1</span>
+
+<span class="kt">i</span><span class="n">1</span> <span class="mi">1</span> <span class="mi">8</span>
+<span class="c1">; f0 3600</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -393,14 +368,11 @@ ipool pool_gen istart, iend
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="pool_new.html">pool_new</a></li>
-<li><a href="pool_push.html">pool_push</a></li>
-<li><a href="pool_pop.html">pool_pop</a></li>
-<li><a href="pool_size.html">pool_size</a></li>
-<li><a href="pool_capacity.html">pool_capacity</a></li>
+<li><a href="http://www.csound.com/docs/manual/follow2.html">follow2</a></li>
+<li><a href="http://www.csound.com/docs/manual/rms.html">rms</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div>
@@ -408,10 +380,10 @@ ipool pool_gen istart, iend
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="pool_isfull.html" class="btn btn-neutral float-right" title="pool_isfull">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="dict_del.html" class="btn btn-neutral float-right" title="dict_del">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="pool_capacity.html" class="btn btn-neutral" title="pool_capacity"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="deref.html" class="btn btn-neutral" title="deref"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -437,10 +409,10 @@ ipool pool_gen istart, iend
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="pool_capacity.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="deref.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="pool_isfull.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="dict_del.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
