@@ -24,7 +24,9 @@ jobs:
           export PATH="$nasmdir:$PATH"
           nasm --version
 
+          brew update
           brew install libsndfile
+          brew install fluidsynth
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
@@ -51,6 +53,7 @@ jobs:
         run: |
           sudo apt-get install libsndfile1-dev
           sudo apt-get install nasm
+          sudo apt-get install libfuidsynth-dev
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
@@ -93,6 +96,8 @@ jobs:
           # $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
 
           #vcpkg install libsndfile:x64-windows
+
+          choco install fluidsynth
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master

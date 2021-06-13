@@ -183,6 +183,9 @@
 
 #include <ctype.h>
 
+#include <fluidsynth.h>
+
+
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -4457,6 +4460,60 @@ static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
     return OK;
 }
 
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *programs;
+    STRINGDAT *s;
+} SFLISTPROGRAMS;
+
+
+static int32_t sflistprograms(CSOUND *csound, SFLISTPROGRAMS *p) {
+    enum { maxprogs = 200, bufsize = 256 };
+    const char *sfpath = p->s->data;
+    char buf[bufsize];
+    const char *adrivers[1] = { NULL };
+    fluid_audio_driver_register(adrivers);
+
+    fluid_settings_t *settings = new_fluid_settings();
+    fluid_settings_setint(settings, "synth.dynamic-sample-loading", 1);
+
+    fluid_synth_t *sf = new_fluid_synth(settings);
+    int id = fluid_synth_sfload(sf, sfpath, 0);
+    if (id < 0) {
+        INITERRF("Could not load soundfont %s", sfpath);
+        free(sf);
+        free(settings);
+        return NOTOK;
+    }
+
+    tabinit(csound, p->programs, maxprogs);
+
+    fluid_sfont_t *sfont = fluid_synth_get_sfont_by_id(sf, id);
+
+    fluid_sfont_iteration_start(sfont);
+    int n = 0;
+    STRINGDAT *programs = (STRINGDAT *)p->programs->data;
+    while(n < maxprogs) {
+        fluid_preset_t *preset = fluid_sfont_iteration_next(sfont);
+        if(preset == NULL) {
+            break;
+        }
+
+        const char *name = fluid_preset_get_name(preset);
+        int banknum = fluid_preset_get_banknum(preset);
+        int num = fluid_preset_get_num(preset);
+        snprintf(buf, bufsize, "%03d-%03d %s", banknum, num, name);
+        programs[n].size = strlen(buf);
+        programs[n].data = csound->Strdup(csound, buf);
+        n++;
+    }
+    p->programs->sizes[0] = n;
+    return OK;
+
+
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -4619,6 +4676,7 @@ static OENTRY localops[] = {
     { "loadnpy.i", S(loadnpy_ARR), 0, 1, "i[]", "S", (SUBR)loadnpy},
     { "detectsilence.k", S(DETECT_SILENCE), 0, 3, "k", "aJJ",
       (SUBR)detectSilence_init, (SUBR)detectSilence_k_a},
+    { "sflistprograms", S(SFLISTPROGRAMS), 0, 1, "S[]", "S", (SUBR)sflistprograms},
 };
 
 LINKAGE
