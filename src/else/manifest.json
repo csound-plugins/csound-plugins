@@ -30,6 +30,7 @@
         "refvalid",
         "schmitt",
         "setslice",
+        "sflistprograms"
         "sigmdrive",
         "standardchaos",
         "throwerror",
@@ -42,7 +43,7 @@
     "license": "LGPL",
     "description": "Collection of miscellaneous plugins",
     "short_description": "Miscellaneous plugins",
-    "csound_version": "6.15",
+    "csound_version": "6.16",
     "platforms": ["linux", "macos", "windows"],
     "url": "https://github.com/csound-plugins/csound-plugins"
 }

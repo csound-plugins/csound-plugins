@@ -4474,7 +4474,7 @@ static int32_t sflistprograms(CSOUND *csound, SFLISTPROGRAMS *p) {
     char buf[bufsize];
     const char *adrivers[1] = { NULL };
     fluid_audio_driver_register(adrivers);
-
+    int ret = OK;
     fluid_settings_t *settings = new_fluid_settings();
     fluid_settings_setint(settings, "synth.dynamic-sample-loading", 1);
 
@@ -4482,9 +4482,8 @@ static int32_t sflistprograms(CSOUND *csound, SFLISTPROGRAMS *p) {
     int id = fluid_synth_sfload(sf, sfpath, 0);
     if (id < 0) {
         INITERRF("Could not load soundfont %s", sfpath);
-        free(sf);
-        free(settings);
-        return NOTOK;
+        ret = NOTOK;
+        goto EXIT;
     }
 
     tabinit(csound, p->programs, maxprogs);
@@ -4509,9 +4508,10 @@ static int32_t sflistprograms(CSOUND *csound, SFLISTPROGRAMS *p) {
         n++;
     }
     p->programs->sizes[0] = n;
-    return OK;
-
-
+ EXIT:
+    delete_fluid_synth(sf);
+    delete_fluid_settings(settings);
+    return ret;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
