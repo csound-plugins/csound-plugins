@@ -53,7 +53,7 @@ jobs:
         run: |
           sudo apt-get install libsndfile1-dev
           sudo apt-get install nasm
-          sudo apt-get install libfuidsynth-dev
+          sudo apt-get install libfluidsynth-dev
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
