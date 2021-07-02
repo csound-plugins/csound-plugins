@@ -83,7 +83,7 @@ jobs:
         # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
         uses: lukka/run-vcpkg@v6
         with:
-          vcpkgArguments: libsndfile:x64-windows fluidsynth:x64-windows
+          vcpkgArguments: libsndfile:x64-windows  # fluidsynth:x64-windows
           vcpkgTriplet: x64-windows
           vcpkgGitCommitId: "0bf3923f9fab4001c00f0f429682a0853b5749e0"
           # setupOnly: true
@@ -98,7 +98,7 @@ jobs:
 
           #vcpkg install libsndfile:x64-windows
 
-          # choco install fluidsynth
+          choco install fluidsynth
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
