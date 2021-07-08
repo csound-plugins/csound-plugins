@@ -1,0 +1,49 @@
+# strjoin
+
+## Abstract
+
+Concatenate any number of strings
+
+
+## Description
+
+Join multiple strings, either as an array or as arguments. The separator
+is inserted in between each given strings. The results is returned
+as a new strings
+
+## Syntax
+
+    Sout strjoin Ssep, Sstrings[]
+    Sout strjoin Ssep, Sstr1, Sstr2, ..., Sstrn
+
+## Arguments
+
+* `Ssep`: a string to be inserted between each given string
+* `Sstrings`: an array of strings
+
+## Output
+
+* `Sout`: the joint strings 
+
+
+## Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+## See also
+
+* [strsplit](strsplit.md)
+* [strstrip](http://www.csound.com/docs/manual/strstrip.html)
+* [strsub](http://www.csound.com/docs/manual/strsub.html)
+* [strindex](http://www.csound.com/docs/manual/strindex.html)
+* [pathSplit](pathSplit.md)
+* [pathSplitExt](pathSplitExt.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2021

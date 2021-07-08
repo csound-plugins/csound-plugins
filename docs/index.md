@@ -70,13 +70,6 @@ Band-enhanced oscillators based on the loris partial tracking model
 * [tabrowlin](opcodes/tabrowlin.md): Copy a row from an f-table to another, interpolating between rows 
 
 
-## bformdec2
-
-An opcode for decoding ambisonics with dual-band decoding and near-field compensation
-
-* [bformdec2](opcodes/bformdec2.md): Ambisonics decoding with dual-band decoding and near-field compensation 
-
-
 ## jsfx
 
 A csound interface to the opensource implementation of jsfx (a jitted language for dsp)
@@ -122,6 +115,7 @@ Collection of miscellaneous plugins
 * [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
 * [schmitt](opcodes/schmitt.md): A schmitt trigger (a comparator with hysteresis). 
 * [setslice](opcodes/setslice.md): Set a slice of an array to a given value 
+* [sflistprograms](opcodes/sflistprograms.md): List the available programs in a soundfont without loading the samples 
 * [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
 * [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
 * [throwerror](opcodes/throwerror.md): Throws an error message at performance or init 
@@ -146,6 +140,7 @@ Cross-platform path handling
 * [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
 * [sysPlatform](opcodes/sysPlatform.md): Get a string description of the current system platform 
 * [strsplit](opcodes/strsplit.md): Split a string at a given separator 
+* [strjoin](opcodes/strjoin.md): Concatenate any number of strings 
 * [filereadmeta](opcodes/filereadmeta.md): Read metadata from a soundfile 
 
 

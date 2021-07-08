@@ -30,7 +30,7 @@
         "refvalid",
         "schmitt",
         "setslice",
-        "sflistprograms"
+        "sflistprograms",
         "sigmdrive",
         "standardchaos",
         "throwerror",

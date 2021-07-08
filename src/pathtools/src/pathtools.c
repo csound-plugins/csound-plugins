@@ -196,6 +196,79 @@ static int32_t string_split(CSOUND *csound, STRSPLIT *p) {
     return OK;
 }
 
+typedef struct {
+    OPDS h;
+    STRINGDAT *out;
+    STRINGDAT *sep;
+    ARRAYDAT *strs;
+} STRJOIN_ARR;
+
+static int32_t strjoin_arr_i(CSOUND *csound, STRJOIN_ARR *p) {
+    int32_t strsize = 0;
+    int32_t sizes[2000];
+    char *sep = p->sep->data;
+    int32_t sepsize = strlen(sep);
+    if(p->strs->dimensions != 1)
+        return INITERRF("Input array must be 1D, got %d", p->strs->dimensions);
+    if(p->strs->sizes[0] > 2000) {
+        return INITERRF("Array too big, max len is 2000, got %d", p->strs->sizes[0]);
+    }
+    STRINGDAT *strs = (STRINGDAT *)p->strs->data;
+    for(int i=0; i<p->strs->sizes[0]; i++) {
+        sizes[i] = strlen(strs[i].data);
+        strsize += sizes[i];
+        strsize += sepsize;
+    }
+    string_ensure(csound, p->out, strsize+1);
+    char *dest = p->out->data;
+    for(int i=0; i<p->strs->sizes[0]; i++) {
+        memcpy(dest, strs[i].data, sizes[i]);
+        dest += sizes[i];
+        if(sepsize > 0) {
+            memcpy(dest, sep, sepsize);
+            dest += sepsize;
+        }
+    }
+    p->out->data[strsize - sepsize] = '\0';
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    STRINGDAT* out;
+    STRINGDAT* sep;
+    STRINGDAT* strs[200];
+} STRJOIN_VARARGS;
+
+static int32_t strjoin_varargs_i(CSOUND *csound, STRJOIN_VARARGS *p) {
+    int32_t strsize = 0;
+    int32_t sizes[200];
+    char *sep = p->sep->data;
+    int32_t sepsize = strlen(sep);
+    int32_t numstrs = csound->GetInputArgCnt(p) - 1;
+    if(numstrs > 200) {
+        return INITERRF("Too many arguments, max. is 200, got %d", numstrs);
+    }
+    for(int i=0; i<numstrs; i++) {
+        sizes[i] = strlen(p->strs[i]->data);
+        strsize += sizes[i];
+        strsize += sepsize;
+    }
+    string_ensure(csound, p->out, strsize+1);
+    char *dest = p->out->data;
+    for(int i=0; i<numstrs; i++) {
+        memcpy(dest, p->strs[i]->data, sizes[i]);
+        dest += sizes[i];
+        if(sepsize > 0) {
+            memcpy(dest, sep, sepsize);
+            dest += sepsize;
+        }
+    }
+    p->out->data[strsize - sepsize] = '\0';
+    return OK;
+
+}
+
 
 // Sdir, Sfolder pathSplit Sfile
 typedef struct {
@@ -714,8 +787,9 @@ static OENTRY localops[] = {
     { "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform},
     { "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split},
     { "filereadmeta.i", S(SFREADMETA), 0, 1, "S", "SS", (SUBR)sfreadmeta_i},
-    { "filereadmeta.i", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss}
-
+    { "filereadmeta.i", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss},
+    { "strjoin.arr_i", S(STRJOIN_ARR), 0, 1, "S", "SS[]", (SUBR)strjoin_arr_i},
+    { "strjoin.i", S(STRJOIN_VARARGS), 0, 1, "S", "S*", (SUBR)strjoin_varargs_i}
 
 };
 
