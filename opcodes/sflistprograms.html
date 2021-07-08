@@ -9,7 +9,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>bformdec2 - Csound Plugins</title>
+  <title>sflistprograms - Csound Plugins</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
   <link rel="stylesheet" href="../css/theme.css" />
@@ -19,8 +19,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "bformdec2";
-    var mkdocs_page_input_path = "opcodes/bformdec2.md";
+    var mkdocs_page_name = "sflistprograms";
+    var mkdocs_page_input_path = "opcodes/sflistprograms.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -69,42 +69,6 @@
                     <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
-                    </li>
-                    <li class="toctree-l1 current"><a class="reference internal current" href="bformdec2.html">bformdec2</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#ambisonics">Ambisonics</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#dual-band-decoding">Dual-Band decoding</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#nearfield-compensation">Near–field compensation</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#supported-setups">Supported setups</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#reference">Reference</a>
-    </li>
-    </ul>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
@@ -252,11 +216,35 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
                     </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="sflistprograms.html">sflistprograms</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
+                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="standardchaos.html">standardchaos</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="strjoin.html">strjoin</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
                     </li>
@@ -302,7 +290,7 @@
         
       
     
-    <li>bformdec2</li>
+    <li>sflistprograms</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -313,154 +301,81 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="bformdec2">bformdec2</h1>
+                <h1 id="sflistprograms">sflistprograms</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Ambisonics decoding with dual-band decoding and near-field compensation</p>
+<p>List the available programs in a soundfont without loading the samples</p>
 <h2 id="description">Description</h2>
-<p>This opcode performs ambisonics decoding with near–field compensation
-and uses a different decoding matrix for low and high frequencies. It
-also adds some features, such as additional loudspeaker array con-
-figurations (rectangle, hexagon) and a binaural output for headphones.</p>
-<h3 id="ambisonics">Ambisonics</h3>
-<p>Unlike traditional multichannel audio for spatialization in which each
-chan- nel corresponds to a given loudspeaker, the Ambisonics sound
-format (called B-format) contains a speaker-independent representation
-of a sound field. By means of an appropriate decoder, i.e. matched to
-the geometry of the loudspeaker array, this sound file can be played
-back in different speaker layouts.</p>
-<h4 id="dual-band-decoding">Dual-Band decoding</h4>
-<p>Given that no decoding approach is adequate for both high and low
-frequencies, many Ambisonics decoders split the B-format signals into
-(at least) two bands and use independent solutions for low and high
-frequencies. Then the output of each band is recombined to produce
-the audio signals for the loudspeakers. When
-combining the output of each band, different criteria can be used to
-deal with the signal’s level difference between the low and high
-frequencies, such as preserving the amplitude, the root–mean–square
-RMS level or the total energy.</p>
-<h4 id="nearfield-compensation">Near–field compensation</h4>
-<p>Another important aspect of an Ambisonics decoder is to provide near–field
-compensation. The recreation of the sound field at the central position holds
-under the hypothesis that the wavefronts are planar. Given the finite distance to
-the loudspeakers, the sound wavefronts at the listening position present instead
-a curvature, which produces a bass–boosting effect that has to be compensated.
-The compensation is essentially a high–pass filter, which depends on the order of
-reproduction and on the distance of the loudspeakers to the center of the array.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>To use HRTF files, as in the examplee, make sure that the HRTF files
-are in the same directory, or that the SADIR env variable is set and
-the HRTF files are places inside it. </p>
-</div>
-<h3 id="supported-setups">Supported setups</h3>
-<p>There are eight supported setups:</p>
-<ul>
-<li><strong>1</strong> - <em>Stereo</em>: L(90), R(-90); this is an M+S style stereo decode.</li>
-<li><strong>2</strong> - <em>Quad</em>: FL(45), BL(135), BR(-135), FR(-45). This is a first-order decode.</li>
-<li><strong>3</strong> - <em>5.0</em>: L(30), R(-30), C(0), BL(110), BR(-110). Note that many people do not actually use the angles above for their speaker arrays and a good decode for DVD etc can be achieved using the Quad configuration to feed L, R, BL and BR (leaving C silent).</li>
-<li><strong>4</strong> - <em>Octagon</em>: FFL(22.5), FLL(67.5), BLL(112.5), BBL(157.5), BBR(-157.5), BRR(-112.5), FRR(-67.5), FFR(-22.5). This is a first-, second- or third-order decode, depending on the number of input channels.</li>
-<li><strong>5</strong> - <em>Cube</em>: FLD(45,-35.26), FLU(45,35.26), BLD(135,-35.26), BLU(135,35.26), BRD(-135,-35.26), BRU(-135,35.26), FRD(-45,-35.26), FRU(-45,35.26). This is a first-order decode.</li>
-<li><strong>6</strong> - <em>Hexagon</em>: FL(30), L(90) BL(150), BR(-150), R(-90), FR(-30). This is a first- or second- order decode.</li>
-<li><strong>21</strong> - <em>2D binaural configuration</em>. This first decodes to a octagon configuration and then applies HRTF filters.</li>
-<li><strong>31</strong> - <em>3D binaural configuration</em>. This first decodes to a dodecahedron configuration and then applies HRTF filters.</li>
-</ul>
+<p>This opcode is very similar to <code>fluidInfo</code>. Given the path to a
+soundfont, it returns an array of strings, where each string has the
+form <code>&lt;bank&gt;-&lt;programnumber&gt; &lt;programname&gt;</code> where <code>bank</code> is the bank
+number, <code>programnumber</code> is the program number (or preset number, both
+names are often used), as passed to
+<a href="http://www.csound.com/docs/manual/fluidProgramSelect.html">fluidProgramSelect</a>
+or <a href="http://www.csound.com/docs/manual/sfinstr.html">sfinstr</a>. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">out</span><span class="p">[]</span> <span class="n">bformdec2</span> <span class="kt">i</span><span class="n">setup</span><span class="p">,</span> <span class="kt">a</span><span class="n">bform</span><span class="p">[],</span> <span class="p">[</span><span class="kt">i</span><span class="n">decoder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">distance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="kt">i</span><span class="n">mix</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">filel</span><span class="p">,</span> <span class="kt">i</span><span class="n">filer</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">S</span><span class="n">programs</span><span class="p">[]</span> <span class="n">sflistprograms</span> <span class="kt">S</span><span class="n">path</span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><strong>isetup</strong>: loudspeaker setup. One o 1 (Stereo), 2 (Quad), 3 (5.0),
-  4 (Octagon), 5 (Cube), 6 (Hexagon), 21 (2D binaural), 31 (3D
-  binaural)</li>
-<li><strong>abform[]</strong>: input signal array in B-format</li>
-<li><strong>idecoder</strong>: decoder type. 0: Dual decoder (velocity and energy decoders using dual-band splitting), 1: Velocity decoder, 2: Energy decoder</li>
-<li><strong>idistance</strong>: select the distance (in meters) to the loudspeakers (radius in regular configuration). Default=1m</li>
-<li><strong>ifreq</strong>: cut frequenc of the band splitting filter (only has an effect if <code>idecoder</code> is 0), default=400Hz </li>
-<li><strong>imix</strong>: type of mix o the velocity and energy decoders' outputs (0: energy, 1: RMS, 2: Amplitude)</li>
-<li><strong>ifilel</strong>: left HRTF spectral data file</li>
-<li><strong>ifiler</strong>: right HRTF spectral data file</li>
+<li><strong>Spath</strong>: the path to a soundfont (.sf2) file</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Spectral datailes (based on the MIT HRTF database) shoud be in the current 
-directory, in the SADIR (see 
-<a href="http://www.csounds.com/manual/html/hrtfstat.html">hrtfstat documentation</a></p>
-</div>
 <h2 id="output">Output</h2>
 <ul>
-<li><strong>aout[]</strong>: loudspeaker specific output signals</li>
+<li><strong>Sprograms</strong>: the list of available programs</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Performance</li>
+<li>Init </li>
 </ul>
 <h2 id="examples">Examples</h2>
-<p>To run the example, make sure that the HRTF files are in the same directory, or that
-the SADIR env variable is set and the HRTF files are places inside it</p>
-<div class="codehilite"><pre><span></span><code>csound test_binaural.csd --env:SADIR=&lt;path to hrtf folder&gt;
-</code></pre></div>
-
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>
+
+<span class="o">--</span><span class="n">nosound</span>
+<span class="o">-</span><span class="n">m0</span>
+
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">48000</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 
-<span class="c1">; Ambisonics order</span>
-<span class="kt">gi</span><span class="n">Order</span> <span class="o">=</span>   <span class="mi">1</span>
 
-<span class="kd">instr</span> <span class="nf">1</span> 
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="kt">S</span><span class="n">programs</span><span class="p">[]</span> <span class="n">sflistprograms</span> <span class="s">&quot;violin.sf2&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">S</span><span class="n">programs</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
 
-<span class="kt">i</span><span class="n">Setup</span>  <span class="nb">init</span> <span class="mi">21</span> <span class="c1">// binaural 2D</span>
+<span class="cm">/*</span>
+<span class="cm">Prints:</span>
 
-<span class="c1">; array Ambisonics</span>
-<span class="kt">i</span><span class="n">ArraySize</span>  <span class="o">=</span>   <span class="p">(</span><span class="kt">gi</span><span class="n">Order</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span>
-<span class="kt">a</span><span class="n">Ambi</span><span class="p">[]</span> <span class="nb">init</span>    <span class="kt">i</span><span class="n">ArraySize</span>
+<span class="cm">&quot;000-000 Campbells Violin&quot;, </span>
+<span class="cm">&quot;000-001 Campbells V Loop&quot;, </span>
+<span class="cm">&quot;000-002 Cam&#39;s Violin Reverb&quot;</span>
+<span class="cm">&quot;000-003 Cam&#39;s Violin Panned&quot;, </span>
+<span class="cm">&quot;000-004 Violin- Pan &amp; Reverb&quot;, </span>
+<span class="cm">&quot;000-005 Cams Violin- tinny&quot;</span>
+<span class="cm">&quot;000-006 Cams Violin-Vibrato&quot;</span>
 
-<span class="c1">; output</span>
-<span class="kt">i</span><span class="n">OutSize</span>    <span class="nb">init</span>    <span class="vg">nchnls</span>
-<span class="kt">a</span><span class="n">Out</span><span class="p">[]</span>  <span class="nb">init</span>    <span class="kt">i</span><span class="n">OutSize</span>
-
-<span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>     <span class="nb">diskin</span> <span class="s">&quot;AJH_eight-positions.amb&quot;</span>
-
-<span class="kt">a</span><span class="n">Out</span> <span class="n">bformdec2</span> <span class="kt">i</span><span class="n">Setup</span><span class="p">,</span><span class="kt">a</span><span class="n">Ambi</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s">&quot;hrtf-48000-left.dat&quot;</span><span class="p">,</span><span class="s">&quot;hrtf-48000-right.dat&quot;</span> <span class="c1">//order1</span>
-
-<span class="nb">outs</span> <span class="kt">a</span><span class="n">Out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kt">a</span><span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-<span class="kd">endin</span> 
-
+<span class="cm">*/</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
-
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
-<span class="kt">i</span><span class="n">1</span>  <span class="mi">0</span>   <span class="mi">20</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="http://www.csound.com/docs/manual/bformenc.html">bformenc</a></li>
-<li><a href="http://www.csound.com/docs/manual/bformdec.html">bformdec</a></li>
-<li><a href="http://www.csound.com/docs/manual/bformenc1.html">bformenc1</a></li>
-<li><a href="http://www.csound.com/docs/manual/hrtfstat.html">hrtfstat</a></li>
+<li><a href="http://www.csound.com/docs/manual/fluidInfo.html">fluidInfo</a></li>
+<li><a href="http://www.csound.com/docs/manual/sfinstr.html">sfinstr</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Pablo Zinemanas, Martín Rocamora and Luis Jure, 2019</p>
-<h2 id="reference">Reference</h2>
-<p>Pablo Zinemanas, Martín Rocamora and Luis Jure. Improving Csound's Ambisonics decoders. Fifth International Csound Conference – ICSC2019. Italy, 2019</p>
-<p><a href="https://github.com/pzinemanas/bformdec2">https://github.com/pzinemanas/bformdec2</a></p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div>
@@ -468,10 +383,10 @@ the SADIR env variable is set and the HRTF files are places inside it</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="bisect.html" class="btn btn-neutral float-right" title="bisect">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="sigmdrive.html" class="btn btn-neutral float-right" title="sigmdrive">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="beosc.html" class="btn btn-neutral" title="beosc"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="setslice.html" class="btn btn-neutral" title="setslice"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -497,10 +412,10 @@ the SADIR env variable is set and the HRTF files are places inside it</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="beosc.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="setslice.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="bisect.html" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="sigmdrive.html" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
