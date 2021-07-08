@@ -14,15 +14,17 @@ it returns -1
 
 ```csound
 
-iindex findarray iarr, ival, itolerance=1e-12
-kindex findarray karr, kval, itolerance=1e-12
-
+iindex findarray iarr[], ival, itolerance=1e-12
+kindex findarray karr[], kval, itolerance=1e-12
+iindex findarray Sarr[], Sval
+kindex findarray Sarr[], Sval
 
 ```
     
 ## Arguments
 
-* **iarr** / **karr**: A 1D scalar array
+* **iarr** / **karr** / **Sarr**: A 1D array to search
+* **ival** / **kval** / **Sval**: the value to search
 * **itolerance**: A tolerance value. When using floats it is not recommended to 
 check for equality but to check if two values are close enough
 
@@ -44,6 +46,8 @@ check for equality but to check if two values are close enough
 ## See also
 
 * [ftfind](ftfind.md)
+* [strsplit](strsplit.md)
+* [dict_get](dict_get.md)
 
 ## Credits
 

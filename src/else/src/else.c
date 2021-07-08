@@ -4216,6 +4216,29 @@ static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
 	return OK;
 }
 
+typedef struct {
+    OPDS h;
+    MYFLT *outidx;
+    ARRAYDAT *arr;
+    STRINGDAT *val;
+} FINDARR_S;
+
+
+static int32_t findarr_s(CSOUND *csound, FINDARR_S *p) {
+    STRINGDAT *data = (STRINGDAT *)p->arr->data;
+    char *val = p->val->data;
+    int32_t vallen = strlen(val);
+    for(int32_t i=0; i<p->arr->sizes[0]; i++) {
+        if(data[i].size >= vallen && strcmp(val, data[i].data) == 0) {
+            *p->outidx = (MYFLT)i;
+            return OK;
+        }
+    }
+    *p->outidx = -1.0;
+    return OK;
+}
+
+
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4668,8 +4691,13 @@ static OENTRY localops[] = {
     { "zeroarray.a", S(ZEROARR), 0, 2, "", "a[]", NULL, (SUBR)zeroarr_perf},
     { "zeroarray.i", S(ZEROARR), 0, 1, "", "i[]", (SUBR)zeroarr_perf},
     { "mixarray.a", S(ZEROARR), 0, 2, "", "a[]ka", NULL, (SUBR)mixarray_perf},
+
     { "findarray.k", S(FINDARR), 0, 2, "k", ".[]kj", NULL, (SUBR)findarr_perf},
     { "findarray.i", S(FINDARR), 0, 1, "i", "i[]ij", (SUBR)findarr_perf},
+    { "findarray.S_i", S(FINDARR_S), 0, 1, "i", "S[]S", (SUBR)findarr_s},
+    { "findarray.S_k", S(FINDARR_S), 0, 2, "k", "S[]S", NULL, (SUBR)findarr_s},
+
+
     { "ftfind.k", S(FTINDEX), 0, 2, "k", "kkj", NULL, (SUBR)ftindex_perf},
     { "ftfind.i", S(FTINDEX), 0, 1, "i", "iij", (SUBR)ftindex_perf},
     { "loadnpy.k", S(loadnpy_ARR), 0, 1, "k[]", "S", (SUBR)loadnpy},
