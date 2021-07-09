@@ -879,6 +879,7 @@ typedef struct {
     MYFLT prev_val;
     MYFLT next_val;
     MYFLT retrigger_ramptime;
+    MYFLT factor;
     int32_t numsegments;
     int32_t segment_idx;
     int32_t sustain_idx;
@@ -983,7 +984,6 @@ static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
         *p->out = p->val;
         return OK;
     }
-
     val = (p->next_val - p->prev_val) * (p->t / p->segment_end) + p->prev_val;
     *p->out = p->val = val;
     p->t += p->deltat;
@@ -1086,6 +1086,10 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
     uint32_t m;
 
     for(n=offset; n<nsmps; n++) {
+        // TODO: optimize this to extract a factor
+        // factor = (next_val - prev_val) / segment_end
+        // val = prev_val + t * factor
+        // this factor must be calculated only when a segment is changed
         val = (next_val - prev_val) * (t / segment_end) + prev_val;
         out[n] = val;
         t += deltat;
@@ -1111,10 +1115,15 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
         } else if (segment_idx < last_segment_idx) {
             // new segment
             t -= segment_end;
-            prev_val = next_val;
-            segment_idx += 1;
-            next_val = *points[segment_idx*2+2];
-            segment_end = *points[segment_idx*2+1];
+            while(1) {
+                prev_val = next_val;
+                segment_idx += 1;
+                next_val = *points[segment_idx*2+2];
+                segment_end = *points[segment_idx*2+1];
+                if(segment_end > 0) {
+                    break;
+                }
+            }
 
             if(segment_idx == p->sustain_idx && state == Attack) {
                 // sustaining section
