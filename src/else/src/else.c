@@ -855,7 +855,7 @@ static int32_t standardchaos_perf(CSOUND *csound, STANDARDCHAOS *p) {
 // kvalx... value in seconds
 
 
-#define MAXPOINTS 128
+#define MAXPOINTS 1900
 
 enum RampgateState { Off, Attack, Sustain, Release, Retrigger };
 
@@ -914,6 +914,9 @@ static int32_t rampgate_k_init_common(CSOUND *csound, RAMPGATE *p, MYFLT sr) {
         return INITERRF("Sustain point (%d) out of range. There are %d defined segments",
                         p->sustain_idx, p->numsegments);
     }
+    if(*p->points[p->numpoints - 2] == 0.) {
+        return INITERR("The last point cannot have 0 duration");
+    }
     return OK;
 }
 
@@ -926,7 +929,13 @@ static int32_t linenv_k_init(CSOUND *csound, RAMPGATE *p) {
 static inline void rampgate_update_segment(RAMPGATE *p, int32_t idx) {
     int32_t idx0 = idx*2;
     // we assume that p->t has been updated already
-    p->segment_end = *(p->points[idx0+1]);
+    MYFLT segment_dur = *(p->points[idx0+1]);
+    if(segment_dur == 0) {
+        idx += 1;
+        idx0 += 2;
+        segment_dur = *(p->points[idx0+1]);
+    }
+    p->segment_end = segment_dur;
     p->prev_val = *(p->points[idx0]);
     p->next_val = *(p->points[idx0+2]);
     p->segment_idx = idx;

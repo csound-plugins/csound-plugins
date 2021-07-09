@@ -48,7 +48,7 @@ aout beosc xfreq, kbw, ifn=-1, iphs=0, inoisetype=1
 
 ## Examples
 
-![](beosc.jpg)
+![](assets/beosc.jpg)
 
 ```csound
 <CsoundSynthesizer>

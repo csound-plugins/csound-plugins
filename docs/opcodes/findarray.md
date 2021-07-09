@@ -14,15 +14,17 @@ it returns -1
 
 ```csound
 
-iindex findarray iarr, ival, itolerance=1e-12
-kindex findarray karr, kval, itolerance=1e-12
-
+iindex findarray iarr[], ival, itolerance=1e-12
+kindex findarray karr[], kval, itolerance=1e-12
+iindex findarray Sarr[], Sval
+kindex findarray Sarr[], Sval
 
 ```
     
 ## Arguments
 
-* **iarr** / **karr**: A 1D scalar array
+* **iarr** / **karr** / **Sarr**: A 1D array to search
+* **ival** / **kval** / **Sval**: the value to search
 * **itolerance**: A tolerance value. When using floats it is not recommended to 
 check for equality but to check if two values are close enough
 
@@ -63,14 +65,15 @@ Syntax
     kidx findarray karray[], kvalue/ivalue [, iepsilon=1e-12]
     kidx findarray iarray[], kvalue [, iepsilon=1e-12]
     idx  findarray iarray[], ivalue [, iepsilon=1e-12]
-    
+    idx  findarray Sarray[], Svalue
+    kidx findarray Sarray[], Svalue
 */
 
 ksmps = 64
 nchnls = 2
 0dbfs  = 1
 
-instr 10
+instr 1
     karr[] fillarray 0, 0.5, 0.3, 10, 0.8
     kidx findarray karr, 0.3
     println "kidx: %d", kidx
@@ -81,11 +84,22 @@ instr 10
     turnoff
 endin
 
+instr 2
+    Sarr[] strsplit "Zero One Two Three Four Five Six Seven Eight Nine", " "
+    idx1 findarray Sarr, "Three"
+    idx2 findarray Sarr, "Foo"
+    prints "Indexx of Three: %d, index of Foo: %d\n", idx1, idx2
+    
+    turnoff
+    
+endin
+
 </CsInstruments>
 
 <CsScore>
 
-i 10 0 0.1
+i 1 0   0.1
+i 2 0.1 0.1
 
 </CsScore>
 </CsoundSynthesizer>
@@ -98,6 +112,8 @@ i 10 0 0.1
 ## See also
 
 * [ftfind](ftfind.md)
+* [strsplit](strsplit.md)
+* [dict_get](dict_get.md)
 
 ## Credits
 
