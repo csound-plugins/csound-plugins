@@ -99,7 +99,7 @@ jobs:
           #vcpkg install libsndfile:x64-windows
 
           choco install libsndfile
-          ls "-I${ENV:PROGRAMFILES}\libsndfile\include"
+          ls "${ENV:PROGRAMFILES}\libsndfile\include"
 
                     
           choco install fluidsynth
