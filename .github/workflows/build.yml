@@ -99,6 +99,9 @@ jobs:
           #vcpkg install libsndfile:x64-windows
 
           choco install libsndfile
+          ls "-I${ENV:PROGRAMFILES}\libsndfile\include"
+
+                    
           choco install fluidsynth
           
           git submodule update --init --recursive --remote
@@ -117,8 +120,6 @@ jobs:
 
           echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
           ls "$VCPKG_ROOT" -recurse
-
-          export CXXFLAGS=
 
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_C_FLAGS="-I${ENV:PROGRAMFILES}\libsndfile\include -L${ENV:PROGRAMFILES}\libsndfile\lib" -DCMAKE_CXX_FLAGS="-I${ENV:PROGRAMFILES}\libsndfile\include -L${ENV:PROGRAMFILES}\libsndfile\lib" \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
