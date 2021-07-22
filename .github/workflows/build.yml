@@ -122,7 +122,7 @@ jobs:
           ls "$VCPKG_ROOT" -recurse
 
           set-variable -name FLAGS -value "-I\"${ENV:PROGRAMFILES}\libsndfile\include\" -L\"${ENV:PROGRAMFILES}\libsndfile\lib\""
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_C_FLAGS=$FLAGS -DCMAKE_CXX_FLAGS=$FLAGS \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_CXX_FLAGS="$FLAGS" \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
           ls Release
 
