@@ -70,7 +70,7 @@ endin
 
 ; i1 0 10
 ; i2 0 10
-; i3 0 100
-i4 0 100
+i3 0 100
+; i4 0 100
 </CsScore>
 </CsoundSynthesizer>

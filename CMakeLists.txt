@@ -118,7 +118,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   addflag(-msse HAS_SSE)
   addflag(-msse2 HAS_SSE2)
   addflag(-mfgpath=sse HAS_FPMATH_SSE)
-  
+  set(CMAKE_C_FLAGS_RELEASE "-O3 ")  
 endif()
 
 

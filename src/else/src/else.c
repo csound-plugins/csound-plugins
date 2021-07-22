@@ -951,9 +951,8 @@ static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
         if(gate == 1) {
             // are we playing?
             if(p->state == Off) {
-                // not playing, just waiting for a gate, so start attack
+                // not playing yet: start attack
                 p->t = 0;
-                // p->state = p->sustain_idx == 0 ? Sustain : Attack;
                 p->state = Attack;
                 rampgate_update_segment(p, 0);
                 p->val = p->prev_val;
@@ -969,13 +968,27 @@ static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
                 return PERFERRF("This should not happen. state = %d", p->state);
             }
         } else {
-            if(p->state == Off) {
+            // transition 1 -> 0
+            switch(p->state) {
+            case Off:
                 p->t = 0;
                 rampgate_update_segment(p, 0);
-            } else
+                break;
+            case Sustain:
                 p->state = Release;
-            // printf("closing gate, state now is: %d\n", p->state);
-
+                break;
+            case Attack:
+                if(p->sustain_idx == 0)
+                    break;
+                p->state = Release;
+                p->t = 0;
+                rampgate_update_segment(p, p->sustain_idx);
+                p->prev_val = p->val;
+                break;
+            case Release:
+            case Retrigger:
+                return PERFERRF("This should nothappend.state = %d", p->state);
+            }
         }
     }
     p->lastgate = gate;
@@ -1057,11 +1070,27 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
             } else
                 return PERFERRF("This should not happen. state = %d", p->state);
         } else {  // gate is closing
-            if(p->state == Off) {
+            // transition 1 -> 0
+            switch(p->state) {
+            case Off:
                 p->t = 0;
                 rampgate_update_segment(p, 0);
-            } else
+                break;
+            case Sustain:
                 p->state = Release;
+                break;
+            case Attack:
+                if(p->sustain_idx == 0)
+                    break;
+                p->state = Release;
+                p->t = 0;
+                rampgate_update_segment(p, p->sustain_idx);
+                p->prev_val = p->val;
+                break;
+            case Release:
+            case Retrigger:
+                return PERFERRF("This should nothappend.state = %d", p->state);
+            }
         }
     }
     p->lastgate = gate;
@@ -1084,14 +1113,15 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
     int32_t segment_idx = p->segment_idx;
     int32_t last_segment_idx = p->numsegments - 1;
     uint32_t m;
-
+    MYFLT factor = (next_val - prev_val) / segment_end;
     for(n=offset; n<nsmps; n++) {
         // TODO: optimize this to extract a factor
         // factor = (next_val - prev_val) / segment_end
         // val = prev_val + t * factor
         // this factor must be calculated only when a segment is changed
-        val = (next_val - prev_val) * (t / segment_end) + prev_val;
+        // val = (next_val - prev_val) * (t / segment_end) + prev_val;
         out[n] = val;
+        val = prev_val + t*factor;
         t += deltat;
         if(t < p->segment_end)
             continue;
