@@ -78,15 +78,15 @@ jobs:
 
       # Windows: Restore from cache the previously built ports. 
       # If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
-      - name: Restore from cache and install vcpkg
-        if: runner.os == 'windows'
-        # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
-        uses: lukka/run-vcpkg@v6
-        with:
-          vcpkgArguments: libsndfile:x64-windows  # fluidsynth:x64-windows
-          vcpkgTriplet: x64-windows
-          vcpkgGitCommitId: "0bf3923f9fab4001c00f0f429682a0853b5749e0"
-          # setupOnly: true
+      #- name: Restore from cache and install vcpkg
+      #  if: runner.os == 'windows'
+      #  # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
+      #  uses: lukka/run-vcpkg@v6
+      #  with:
+      #    vcpkgArguments: libsndfile:x64-windows  # fluidsynth:x64-windows
+      #    vcpkgTriplet: x64-windows
+      #    vcpkgGitCommitId: "0bf3923f9fab4001c00f0f429682a0853b5749e0"
+      #    # setupOnly: true
           
       - name: windows build
         if: runner.os == 'windows'
@@ -98,6 +98,7 @@ jobs:
 
           #vcpkg install libsndfile:x64-windows
 
+          choco install libsndfile
           choco install fluidsynth
           
           git submodule update --init --recursive --remote
@@ -117,7 +118,9 @@ jobs:
           echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
           ls "$VCPKG_ROOT" -recurse
 
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          export CXXFLAGS=
+
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_C_FLAGS="-I${ENV:PROGRAMFILES}\libsndfile\include -L${ENV:PROGRAMFILES}\libsndfile\lib" -DCMAKE_CXX_FLAGS="-I${ENV:PROGRAMFILES}\libsndfile\include -L${ENV:PROGRAMFILES}\libsndfile\lib" \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --config Release
           ls Release
 
