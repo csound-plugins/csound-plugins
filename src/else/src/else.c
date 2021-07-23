@@ -183,7 +183,7 @@
 
 #include <ctype.h>
 
-#include <fluidsynth.h>
+// #include <fluidsynth.h>
 
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
@@ -4531,7 +4531,7 @@ static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
     return OK;
 }
 
-
+/*
 typedef struct {
     OPDS h;
     ARRAYDAT *programs;
@@ -4584,6 +4584,7 @@ static int32_t sflistprograms(CSOUND *csound, SFLISTPROGRAMS *p) {
     delete_fluid_settings(settings);
     return ret;
 }
+*/
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4752,7 +4753,7 @@ static OENTRY localops[] = {
     { "loadnpy.i", S(loadnpy_ARR), 0, 1, "i[]", "S", (SUBR)loadnpy},
     { "detectsilence.k", S(DETECT_SILENCE), 0, 3, "k", "aJJ",
       (SUBR)detectSilence_init, (SUBR)detectSilence_k_a},
-    { "sflistprograms", S(SFLISTPROGRAMS), 0, 1, "S[]", "S", (SUBR)sflistprograms},
+    // { "sflistprograms", S(SFLISTPROGRAMS), 0, 1, "S[]", "S", (SUBR)sflistprograms},
 };
 
 LINKAGE

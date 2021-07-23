@@ -4,7 +4,7 @@ if(NOT(BUILD_ELSE_OPCODES))
   return()
 endif()
 
-find_package(FLUIDSYNTH)
+# find_package(FLUIDSYNTH)
 
 make_plugin(else src/else.c)
 target_include_directories(else PRIVATE ${FLUIDSYNTH_INCLUDE_DIR})

@@ -27,7 +27,7 @@ jobs:
 
           brew update
           brew install libsndfile
-          brew install fluidsynth
+          # brew install fluidsynth
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
@@ -54,7 +54,7 @@ jobs:
         run: |
           sudo apt-get install libsndfile1-dev
           sudo apt-get install nasm
-          sudo apt-get install libfluidsynth-dev
+          # sudo apt-get install libfluidsynth-dev
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
@@ -102,7 +102,7 @@ jobs:
           ls "${ENV:PROGRAMFILES}\libsndfile\include"
 
                     
-          choco install fluidsynth
+          # choco install fluidsynth
           
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
