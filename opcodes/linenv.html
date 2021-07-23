@@ -312,20 +312,34 @@ to retrigger it at will. One of the values can be defined as a sustain point,
 meaning that as long as the gate is held, the envelope enters a sustain
 state when reaching this point. When the gate is set to 0, the envelope traverses
 the rest of the defined points.</p>
+<p>If the gate is closed before reaching the sustain segment, the envelope slides to
+the release section skipping any segments in between.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Unlike <code>linsegr</code>, <code>linenv</code> does not extend the time of the instrument. Use
+<code>xtratim</code> for that</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Similarly to linseg/linsegr, it is possible to define segments of 0 duration to
+force sharp jumps</p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="codehilite"><pre><span></span><code><span class="nb">xout</span> <span class="n">linenv</span> <span class="kt">k</span><span class="n">gate</span><span class="p">,</span> <span class="kt">i</span><span class="n">sustindex</span><span class="p">,</span> <span class="kt">k</span><span class="n">val0</span><span class="p">,</span> <span class="p">[</span><span class="kt">k</span><span class="n">time1</span><span class="p">,</span> <span class="kt">k</span><span class="n">val1</span><span class="p">,</span> <span class="kt">k</span><span class="n">time2</span><span class="p">,</span> <span class="kt">k</span><span class="n">val2</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
 <ul>
-<li><code>kgate</code>: whenever this switches from 0 to 1 a new envelope starts</li>
+<li><code>kgate</code>: whenever this switches from 0 to 1 a new envelope starts. If a sustain segment
+  was defined, when closing the gate (transition from 1 to 0) the envelope jumps to the sustain
+  segment. Otherwise it just continues until it reaches the last segment (a "oneshot" envelope)</li>
 <li><code>isustindex</code>: the index of the sustain point. For example, if <code>isustindex</code> is 2, then 
 when the envelope reaches kval2 (after ktime0+ktime1), it enters a sustain phase, where
 its value remains unmodified until the gate is set to 0. If no sustain point is desired,
 set <code>isustindex</code> to 0. <strong>NB</strong>: negative values count from end. To imitate the behaviour of
 linsegr, use -1 as sustain index.</li>
 <li><code>kval0</code>, <code>ktime1</code>, ...: a linear envelope, similar to <code>linsegr</code>. The release part can have
-as many segments as desired. <code>ktimex</code> values are defined as time interval between two values,
+as many segments as desired. <strong>ktime<sub>n</sub></strong> values are defined as time interval between two values,
 <strong>not as absolute timestamps</strong></li>
 </ul>
 <h3 id="output">Output</h3>
@@ -409,8 +423,8 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 
 <span class="c1">; i1 0 10</span>
 <span class="c1">; i2 0 10</span>
-<span class="c1">; i3 0 100</span>
-<span class="kt">i</span><span class="n">4</span> <span class="mi">0</span> <span class="mi">100</span>
+<span class="kt">i</span><span class="n">3</span> <span class="mi">0</span> <span class="mi">100</span>
+<span class="c1">; i4 0 100</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
@@ -418,8 +432,10 @@ as many segments as desired. <code>ktimex</code> values are defined as time inte
 <h2 id="see-also">See also</h2>
 <ul>
 <li><a href="ramptrig.html">ramptrig</a></li>
-<li><a href="https://csound.com/docs/manual/linsegr.html">linsegr</a></li>
+<li><a href="bisect.html">bisect</a></li>
+<li><a href="interp1d.html">interp1d</a></li>
 <li><a href="https://csound.com/docs/manual/bpf.html">bpf</a></li>
+<li><a href="https://csound.com/docs/manual/linsegr.html">linsegr</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
 <p>Eduardo Moguillansky, 2019</p>
