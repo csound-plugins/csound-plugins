@@ -6,7 +6,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-latest, macos-latest]
+        os: [windows-2019, ubuntu-latest, macos-latest, macos-10.14]
         # os: [windows-2019]
     steps:
       - uses: actions/checkout@v2
@@ -40,7 +40,7 @@ jobs:
           cmake -DSKIP_FAST_MATH=True ..
           make -j4
           ls
-          ARCHIVE=csound-plugins--macos.zip
+          ARCHIVE=csound-plugins--${{matrix.os}}.zip
           7z a $ARCHIVE *.dylib
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
