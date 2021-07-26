@@ -10,7 +10,7 @@ jsfx support in csound, allows any REAPER's jsfx plugin to be loaded and control
 
 ### klib
 
-very efficient hashtables for csound
+very efficient hashtables (dictionaries) and other data structures for csound
 
 ### poly
 
@@ -65,13 +65,22 @@ sudo make install
 
 ### macOS
 
-The `nasm` version provided by XCode is too old. To solve that, it is necessary to install a recent version
+#### Dependencies
+
+##### cmake 
+
+Install it from https://cmake.org/install/
+
+##### nasm
+
+The `nasm` version provided by XCode is too old. The needed version is nasm >= 2.14. To solve that, it is necessary to install a recent version
 of `nasm`. This can be easily done via `homebrew`:
 
     brew install nasm
 
-If you have a default installation of homebrew, the build process will detect this version (`/usr/local/bin/nasm`) and 
-will use that instead of the older one.
+If you don't have homebrew installed, the latest version can be downloaded from 
+https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/macosx/nasm-2.15.05-macosx.zip .
+To install it, unpack the zip and cp the binary files to `/usr/local/bin`. 
 
 #### Build and install
 
@@ -84,7 +93,7 @@ sudo make install
 
 ### Windows
 
-NB: the `jsfx` opcodes are not supported on windows at the moment
+NB: the `jsfx` opcodes are not supported on windows at the moment and are by default excluded from the build process.
     
 ```bash
 mkdir build && cd build
