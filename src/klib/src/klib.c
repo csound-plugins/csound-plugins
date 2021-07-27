@@ -201,7 +201,7 @@ typedef uint32_t ui32;
 typedef int64_t i64;
 typedef uint64_t ui64;
 
-#define KHASH_STRKEY_MAXSIZE 63
+#define KHASH_STRKEY_MAXSIZE 127
 #define HANDLES_INITIAL_SIZE 200
 #define DICT_INITIAL_SIZE 8
 #define FLOAT_FMT "%.10g"
@@ -253,9 +253,9 @@ typedef uint64_t ui64;
 
 // s: a STRINGDAT* key
 #define CHECK_KEY_SIZE(s)                                               \
-    if(UNLIKELY((s)->size > KHASH_STRKEY_MAXSIZE))                      \
+    if(UNLIKELY(strlen((s)->data) > KHASH_STRKEY_MAXSIZE))                      \
         return PERFERRF(Str("dict: key too long (%d > %d)"),            \
-                        (s)->size, KHASH_STRKEY_MAXSIZE)
+                        (int)strlen((s)->data), KHASH_STRKEY_MAXSIZE)
 
 // p: an opcode struct with a member 'g':KHASH_GLOBALS* and input handleidx:MYFLT*
 #define get_handle_check(p)  ((ui32)*(p)->handleidx < p->g->maxhandles ? &((p)->g->handles[(ui32)*(p)->handleidx]) : NULL)
@@ -1321,8 +1321,8 @@ dict_set_sf_(CSOUND *csound, DICT_SET_sf *p, HANDLE *handle, khash_t(khStrFlt) *
     char *key;
     // test fastpath
     if(p->counter == handle->counter &&
-       p->lastkey_size == p->outkey->size &&
-       strcmp(p->lastkey_data, p->outkey->data)==0) {
+       p->lastkey_size > 0 &&
+       !strcmp(p->lastkey_data, p->outkey->data)) {
         kh_value(h, p->lastidx) = *p->outval;
         return OK;
     }
@@ -1395,7 +1395,7 @@ dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
 
     // fastpath: dict was not changed and this key is unchanged, last index is valid
     if(p->counter == handle->counter &&
-       p->outkey->size == p->lastkey_size &&
+       // p->outkey->size == p->lastkey_size &&
        !strcmp(p->outkey->data, p->lastkey_data)) {
         k = p->lastidx;
     } else {
@@ -1715,19 +1715,12 @@ dict_get_sf_0(CSOUND *csound, DICT_GET_sf *p) {
 
 static inline i32
 dict_get_sf_(CSOUND *csound, DICT_GET_sf *p, HANDLE *handle, khash_t(khStrFlt) *h) {
-    int fastpath = 0;
     if(p->outkey->size == 0) {
         return PERFERR("dict_get: not valid key (size=0)");
     }
-    if(p->counter == handle->counter) {
-        if(p->constant_key && p->lastkey_size > 0)
-            fastpath = 1;
-        else if (p->outkey->size == p->lastkey_size &&
-                 memcmp(p->outkey->data, p->lastkey_data, p->lastkey_size)==0){
-            fastpath = 2;
-        }
-    }
-    if(fastpath) {
+    if(p->counter == handle->counter &&
+       (p->constant_key || !strncmp(p->outkey->data, p->lastkey_data, KHASH_STRKEY_MAXSIZE))) {
+        // fast path
         khiter_t k = p->lastidx;
         *p->kout = k != kh_end(h) ? kh_val(h, k) : *p->defaultval;
         return OK;
