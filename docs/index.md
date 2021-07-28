@@ -107,6 +107,7 @@ Collection of miscellaneous plugins
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
 * [loadnpy](opcodes/loadnpy.md): Load an array (of any number of dimensions) saved as a .npy file 
 * [memview](opcodes/memview.md): Create a view into a table or another array 
+* [panstereo](opcodes/panstereo.md): Stereo signal balancer 
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
@@ -115,7 +116,6 @@ Collection of miscellaneous plugins
 * [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
 * [schmitt](opcodes/schmitt.md): A schmitt trigger (a comparator with hysteresis). 
 * [setslice](opcodes/setslice.md): Set a slice of an array to a given value 
-* [sflistprograms](opcodes/sflistprograms.md): List the available programs in a soundfont without loading the samples 
 * [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
 * [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
 * [throwerror](opcodes/throwerror.md): Throws an error message at performance or init 

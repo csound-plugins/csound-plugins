@@ -4586,6 +4586,65 @@ static int32_t sflistprograms(CSOUND *csound, SFLISTPROGRAMS *p) {
 }
 */
 
+
+#define clip(a,b,c) (a<b ? b : a>c ? c : a)
+#define PI2 1.5707963267948966
+
+typedef struct {
+    OPDS h;
+    MYFLT *leftout, *rightout;
+    MYFLT *leftin, *rightin;
+    MYFLT *kpos, *klevel;
+    MYFLT m_pos, m_level, m_leftamp, m_rightamp;
+} BALANCE2;
+
+static int32_t balance2_init(CSOUND *csound, BALANCE2 *p) {
+    p->m_pos = clip(*p->kpos, 0, 1);
+    p->m_level = *p->klevel;
+    MYFLT pos = p->m_pos;
+    p->m_leftamp = p->m_level * sin(PI2 * (1-pos));
+    p->m_rightamp = p->m_level * sin(PI2*pos);
+    return OK;
+}
+
+static int32_t balance2_ak(CSOUND *csound, BALANCE2 *p) {
+    // TODO: sample accurate
+    int32_t nsmps = CS_KSMPS;
+
+    MYFLT *leftout = p->leftout;
+    MYFLT *rightout = p->rightout;
+    MYFLT *leftin = p->leftin;
+    MYFLT *rightin = p->rightin;
+    MYFLT pos = *(p->kpos);
+    MYFLT level = *p->klevel;
+    MYFLT leftamp = p->m_leftamp;
+    MYFLT rightamp = p->m_rightamp;
+    if(pos != p->m_pos || p->m_level != level) {
+        MYFLT nextleftamp = level * sin(PI2 * (1-pos));
+        MYFLT nextrightamp = level * sin(PI2 * pos);
+        MYFLT leftampslope = (nextleftamp - leftamp) / nsmps;
+        MYFLT rightampslope = (nextrightamp - rightamp) / nsmps;
+        for(int i=0; i<nsmps; i++) {
+            leftout[i] = leftin[i] * leftamp;
+            rightout[i] = rightin[i] * rightamp;
+            leftamp += leftampslope;
+            rightamp += rightampslope;
+        }
+        p->m_pos = pos;
+        p->m_level = level;
+        p->m_leftamp = nextleftamp;
+        p->m_rightamp = nextrightamp;
+    } else {
+        for(int i=0; i<nsmps; i++) {
+            leftout[i] = leftin[i] * leftamp;
+            rightout[i] = rightin[i] * rightamp;
+        }
+    }
+    return OK;
+}
+
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -4753,6 +4812,8 @@ static OENTRY localops[] = {
     { "loadnpy.i", S(loadnpy_ARR), 0, 1, "i[]", "S", (SUBR)loadnpy},
     { "detectsilence.k", S(DETECT_SILENCE), 0, 3, "k", "aJJ",
       (SUBR)detectSilence_init, (SUBR)detectSilence_k_a},
+    { "panstereo", S(BALANCE2), 0, 3, "aa", "aakP", (SUBR)balance2_init, (SUBR)balance2_ak}
+
     // { "sflistprograms", S(SFLISTPROGRAMS), 0, 1, "S[]", "S", (SUBR)sflistprograms},
 };
 

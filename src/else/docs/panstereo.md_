@@ -1,0 +1,66 @@
+# panstereo
+
+## Abstract
+
+Stereo signal balancer 
+
+
+## Description
+
+Equal power panning balances two channels. By panning **from left
+(pos=0) to right (pos=1)** you are decrementing the level of the left
+channel from 1 to 0 taking the square root of the linear scaling
+factor, while at the same time incrementing the level of the right
+channel from 0 to 1 using the same curve. In the center position
+(pos=0.5) this results in a level for both channels of `sqrt(0.5)` (`~=0.707`
+or **-3dB**). The output of panstereo remains a stereo signal. This is a 
+port of Supercollider's `Balance2` ugen.
+
+!!! note
+
+    `kpan` is defined between 0 (left) and 1 (right) to make it coherent with
+    opcodes like `pan2`, which also use this range. This differs from the original
+    implementation in Supercollider, which uses a pan value of -1 to 1.
+    Notice that even if `kpan` is a scalar (k-) variable, it is interpolated internaly
+    to prevent discontinuities ("zipper" noise).
+
+## Syntax
+
+```csound
+aoutL, aoutR panstereo aL, aR, kpan, klevel=1
+```
+
+### Arguments
+
+* **aL**: left input 
+* **aR**: right input
+* **kpan**: panning position, **between 0 (left) and 1 (right)**
+* **klevel**: control rate level input (defaults to 1)
+
+### Output
+
+* **aoutL**: left output
+* **aoutR**: right output
+
+### Execution Time
+
+* Performance
+
+-----------------
+
+## Examples
+
+{example}
+
+------------------
+
+## See also
+
+* [pan2](https://csound.com/docs/manual/pan2.html)
+* [original implementation](https://doc.sccode.org/Classes/Balance2.html)
+* [bpf](https://csound.com/docs/manual/bpf.html)
+* [Panning and Spatialization](http://write.flossmanuals.net/csound/b-panning-and-spatialization/)
+
+## Credits
+
+Eduardo Moguillansky, 2021
