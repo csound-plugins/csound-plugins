@@ -72,10 +72,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="channelStateRecall.html">channelStateRecall</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="channelStateSave.html">channelStateSave</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="crackle.html">crackle</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="defer.html">defer</a>
@@ -260,10 +256,6 @@
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
                     </li>
-                    <li class="toctree-l1"><a class="reference internal" href="trigExpseg.html">trigExpseg</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="trigLinseg.html">trigLinseg</a>
-                    </li>
                     <li class="toctree-l1"><a class="reference internal" href="tubeharmonics.html">tubeharmonics</a>
                     </li>
                     <li class="toctree-l1"><a class="reference internal" href="uniqinstance.html">uniqinstance</a>
@@ -328,20 +320,24 @@ the output value is set to <code>inotfound</code>. </p>
   the moment the instance stops and no new instance is searched. </li>
 </ul>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">output</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span> <span class="n">pread</span> <span class="kt">i</span><span class="n">nstrnum</span><span class="p">:</span><span class="n">i</span><span class="p">,</span> <span class="kt">i</span><span class="n">ndex</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span> <span class="p">[,</span> <span class="kt">i</span><span class="n">notfound</span><span class="o">=-</span><span class="mi">1</span><span class="p">]</span> 
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">value</span>    <span class="n">pread</span> <span class="kt">i</span><span class="n">nstrnum</span><span class="p">,</span> <span class="kt">i</span><span class="n">index</span><span class="p">,</span> <span class="kt">i</span><span class="n">notfound</span><span class="o">=-</span><span class="mi">1</span>
+<span class="kt">k</span><span class="n">value</span>    <span class="n">pread</span> <span class="kt">i</span><span class="n">nstrnum</span><span class="p">,</span> <span class="kt">i</span><span class="n">index</span><span class="p">,</span> <span class="kt">i</span><span class="n">notfound</span><span class="o">=-</span><span class="mi">1</span>
+<span class="kt">k</span><span class="n">value</span>    <span class="n">pread</span> <span class="kt">i</span><span class="n">nstrnum</span><span class="p">,</span> <span class="kt">k</span><span class="n">index</span><span class="p">,</span> <span class="kt">i</span><span class="n">notfound</span><span class="o">=-</span><span class="mi">1</span>
+
+<span class="kt">i</span><span class="n">values</span><span class="p">[]</span> <span class="n">pread</span> <span class="kt">i</span><span class="n">nstrnum</span><span class="p">,</span> <span class="kt">i</span><span class="n">indexes</span><span class="p">[],</span> <span class="kt">i</span><span class="n">notfound</span><span class="o">=-</span><span class="mi">1</span>
+<span class="kt">k</span><span class="n">values</span><span class="p">[]</span> <span class="n">pread</span> <span class="kt">i</span><span class="n">nstrnum</span><span class="p">,</span> <span class="kt">i</span><span class="n">indexes</span><span class="p">[],</span> <span class="kt">i</span><span class="n">notfound</span><span class="o">=-</span><span class="mi">1</span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
 <ul>
 <li><code>instrnum</code> (i):  the (fractional) instrument number to modify</li>
-<li><code>index</code> (i or k): the index of the pfield to read. If kindex is 4, then p4 will be 
-  modified</li>
+<li><code>iindex</code> / <code>kindex</code>: the index of the pfield to read. </li>
 <li><code>inotfound</code>: the value to return if instrnum is not found. To avoid misinterpretation,
   this value should be different than any expected value of the pfield</li>
 </ul>
 <h3 id="output">Output</h3>
 <ul>
-<li><code>output</code> (i or k): the current value of the given pfield. Will be <code>inotfound</code> if
+<li><code>ivalue</code> / <code>kvalue</code>: the current value of the given pfield. Will be <code>inotfound</code> if
   no matching instance has been found.</li>
 </ul>
 <h3 id="execution-time">Execution Time</h3>
@@ -376,20 +372,33 @@ the output value is set to <code>inotfound</code>. </p>
 <span class="cm">*/</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-  <span class="nb">print</span> <span class="vi">p4</span>
+  <span class="nb">prints</span> <span class="s">&quot;instr 1. p4=</span><span class="si">%f</span><span class="s">, p5=</span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="vi">p4</span><span class="p">,</span> <span class="vi">p5</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">p4</span> <span class="n">pread</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">4</span>
-  <span class="nb">printf</span> <span class="s">&quot;&lt;&lt;&lt;&lt; instr 1.01 p4=</span><span class="si">%f</span><span class="s"> &gt;&gt;&gt;&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">p4</span>
+  <span class="kt">i</span><span class="n">p1</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">i</span><span class="n">p4</span> <span class="n">pread</span> <span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="mi">4</span>
+  <span class="nb">prints</span> <span class="s">&quot;Inside instr 2. Instance p1=</span><span class="si">%f</span><span class="s">, p4=</span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="kt">i</span><span class="n">p4</span>
+  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="kt">i</span><span class="n">p4</span><span class="o">*</span><span class="mi">2</span>
   <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+
+<span class="kd">instr</span> <span class="nf">4</span>
+  <span class="kt">i</span><span class="n">p1</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">i</span><span class="n">index</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span>
+  <span class="kt">i</span><span class="n">vals</span><span class="p">[]</span> <span class="n">pread</span> <span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="kt">i</span><span class="n">index</span>
+  <span class="nb">prints</span> <span class="s">&quot;Inside instr 4, reading p4 and p5 as array&quot;</span>
+  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">vals</span>
+  <span class="nb">turnoff</span> 
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="nb">i</span> <span class="mf">1.01</span> <span class="mi">0</span> <span class="mi">2</span>   <span class="mi">95</span>
-<span class="nb">i</span> <span class="mi">2</span>    <span class="mi">1</span> <span class="mf">0.1</span>
+<span class="nb">i</span> <span class="mf">1.01</span> <span class="mi">0</span>   <span class="mi">2</span> <span class="mi">44</span>   <span class="mi">45</span>
+<span class="nb">i</span> <span class="mi">2</span>    <span class="mi">1</span>   <span class="mi">0</span> <span class="mf">1.01</span>
+<span class="nb">i</span> <span class="mi">4</span>    <span class="mf">1.5</span> <span class="mi">0</span> <span class="mf">1.01</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
