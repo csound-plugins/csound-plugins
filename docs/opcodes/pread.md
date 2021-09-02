@@ -27,20 +27,24 @@ the output value is set to `inotfound`.
 ## Syntax
 
 ```csound
-output:i|k pread instrnum:i, index:i|k [, inotfound=-1] 
+ivalue    pread instrnum, iindex, inotfound=-1
+kvalue    pread instrnum, iindex, inotfound=-1
+kvalue    pread instrnum, kindex, inotfound=-1
+
+ivalues[] pread instrnum, iindexes[], inotfound=-1
+kvalues[] pread instrnum, iindexes[], inotfound=-1
 ```
     
 ### Arguments
 
 * `instrnum` (i):  the (fractional) instrument number to modify
-* `index` (i or k): the index of the pfield to read. If kindex is 4, then p4 will be 
-  modified
+* `iindex` / `kindex`: the index of the pfield to read. 
 * `inotfound`: the value to return if instrnum is not found. To avoid misinterpretation,
   this value should be different than any expected value of the pfield
 
 ### Output
 
-* `output` (i or k): the current value of the given pfield. Will be `inotfound` if
+* `ivalue` / `kvalue`: the current value of the given pfield. Will be `inotfound` if
   no matching instance has been found.
 
 ### Execution Time
@@ -79,20 +83,33 @@ output:i|k pread instrnum:i, index:i|k [, inotfound=-1]
 */
 
 instr 1
-  print p4
+  prints "instr 1. p4=%f, p5=%f\n", p4, p5
 endin
 
 instr 2
-  ip4 pread 1.01, 4
-  printf "<<<< instr 1.01 p4=%f >>>>\n", 1, ip4
+  ip1 = p4
+  ip4 pread ip1, 4
+  prints "Inside instr 2. Instance p1=%f, p4=%f\n", ip1, ip4
+  pwrite ip1, 4, ip4*2
   turnoff
+endin
+
+
+instr 4
+  ip1 = p4
+  iindex[] fillarray 4, 5
+  ivals[] pread ip1, iindex
+  prints "Inside instr 4, reading p4 and p5 as array"
+  printarray ivals
+  turnoff 
 endin
 
 </CsInstruments>
 
 <CsScore>
-i 1.01 0 2   95
-i 2    1 0.1
+i 1.01 0   2 44   45
+i 2    1   0 1.01
+i 4    1.5 0 1.01
 
 </CsScore>
 </CsoundSynthesizer>
