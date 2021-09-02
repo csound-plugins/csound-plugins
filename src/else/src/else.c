@@ -308,7 +308,6 @@ void intpool_deinit(CSOUND *csound, intarray_t *pool) {
 
 static void
 intarray_resize(CSOUND *csound, intarray_t *arr, int capacity) {
-    printf("intarray_resize, new size: %d\n", capacity);
     arr->data = csound->ReAlloc(csound, arr->data, sizeof(int)*capacity);
     arr->capacity = capacity;
     if(arr->capacity < arr->size) {
@@ -574,9 +573,9 @@ static int32_t sigmdrive_a_ak(CSOUND *csound, SIGMDRIVE * p) {
             else if (drivefactor < 1)
                 out[n] = x * drivefactor;
             else if (x > 0)
-                out[n] = 1.0 - pow(1. - x, drivefactor);
+                out[n] = 1.0 - POWER(1. - x, drivefactor);
             else
-                out[n] = pow(1.0 + x, drivefactor) - 1.0;
+                out[n] = POWER(1.0 + x, drivefactor) - 1.0;
         }
     }
     return OK;
@@ -612,9 +611,9 @@ static int32_t sigmdrive_a_aa(CSOUND *csound, SIGMDRIVE * p) {
             else if (drivefactor < 1)
                 out[n] = x * drivefactor;
             else if (x > 0)
-                out[n] = 1.0 - pow(1. - x, drivefactor);
+                out[n] = 1.0 - POWER(1. - x, drivefactor);
             else
-                out[n] = pow(1.0 + x, drivefactor) - 1.0;
+                out[n] = POWER(1.0 + x, drivefactor) - 1.0;
         }
     }
     return OK;
@@ -1201,7 +1200,7 @@ typedef struct {
 #endif
 
 #ifndef dB2lin
-#define dB2lin(x)    pow( 10.0, (x) / 20.0 )
+#define dB2lin(x)    POWER( 10.0, (x) / 20.0 )
 #endif
 
 static int32_t sp_peaklim_init(CSOUND *csound, SP_PEAKLIM *p) {
@@ -1608,7 +1607,12 @@ INSTRTXT *find_instrdef(INSDS *insdshead, int instrnum) {
 
 INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum) {
     INSDS *instance = instrdef->instance;
+    if(instance == NULL) {
+        printf("find_instance_exact: No instances of instr\n");
+        return NULL;
+    }
     while(instance) {
+        // printf("Searching for %f, looking at %f (active=%c)\n", instrnum, instance->p1.value, instance->actflg);
         if (instance->actflg && instance->p1.value == instrnum) {
             return instance;
         }
@@ -1626,7 +1630,9 @@ INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum) {
  * iout pread instrnum, index  [, inotfound=-1]
  * kout pread instrnum, index  [, inotfound=-1]
  * kout pread instrnum, kindex [, inotfound=-1]
- *
+ * iout pread instrnum, index[], inotfound=-1
+ * kout pread instrnum, kindex[], inotfound=-1
+ * kout pread instrnum, index[], inotfound=-1
  */
 
 typedef struct {
@@ -1641,21 +1647,83 @@ typedef struct {
     INSTRTXT *instrtxt;   // instrument definition
 } PREAD;
 
+typedef struct {
+    OPDS h;
+    ARRAYDAT *outvals;
+    MYFLT *instrnum;
+    ARRAYDAT *pindexes;
+    MYFLT *inotfound;
+
+    CS_VAR_MEM *pfields;    // points to instr's pfields
+    int maxpfield;         // max readable pfield
+    INSDS *instr;         // found instr
+    int retry;            // should we retry when not found?
+    int found;            // -1 if not yet searched, 0 if not found, 1 if found
+    INSTRTXT *instrtxt;   // instrument definition
+} PREADARR;
+
+
+int32_t pread_search_(CSOUND *csound, MYFLT p1, INSTRTXT **instrtxt, INSDS **instr) {
+    IGN(csound);
+    INSTRTXT *instrtxt_ = *instrtxt;
+    if(!instrtxt_) {
+        instrtxt_ = csound->GetInstrument(csound, (int)p1, NULL);
+        if(!instrtxt_) {
+            printf("No instances of instr %d\n", (int)p1);
+            return 0;
+        }
+    }
+    INSDS *instr_;
+    if(p1 != floor(p1)) {
+        // fractional instrnum
+        // printf("Searching exact instance\n");
+        instr_ = find_instance_exact(instrtxt_, p1);
+    } else {
+        // find first instance of this instr
+        instr_ = instrtxt_->instance;
+        while(instr_) {
+            if(instr_->actflg)
+                break;
+            instr_ = instr_->nxtinstance;
+        }
+    }
+    if(!instr_)
+        return 0;
+    *instrtxt = instrtxt_;
+    *instr = instr_;
+    return 1;
+}
 
 int32_t pread_search(CSOUND *csound, PREAD *p) {
+    int found = pread_search_(csound, *p->instrnum, &(p->instrtxt), &(p->instr));
+    p->found = found;
+    if(!found)
+        return 0;
+    p->pfields = &(p->instr->p0);
+    p->maxpfield = p->instrtxt->pmax;
+    return 1;
+}
+
+/*
+int32_t _pread_search(CSOUND *csound, PREAD *p) {
     IGN(csound);
     MYFLT p1 = *p->instrnum;
     INSDS *instr;
     p->found = 0;
-    if(!p->instrtxt)
+    if(!p->instrtxt) {
+        printf("pread_searh: GetInstrument(p1=%d)\n", (int)p1);
         p->instrtxt = csound->GetInstrument(csound, (int)p1, NULL);
-    if(!p->instrtxt)
+    }
+    if(!p->instrtxt) {
+        printf("No instances of instr %d\n", (int)p1);
         return 0;
+    }
     // found an instrument definition
     p->maxpfield = p->instrtxt->pmax;
 
     if(p1 != floor(p1)) {
         // fractional instrnum
+        printf("Searching exact instance\n");
         instr = find_instance_exact(p->instrtxt, p1);
     } else {
         // find first instance of this instr
@@ -1673,12 +1741,17 @@ int32_t pread_search(CSOUND *csound, PREAD *p) {
     p->pfields = &(instr->p0);
     return 1;
 }
+*/
 
 static int32_t
 pread_init(CSOUND *csound, PREAD *p) {
     IGN(csound);
-    MYFLT p1 = *p->instrnum;
+    p->pfields = NULL;
+    p->maxpfield = 0;
+    p->instr = NULL;
     p->found = -1;
+    p->instrtxt = NULL;
+    MYFLT p1 = *p->instrnum;
     // a negative instr. number indicates NOT to search again after failed to
     // find the given instance
     if(p1 < 0) {
@@ -1692,11 +1765,37 @@ pread_init(CSOUND *csound, PREAD *p) {
 }
 
 static int32_t
+preadarr_init(CSOUND *csound, PREADARR *p) {
+    IGN(csound);
+    p->pfields = NULL;
+    p->maxpfield = 0;
+    p->instr = NULL;
+    p->found = -1;
+    p->instrtxt = NULL;
+    MYFLT p1 = *p->instrnum;
+    if(p->pindexes->dimensions != 1) {
+        return INITERRF("Expected a 1D array, got %d", p->pindexes->dimensions);
+    }
+    int numpfields = p->pindexes->sizes[0];
+    tabinit(csound, p->outvals, numpfields);
+    // a negative instr. number indicates NOT to search again after failed to
+    // find the given instance
+    if(p1 < 0) {
+        p->retry = 0;
+        *p->instrnum = p1 = -p1;
+    } else {
+        p->retry = 1;
+    }
+    return OK;
+}
+
+static int32_t
 pread_perf(CSOUND *csound, PREAD *p) {
     int idx = (int)*p->pindex;
     if(p->found == -1 || (p->found==0 && p->retry)) {
         int found = pread_search(csound, p);
         if (!found) {
+            printf("pread_perf: instr %f not found\n", *p->instrnum);
             return OK;
         }
     }
@@ -1711,6 +1810,41 @@ pread_perf(CSOUND *csound, PREAD *p) {
     return OK;
 }
 
+
+static int32_t
+preadarr_perf(CSOUND *csound, PREADARR *p) {
+    int numindexes = p->pindexes->sizes[0];
+    tabcheck(csound, p->outvals, numindexes, &(p->h));
+
+    if(p->found == -1 || (p->found==0 && p->retry)) {
+        p->found = pread_search_(csound, *p->instrnum, &(p->instrtxt), &(p->instr));
+        if (!p->found) {
+            printf("pread_perf: instr %f not found\n", *p->instrnum);
+            for(int i=0; i<numindexes; i++) {
+                p->outvals->data[i] = *p->inotfound;
+            }
+            return OK;
+        }
+        p->maxpfield = p->instrtxt->pmax;
+        p->pfields = &(p->instr->p0);
+    }
+    if(!p->instr->actflg) {
+        return OK;
+    }
+
+    for(int i=0; i<numindexes; i++) {
+        int pfield = (int)(p->pindexes->data[i]);
+        if(pfield > p->maxpfield) {
+            p->outvals->data[i] = *p->inotfound;
+            printf("pread.arr: can't read p%d (max index = %d)", pfield, p->maxpfield);
+        } else {
+            p->outvals->data[i] = p->pfields[pfield].value;
+        }
+    }
+    return OK;
+}
+
+
 static int32_t
 pread_i(CSOUND *csound, PREAD *p) {
     int ans = pread_init(csound, p);
@@ -1718,6 +1852,15 @@ pread_i(CSOUND *csound, PREAD *p) {
         return NOTOK;
     return pread_perf(csound, p);
 }
+
+static int32_t
+preadarr_i(CSOUND *csound, PREADARR *p) {
+    int ans = preadarr_init(csound, p);
+    if(ans == NOTOK)
+        return NOTOK;
+    return preadarr_perf(csound, p);
+}
+
 
 #define PWRITE_MAXINPUTS 40
 
@@ -3037,7 +3180,7 @@ static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
 
     if (basenote < 0)
         basenote = FL(60);
-    double natcps = pow(2.0, (basenote - FL(69)) / 12.0) * csound->GetA4(csound);
+    double natcps = POWER(2.0, (basenote - FL(69)) / 12.0) * csound->GetA4(csound);
 
     if(*p->loopstart > 0) {
         ftp->begin1 = (int)*p->loopstart;
@@ -4684,6 +4827,7 @@ static OENTRY localops[] = {
 
     { "pread.i", S(PREAD), 0, 1, "i", "iij", (SUBR)pread_i},
     { "pread.k", S(PREAD), 0, 3, "k", "ikJ", (SUBR)pread_init, (SUBR)pread_perf},
+    { "pread.arr_i", S(PREADARR), 0, 1, "i[]", "ii[]j", (SUBR)preadarr_i},
     { "pwrite.i", S(PWRITE), 0, 1, "", "im", (SUBR)pwrite_i},
     { "pwrite.k", S(PWRITE), 0, 3, "", "i*",
       (SUBR)pwrite_initcommon, (SUBR)pwrite_perf},
@@ -4818,3 +4962,5 @@ static OENTRY localops[] = {
 };
 
 LINKAGE
+
+

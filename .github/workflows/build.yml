@@ -65,7 +65,8 @@ jobs:
           mkdir build-linux
           cd build-linux
 
-          cmake -DSKIP_FAST_MATH=True ..
+          # cmake -DSKIP_FAST_MATH=True ..
+          cmake ..
           make -j4
           ls
           ARCHIVE=csound-plugins--linux.zip

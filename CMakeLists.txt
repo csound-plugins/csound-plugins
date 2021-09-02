@@ -10,6 +10,12 @@ cmake_minimum_required(VERSION 3.8)
 
 set(APIVERSION "6.0")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(LINUX YES)
+else()
+    set(LINUX NO)
+endif()
+
 # Release or Debug
 set(CMAKE_BUILD_TYPE "Release")
 
@@ -108,9 +114,9 @@ endif()
 # set optimization flags
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   add_definitions(-fvisibility=hidden)
-  if(NATIVE)
-	  add_definitions(-march=native)
-  endif()
+  # if(NATIVE)
+	#   add_definitions(-march=native)
+  # endif()
   
   include(CheckCCompilerFlag)
   include(CheckCXXCompilerFlag)
@@ -118,9 +124,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   addflag(-msse HAS_SSE)
   addflag(-msse2 HAS_SSE2)
   addflag(-mfgpath=sse HAS_FPMATH_SSE)
-  set(CMAKE_C_FLAGS_RELEASE "-O3 ")  
+  set(CMAKE_C_FLAGS_RELEASE "-O3")  
 endif()
-
 
 
 if(MINGW)
@@ -163,6 +168,33 @@ message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
 # -------------------------------------------------------------------
 
 
+# plugin install directories (CS_USER_PLUGIN)
+if(USE_DOUBLE)
+    add_definitions(-DUSE_DOUBLE)
+    add_definitions(-DB64BIT)
+  
+    message(STATUS "Building with 64-bit floats")
+    if(APPLE)
+        set(PLUGIN_INSTALL_DIR "$ENV{HOME}/Library/csound/${APIVERSION}/plugins64")
+    elseif(LINUX)
+      set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins64")
+     elseif(WINDOWS)
+      set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins64")
+    endif()
+else()
+    message(STATUS "Building with 32-bit floats")
+    if(APPLE)
+        set(PLUGIN_INSTALL_DIR "$ENV{HOME}/Library/csound/${APIVERSION}/plugins")
+    elseif(LINUX)
+      set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins")
+     elseif(WINDOWS)
+      set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins")
+      endif()
+endif()
+
+#[[
+# old definition
+
 if(USE_DOUBLE)
   message(STATUS ">>> using doubles")
   add_definitions(-DUSE_DOUBLE)
@@ -185,6 +217,7 @@ else()
   endif()
 endif()
 
+]]
 
 # -------------------------------------------------------------------
   

@@ -27,20 +27,24 @@ the output value is set to `inotfound`.
 ## Syntax
 
 ```csound
-output:i|k pread instrnum:i, index:i|k [, inotfound=-1] 
+ivalue    pread instrnum, iindex, inotfound=-1
+kvalue    pread instrnum, iindex, inotfound=-1
+kvalue    pread instrnum, kindex, inotfound=-1
+
+ivalues[] pread instrnum, iindexes[], inotfound=-1
+kvalues[] pread instrnum, iindexes[], inotfound=-1
 ```
     
 ### Arguments
 
 * `instrnum` (i):  the (fractional) instrument number to modify
-* `index` (i or k): the index of the pfield to read. If kindex is 4, then p4 will be 
-  modified
+* `iindex` / `kindex`: the index of the pfield to read. 
 * `inotfound`: the value to return if instrnum is not found. To avoid misinterpretation,
   this value should be different than any expected value of the pfield
 
 ### Output
 
-* `output` (i or k): the current value of the given pfield. Will be `inotfound` if
+* `ivalue` / `kvalue`: the current value of the given pfield. Will be `inotfound` if
   no matching instance has been found.
 
 ### Execution Time
