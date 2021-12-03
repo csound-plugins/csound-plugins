@@ -2909,7 +2909,8 @@ static int32_t errormsg_init(CSOUND *csound, ERRORMSG *p) {
 
 static int32_t initerror(CSOUND *csound, ERRORMSG *p) {
     IGN(csound);
-    return INITERRF("\n   %s\n", p->S2->data);
+    INITERRF("\n   %s\n", p->S2->data);
+    return NOTOK;
 }
 
 static int32_t errormsg_init0(CSOUND *csound, ERRORMSG *p) {

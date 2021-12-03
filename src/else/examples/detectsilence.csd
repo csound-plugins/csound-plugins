@@ -17,19 +17,31 @@ instr 1
   kfinished = detectsilence(asig, db(-90), 0.1)
   kms = timeinsts() * 1000
   if metro(30) == 1 then
-    printsk "\r Elapsed time: %.2f ms, env: %.5f         ", kms, aenv[0]
+    printsk "\r>>> Elapsed time: %.2f ms, env: %.5f         ", kms, aenv[0]
   endif
   if kfinished == 1 then
+    println ""
     turnoff
   endif
-  defer "prints", "\nInstrument exited after %.2f ms\n", kms 
+
+  ip1 = p1
+  idata = dict_new("sf", "instrnum", ip1, "elapsed", 0.)
+  dict_set idata, "elapsed", kms
+  atstop "elapsed", 0, 0, idata 
+endin
+
+instr elapsed
+  idict = p4
+  instrnum = dict_get:i(idict, "instrnum")
+  ims = dict_get:i(idict, "elapsed")
+  prints ">>> Instrument %d exited after %d ms\n", instrnum, ims
 endin
 
 </CsInstruments>
 
 <CsScore>
 
-i1 1 8
+i1 1 6
 ; f0 3600
 
 </CsScore>

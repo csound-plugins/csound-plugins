@@ -1002,6 +1002,9 @@ typedef struct {
 
 static i32 defer_deinit(CSOUND *csound, DEFER *p);
 
+// TODO: defer should copy all its arguments and use that when calling the deferred
+// opcode. The reason is that at the time we deinit defer the memory where the actual
+// values reside might be already gone.
 static i32 defer_init(CSOUND *csound, DEFER *p) {
     char *opc_outsig = "";
     char opc_insig[64];
@@ -1079,11 +1082,13 @@ defer_deinit(CSOUND *csound, DEFER *p) {
             return PERFERRF("Error in deferred opcode %s init func",
                             p->opcode_name->data);
     }
+    /*
     if(p->opc->kopadr != NULL) {
         if (p->opc->kopadr(csound, p->opc_state) == NOTOK)
             return PERFERRF("Error in deferred opcode %s perf func",
                             p->opcode_name->data);
     }
+    */
     csound->Free(csound, p->opc_state);
     csound->Free(csound, p->optext);
     return OK;

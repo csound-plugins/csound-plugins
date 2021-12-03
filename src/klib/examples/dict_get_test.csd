@@ -20,11 +20,24 @@ instr 1
   printf "foo= %f \n", accum(changed(kfoo)), kfoo  
 endin
 
+instr 2
+  idict dict_new "int:str", 0, "foo", 1, "jiji", 10, "bar"
+  dict_set idict, 1, "jiji2"
+  prints "0: %s\n", dict_get:S(idict, 0)
+  S1 dict_get idict, 1
+  println "1: %s\n", S1
+  dict_print idict 
+  turnoff
+    
+  
+endin
+
 </CsInstruments>
 
 <CsScore>
 
-i1 0 10
+; i1 0 10
+i2 0 0.1
 ; f0 3600
 
 </CsScore>

@@ -1478,6 +1478,14 @@ dict_set_is(CSOUND *csound, DICT_SET_is *p) {
     return OK;
 }
 
+static i32
+dict_set_is_i(CSOUND *csound, DICT_SET_is *p) {
+    int err = dict_set_is_0(csound, p);
+    if(err==NOTOK)
+        return NOTOK;
+    return dict_set_is(csound, p);
+}
+
 // -----------------------------------------------------
 //                      DEL
 // -----------------------------------------------------
@@ -1925,6 +1933,14 @@ hashtab_get_is(CSOUND *csound, DICT_GET_is *p) {
     return stringdat_set(csound, p->outstr, ks->s, ks->l);
 }
 
+static i32
+hashtab_get_is_i(CSOUND *csound, DICT_GET_is *p) {
+    int err = hashtab_get_is_0(csound, p);
+    if(err==NOTOK)
+        return err;
+    return hashtab_get_is(csound, p);
+}
+
 
 // ------------------------------
 //           FREE
@@ -2163,7 +2179,7 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
             if(!kh_exist(h, k)) continue;
             chars += sprintf(line+chars, "%d: %s", kh_key(h, k), kh_val(h, k).s);
             if(chars < linelength) {
-                line[chars++] = ', ';
+                line[chars++] = ',';
                 line[chars++] = ' ';
             } else {
                 line[chars+1] = '\0';
@@ -3554,8 +3570,12 @@ static OENTRY localops[] = {
     { "dict_get.sf_i", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
     { "dict_get.if_k", S(DICT_GET_if), 0, 3, "k", "ikO",
       (SUBR)dict_get_if_0, (SUBR)dict_get_if },
+    { "dict_get.is_i", S(DICT_GET_is), 0, 1, "S", "ii",
+      (SUBR)hashtab_get_is_i},
+
     { "dict_get.is_k", S(DICT_GET_is), 0, 3, "S", "ik",
       (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is },
+
     { "dict_get.if_i", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i},
 
 
@@ -3570,6 +3590,10 @@ static OENTRY localops[] = {
 
     { "dict_set.if_k", S(DICT_SET_if), 0, 3, "",  "ikk",
       (SUBR)dict_set_if_0, (SUBR)dict_set_if },
+
+    { "dict_set.is_i", S(DICT_SET_is), 0, 1, "",  "iiS",
+      (SUBR)dict_set_is_i},
+
     { "dict_set.is_k", S(DICT_SET_is), 0, 3, "",  "ikS",
       (SUBR)dict_set_is_0, (SUBR)dict_set_is },
 
