@@ -1,0 +1,32 @@
+{
+  "name": "poly",
+  "opcodes": [
+    "poly",
+    "polyseq",
+    "poly0",
+    "defer"
+  ],
+  "libname": "libpoly",
+  "version": "0.2.4",
+  "short_description": "Multiple (parallel or sequential) instances of an opcode",
+  "long_description": "Multiple (parallel or sequential) instances of an opcode",
+  "csound_version": "6.14",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": {
+    "linux": {
+      "url": "libpoly.so",
+      "build_platform": "Ubuntu 16.04"
+    },
+    "macos": {
+      "url": "libpoly.dylib",
+      "build_platform": "10.14.0"
+    },
+    "windows": {
+      "url": "libpoly.dll",
+      "build_platform": "Windows 7"
+    }
+  }
+}

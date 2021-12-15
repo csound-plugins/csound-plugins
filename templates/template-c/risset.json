@@ -1,0 +1,30 @@
+{
+  "name": "myplugin",
+  "opcodes": [
+    "myopcode1",
+  ],
+  "libname": "libmyplugin",
+  "version": "0.1.0",
+  "short_description": "Risset plugin example",
+  "long_description": "A template to show how a plugin can be included in risset",
+  "csound_version": "6.17",
+  "author": "Name Surname",
+  "email": "name.surname@email.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/rissetpluginexample",
+  "binaries": {
+    "linux": {
+      "url": "https://github.com/csound-plugins/rissetpluginexample/releases/v0.1.0/linux.zip",
+      "extractpath": "libmyplugin.so",
+      "build_platform": "Ubuntu 18.04"
+    },
+    "macos": {
+      "url": "https://github.com/csound-plugins/rissetpluginexample/releases/v0.1.0/libmyplugin.dylib",
+      "build_platform": "10.14.0"
+    },
+    "windows": {
+      "url": "https://github.com/csound-plugins/rissetpluginexample/releases/v0.1.0/libmyplugin.dll",
+      "build_platform": "Windows 10"
+    }
+  }
+}

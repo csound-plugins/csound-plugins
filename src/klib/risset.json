@@ -1,0 +1,51 @@
+{
+  "name": "klib",
+  "opcodes": [
+    "dict_new",
+    "dict_dump",
+    "dict_free",
+    "dict_get",
+    "dict_geti",
+    "dict_loadstr",
+    "dict_set",
+    "dict_size",
+    "dict_query",
+    "dict_exists",
+    "dict_print",
+    "dict_iter",
+    "dict_del",
+    "sref",
+    "sderef",
+    "pool_new",
+    "pool_gen",
+    "pool_pop",
+    "pool_push",
+    "pool_size",
+    "pool_capacity",
+    "pool_at",
+    "pool_isfull"
+  ],
+  "libname": "libklib",
+  "version": "1.1.0",
+  "short_description": "A hashtable for csound",
+  "long_description": "A hashtable for csound",
+  "csound_version": "6.15",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": {
+    "linux": {
+      "url": "libklib.so",
+      "build_platform": "Ubuntu 16.04"
+    },
+    "macos": {
+      "url": "libklib.dylib",
+      "build_platform": "10.14.0"
+    },
+    "windows": {
+      "url": "libklib.dll",
+      "build_platform": "Windows 7"
+    }
+  }
+}

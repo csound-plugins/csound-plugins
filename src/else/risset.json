@@ -1,0 +1,64 @@
+{
+  "name": "else",
+  "opcodes": [
+    "accum",
+    "atstop",
+    "bisect",
+    "crackle",
+    "deref",
+    "detectsilence",
+    "diode_ringmod",
+    "extendarray",
+    "fileexists",
+    "findarray",
+    "frac2int",
+    "ftfill",
+    "ftfind",
+    "ftnew",
+    "ftsetparams",
+    "initerror",
+    "interp1d",
+    "lfnoise",
+    "linenv",
+    "loadnpy",
+    "memview",
+    "panstereo",
+    "perlin3",
+    "pread",
+    "pwrite",
+    "ramptrig",
+    "ref",
+    "refvalid",
+    "schmitt",
+    "setslice",
+    "sigmdrive",
+    "standardchaos",
+    "throwerror",
+    "uniqinstance",
+    "zeroarray"
+  ],
+  "libname": "libelse",
+  "version": "1.9.0",
+  "short_description": "Miscellaneous plugins",
+  "long_description": "Collection of miscellaneous plugins",
+  "csound_version": "6.16",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": {
+    "linux": {
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v1.9.0/csound-plugins--linux.zip",
+      "extractpath": "libelse.so",
+      "build_platform": "Ubuntu 18.04"
+    },
+    "macos": {
+      "url": "libelse.dylib",
+      "build_platform": "10.14.0"
+    },
+    "windows": {
+      "url": "libelse.dll",
+      "build_platform": "Windows 10"
+    }
+  }
+}
