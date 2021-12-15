@@ -23,8 +23,6 @@
       "strsplit",
       "strjoin",
 
-      "filereadmeta"
-            
     ],
     "author": "Eduardo Moguillansky",
     "author_email": "eduardo.moguillansky@gmail.com",
