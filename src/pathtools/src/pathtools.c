@@ -494,7 +494,7 @@ static int64_t _path_make_absolute(CSOUND *csound,
     }
     return lenout;
 #ifdef OS_WIN32
-    _win32_normalize_path_slashes(p->Sout->data);
+    _win32_normalize_path_slashes(outbuf);
 #endif
 
     return OK;
