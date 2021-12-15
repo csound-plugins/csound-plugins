@@ -1,0 +1,15 @@
+{
+    "name": "sndmeta",
+    "version": "1.0.0",
+    "csound_version": "6.15",
+    "opcodes": [
+      "filereadmeta"
+            
+    ],
+    "author": "Eduardo Moguillansky",
+    "author_email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "description": "opcodes using libsndfile",
+    "url": ""
+}
+
