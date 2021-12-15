@@ -31,7 +31,6 @@
 #include <math.h>
 #include <ctype.h>
 #include "arrays.h"
-#include "sndfile.h"
 #include "cs_strlib.h"
 
 #if defined(WIN32) || defined(__MINGW32__) || defined(_WIN32)
@@ -45,6 +44,13 @@
 #else
 #include <unistd.h>
 #define getcurrdir getcwd
+#endif
+
+
+#ifndef OS_WIN32
+  // we disable any opcode using sndfile in windows until I can figure out how to
+  // build it using github actions
+  #include "sndfile.h"
 #endif
 
 
@@ -702,6 +708,8 @@ static const char * sf_strtype_to_string(int str_type) {
     }
 }
 
+#ifndef OS_WIN32
+
 static int32_t sfreadmeta_i(CSOUND *csound, SFREADMETA *p) {
     SNDFILE *file;
     SF_INFO sfinfo;
@@ -765,6 +773,7 @@ static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
     return OK;
 }
 
+#endif
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -772,25 +781,27 @@ static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-    { "pathSplit", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplit_opcode },
-    { "pathSplitk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplit_opcode },
-    { "pathSplitExt", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplitExt_opcode },
-    { "pathSplitExtk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplitExt_opcode },
-    { "pathIsAbsolute.i", S(K_S), 0, 1, "i", "S", (SUBR)pathIsAbsolute},
-    { "pathIsAbsolute.k", S(K_S), 0, 2, "k", "S", NULL, (SUBR)pathIsAbsolute},
-    { "pathAbsolute", S(S_S), 0, 1, "S", "S", (SUBR)pathAbsolute},
-    { "pathJoin", S(S_SS), 0, 1, "S", "SS", (SUBR)pathJoin},
-    { "findFileInPath", S(S_S), 0, 1, "S", "S", (SUBR)findFile},
-    { "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar },
-    { "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript },
-    { "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative },
-    { "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform},
-    { "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split},
-    { "filereadmeta.i", S(SFREADMETA), 0, 1, "S", "SS", (SUBR)sfreadmeta_i},
-    { "filereadmeta.i", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss},
-    { "strjoin.arr_i", S(STRJOIN_ARR), 0, 1, "S", "SS[]", (SUBR)strjoin_arr_i},
-    { "strjoin.i", S(STRJOIN_VARARGS), 0, 1, "S", "S*", (SUBR)strjoin_varargs_i}
+     { "pathSplit", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplit_opcode }
+    ,{ "pathSplitk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplit_opcode }
+    ,{ "pathSplitExt", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplitExt_opcode }
+    ,{ "pathSplitExtk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplitExt_opcode }
+    ,{ "pathIsAbsolute.i", S(K_S), 0, 1, "i", "S", (SUBR)pathIsAbsolute}
+    ,{ "pathIsAbsolute.k", S(K_S), 0, 2, "k", "S", NULL, (SUBR)pathIsAbsolute}
+    ,{ "pathAbsolute", S(S_S), 0, 1, "S", "S", (SUBR)pathAbsolute}
+    ,{ "pathJoin", S(S_SS), 0, 1, "S", "SS", (SUBR)pathJoin}
+    ,{ "findFileInPath", S(S_S), 0, 1, "S", "S", (SUBR)findFile}
+    ,{ "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar }
+    ,{ "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript }
+    ,{ "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative }
+    ,{ "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform}
+    ,{ "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split}
+    ,{ "strjoin.arr_i", S(STRJOIN_ARR), 0, 1, "S", "SS[]", (SUBR)strjoin_arr_i}
+    ,{ "strjoin.i", S(STRJOIN_VARARGS), 0, 1, "S", "S*", (SUBR)strjoin_varargs_i}
 
+#ifndef OS_WIN32
+    ,{ "filereadmeta.i", S(SFREADMETA), 0, 1, "S", "SS", (SUBR)sfreadmeta_i}
+    ,{ "filereadmeta.i", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss}
+#endif
 };
 
 LINKAGE
