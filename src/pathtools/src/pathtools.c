@@ -33,7 +33,7 @@
 #include "arrays.h"
 #include "cs_strlib.h"
 
-#if defined(WIN32) || defined(__MINGW32__) || defined(_WIN32)
+#if defined WIN32 || defined __MINGW32__ || defined _WIN32 || defined _WIN64
     #define OS_WIN32
 #endif
 
@@ -444,7 +444,7 @@ static int64_t _path_make_absolute(CSOUND *csound,
     }
 
 #ifdef OS_WIN32
-    if(p->s->data[0] == '/') {
+    if(path[0] == '/') {
         MSG("Path is ambiguous. This looks like a unix absolute path (it starts with a\n"
             " forward slash), but is not an absolute path in windows. Prepending the \n"
             " current working directory will probably result in an invalid path\n");
