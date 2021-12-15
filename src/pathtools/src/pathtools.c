@@ -661,6 +661,7 @@ static int32_t getPlatform(CSOUND *csound, S_ *p) {
 }
 
 
+#ifndef OS_WIN32
 
 // Sstr filereadmeta "sndfile.wav", Skey
 typedef struct {
@@ -691,6 +692,7 @@ static int sf_string_to_type(const char *key) {
     return str_type;
 }
 
+
 static const char * sf_strtype_to_string(int str_type) {
     switch(str_type) {
     case SF_STR_COMMENT:
@@ -708,7 +710,6 @@ static const char * sf_strtype_to_string(int str_type) {
     }
 }
 
-#ifndef OS_WIN32
 
 static int32_t sfreadmeta_i(CSOUND *csound, SFREADMETA *p) {
     SNDFILE *file;
