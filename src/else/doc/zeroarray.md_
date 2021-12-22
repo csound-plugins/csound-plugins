@@ -1,0 +1,50 @@
+# zeroarray
+
+## Abstract
+
+Zero all elements in an array
+
+
+## Description
+
+``zeroarray`` sets all elements in an array to 0. 
+
+## Syntax
+
+
+```csound
+
+zeroarray iArr
+zeroarray kArr
+zeroarray aArr
+
+```
+    
+## Arguments
+
+* **iArr** / **kArr** / **aArr**: The array to zero
+
+## Output
+
+
+## Execution Time
+
+* Init 
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [ftset](https://csound.com/docs/manual/ftset.html)
+* [setslice](setslice.md)
+* [ftslice](https://csound.com/docs/manual/ftslice.html)
+
+
+## Credits
+
+Eduardo Moguillansky, 2021

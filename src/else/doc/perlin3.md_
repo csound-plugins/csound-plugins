@@ -1,0 +1,48 @@
+# perlin3
+
+## Abstract
+
+gradient noise sound generator
+
+## Description
+
+Perlin noise is a type of gradient noise devised by Ken Perlin, and commonly used to add texture
+to objects rendered in computer graphics. It is deterministic: for a given input co-ordinate it
+always returns the same output value. To make audible noise you will typically need to define
+some trajectory through the co-ordinate space.
+
+`perlin3` is a csound port of Supercollider's `Perlin3`
+
+
+## Syntax
+
+```csound
+
+aout  perlin3 ax, ay, az
+kout  perlin3 kx, ky, kz
+```
+
+## Arguments
+
+* `kx`, `ky`, `kz`: the coordinates of a point in 3D space. In the current implementation the space wraps at 255 so any value is actually possible.
+
+## Output
+
+* `aout` / `kout`: the perlin noise corresponding to the given coordinates
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [Supercollider's Perlin3](https://doc.sccode.org/Classes/Perlin3.html)
+
+## Credits
+
+Eduardo Moguillansky, 2020

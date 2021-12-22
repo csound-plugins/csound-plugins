@@ -1,0 +1,49 @@
+# sref
+
+## Abstract
+
+Insert a string into a global registry and return a reference to it
+
+## Description
+
+`sref` implements a global string cache. This can be useful in any situation 
+where a string needs to be stored/passed but only numbers are allowed (for
+example, when using the `event` opcode, or to be able to mix numbers and strings
+inside an array). It behaves similar to the `strset` / `strget` opcodes but
+automatically assigns an index to each distinct string inside the cache. 
+
+To retrieve an internalized string, use `sderef`. The returned string should
+not be modified since it is a "view" of the original string. 
+
+
+!!! Note
+
+    It is guaranteed that passing twice the same string will return the same
+    index.
+
+## Syntax
+
+```csound
+    
+    idx  sref Sstr
+    kdx  sref Sstr
+```
+
+### Arguments
+
+* `idx` / `kdx`: the numeric id representing the string
+* `Sstr`: the string inside the cache, corresponding to `idx`
+
+### Execution Time
+
+* Init
+* Performance
+
+## Examples
+
+{example}
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

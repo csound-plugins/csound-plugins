@@ -1,0 +1,40 @@
+language: cpp
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+      compiler: gcc
+    - os: linux
+      dist: xenial 
+      sudo: false
+      compiler: clang 
+    - os: osx
+      compiler: clang
+env:
+      global:
+           - OMP_NUM_THREADS=4
+           - VERBOSE=1
+before_script:
+  - mkdir -p  build
+  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then (git clone git://github.com/erikd/libsndfile.git && cd libsndfile && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME .. && make && make install); fi
+script:
+  - "$TRAVIS_BUILD_DIR/build && cmake .. -DCMAKE_INCLUDE_PATH=$HOME/include -DCMAKE_LIBRARY_PATH=$HOME/lib -DCMAKE_INSTALL_PREFIX=$HOME && make"
+
+addons:
+      apt:
+          packages:
+              - cmake
+              - libcsound64-dev
+              
+
+#deploy:
+#  overwrite: true
+#  skip_cleanup: true
+#  provider: releases
+#  api_key:
+#    secure: 
+#  file: $HOME/csound-$TRAVIS_OS_NAME-build.tgz
+#  on:
+#    repo: csound/csound
+#    branch: feature/realtime

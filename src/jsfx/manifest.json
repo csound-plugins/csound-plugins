@@ -1,0 +1,20 @@
+{
+    "name": "jsfx",
+    "version": "0.2.4",
+    "csound_version": "6.14",
+    "opcodes": [
+      "jsfx",
+      "jsfx_new",
+      "jsfx_play",
+      "jsfx_getslider",
+      "jsfx_setslider",
+      "tubeharmonics"
+    ],
+    "author": "Eduardo Moguillansky",
+    "author_email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "short_description": "jsfx support for csound",
+    "short_description": "A csound interface to the opensource implementation of jsfx (a jitted language for dsp)",
+    "platforms": ["linux", "macos"],
+    "url": "https://github.com/csound-plugins/csound-plugins"
+}

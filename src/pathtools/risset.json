@@ -1,0 +1,44 @@
+{
+  "name": "pathtools",
+  "opcodes": [
+     "findFileInPath"
+    ,"getEnvVar"
+    ,"pathAbsolute"
+    ,"pathIsAbsolute"
+    ,"pathJoin"
+    ,"pathNative"
+    ,"pathSplit"
+    ,"pathSplitk"
+    ,"pathSplitExt"
+    ,"pathSplitExtk"
+    ,"scriptDir"
+    ,"sysPlatform"
+    ,"strsplit"
+    ,"strjoin"
+  ],
+  "version": "1.10.0",
+  "short_description": "Cross-platform path handling and string opcodes",
+  "long_description": "This plugin provides opcodes for working with files and strings in a cross-platform way",
+  "csound_version": "6.15",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": {
+    "linux": {
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--linux.zip",
+      "extractpath": "libpathtools.so",
+      "build_platform": "Ubuntu 18.04"
+    },
+    "macos": {
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--macos.zip",
+	  "extractpath": "libpathtools.dylib",
+      "build_platform": "10.14.0"
+    },
+    "windows": {
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--win64.zip",
+	  "extractpath": "libpathtools.dll",
+      "build_platform": "Windows 10"
+    }
+  }
+}

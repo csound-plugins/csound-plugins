@@ -1,0 +1,42 @@
+# pathSplitExt
+
+## Abstract
+
+Split a path into prefix and extension
+
+
+## Description
+
+Given a path `/path/to/filename.txt`, split it in `/path/to/filename` and `.txt`. 
+See [pathSplitExtk](pathSplitExtk.md) for a performance time version
+
+## Syntax
+
+    Sprefix, Sext pathSplitExt Spath
+
+## Arguments
+
+* `Spath`: The path to split
+
+## Output
+
+* `Sprefix`: Everything before the extension
+* `Sext`: the extension, beginning with a .
+
+## Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+## See also
+
+* [pathSplitExtk](pathSplitExtk.md)
+* [pathSplit](pathSplitk.md)
+* [pathJoin](pathJoin.md)
+
+## Credits
+
+Eduardo Moguillansky, 2020

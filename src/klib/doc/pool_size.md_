@@ -1,0 +1,56 @@
+# pool_size
+
+## Abstract
+
+Returns the size of a pool
+
+## Description
+
+A pool is actually a stack of numbers, based on an array.
+
+The pool_ opcodes implement a stack of numbers. This is useful when assigning
+ids to resources, like assigning fractional numbers to instrument instances to
+access them individually. To get a value, call `pool_pop` and when finished
+using it the value is returned to the pool with `pool_push`. `pool_size` returns
+the size of the pool (the number of items in it, not the capacity, see
+`pool_capacity` for that)
+
+!!! Note
+
+    To differenciate between the opcode being called at init- or at performance
+    time, use the functional style `pool_size:i(ipool)` or `pool_size:k(ipool)`
+
+## Syntax
+
+    isize pool_size ipool
+    ksize pool_size kpool
+
+### Arguments
+
+* `ipool`: the pool to push the value to
+
+### Output
+
+* `isize` / `ksize`: the number of items in the pool
+
+
+### Execution Time
+
+* Init
+* Performance
+
+## Examples
+
+{example}
+
+## See also
+
+* [pool_capacity](pool_capacity.md)
+* [pool_pop](pool_pop.md)
+* [pool_new](pool_new.md)
+* [pool_gen](pool_gen.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

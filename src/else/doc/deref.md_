@@ -1,0 +1,50 @@
+# deref
+
+## Abstract
+
+Dereference a previously created reference to a variable
+
+## Description
+
+`ref` and `deref` implement a mechanism to pass a reference to any object,
+allowing to share a variable across instruments, with opcodes, etc. A ref is reference 
+counted and deallocates itself when it falls out of scope without being referenced by any
+object. It makes it possible to pass arrays by reference to user defined
+opcodes, allowing to modify an array inplace, skip copying memory, etc. 
+
+
+## Syntax
+
+    xArray deref iref, iextrarefs=0
+
+### Arguments
+
+* `iref`: a reference index as created via `ref`
+* `iextrarefs`: extra references used, matching any extra reference allocated via `ref`
+    (see [ref](ref.md) for more information)
+
+### Output
+
+* `xArray` / `xvar`: are created as a view of the object originally passed to `ref`
+
+
+## Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [ref](ref.md)
+* [defer](defer.md)
+* [schedule](http://www.csound.com/docs/manual/schedule.html)
+* [event](http://www.csound.com/docs/manual/event.html)
+* [release](http://www.csound.com/docs/manual/release.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019

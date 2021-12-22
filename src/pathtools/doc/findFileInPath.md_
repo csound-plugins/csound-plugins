@@ -1,0 +1,39 @@
+# findFileInPath
+
+## Abstract
+
+Find a file inside the search paths of the csound environment
+
+
+## Description
+
+Search for an existing file as csound would search when ,for example,
+loading a sample. Returns the absolute path
+
+## Syntax
+
+    Spath fileFind Sfile 
+        
+## Arguments
+
+* `Sfile`: a relative path to an existing file
+
+## Output
+
+* `Sout`: the absolute path, or "" if not found
+
+## Execution Time
+
+* Init 
+
+## Examples
+
+{example}
+
+## See also
+
+* [scriptDir](scriptDir.md)
+
+## Credits
+
+Eduardo Moguillansky, 2020

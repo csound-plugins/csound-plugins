@@ -1,0 +1,15 @@
+# make_plugin(else src/else)
+
+if(${BUILD_ELSE_OPCODES})
+    # find_package(EIGEN3)
+    # check_deps(BUILD_CHUA_OPCODES EIGEN3_FOUND)
+    if(BUILD_CHUA_OPCODES)
+	make_plugin(else src/else.c)
+	target_include_directories(else PRIVATE ${CSOUND_INCLUDE_DIRS})
+	# target_link_libraries(chua PRIVATE ${EIGEN_LIBRARIES})
+	if(APPLE)
+	   set_target_properties(else PROPERTIES COMPILE_FLAGS "-Wno-unused-local-typedef")
+	endif()
+    endif()
+endif()
+

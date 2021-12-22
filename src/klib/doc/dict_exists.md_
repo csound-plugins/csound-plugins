@@ -1,0 +1,47 @@
+# dict_exists
+
+## Abstract
+
+Returns 1 if the dict exists, 0 otherwise
+
+## Description
+
+`dict_exists` checks if the index passed refers to an existing dict and returns
+1 if it does, 0 otherwise. 
+
+**It works at i-time only**
+
+## Syntax
+
+    iexists dict_exists idict
+    
+
+### Arguments
+
+* `ìdict`: the handle of the dict, as returned by `dict_new`
+
+### Output
+
+* `iexists`: 1 of the dict exists, 0 otherwise
+
+
+### Execution Time
+
+* Init 
+
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [dict_iter](dict_iter.md)
+* [dict_size](dict_set.md)
+* [dict_query](dict_query.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

@@ -1,0 +1,64 @@
+# ramptrig
+
+## Abstract
+
+A triggerable ramp between 0 and 1
+
+
+## Description
+
+`ramptrig` is a phasor between 0 and 1, with the difference that it stops after
+reaching its end point. Whenever it is triggered it rewinds to 0 and starts
+ramping to 1 in the given duration. 
+
+A trigger detected whenever the value is possitive and higher than the previous value.
+
+!!! Note "Usage as envelope generator"
+
+    Together with `bpf` this can be used to emulate supercollider's `Env` and `EnvGen`,
+    where `ramptrig` is used as a triggerable phasor, passed as an argument to `bpf`,
+    which generates the envelope. See examples
+    
+
+## Syntax
+
+```csound
+kout ramptrig ktrig, kdur, kvaluepost=1, kvaluepre=0
+aout ramptrig ktrig, kdir, kvaluepost=1
+kout, kfinished ramptrig ktrig, kdur, kvaluepost=1, kvaluepre=0
+
+```
+
+### Arguments
+
+* `ktrig`: whenever this is possitive and higher than last value, kout is rewinded to 0
+* `kdur`: the duration of the ramp
+* `ivaluepost`: value when ramp reaches its end (default=1)
+* `ivaluepre`: value previous to any trigger (default=0)
+
+### Output
+
+* `kout`: value of the ramp, between 0 and 1. It can also be `ivaluepost` or `ivaluepre` if 
+          these are set to any other value than the default
+* `kfinished`: will be one whenever the ramp reaches its end value. 
+
+
+### Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [linenv](linenv.md)
+* [trigphasor](https://csound.com/docs/manual/trigphasor.html)
+* [bpf](https://csound.com/docs/manual/bpf.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019

@@ -1,0 +1,70 @@
+# pread
+
+## Abstract
+
+Read pfield values from any active instrument instance
+
+## Description
+
+`pread` can be used to query the pfield value of a running instance (possibly a 
+fractional instrument number) of an instrument. Together with 
+`pwrite` it can be used to establish a two-way communication
+between two running instances of any two instruments.
+
+It no instance is found that matches the given instrument number,
+the output value is set to `inotfound`. 
+
+### Behaviour
+
+* If no matching instance is found, pread returns `inotfound`. Reporting
+  starts at the moment a matching instance is found. 
+* To avoid a continuous search, set `instrnum` as negative number. In this case,
+  a matching instance is searched only once, and, if not found, this opcode 
+  becomes a `noop`
+* If an instance is found and stops, pread returns `inotfound` from
+  the moment the instance stops and no new instance is searched. 
+  
+## Syntax
+
+```csound
+ivalue    pread instrnum, iindex, inotfound=-1
+kvalue    pread instrnum, iindex, inotfound=-1
+kvalue    pread instrnum, kindex, inotfound=-1
+
+ivalues[] pread instrnum, iindexes[], inotfound=-1
+kvalues[] pread instrnum, iindexes[], inotfound=-1
+```
+    
+### Arguments
+
+* `instrnum` (i):  the (fractional) instrument number to modify
+* `iindex` / `kindex`: the index of the pfield to read. 
+* `inotfound`: the value to return if instrnum is not found. To avoid misinterpretation,
+  this value should be different than any expected value of the pfield
+
+### Output
+
+* `ivalue` / `kvalue`: the current value of the given pfield. Will be `inotfound` if
+  no matching instance has been found.
+
+### Execution Time
+
+* Init (if output is of i-type)
+* Performance (if output is of k-type)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [pwrite](pwrite.md)
+* [pset](https://csound.com/docs/manual/pset.html)
+* [p](https://csound.com/docs/manual/p.html)
+* [passign](https://csound.com/docs/manual/passign.html)
+* [uniqinstance](uniqinstance.md)
+
+## Credits
+
+Eduardo Moguillansky, 2019

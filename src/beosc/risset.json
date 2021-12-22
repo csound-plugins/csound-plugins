@@ -1,0 +1,35 @@
+{
+  "name": "beosc",
+  "opcodes": [
+    "beosc",
+    "beadsynt",
+    "getrowlin",
+    "tabrowlin"
+  ],
+  "libname": "libbeosc",
+  "version": "1.10.0",
+  "short_description": "Band-enhanced oscillators implementing the sine+noise synthesis model",
+  "long_description": "Band-enhanced oscillators based on the loris partial tracking model",
+  "csound_version": "6.15",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": {
+    "linux": {
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v1.10.0/csound-plugins--linux.zip",
+      "extractpath": "libbeosc.so",
+      "build_platform": "Ubuntu 18.04"
+    },
+    "macos": {
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v1.10.0/csound-plugins--macos.zip",
+	  "extractpath": "libbeosc.dylib",
+      "build_platform": "10.14.0"
+    },
+    "windows": {
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v1.10.0/csound-plugins--win64.zip",
+	  "extractpath": "libbeosc.dll",
+      "build_platform": "Windows 10"
+    }
+  }
+}

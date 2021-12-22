@@ -1,0 +1,113 @@
+# dict_set
+
+## Abstract
+
+Set a value from a hashtable
+
+## Description
+
+A hashtable is a mapping from a key to a value. The `dict_` family of opcodes
+implement a hashtable mapping either strings or integers to strings or floats.
+`dict_set` sets the value corresponding to a key if the key is already present,
+or inserts a key:value pair otherwise.
+
+**NB**: To remove a key-value pair use `dict_del`
+
+!!! Tip
+
+    It is possible to set multiple values at i-time directly with [dict_new](dict_new.md)
+
+## Syntax
+
+    dict_set idict, xkey, xvalue
+
+## Arguments
+
+* `idict`: the handle of the dict, as returned by `dict_new`
+* `xkey`: the key to set. Its type must match the type definition of the dict.
+          (a string or a possitive integer)
+* `xvalue`: the value to set. Its type must match the type definition of the
+  dict (a str or a numeric value)
+
+
+## Execution Time
+
+* Init
+* Performance
+
+## Examples
+
+```csound
+
+<CsoundSynthesizer>
+<CsOptions>
+; -odac  -iadc    ;;;RT audio out and in
+
+</CsOptions>
+<CsInstruments>
+
+sr = 44100
+ksmps = 32
+nchnls = 2
+
+instr 1
+  ; create a local dict, mapping strings to numbers
+  idict dict_new "sf"
+  dict_free idict
+  
+  ; set key a key:value pair
+  dict_set idict, "bar", 123
+
+  ; retrieve the value
+  kbar dict_get idict, "bar"
+
+  ; get a non-existent key, will output the default
+  kfoo dict_get idict, "foo", -1
+
+  printf ">>>> bar: %f,  foo: %f \n", 1, kbar, kfoo
+
+  ; now create another dict, this one will outlive this note
+  idict2 dict_new "str:str", "baz", "bazvalue", "foo", "foovalue"
+
+  ; schedule another inst, pass this dict
+  event "i", 2, 0, 1, idict2
+  turnoff
+endin
+
+instr 2
+  idict = p4
+  print_dict idict
+
+  Sbaz = dict_get(idict, "baz")
+  printf "instr 2, kbaz = %s \n", 1, Sbaz
+
+  ; free dict at the end of this note
+  dict_free idict, 1
+  turnoff
+endin
+
+; schedule 1, 0, 1
+
+</CsInstruments>
+<CsScore>
+
+i 1 0 2
+
+</CsScore>
+</CsoundSynthesizer>
+```
+
+{example}
+
+## See also
+
+* [dict_new](dict_new.md)
+* [dict_get](dict_get.md)
+* [dict_del](dict_del.md)
+* [defer](defer.md)
+* [dict_free](dict_free.md)
+
+## Credits
+
+Eduardo Moguillansky, 2019
+Last update: 2021

@@ -1,0 +1,73 @@
+# interp1d
+
+## Abstract
+
+Interpolate between elements of an array/table
+
+## Description
+
+Given a fractional index into an arra/table, interpolate
+between adjacent items. In the case of a table, a specific
+column of the table can be selected for performing interpolation.
+In this case, the index indicates the "row", the step value determines
+the size of each row, and the offset determines which column is used 
+when interpolating. Possible interpolation modes are: linear, cos, 
+floor, exponential and cubic.
+Together with `bisect` it can be used to generate any possible 
+breakpoint-function configuration.
+
+**NB**: interp1d performs the opossite operation of `bisect`
+
+**NB2**: when used with a table the `param` value can be given within the string, 
+as "exp=1.5" or "smooth=0.7". For example, `kout = interp1d(kidx, itab, "exp=1.5")`
+
+!!! Note
+
+    At the moment the interpolation mode is set at init time and can't be modified
+
+## Syntax
+
+```csound
+kout   interp1d kidx, xarr[], Smode="linear", kparam=0
+aout   interp1d aidx, xarr[], Smode="linear", kparam=0
+iout   interp1d iidx, iarr[], Smode="linear", kparam=0
+kout[] interp1d kidx[], xarr[], Smode="linear", kparam=0
+iout[] interp1d iidx[], iarr[], Smode="linear", kparam=0
+
+kout   interp1d kidx, ktab, Smode="linear", kstep=1, koffset=0
+aout   interp1d aidx, ktab, Smode="linear", kstep=1, koffset=0
+iout   interp1d iidx, itab, Smode="linear", kstep=1, koffset=0
+kout[] interp1d kidx[], ktab, Smode="linear", kstep=1, koffset=0
+iout[] interp1d iidx[], ktab, Smode="linear", kstep=1, koffset=0
+```
+    
+## Arguments
+
+* `idx`: the index into the array/table. For example, using linear interpolation (see mode)
+    an index of 1.5 will interpolate halfway between arr[1] and arr[2] 
+* `arr`: the array (1D) holding the data. 
+* `tab`: the table holding the data
+* `mode`: the interpolation mode. Possible interpolations modes are: "linear", "cos", "floor", 
+  "cubic", "smooth" (smoothstep, see https://en.wikipedia.org/wiki/Smoothstep), 
+  "smoother" (perlin's smootherstep) or "exp" (exponential). "smoother" interpolation is almost
+  equal to "smooth" with param=0.7.
+* `param`: a parameter used by the interpolation mode. In "exp" mode, param sets the exponent
+  (2 will result in a quadratic curve). In "smooth" mode, param sets the number of extra
+  smoothsteps (default=0). Fractional smoothsteps are possible (see )
+        
+## Output
+
+* `out`: the result of interpolating the array/table at the given index.
+
+## Examples
+
+{example}
+
+
+## See Also
+
+* [bisect](bisect.md)
+* [bpf](http://www.csound.com/docs/manual/bpf.html)
+* [linlin](http://www.csound.com/docs/manual/linlin.html)
+* [getrowlin](http://www.csound.com/docs/manual/getrowlin.html)
+* [linenv](linenv.md)

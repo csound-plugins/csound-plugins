@@ -1,0 +1,94 @@
+# jsfx_setslider
+
+## Abstract
+
+Sets the slider values of a jsfx script
+
+
+## Description
+
+With `jsfx_setslider` it is possible to set the values of any number of sliders
+defined in a jsfx script, mostly prior to calling `jsfx_play`.
+A jsfx plugin defines a series of up to 64 sliders, which are control parameters
+used by the script. A slider definition in a jsfx script has the form:
+
+    slider3:1.5<0,4,0.01>Compression Ratio
+    
+This defines a control parameter with default value `1.5`, between `0` and `4`,
+with a precission (an increment) of `0.01` and a label "Copression Ratio". 
+
+```csound
+kcomprat = 2.5
+jsfx_setslider ihandle, 3, kcomprat
+```
+    
+The code above will set the slider #3 (the index passed corresponds with the 
+slider number) to the value of `kcomprat`
+The value of any slider can be read via `jsfx_getvalue` (only one value at a time).
+
+!!! Note "many sliders"
+
+    It is possible to call jsfx_setslider with any number of sliders. It is not
+    necessary to set all the sliders defined in the script. Any slider
+    which is not set via jsfx_setslider retains its default value. A value will 
+    always be confined to the range in the slider definition and will also be 
+    quantized to the increment in the slider definition. To disable any quantization,
+    set the increment to 0 in the jsfx script
+
+!!! Note "jsfx"
+
+    `jsfx` is an audio programming language implemented primarily as part of the DAW `REAPER`. 
+    It is a scriptiong language with a built-in compiler which translates it to 
+    machine code. It allows the user to operate at the sample level (like 
+    defining an udo with `setksmps 1` but more efficient). It is around 2x to 2.5x slower
+    than hand-coded C.
+    See https://www.reaper.fm/sdk/js/js.php for more information about the syntax, etc.
+
+
+## Syntax
+
+```csound
+
+jsfx_setslider ihandle, id1, kval1 [, id2, kval2, id3, kval3, ...]
+```    
+    
+### Arguments
+
+* **ihandle**: the handle created via [jsfx_new] or [jsfx]
+* **idx**, **kvalx**: a jsfx script allows to define up to 64 control parameters, which are
+  called `slider`s. Each slider has an idx (starting from 1) and a value. Here you can control
+  as many sliders as you need. Each slider consists of a pair of values, an id 
+  identifying the slider (this corresponds to the sliderx value in the jsfx script) and the
+  value itself (a k- value)
+
+### Output
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [jsfx]
+* [jsfx_new]
+* [jsfx_play]
+* [jsfx_getslider]
+
+## Credits
+
+Eduardo Moguillansky, 2019
+
+Uses the open-source implementation of the jsfx language by Pascal Gauthier et al. Based heavily on
+the pd external `jsfx~`.
+
+https://github.com/asb2m10/jsusfx
+
+[jsfx]: jsfx.md
+[jsfx_new]: jsfx_new.md
+[jsfx_play]: jsfx_play.md
+[jsfx_getslider]: jsfx_getslider.md

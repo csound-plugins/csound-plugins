@@ -1,0 +1,13 @@
+[submodule "csound"]
+	path = csound
+	url = https://github.com/csound/csound.git
+	branch = master
+[submodule "src/bformdec2/bformdec2"]
+	path = src/bformdec2/bformdec2
+	url = https://github.com/pzinemanas/bformdec2.git
+[submodule "src/plugins"]
+	path = src/plugins
+	url = https://github.com/csound/plugins.git
+[submodule "src/jsfx/jsusfx"]
+	path = src/jsfx/jsusfx
+	url = https://github.com/asb2m10/jsusfx

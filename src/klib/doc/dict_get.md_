@@ -1,0 +1,126 @@
+# dict_get
+
+## Abstract
+
+Get a value from a hashtable
+
+## Description
+
+A hashtable is a mapping from a key to a value. The `dict_` family of opcodes 
+implement a hashtable mapping either strings or integers to strings or floats. 
+`dict_get` returns the value for a given key. If the key is not present, a default
+value is returned (the empty string for string values, or an user given default 
+for number values)
+
+## Syntax
+
+    kvalue dict_get idict, Skey, idefault=0
+    ivalue dict_get idict, Skey, idefault=0
+    kvalue dict_get idict, kkey, idefault=0
+    ivalue dict_get idict, ikey, idefault=0
+    Svalue dict_get idict, Skey
+    Svalue dict_geti idict, Skey  ; (init time version)
+    Svalue dict_get idict, kkey
+    
+The type of key and value depend on the type definition of the `dict`, see [dict_new](dict_new)
+
+`dict_get` executes at **i-time** and **k-time** depending on the output value. In the case of 
+a dict of type "str:str" `dict_get` runs at k-time. Use `dict_geti` for an init time version
+
+ 
+!!! Note
+
+    In the case of a dict of type "str:str", dict_get returns an empty string if the key is not found
+
+## Arguments
+
+* `ìdict`: the handle of the dict, as returned by `dict_new`
+* `Skey` / `kkey`: the key to be queries, as previously set by [dict_set](dict_set)
+* `idefault`: if the key is not present, this value is returned (defaults to 0)
+
+### Output
+
+* `kvalue` / `Svalue`: the value corresponding to the key, or a default if the key is not found
+
+* For dicts with a string value, an empty string is returned when the key is not found.
+* For dicts with a numeric value, a user given default is returned (default=0)
+
+### Execution Time
+
+* Init
+* Performance 
+
+## Examples
+
+```csound
+
+<CsoundSynthesizer>
+<CsOptions>
+; -odac  -iadc    ;;;RT audio out and in
+
+</CsOptions>
+<CsInstruments>
+
+sr = 44100
+ksmps = 32
+nchnls = 2
+
+instr 1	
+  ; create a local dict, mapping strings to numbers
+  idict dict_new "sf"
+  
+  ; set key a key:value pair
+  dict_set idict, "bar", 123
+
+  ; retrieve the value
+  kbar dict_get idict, "bar"
+  
+  ; get a non-existent key, will output the default
+  kfoo dict_get idict, "foo", -1 
+
+  printf ">>>> bar: %f,  foo: %f \n", 1, kbar, kfoo 
+
+  ; now create another dict, this one will outlive this note
+  idict2 dict_new "ss", 1, "baz", "bazvalue", "foo", "foovalue"
+  
+  ; schedule another inst, pass this dict
+  event "i", 2, 0, 1, idict2
+  
+  turnoff
+
+endin
+
+instr 2
+  idict = p4
+  Sbaz = dict_get(idict, "baz")
+  printf "instr 2, kbaz = %s \n", 1, Sbaz
+  
+  ; free dict at the end of this note
+  dict_free idict, 1  
+  turnoff
+endin
+
+; schedule 1, 0, 1
+
+</CsInstruments>
+<CsScore>
+
+i 1 0 2
+
+</CsScore>
+</CsoundSynthesizer> 
+```
+
+{example}
+
+## See also
+
+* [dict_new](dict_new.md)
+* [dict_set](dict_set.md)
+* [dict_geti](dict_geti.md)
+* [dict_get](dict_get.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

@@ -1,0 +1,67 @@
+# bisect
+
+## Abstract
+
+Returns the fractional index of a value within a sorted array / tab
+
+## Description
+
+Given an array ``x0, x1, x2, x3,...``, `bisect` determines the fractional index of a
+value x, indicating where this value would be placed within the given array/table. 
+For example, given an array ``[0, 10, 14, 20]``, the value 12 would
+receive the index 1.5 since it is to be placed between elements 1 and 2,
+equidistant from both (the fractional part determines the relative distance
+to the neighbouring elements). The index is clamped to 0 and ``size-1``. 
+
+!!! Note
+
+    `bisect` can be used together with `interp1d` to perform piecewise interpolation.
+    Given an array of x values and an array of corrsponding y values, `bisect` determines
+    the index within the x array and `interp1d` maps that index to the y domain via multiple
+    interpolation methods
+    
+## Syntax
+
+```csound
+kidx   bisect  kval, xarr[]
+iidx   bisect  ival, xarr[]
+aidx   bisect  aval, xarr[]
+kidx[] bisect  kvals[], xarr[]
+iidx[] bisect  ivals[], xarr[]
+
+kidx   bisect  kval, ktab, kstep=1, koffset=0
+iidx   bisect  ival, itab, istep=1, ioffset=0
+aidx   bisect  aval, ktab, kstep=1, koffset=0
+kidx[] bisect  kval[], ktab, kstep=1, koffset=0
+iidx[] bisect  ival[], itab, istep=1, ioffset=0
+```
+    
+## Arguments
+
+* **kval**: the value to quiery within arr  
+* **arr**: the array (1D) holding the data. 
+* **tab**: the table holding the data
+* **step**: in the case of a table, it is possible to bisect one particular
+    column in the table if, for each row, multiple features are included
+    in the same table
+* **offset**: the offset determines the precise column to bisect
+
+
+## Output
+
+* **out**: the index of val inside the array/tab  
+  
+
+## Examples
+
+{example}
+
+
+## See Also
+
+* [interp1d](interp1d.md)
+* [bpf](https://csound.com/docs/manual/bpf.html)
+* [linlin](https://csound.com/docs/manual/linlin.html)
+* [getrowlin](https://csound.com/docs/manual/getrowlin.html)
+* [linenv](linenv.md)
+

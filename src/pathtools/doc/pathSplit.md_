@@ -1,0 +1,42 @@
+# pathSplit
+
+## Abstract
+
+Split a path into directory and basename
+
+
+## Description
+
+Given a path `/path/to/filename.txt`, split it in `/path/to` and `filename.txt`. The directory part will never end with a path separator unless it is the root path
+
+## Syntax
+
+    Sdirectory, Sbase pathSplit Spath
+
+## Arguments
+
+* `Spath`: The path to split
+
+## Output
+
+* `Sdirectory`: the directory part of the path
+* `Sbase`: the basename part of the path
+
+## Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+## See also
+
+* [pathSplitk](pathSplitk.md)
+* [pathSplitExt](pathSplitExt.md)
+* [pathSplitExtk](pathSplitExtk.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2020

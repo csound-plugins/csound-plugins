@@ -1,0 +1,63 @@
+# schmitt
+
+## Abstract
+
+A schmitt trigger (a comparator with hysteresis). 
+
+
+## Description
+
+Implements a schmitt trigger, which is a comparator with hysteresis. Whenever the 
+input is higher than `khigh`, output is 1 and stays 1 until input drops beneath
+`klow`.
+
+* Output is 1 if the input is higher than `khigh` if signal is increasing
+* Output is 0 if the input is lower than `klow` if signal is decreasing
+
+!!! Note 
+
+    `schmitt` is particularly useful for implementing effects like a noise gate,
+    to avoid fast opening and closing at the threshold. It can be further refined
+    together with `lagud` to add attack / release times to the opening of the gate
+    or with `trighold` to assure a minimum open time for the gate
+
+Port of pd/else's `schmitt`
+
+## Syntax
+
+```csound
+
+xout  schmitt xin, khigh, klow
+
+```
+    
+### Arguments
+
+* `xin`: input signal (k- or audio rate). The rate of `xin` must match the rate of `xout`
+* `khigh`: high value of the comparator, output is 1 whenever input is higher than this
+* `klow`: low value of the comparator, output is 0 whenever input is lower than this
+
+### Output
+
+* `xout`: output value of the comparator (0 or 1). Rate of xout is the same as xin
+
+### Execution Time
+
+* Performance (k or audio)
+
+## Examples
+
+![](assets/schmitt.gif)
+
+{example}
+
+
+## See also
+
+* [lagud](https://csound.com/docs/manual/lagud.html)
+* [trighold](https://csound.com/docs/manual/trighold.html)
+
+
+## Credits
+
+Eduardo Moguillansky, 2019

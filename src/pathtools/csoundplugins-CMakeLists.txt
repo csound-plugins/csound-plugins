@@ -1,0 +1,8 @@
+if(${BUILD_PATHTOOLS_OPCODES})
+    make_plugin(pathtools src/pathtools.c)
+	target_include_directories(pathtools PRIVATE ${CSOUND_INCLUDE_DIRS})
+	if(APPLE)
+	   set_target_properties(else PROPERTIES COMPILE_FLAGS "-Wno-unused-local-typedef")
+	endif()
+endif()
+

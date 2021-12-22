@@ -1,0 +1,49 @@
+# ftfill
+
+## Abstract
+
+create a table and fill it with values (like fillarray but for f-tables)
+
+## Description
+
+``ftfill`` is a shortcut opcode to create a table and fill it with values.
+It explicitely disallows the user to set the table-number manually. 
+
+## Syntax
+
+
+```csound
+
+itabnum ftfill i0, [i1, i2, ...]
+
+
+```
+    
+## Arguments
+
+* **ix**: The value(s) to place in the f-table
+
+## Output
+
+* **itabnum**: the number of the generated f-table
+
+## Execution Time
+
+* Init 
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [ftgen](http://www.csound.com/docs/manual/ftgen.html)
+* [fillarray](http://www.csound.com/docs/manual/fillarray.html)
+* [ftnew](ftnew.md)
+* [ftfree](http://www.csound.com/docs/manual/ftfree.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019

@@ -1,0 +1,73 @@
+# polyseq
+
+## Abstract
+
+`polyseq` creates and controls multiple **sequential** version of an opcode
+
+## Description
+
+`polyseq` creates a user given number of instances of an opcode, each with its own state.
+The output of an instance is routed to the input of the next instance, forming a chain.
+Each instance can be controlled individually.
+
+We differentiate between `chained` and `multiplexed` arguments. `chained` arguments are
+the ones which are mapped from one opcode instance to the next, so that the output of 
+one instance is routed to the input of the next. `multiplexed` are passed after the 
+`chained` arguments and work as they do with `poly`: if an array is passed, then each 
+instance is delivered one element of this array, and if a scalar value is passed, then 
+all instances share the same argument.
+
+### Example
+
+All this is best explained with an example:
+
+```csound
+
+; these two signal chains produce the same result
+a0 pinker
+kFreqs[] fillarray 100, 150, 300, 330
+
+aeq rbjeq a0, kFreqs[0], 2, 10, 1, 8
+aeq rbjeq aeq, kFreqs[1], 2, 10, 1, 8
+aeq rbjeq aeq, kFreqs[2], 2, 10, 1, 8
+aeq rbjeq aeq, kFreqs[3], 2, 10, 1, 8
+
+aseq polyseq 4, "rbjeq", a0, kFreqs, 2, 10, 1, 8
+```
+
+## Syntax
+
+    xouts polyseq numinstances:i, opcodename:s, xins, params ...
+    
+`polyseq` can have any number of inputs and outputs, as long as the opcode
+used has matching inputs and outputs.     
+
+## Arguments
+
+* `inuminstances`: the number of instances of `Sopcode` to instantiate
+* `Sopcode`: the name of the opcode
+* `xins`: any number of arguments, either k- or a-rate, which should correspond
+          to the outputs of the opcode
+
+The number and type of the input arguments depend on the arguments passed to the 
+given opcode. The same applies for the output arguments
+
+### Output
+
+`xouts`: any number of arguments of type `k` or `a`, as output by the opcode
+
+
+## Examples
+
+[LISTEN](https://raw.githubusercontent.com/gesellkammer/csound-plugins/master/src/poly/examples/polyseq.mp3)
+
+{example}
+
+## See also
+
+* [maparray](http://www.csounds.com/manual/html/maparray.html)
+* [poly](poly.md)
+
+## Credits
+
+Eduardo Moguillansky, 2019

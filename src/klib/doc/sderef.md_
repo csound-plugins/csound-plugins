@@ -1,0 +1,39 @@
+# sderef
+
+## Abstract
+
+Retrieves a read-only string from the cache
+
+
+## Description
+
+`sref`/`sderef` implement a global string cache. This can be useful in
+situations where a string needs to be stored/passed but only numbers are allowed
+(for example, when using the `event` opcode, or to be able to mix numbers and
+strings inside an array). It behaves similar to the `strset` / `strget` opcodes
+but automatically assigns an index to each distinct string inside the cache. The
+string returned by `sderef` should not be modified. This is not enforced.
+
+## Syntax
+
+    Sstr sderef idx
+    Sstr sderef kdx
+
+### Arguments
+
+* `idx` / `kdx`: the numeric id representing the string
+* `Sstr`: the string inside the cache, corresponding to `idx`
+
+### Execution Time
+
+* Init
+
+
+## Examples
+
+{example}
+
+
+## Credits
+
+Eduardo Moguillansky, 2020

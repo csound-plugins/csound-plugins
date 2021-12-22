@@ -1,0 +1,52 @@
+# standardchaos
+
+## Abstract
+
+Standard map chaotic generator
+
+## Description
+
+`standardchaos` is a chaotic generator, the sound is generated with 
+the following difference equations;
+
+    y[n] = (y[n-1] + k * sin(x[n-1])) % 2pi;
+    x[n] = (x[n-1] + y[n]) % 2pi;
+    out = (x[n] - pi) / pi
+    
+
+## Syntax
+
+```csound
+    aout standardchaos krate, kk=1, ix=0.5, iy=0
+```
+    
+### Arguments
+
+* `krate`: from 0 to nyquist
+* `kk`: a value for k in the above equation
+* `ix`: initial value for x
+* `iy`: initial value for y
+
+### Output
+
+* `aout`: audio output of the chaotic generator
+
+### Execution Time
+
+* Performance (audio)
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [crackle](crackle.md)
+* [chuap](https://csound.com/docs/manual/chuap.html)
+* [dust2](https://csound.com/docs/manual/dust2.html)
+
+## Credits
+
+Eduardo Moguillansky, 2019
+(based on pd/else's `standard~` - https://github.com/porres/pd-else)

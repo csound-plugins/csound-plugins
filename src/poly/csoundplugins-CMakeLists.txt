@@ -1,0 +1,8 @@
+if(${BUILD_POLY_OPCODES})
+    make_plugin(poly src/poly.c)
+	target_include_directories(poly PRIVATE ${CSOUND_INCLUDE_DIRS})
+	if(APPLE)
+	   set_target_properties(poly PROPERTIES COMPILE_FLAGS "-Wno-unused-local-typedef")
+	endif()
+endif()
+
