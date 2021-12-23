@@ -28,10 +28,11 @@ include_directories($(PROJECT_SOURCE_DIR)/jsusfx/src)
 # These functions are defined in csound-plugins.cmake
 # The variables are defined in the root CMakeLists.txt (../../CmakeLists.txt)
 # set_csound_sources(${CSOUND_INCLUDE_DIRS})
-message(STATUS "csound sources: ${PROJECT_SOURCE_DIR}/../../csound/include")
 set_csound_sources(${PROJECT_SOURCE_DIR}/../../csound/include)
+
 set_csound_build_path(${BUILD_PLUGINS_DIR})
 add_csound_plugin(jsusfx_csound_project libjsfx csound/jsusfx_csound.cpp)
+target_include_directories(jsusfx_csound_project PRIVATE ${PROJECT_SOURCE_DIR}/../../csound/Android/CsoundAndroid/jni)
 
 target_compile_definitions(jsusfx_csound_project PRIVATE USE_DOUBLE)
 target_link_libraries(jsusfx_csound_project jsusfx)
