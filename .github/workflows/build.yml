@@ -123,7 +123,7 @@ jobs:
           git submodule status --recursive
           echo "Finished submodules"
           
-          Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
+          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
           
           ls
 
