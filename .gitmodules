@@ -1,3 +1,6 @@
 [submodule "src/jsfx/jsusfx"]
 	path = src/jsfx/jsusfx
 	url = https://github.com/asb2m10/jsusfx
+[submodule "csound"]
+	path = csound
+	url = https://github.com/csound/csound.git

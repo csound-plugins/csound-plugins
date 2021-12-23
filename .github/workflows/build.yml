@@ -37,6 +37,10 @@ jobs:
           git submodule foreach git pull origin master
           git submodule status --recursive
 
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+          
           rm -fr build-macos
           mkdir build-macos
           cd build-macos
@@ -64,6 +68,10 @@ jobs:
           git submodule update --init --recursive --remote
           git submodule foreach git pull origin master
           git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
 
           rm -fr build-linux
           mkdir build-linux
@@ -114,6 +122,9 @@ jobs:
           git submodule foreach git pull origin master
           git submodule status --recursive
           echo "Finished submodules"
+          
+          Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
+          
           ls
 
           Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
