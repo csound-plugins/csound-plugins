@@ -34,7 +34,7 @@ jobs:
           # brew install fluidsynth
           
           git submodule update --init --recursive --remote
-          git submodule foreach git pull origin master
+          # git submodule foreach git pull origin master
           git submodule status --recursive
 
           cd csound/include
@@ -119,7 +119,7 @@ jobs:
           # choco install fluidsynth
           
           git submodule update --init --recursive --remote
-          git submodule foreach git pull origin master
+          # git submodule foreach git pull origin master
           git submodule status --recursive
           echo "Finished submodules"
           
