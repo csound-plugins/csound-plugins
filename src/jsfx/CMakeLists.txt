@@ -23,7 +23,7 @@ add_subdirectory(jsusfx/src)
 include(csound-plugins.cmake)
 
 # include_directories(${PROJECT_SOURCE_DIR}/jsfx-src)
-include_directories($(PROJECT_SOURCE_DIR)/jsusfx/src)
+include_directories(${PROJECT_SOURCE_DIR}/jsusfx/src)
 
 # These functions are defined in csound-plugins.cmake
 # The variables are defined in the root CMakeLists.txt (../../CmakeLists.txt)

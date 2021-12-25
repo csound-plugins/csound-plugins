@@ -140,4 +140,24 @@ Miscellaneous plugins
 * [zeroarray](opcodes/zeroarray.md): Zero all elements in an array 
 
 
+## pathtools
+
+Cross-platform path handling and string opcodes
+
+* [findFileInPath](opcodes/findFileInPath.md): ? 
+* [getEnvVar](opcodes/getEnvVar.md): ? 
+* [pathAbsolute](opcodes/pathAbsolute.md): ? 
+* [pathIsAbsolute](opcodes/pathIsAbsolute.md): ? 
+* [pathJoin](opcodes/pathJoin.md): ? 
+* [pathNative](opcodes/pathNative.md): ? 
+* [pathSplit](opcodes/pathSplit.md): ? 
+* [pathSplitk](opcodes/pathSplitk.md): ? 
+* [pathSplitExt](opcodes/pathSplitExt.md): ? 
+* [pathSplitExtk](opcodes/pathSplitExtk.md): ? 
+* [scriptDir](opcodes/scriptDir.md): ? 
+* [sysPlatform](opcodes/sysPlatform.md): ? 
+* [strsplit](opcodes/strsplit.md): ? 
+* [strjoin](opcodes/strjoin.md): ? 
+
+
 
