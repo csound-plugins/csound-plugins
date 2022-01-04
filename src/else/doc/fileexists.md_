@@ -14,7 +14,7 @@ It doesn't check any search path of csound and does not expand any variables
 
 ```csound
 
-iexists  file_exists  Spath
+iexists  fileexists  Spath
 
 ```
     

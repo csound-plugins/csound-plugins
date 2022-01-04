@@ -55,11 +55,8 @@ is high)
 
 ```csound
 
-aout beadsynt kFreqs[], kAmps[], kBws[] \
-                   [, inumosc, iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1 ]
-                   
-aout beadsynt ifreqft, iampft, ibwft, inumosc \
-                   [, iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1 ]
+aout beadsynt kFreqs[], kAmps[], kBws[], inumosc, iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
+aout beadsynt ifreqft, iampft, ibwft, inumosc, iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
 
 
 ```

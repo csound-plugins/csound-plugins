@@ -12,7 +12,7 @@ loading a sample. Returns the absolute path
 
 ## Syntax
 
-    Spath fileFind Sfile 
+    Spath findFileInPath Sfile 
         
 ## Arguments
 

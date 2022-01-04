@@ -17,6 +17,9 @@ one instance is routed to the input of the next. `multiplexed` are passed after 
 instance is delivered one element of this array, and if a scalar value is passed, then 
 all instances share the same argument.
 
+`polyseq` can have any number of inputs and outputs, as long as the opcode
+used has matching inputs and outputs.     
+
 ### Example
 
 All this is best explained with an example:
@@ -39,9 +42,6 @@ aseq polyseq 4, "rbjeq", a0, kFreqs, 2, 10, 1, 8
 
     xouts polyseq numinstances:i, opcodename:s, xins, params ...
     
-`polyseq` can have any number of inputs and outputs, as long as the opcode
-used has matching inputs and outputs.     
-
 ## Arguments
 
 * `inuminstances`: the number of instances of `Sopcode` to instantiate

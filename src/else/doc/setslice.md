@@ -17,8 +17,8 @@ array[start:end:step] = value
 
 
 ```csound
-setslice iArray[], ivalue [, istart=0, iend=0, istep=1]
-setslice kArray[], kvalue [, kstart=0, kend=0, kstep=1]
+setslice iArray[], ivalue, istart=0, iend=0, istep=1
+setslice kArray[], kvalue, kstart=0, kend=0, kstep=1
 
 setslice iArray[], iSource[], istart=0
 setslice kArray[], kSource[], kstart=0
