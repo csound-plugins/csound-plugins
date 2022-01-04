@@ -27,13 +27,13 @@
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v1.10.0/csound-plugins--macos.zip",
 	  "extractpath": "libjsfx.dylib",
       "build_platform": "10.14.0"
-    },
-    "assets": [
-      {
-        "platform": "all",
-        "name": "jsfx liteon scripts",
-        "extractpath": "assets/*"
-      }
-    ]
-  }
+    }
+  ],
+  "assets": [
+    {
+      "name": "jsfx liteon scripts",
+      "platform": "all",
+      "extractpath": "assets/*"
+    }
+  ]
 }
