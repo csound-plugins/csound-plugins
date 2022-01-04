@@ -28,7 +28,7 @@
 	  "extractpath": "libjsfx.dylib",
       "build_platform": "10.14.0"
     }
-  ],
+  },
   "assets": [
     {
       "name": "jsfx liteon scripts",
