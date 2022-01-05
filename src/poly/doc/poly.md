@@ -44,7 +44,7 @@ and `poly` can also be used with k-values.
 
 ## Syntax
 
-    out1[], [ out2[], ... ] poly inuminstances, Sopcode, xarg0, [xarg1, ...]
+    xout1[], [ xout2[], ... ] poly inuminstances, Sopcode, xarg0, [xarg1, ...]
 
 ## Arguments
 

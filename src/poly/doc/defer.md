@@ -14,6 +14,11 @@ works only with builtin opcodes. For complex release actions, it is nonetheless
 possible to bundle the actions in a separate instrument and use `schedule`
 together with defer (or simpler, use `atstop` instead).
 
+Any arguments passed after the name of the opcode (which must be within
+quotations) are passed directly to the opcode itself. Notice that only opcodes
+without output make sense in this context. Useful opcodes are `print`, `prints`,
+[pool_push](pool_push.md), [dict_free](dict_free.md), etc
+
 !!! Note "Release time vs deinit time"
 
     The event is not scheduled at *release* time (see below "Release time vs Deinit time")
@@ -29,14 +34,10 @@ together with defer (or simpler, use `atstop` instead).
     **Deinit time** is the moment the note is actually being freed, so the instrument is
     not running anymore at this point.
 
+
 ## Syntax
 
     defer Sopcode, [arg1, arg2, ...]
-
-Any arguments passed after the name of the opcode (which must be within
-quotations) are passed directly to the opcode itself. Notice that only opcodes
-without output make sense in this context. Useful opcodes are `print`, `prints`,
-[pool_push](pool_push.md), [dict_free](dict_free.md), etc
 
 
 !!! Note

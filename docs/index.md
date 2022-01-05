@@ -52,7 +52,7 @@ A hashtable for csound
 
 ## jsfx
 
-A csound interface to the opensource implementation of jsfx (a jitted language for dsp)
+jsfx support for csound
 
 * [jsfx](opcodes/jsfx.md): Instantiates and runs a jsfx script 
 * [jsfx_new](opcodes/jsfx_new.md): Instantiates a jsfx script 
@@ -140,24 +140,11 @@ Miscellaneous plugins
 * [zeroarray](opcodes/zeroarray.md): Zero all elements in an array 
 
 
-## pathtools
+## risset
 
 Cross-platform path handling and string opcodes
 
-* [findFileInPath](opcodes/findFileInPath.md): ? 
-* [getEnvVar](opcodes/getEnvVar.md): ? 
-* [pathAbsolute](opcodes/pathAbsolute.md): ? 
-* [pathIsAbsolute](opcodes/pathIsAbsolute.md): ? 
-* [pathJoin](opcodes/pathJoin.md): ? 
-* [pathNative](opcodes/pathNative.md): ? 
-* [pathSplit](opcodes/pathSplit.md): ? 
-* [pathSplitk](opcodes/pathSplitk.md): ? 
-* [pathSplitExt](opcodes/pathSplitExt.md): ? 
-* [pathSplitExtk](opcodes/pathSplitExtk.md): ? 
-* [scriptDir](opcodes/scriptDir.md): ? 
-* [sysPlatform](opcodes/sysPlatform.md): ? 
-* [strsplit](opcodes/strsplit.md): ? 
-* [strjoin](opcodes/strjoin.md): ? 
+* [risset](opcodes/risset.md): Get information from risset's package manager 
 
 
 
