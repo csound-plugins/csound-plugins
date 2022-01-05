@@ -19,7 +19,7 @@ the end of the collection.
 
 ## Syntax
 
-    xkey, xvalue, kidx  dict_iter idict [, kreset = -1]
+    xkey, xvalue, kidx  dict_iter idict, kreset=-1
 
 ### Arguments
 
