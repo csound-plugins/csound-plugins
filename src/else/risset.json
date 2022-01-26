@@ -36,7 +36,8 @@
     "standardchaos",
     "throwerror",
     "uniqinstance",
-    "zeroarray"
+    "zeroarray",
+    "zerocrossing"
   ],
   "short_description": "Miscellaneous plugins",
   "long_description": "Collection of miscellaneous plugins",
