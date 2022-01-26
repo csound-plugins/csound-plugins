@@ -4788,6 +4788,93 @@ static int32_t balance2_ak(CSOUND *csound, BALANCE2 *p) {
 }
 
 
+/*
+ zerocrossing
+
+ afreq zerocrossing ain
+ 
+
+void ZeroCrossing_Ctor(ZeroCrossing* unit) {
+    SETCALC(ZeroCrossing_next_a);
+
+    unit->m_prevfrac = 0.f;
+    unit->m_previn = ZIN0(0);
+    ZOUT0(0) = unit->mLevel = 0.f;
+    unit->mCounter = 0;
+}
+
+void ZeroCrossing_next_a(ZeroCrossing* unit, int inNumSamples) {
+    float* out = ZOUT(0);
+    float* in = ZIN(0);
+    float previn = unit->m_previn;
+    float prevfrac = unit->m_prevfrac;
+    float level = unit->mLevel;
+    long counter = unit->mCounter;
+
+    LOOP1(
+        inNumSamples, counter++; float curin = ZXP(in); if (counter > 4 && previn <= 0.f && curin > 0.f) {
+            float frac = -previn / (curin - previn);
+            level = unit->mRate->mSampleRate / (frac + counter - prevfrac);
+            prevfrac = frac;
+            counter = 0;
+        } ZXP(out) = level;
+        previn = curin;);
+
+    unit->m_previn = previn;
+    unit->m_prevfrac = prevfrac;
+    unit->mLevel = level;
+    unit->mCounter = counter;
+}
+
+*/
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *in;
+    MYFLT previn, prevfrac, level;
+    size_t counter;
+} ZEROCROSSING;
+
+
+static int32_t zerocrossing_init(CSOUND *csound, ZEROCROSSING *p) {
+    p->prevfrac = FL(0);
+    p->previn = FL(0);
+    p->level = FL(0);
+    p->counter = 0;
+    return OK;
+}
+
+static int32_t zerocrossing_a_a(CSOUND *csound, ZEROCROSSING *p) {
+    MYFLT* out = p->out;
+    MYFLT* in = p->in;
+    MYFLT previn = p->previn;
+    MYFLT prevfrac = p->prevfrac;
+    MYFLT level = p->level;
+    MYFLT curin;
+    size_t counter = p->counter;
+    size_t nsmps = CS_KSMPS;
+    MYFLT sr = csound->GetSr(csound);
+
+    for(size_t i=0; i<nsmps; i++) {
+        counter++;
+        curin = in[i];
+        if(counter > 4 && previn<0 && curin >0) {
+            MYFLT frac = -previn / (curin - previn);
+            level = sr / (frac + counter - prevfrac);
+            prevfrac = frac;
+            counter = 0;
+        }
+        out[i] = level;
+        previn = curin;
+    }
+    p->previn = previn;
+    p->prevfrac = prevfrac;
+    p->level = level;
+    p->counter = counter;
+    return OK;
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4950,16 +5037,16 @@ static OENTRY localops[] = {
     { "findarray.S_i", S(FINDARR_S), 0, 1, "i", "S[]S", (SUBR)findarr_s},
     { "findarray.S_k", S(FINDARR_S), 0, 2, "k", "S[]S", NULL, (SUBR)findarr_s},
 
-
     { "ftfind.k", S(FTINDEX), 0, 2, "k", "kkj", NULL, (SUBR)ftindex_perf},
     { "ftfind.i", S(FTINDEX), 0, 1, "i", "iij", (SUBR)ftindex_perf},
     { "loadnpy.k", S(loadnpy_ARR), 0, 1, "k[]", "S", (SUBR)loadnpy},
     { "loadnpy.i", S(loadnpy_ARR), 0, 1, "i[]", "S", (SUBR)loadnpy},
     { "detectsilence.k", S(DETECT_SILENCE), 0, 3, "k", "aJJ",
       (SUBR)detectSilence_init, (SUBR)detectSilence_k_a},
-    { "panstereo", S(BALANCE2), 0, 3, "aa", "aakP", (SUBR)balance2_init, (SUBR)balance2_ak}
+    { "panstereo", S(BALANCE2), 0, 3, "aa", "aakP", (SUBR)balance2_init, (SUBR)balance2_ak},
+    { "zerocrossing", S(ZEROCROSSING), 0, 3, "a", "a", 
+      (SUBR)zerocrossing_init, (SUBR)zerocrossing_a_a}
 
-    // { "sflistprograms", S(SFLISTPROGRAMS), 0, 1, "S[]", "S", (SUBR)sflistprograms},
 };
 
 LINKAGE

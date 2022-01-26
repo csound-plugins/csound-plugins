@@ -1,0 +1,60 @@
+# zerocrossing
+
+## Abstract
+
+Outputs a frequency based on the number of zero-crossings per second.
+
+
+## Description
+
+
+`zerocrossing` outputs a frequency based upon the distance between interceptions of the X axis. 
+The X intercepts are determined via linear interpolation so this gives better than just integer 
+wavelength resolution. This is a very crude pitch follower, but can be useful in some situations.
+
+`zerocrossing` is a port of supercollider's ZeroCrossing ugen. 
+
+## Syntax
+
+
+```csound
+
+afreq zerocrossing asig
+
+```
+    
+## Arguments
+
+* **asig**: The audio signal
+
+## Output
+
+* **afreq**: The zero-crossing frequency
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [schmitt](schmitt.md)
+* [trighold](https://csound.com/docs/manual/trighold.html)
+
+
+## Credits
+
+Eduardo Moguillansky, 2022
+
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2022
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c
