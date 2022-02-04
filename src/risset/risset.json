@@ -2,7 +2,7 @@
   "name": "risset",
   "version": "1.11.0",
   "opcodes": [
-     "risset"
+    "risset"
   ],
   "short_description": "Cross-platform path handling and string opcodes",
   "long_description": "This plugin provides opcodes for working with files and strings in a cross-platform way",
@@ -19,12 +19,12 @@
     },
     "macos": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-	  "extractpath": "librisset.dylib",
+      "extractpath": "librisset.dylib",
       "build_platform": "10.14.0"
     },
     "windows": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-	  "extractpath": "librisset.dll",
+      "extractpath": "librisset.dll",
       "build_platform": "Windows 10"
     }
   }

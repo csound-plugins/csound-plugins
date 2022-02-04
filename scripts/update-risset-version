@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import os
+import sys
+import subprocess
+import argparse
+import json
+import shutil
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--nobackup", action="store_true", help="Do not backup manifest files")
+parser.add_argument("version", help="New version, something like 1.20.0")
+args = parser.parse_args()
+version = args.version
+
+root = subprocess.getoutput("git rev-parse --show-toplevel")
+if root.startswith("fatal"):
+    print("Not inside repo")
+    sys.exit(1)
+root = Path(root)
+src = root/"src"
+
+def modify_version(manifest, version, backup=True):
+    d = json.load(open(manifest))
+    d['version'] = version
+    if backup:
+        out = manifest.as_posix() + "~"
+        shutil.copy(manifest, out)
+    with open(manifest, "w") as f:
+        json.dump(d, f, indent=2)
+       
+
+for manifest in src.glob("*/risset.json"):
+    modify_version(manifest, version, backup=not args.nobackup)
+

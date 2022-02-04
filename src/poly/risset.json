@@ -22,12 +22,12 @@
     },
     "macos": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-	  "extractpath": "libpoly.dylib",
+      "extractpath": "libpoly.dylib",
       "build_platform": "10.14.0"
     },
     "windows": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-	  "extractpath": "libpoly.dll",
+      "extractpath": "libpoly.dll",
       "build_platform": "Windows 10"
     }
   }

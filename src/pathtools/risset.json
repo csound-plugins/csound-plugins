@@ -2,20 +2,20 @@
   "name": "pathtools",
   "version": "1.11.0",
   "opcodes": [
-     "findFileInPath"
-    ,"getEnvVar"
-    ,"pathAbsolute"
-    ,"pathIsAbsolute"
-    ,"pathJoin"
-    ,"pathNative"
-    ,"pathSplit"
-    ,"pathSplitk"
-    ,"pathSplitExt"
-    ,"pathSplitExtk"
-    ,"scriptDir"
-    ,"sysPlatform"
-    ,"strsplit"
-    ,"strjoin"
+    "findFileInPath",
+    "getEnvVar",
+    "pathAbsolute",
+    "pathIsAbsolute",
+    "pathJoin",
+    "pathNative",
+    "pathSplit",
+    "pathSplitk",
+    "pathSplitExt",
+    "pathSplitExtk",
+    "scriptDir",
+    "sysPlatform",
+    "strsplit",
+    "strjoin"
   ],
   "short_description": "Cross-platform path handling and string opcodes",
   "long_description": "This plugin provides opcodes for working with files and strings in a cross-platform way",
@@ -32,12 +32,12 @@
     },
     "macos": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-	  "extractpath": "libpathtools.dylib",
+      "extractpath": "libpathtools.dylib",
       "build_platform": "10.14.0"
     },
     "windows": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-	  "extractpath": "libpathtools.dll",
+      "extractpath": "libpathtools.dll",
       "build_platform": "Windows 10"
     }
   }

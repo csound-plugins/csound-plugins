@@ -25,7 +25,7 @@
     },
     "macos": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-	  "extractpath": "libjsfx.dylib",
+      "extractpath": "libjsfx.dylib",
       "build_platform": "10.14.0"
     }
   },
