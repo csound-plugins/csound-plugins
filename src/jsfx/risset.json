@@ -1,5 +1,6 @@
 {
   "name": "jsfx",
+  "version": "1.11.0",
   "opcodes": [
     "jsfx",
     "jsfx_new",
@@ -9,7 +10,6 @@
     "tubeharmonics"
   ],
   "libname": "libjsfx",
-  "version": "1.10.0",
   "short_description": "jsfx support for csound",
   "long_description": "A csound interface to the opensource implementation of jsfx (a jitted language for dsp)",
   "csound_version": "6.14",
@@ -19,12 +19,12 @@
   "repository": "https://github.com/csound-plugins/csound-plugins",
   "binaries": {
     "linux": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v1.10.0/csound-plugins--linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
       "extractpath": "libjsfx.so",
       "build_platform": "Ubuntu 18.04"
     },
     "macos": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v1.10.0/csound-plugins--macos.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
 	  "extractpath": "libjsfx.dylib",
       "build_platform": "10.14.0"
     }
