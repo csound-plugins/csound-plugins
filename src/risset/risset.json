@@ -24,7 +24,7 @@
     },
     "windows": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-      "extractpath": "librisset.dll",
+      "extractpath": "risset.dll",
       "build_platform": "Windows 10"
     }
   }

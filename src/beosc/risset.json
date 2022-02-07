@@ -28,7 +28,7 @@
     },
     "windows": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-      "extractpath": "libbeosc.dll",
+      "extractpath": "beosc.dll",
       "build_platform": "Windows 10"
     }
   }

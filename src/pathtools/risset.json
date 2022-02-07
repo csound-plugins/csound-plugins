@@ -37,7 +37,7 @@
     },
     "windows": {
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-      "extractpath": "libpathtools.dll",
+      "extractpath": "pathtools.dll",
       "build_platform": "Windows 10"
     }
   }

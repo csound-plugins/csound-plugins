@@ -7,6 +7,8 @@ endif()
 
 make_c_plugin(sndmeta src/sndmeta.c)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 
 if(WIN32)
   # sndfile should be installed via vcpkg
@@ -16,7 +18,7 @@ if(WIN32)
 else()
   find_path(LIBSNDFILE_INCLUDE_DIRS sndfile.h)
   find_library(LIBSNDFILE_LIBRARIES sndfile)
-  message(STATUS "libsndfile libs: ${LIBSNDFILE_LIBRARIES}")
+  message(STATUS "*** libsndfile libs: ${LIBSNDFILE_LIBRARIES}")
   target_include_directories(sndmeta PRIVATE "${LIBSNDFILE_INCLUDE_DIRS}")
-  target_link_libraries(sndmeta PRIVATE "${LIBSNDFILE_LIBRARIES}")      
+  target_link_libraries(sndmeta PRIVATE "${LIBSNDFILE_LIBRARIES}") 
 endif()
