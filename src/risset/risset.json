@@ -4,9 +4,9 @@
   "opcodes": [
     "risset"
   ],
-  "short_description": "Cross-platform path handling and string opcodes",
-  "long_description": "This plugin provides opcodes for working with files and strings in a cross-platform way",
-  "csound_version": "6.15",
+  "short_description": "Opcodes to access risset package metadata",
+  "long_description": "Opcodes for accessing metadata about packages installed via the risset package manager",
+  "csound_version": "6.16",
   "author": "Eduardo Moguillansky",
   "email": "eduardo.moguillansky@gmail.com",
   "license": "LGPL",
