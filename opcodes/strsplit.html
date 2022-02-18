@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>strsplit - Csound Plugins</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  <link href="../css/syntax-highlighting.css" rel="stylesheet" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "strsplit";
+    var mkdocs_page_input_path = "opcodes/strsplit.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="icon icon-home"> Csound Plugins</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../index.html">Csound Plugins</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Contributing.html">Contributing</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Installation.html">Installation</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Opcodes</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="accum.html">accum</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="crackle.html">crackle</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="defer.html">defer</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="detectsilence.html">detectsilence</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_print.html">dict_print</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_query.html">dict_query</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_set.html">dict_set</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="dict_size.html">dict_size</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="diode_ringmod.html">diode_ringmod</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="extendarray.html">extendarray</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftfind.html">ftfind</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="jsfx_getslider.html">jsfx_setslider</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="jsfx_new.html">jsfx_new</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="jsfx_play.html">jsfx_play</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="jsfx_setslider.html">jsfx_setslider</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="lfnoise.html">lfnoise</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="linenv.html">linenv</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="loadnpy.html">loadnpy</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="memview.html">memview</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathIsAbsolute.html">pathIsAbsolute</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathJoin.html">pathJoin</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathNative.html">pathNative</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathSplit.html">pathSplit</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathSplitExt.html">pathSplitExt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathSplitExtk.html">pathSplitExtk</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pathSplitk.html">pathSplitk</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="perlin3.html">perlin3</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="poly.html">poly</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="poly0.html">poly0</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="polyseq.html">polyseq</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_at.html">pool_at</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_capacity.html">pool_capacity</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_gen.html">pool_gen</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_isfull.html">pool_isfull</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_new.html">pool_new</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_pop.html">pool_pop</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_push.html">pool_push</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pool_size.html">pool_size</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pread.html">pread</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="pwrite.html">pwrite</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ramptrig.html">ramptrig</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="ref.html">ref</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="refvalid.html">refvalid</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="risset.html">risset</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="schmitt.html">schmitt</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="scriptDir.html">scriptDir</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sderef.html">sderef</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="standardchaos.html">standardchaos</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="strjoin.html">strjoin</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="strsplit.html">strsplit</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="tabrowlin.html">tabrowlin</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="tubeharmonics.html">tubeharmonics</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="uniqinstance.html">uniqinstance</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="zeroarray.html">zeroarray</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="zerocrossing.html">zerocrossing</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Csound Plugins</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Opcodes &raquo;</li>
+        
+      
+    
+    <li>strsplit</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="strsplit">strsplit</h1>
+<h2 id="abstract">Abstract</h2>
+<p>Split a string at a given separator</p>
+<h2 id="description">Description</h2>
+<p>Split a string into parts at a given separator. The separator is not included in any
+of the parts</p>
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span><code>Sparts[] strsplit Sstring, Sseparator
+</code></pre></div>
+
+<h2 id="arguments">Arguments</h2>
+<ul>
+<li><code>Sstring</code>: The string to split</li>
+<li><code>Sseparator</code>: the delimiter used to split the string</li>
+</ul>
+<h2 id="output">Output</h2>
+<ul>
+<li><code>Sparts</code>: an array of strings, holding the parts. </li>
+</ul>
+<h2 id="execution-time">Execution Time</h2>
+<ul>
+<li>Init</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">--</span><span class="n">nosound</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="cm">/*</span>
+<span class="cm">    Sparts[] strsplit Sstring, Sseparator</span>
+
+<span class="cm">    Split a string into parts at the given separator</span>
+
+
+<span class="cm">*/</span>
+
+<span class="kd">instr</span> <span class="nf">1</span>
+    <span class="kt">S</span><span class="n">parts</span><span class="p">[]</span> <span class="n">strsplit</span> <span class="s">&quot;This;is;a;string!&quot;</span><span class="p">,</span> <span class="s">&quot;;&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">S</span><span class="n">parts</span>
+    <span class="kt">S</span><span class="n">lines</span><span class="p">[]</span> <span class="n">strsplit</span> <span class="s">{{</span>
+<span class="s">Line 0</span>
+<span class="s">Line 1</span>
+<span class="s">Line 2</span>
+<span class="s">Line 3</span>
+
+<span class="s">Line 5}}</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">S</span><span class="n">lines</span>
+    <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="c1">; f0 3600</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+</code></pre></div>
+
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="http://www.csound.com/docs/manual/strstrip.html">strstrip</a></li>
+<li><a href="http://www.csound.com/docs/manual/strsub.html">strsub</a></li>
+<li><a href="http://www.csound.com/docs/manual/strindex.html">strindex</a></li>
+<li><a href="pathSplit.html">pathSplit</a>[O]</li>
+<li><a href="pathSplitExt.html">pathSplitExt</a></li>
+</ul>
+<h2 id="credits">Credits</h2>
+<p>Eduardo Moguillansky, 2021</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sysPlatform.html" class="btn btn-neutral float-right" title="sysPlatform">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="strjoin.html" class="btn btn-neutral" title="strjoin"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="strjoin.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="sysPlatform.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
