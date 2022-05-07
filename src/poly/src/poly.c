@@ -1150,6 +1150,31 @@ static int32_t tabsuma(CSOUND *csound, TABQUERY1 *p) {
 }
 
 
+typedef struct {
+  OPDS h;
+  MYFLT *out;
+  MYFLT *in;
+  MYFLT *k1;
+} TESTOPC_a_a;
+
+int32_t testopc_init(CSOUND *csound, TESTOPC_a_a *p) {
+    printf("testopc init\n");
+    return OK;
+}
+
+int32_t testopc_perf(CSOUND *csound, TESTOPC_a_a *p) {
+    size_t nsmps = CS_KSMPS;
+    MYFLT *in = p->in;
+    MYFLT *out = p->out;
+    MYFLT k1 = *p->k1;
+    printf("\nTest: ");
+    for(size_t i=0; i<nsmps; i++) {
+        printf("%d ", (int)(in[i]*100));
+        out[i] = in[i] * k1;
+        printf("%d, ", (int)(out[i]*100));
+    }
+    return OK;
+}
 
 // --------------------------------------------------------------------------
 
@@ -1165,7 +1190,9 @@ static OENTRY localops[] = {
     // not working yet
     { "defer", S(DEFER), 0, 1, "", "S*", (SUBR)defer_init},
 
-    { "sumarray4", S(TABQUERY1), 0, 2, "a", "a[]", NULL, (SUBR)tabsuma }
+    { "sumarray4", S(TABQUERY1), 0, 2, "a", "a[]", NULL, (SUBR)tabsuma },
+    { "testopc.a_a", S(TESTOPC_a_a), 0, 3, "a", "ak", (SUBR)testopc_init, (SUBR)testopc_perf}
+
 };
 
 LINKAGE

@@ -25,7 +25,7 @@ def get_manifests(exclude="*template*"):
     returns a list of Paths
     """
     root = rootfolder
-    manifests = (root/"src").glob("**/manifest.json")
+    manifests = (root/"src").glob("**/risset.json")
     manifests = [m for m in manifests if not fnmatch.fnmatch(str(m), exclude)]
     return manifests
 
@@ -138,7 +138,9 @@ def build_mkdocs(manpages):
 if __name__ == "__main__":
     fill_manual_pages()
     opcodes = find_opcodes()
+    print("Opcodes: ", opcodes)
     manpages = find_manual_pages(opcodes)
+    print(manpages)
     # build_wiki(rootfolder, manpages, wikirepo=args.wikirepo)  
     build_mkdocs(manpages)
     os.chdir(rootfolder)

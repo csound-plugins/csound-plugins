@@ -1450,7 +1450,7 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
     MYFLT nl_f = 0;
     for(int i=0; i < nsmps; i++) {
         nl_f = nl == 0 ? 0 : randflt(&seed) * 4*nl - 2*nl;
-        nl_fb = (fb == 0)|(nl == 0) ? 0 : (randflt(&seed)*2*nl - nl)*0.001;
+        nl_fb = ((fb == 0)|(nl == 0)) ? 0 : (randflt(&seed)*2*nl - nl)*0.001;
         //interpolate 'f'
         tf += d_f;
 
@@ -3835,7 +3835,7 @@ typedef struct {
 
 static inline int64_t array_bisect_multidim(MYFLT x, MYFLT *xs, int64_t len,
                                             int step, int offset, int64_t lastidx) {
-    // step: the frame size, a.k.a the number of columns per row
+    // step: the frame size, a.k.a the number of columns per row. Must be >= 1
     // offset: the column index to use for comparison
     // returns: the fractional row index
     if(x <= xs[offset]) {
@@ -3844,6 +3844,7 @@ static inline int64_t array_bisect_multidim(MYFLT x, MYFLT *xs, int64_t len,
     if(x >= xs[len-step+offset]) {
         return -2;
     }
+
     if(lastidx >= 0 &&
             lastidx < len-step*2 &&
             xs[lastidx*step+offset] <= x && x < xs[(lastidx+1)*step+offset]) {
@@ -4044,8 +4045,6 @@ static int32_t bisecttab_init(CSOUND *csound, BISECTTAB *p) {
     p->ftp = ftp;
     p->lastidx = -1;
     p->lasttab = (int)*p->tabnum;
-    if(*p->step <= 0)
-        *p->step = 1;
     return OK;
 }
 
@@ -4064,14 +4063,14 @@ static int32_t bisecttab_k_k_kr(CSOUND *csound, BISECTTAB *p) {
     MYFLT x = *p->in;
     int64_t lendata = p->ftp->flen;
     MYFLT x0, x1, frac;
-    int32_t taboffset = (int32_t)*p->offset;
-    int32_t step = (int32_t)*p->step;
-
+    int32_t taboffset = (int32_t)(*p->offset);
+    int32_t step = (int32_t)(*p->step);
+    if(step == 0)
+        step = 1;
+    else if(step < 0)
+        return PERFERRF("step cannot be negative, got %d", step);
+    printf("---- step: %d, offset: %d\n", step, taboffset);
     int64_t row = array_bisect_multidim(x, data, lendata, step, taboffset, p->lastidx);
-
-    if(step <= 0) {
-        return PERFERRF("step cannot be less than 1, got %d", step);
-    }
 
     if(row == -1) {
         *p->out = 0;
@@ -4113,6 +4112,8 @@ static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
     int32_t step = (int32_t)*p->step;
     if(step <= 0) {
         return PERFERRF("step cannot be less than 1, got %d", step);
+    } else if(step == 0) {
+        step = 1;
     }
 
     MYFLT *data = p->ftp->ftable;
@@ -4193,10 +4194,12 @@ static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
     int32_t step = (int32_t)*p->step;
     size_t arrsize = p->in->sizes[0];
     tabcheck(csound, p->out, arrsize, &(p->h));
-    if(step <= 0) {
-        MSGF("step cannot be less than 1, got %d", step);
+    if(step < 0) {
+        MSGF("step cannot be negative, got %d", step);
         return NOTOK;
     }
+    if(step == 0)
+        step = 1;
 
     int64_t idx,
             lendata = p->ftp->flen,

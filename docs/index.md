@@ -138,11 +138,12 @@ Miscellaneous plugins
 * [throwerror](opcodes/throwerror.md): Throws an error message at performance or init 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
 * [zeroarray](opcodes/zeroarray.md): Zero all elements in an array 
+* [zerocrossing](opcodes/zerocrossing.md): Outputs a frequency based on the number of zero-crossings per second. 
 
 
 ## risset
 
-Cross-platform path handling and string opcodes
+Opcodes to access risset package metadata
 
 * [risset](opcodes/risset.md): Get information from risset's package manager 
 

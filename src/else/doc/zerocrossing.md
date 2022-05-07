@@ -54,14 +54,14 @@ nchnls = 2
 
 /* Example file for zerocrossing
 
-	afreq zerocrossing asig
+afreq zerocrossing asig
 
-	Outputs a frequency based upon the distance between interceptions of the X axis.
-	The X intercepts are determined via linear interpolation so this gives better 
-	than just integer wavelength resolution. This is a very crude pitch follower, 
-	but can be useful in some situations.
-	
-	zerocrossing is a port of supercollider's ZeroCrossing ugen
+  Outputs a frequency based upon the distance between interceptions of the X axis.
+  The X intercepts are determined via linear interpolation so this gives better 
+  than just integer wavelength resolution. This is a very crude pitch follower, 
+  but can be useful in some situations.
+  
+  zerocrossing is a port of supercollider's ZeroCrossing ugen
 */
 
 instr 1

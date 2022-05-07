@@ -41,7 +41,7 @@ instr 1
 
   ; the freq. of each oscillator
   kFreqs[] = (kRatios ^ kexp) * kf0
-
+  println "kexp: %f, kf0: %f", kexp, kf0
   ; array of random phases, to avoid synchronous start
   iPhs[] rndarr inum 
 
@@ -49,7 +49,7 @@ instr 1
   aOscils[] poly inum, "oscili", 1/inum, kFreqs, -1, iPhs
 
   amono sumarray aOscils
-  amono *= linsegr:a(0, 0.05, 1, 0.05, 0)
+  ; amono *= linsegr:a(0, 0.05, 1, 0.05, 0)
   outs amono, amono
 endin
 
@@ -126,7 +126,7 @@ endin
 <CsScore>
 
 i 1 0 8
-i 2 9 50
+; i 2 9 50
 ; i 3 0 1
 
 </CsScore>

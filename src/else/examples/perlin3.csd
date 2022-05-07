@@ -9,23 +9,24 @@ nchnls = 2
 0dbfs  = 1
 
 ; an empty table to plot
-giplot1 ftgen 0, 0, 1000, 2, 0
-giplot2 ftgen 0, 0, 1000, 2, 0
+giplot1 ftgen 0, 0, 2000, 2, 0
+giplot2 ftgen 0, 0, 2000, 2, 0
 
 opcode tabplot, 0, Sik
 	Schan, itab, kvalue xin
+	; init
 	outvalue Schan, itab
 	
 	tablew kvalue, accum:k(1), itab, 0, 0, 1
 	
 	; update the plot
-	if metro(20) == 1 then
+	if metro(30) == 1 then
 		outvalue Schan, k(-1)
 	endif
 endop
 
 instr perlin3
-  kspeed = line:k(1, 10, 4)
+  kspeed = line:k(0.1, 10, 2)
   ax = accum:a(kspeed/sr)
   az = ax*0.5
   aper1 = perlin3(ax, a(0), az)
@@ -57,6 +58,8 @@ i "perlin3" 0 300
 
 </CsScore>
 </CsoundSynthesizer>
+
+
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>

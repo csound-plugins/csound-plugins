@@ -329,7 +329,7 @@ void strncpy0(char *dest, const char *src, size_t n) {
 
 // Set a STRINGDAT* from a source string and its length
 static inline i32
-stringdat_set(CSOUND *csound, STRINGDAT *s, char *src, size_t srclen) {
+stringdat_set(CSOUND *csound, STRINGDAT *s, const char *src, size_t srclen) {
     if(s->data == NULL) {
         s->data = csound->Strdup(csound, src);
         s->size = (i32) srclen + 1;
@@ -541,7 +541,7 @@ dict_expand_pool(HASH_GLOBALS *g) {
     ui32 oldsize = g->maxhandles;
     ui32 newsize = g->maxhandles * 2;
     g->handles = csound->ReAlloc(csound, g->handles, sizeof(HANDLE)*newsize);
-    for(int i=oldsize; i<newsize; i++) {
+    for(size_t i=oldsize; i<newsize; i++) {
         _init_handle(&(g->handles[i]));
     }
     g->slots = csound->ReAlloc(csound, g->slots, sizeof(ui32)*newsize);
@@ -1704,12 +1704,11 @@ typedef struct {
 
 static i32
 dict_get_sf_0(CSOUND *csound, DICT_GET_sf *p) {
-    ui32 idx;
     p->g = dict_globals(csound);
     p->lastkey_size = 0;
     p->lastidx = 0;
     p->counter = 0;
-    p->_handleidx = idx = (ui32)*p->handleidx;
+    p->_handleidx = (ui32)*p->handleidx;
     p->handle = NULL;
     p->constant_key = 0;
     // check if the argument NAME is a constant
@@ -3067,6 +3066,7 @@ cacheget_perf(CSOUND *csound, CACHEGET *p) {
 
 static i32
 sview_deinit(CSOUND *csound, CACHEGET *p) {
+    IGN(csound);
     p->outstr->data = NULL;
     p->outstr->size = 0;
     return OK;
@@ -3117,6 +3117,7 @@ typedef struct {
 
 static i32
 strpeek_deinit(CSOUND *csound, STRPEEK *p) {
+    IGN(csound);
     p->s->data = NULL;
     p->s->size = 0;
     return OK;
@@ -3398,6 +3399,7 @@ pool_1_init(CSOUND *csound, POOL_1 *p) {
 
 static i32
 pool_pop_perf(CSOUND *csound, POOL_1 *p) {
+    IGN(csound);
     int size = p->handle->size;
     MYFLT item;
     if(size > 0) {
@@ -3420,6 +3422,7 @@ pool_pop_i(CSOUND *csound, POOL_1 *p) {
 
 static i32
 pool_capacity_perf(CSOUND *csound, POOL_1 *p) {
+    IGN(csound);
     *p->out = p->handle->allocated;
     return OK;
 }
@@ -3433,6 +3436,7 @@ pool_capacity_i(CSOUND *csound, POOL_1 *p) {
 
 static i32
 pool_isfull_perf(CSOUND *csound, POOL_1 *p) {
+    IGN(csound);
     *p->out = p->handle->size == p->handle->allocated ? 1. : 0.;
     return OK;
 }
@@ -3446,6 +3450,7 @@ pool_isfull_i(CSOUND *csound, POOL_1 *p) {
 
 static i32
 pool_size_perf(CSOUND *csound, POOL_1 *p) {
+    IGN(csound);
     *p->out = p->handle->size;
     return OK;
 }
