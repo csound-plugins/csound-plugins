@@ -4069,7 +4069,6 @@ static int32_t bisecttab_k_k_kr(CSOUND *csound, BISECTTAB *p) {
         step = 1;
     else if(step < 0)
         return PERFERRF("step cannot be negative, got %d", step);
-    printf("---- step: %d, offset: %d\n", step, taboffset);
     int64_t row = array_bisect_multidim(x, data, lendata, step, taboffset, p->lastidx);
 
     if(row == -1) {
