@@ -3561,10 +3561,26 @@ typedef struct {
     FUNC *ftp;
     int lasttab;
     MYFLT param;
+    int numargs;
     enum InterpMethod method;
 } INTERPTAB;
 
-static int32_t interptab_init(CSOUND *csound, INTERPTAB *p) {
+
+static int32_t interptab_init_kk(CSOUND *csound, INTERPTAB *p) {
+    FUNC *ftp;
+    ftp = csound->FTnp2Find(csound, p->tabnum);
+    if (UNLIKELY(ftp == NULL)) {
+        MSGF("table %d not found", (int)*p->tabnum);
+        return NOTOK;
+    }
+    p->ftp = ftp;
+    p->lasttab = (int)*p->tabnum;
+    p->method = InterpLinear;
+    p->numargs = 2;
+    return OK;
+}
+
+static int32_t interptab_init_kkSkk(CSOUND *csound, INTERPTAB *p) {
     FUNC *ftp;
     ftp = csound->FTnp2Find(csound, p->tabnum);
     if (UNLIKELY(ftp == NULL)) {
@@ -3575,10 +3591,8 @@ static int32_t interptab_init(CSOUND *csound, INTERPTAB *p) {
     p->lasttab = (int)*p->tabnum;
     if(*p->step <= 0)
         *p->step = 1;
-    if(p->mode == NULL)
-        p->method = InterpLinear;
-    else
-        p->method = _interp_parse_mode_with_param(p->mode->data, &(p->param));
+    p->numargs = 5;
+    p->method = _interp_parse_mode_with_param(p->mode->data, &(p->param));
     return OK;
 }
 
@@ -3586,7 +3600,15 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
     IGN(csound);
     MYFLT idx = *p->idx;
     MYFLT *data = p->ftp->ftable;
-    int32_t taboffset = (int32_t)*p->offset;
+    int32_t step, taboffset;
+
+    if(p->numargs == 2) {
+        step = 1;
+        taboffset = 0;
+    } else {
+        step = (int32_t)*p->step;
+        taboffset = (int32_t)*p->offset;
+    }
 
     if (idx <= 0) {
         *p->out = data[taboffset];
@@ -3597,7 +3619,6 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
     MYFLT frac = modf(idx, &intpart);
 
     uint64_t len = p->ftp->flen;
-    int32_t step = (int32_t)*p->step;
     uint64_t i = (uint64_t)intpart * step + taboffset;
 
     if (i >= len - 1) {
@@ -3644,8 +3665,14 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
     return OK;
 }
 
-static int32_t interptab_ir(CSOUND *csound, INTERPTAB *p) {
-    if(interptab_init(csound, p) == NOTOK)
+static int32_t interptab_ir5(CSOUND *csound, INTERPTAB *p) {
+    if(interptab_init_kkSkk(csound, p) == NOTOK)
+        return NOTOK;
+    return interptab_kr(csound, p);
+}
+
+static int32_t interptab_ir2(CSOUND *csound, INTERPTAB *p) {
+    if(interptab_init_kk(csound, p) == NOTOK)
         return NOTOK;
     return interptab_kr(csound, p);
 }
@@ -4596,6 +4623,243 @@ static int32_t loadnpy(CSOUND *csound, loadnpy_ARR *p) {
 }
 
 // ---------------
+/* rowsweightedsum - apply weights and sum the rows of an array
+ * krow[] rowsewightedsum gipresetRows[], kweights
+ */
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *outrow;
+    ARRAYDAT *rows;
+    ARRAYDAT *weights;
+} ROWSWEIGHTEDSUM;
+
+static int32_t rowsweightedsum_init(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
+    if(p->rows->dimensions != 2) {
+        return INITERRF("This opcode expects a 2d array as its first argument, got %d dimensions", p->rows->dimensions);
+    }
+    if(p->weights->dimensions != 1) {
+        return INITERRF("This opcode expects a 1d array as its 2nd argument, got %d dimensions", p->weights->dimensions);
+    }
+    int numrows = p->rows->sizes[0];
+    int numweights = p->rows->sizes[0];
+    if(numrows != numweights) {
+        csound->Warning(csound,
+                        "weightedsum: number of rows (%d) != number of weights (%d), "
+                        "will use the first %d rows for calculation\n",
+                        numrows, numweights, min(numrows, numweights));
+    }
+    int rowsize = p->rows->sizes[1];
+    tabinit(csound, p->outrow, rowsize);
+    return OK;
+}
+
+
+static int32_t rowsweightedsum_perf(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
+    MYFLT *out = p->outrow->data;
+    MYFLT *mtx = p->rows->data;
+    int numrows = p->rows->sizes[0];
+    int numweights = p->weights->sizes[0];
+    int n = min(numrows, numweights);
+    int rowsize = p->rows->sizes[1];
+    for(int j=0; j < rowsize; j++) {
+        out[j] = 0.;
+    }
+    for(int i=0; i < n; i++) {
+        MYFLT weight = p->weights->data[i];
+        for(int j=0; j < rowsize; j++) {
+            out[j] += mtx[i*rowsize+j] * weight;
+        }
+    }
+    return OK;
+}
+
+static int32_t rowsweightedsum_i(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
+    rowsweightedsum_init(csound, p);
+    return rowsweightedsum_perf(csound, p);
+}
+
+
+/* ----------------
+  presetinterp - interpolate between "presets" in 2D
+
+  iCoords[] fillarray ix0, iy0, ix1, iy1, ..., ixn, iyn
+  kweights[] presetinterp kx, ky, kCoords, iclamp=0
+
+  A second version allows each point to have a third value: a weight
+  With this it is possible to make the range of each point smaller/larger
+
+  iPoints[] fillarray ix0, iy0, iweight0, ix1, iy1, iweight1, ...
+
+*/
+
+#define PRESETINTERP_MAXPOINTS 100
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *weights;
+    MYFLT *kx;
+    MYFLT *ky;
+    ARRAYDAT *coords;
+    MYFLT *clamp;
+    size_t numpoints;
+    double mindistances[PRESETINTERP_MAXPOINTS];
+    int pointsize;
+
+} PRESETINTERP;
+
+
+static inline MYFLT euclidian_distance(MYFLT x0, MYFLT y0, MYFLT x1, MYFLT y1) {
+    MYFLT dx = x1 - x0;
+    MYFLT dy = y1 - y0;
+    return sqrt(dx*dx + dy*dy);
+}
+
+static MYFLT distance_to_nearest_point(MYFLT x, MYFLT y, ARRAYDAT *arr, int pointsize) {
+    size_t n = arr->sizes[0];
+    if(n == 0) {
+        return -1.;
+    }
+    MYFLT mindistance = INF;
+    MYFLT *data = arr->data;
+    MYFLT px, py;
+    MYFLT distance;
+    for(size_t i=0; i < n; i++) {
+        px = data[i*pointsize];
+        py = data[i*pointsize+1];
+        distance = euclidian_distance(x, y, px, py);
+        if(distance < mindistance)
+            mindistance = distance;
+    }
+    return mindistance;
+}
+
+
+static void calculate_mindistances(ARRAYDAT *points, double *mindistances, const int pointsize) {
+    size_t numpoints = points->sizes[0] / pointsize;
+    double distance, ix, iy, jx, jy;
+    double *data = points->data;
+
+    for(size_t i=0; i < numpoints; i++) {
+        mindistances[i] = INF;
+    }
+    for(size_t i=0; i < numpoints - 1; i++) {
+        for(size_t j=i+1; j < numpoints; j++) {
+            ix = data[i*pointsize];
+            iy = data[i*pointsize+1];
+            jx = data[j*pointsize];
+            jy = data[j*pointsize+1];
+            distance = euclidian_distance(ix, iy, jx, jy);
+            if(distance < mindistances[i]) {
+                mindistances[i] = distance;
+            }
+            if(distance < mindistances[j]) {
+                mindistances[j] = distance;
+            }
+        }
+    }
+}
+
+static MYFLT calculate_weight(int pointidx, PRESETINTERP *p, MYFLT cursorx, MYFLT cursory) {
+    MYFLT cursor_radius = distance_to_nearest_point(cursorx, cursory, p->coords, p->pointsize);
+    MYFLT point_radius = p->mindistances[pointidx];
+    double *coordsdata = p->coords->data;
+    MYFLT dist = euclidian_distance(cursorx, cursory, coordsdata[pointidx*p->pointsize], coordsdata[pointidx*p->pointsize+1]);
+    MYFLT intersection = point_radius + cursor_radius - dist;
+    MYFLT weight = intersection / point_radius;
+    if(p->pointsize == 3) {
+        MYFLT weightfactor = p->coords->data[pointidx*p->pointsize+2];
+        weight *= weightfactor;
+    }
+
+    return weight;
+}
+
+static void calculate_weights(PRESETINTERP *p) {
+    MYFLT weights[PRESETINTERP_MAXPOINTS];
+    MYFLT weight;
+    MYFLT x = *p->kx;
+    MYFLT y = *p->ky;
+    MYFLT sumweights = 0;
+    for(size_t i=0; i < p->numpoints; i++) {
+        weight = max(0, calculate_weight(i, p, x, y));
+        weights[i] = weight;
+        sumweights += weight;
+    }
+    if(sumweights == 0.) {
+        for(size_t i=0; i < p->numpoints; i++) {
+            p->weights->data[i] = 0;
+        }
+        return;
+    }
+    for(size_t i=0; i < p->numpoints; i++) {
+        weights[i] /= sumweights;
+    }
+    MYFLT clamp = *p->clamp;
+    if(clamp > 0) {
+        MYFLT sumvalid = 0.;
+        clamp = clamp/p->numpoints;
+        for(size_t i=0; i < p->numpoints; i++) {
+            weight = weights[i];
+            if(weight < clamp) {
+                weights[i] = 0.;
+            } else {
+                sumvalid += weight;
+            }
+        }
+        for(size_t i=0; i < p->numpoints; i++) {
+            weights[i] /= sumvalid;
+        }
+    }
+    for(size_t i=0; i < p->numpoints; i++) {
+        p->weights->data[i] = weights[i];
+    }
+}
+
+
+static int32_t presetinterp_init(CSOUND *csound, PRESETINTERP *p) {
+    int coordslen = p->coords->sizes[0];
+    if(coordslen % 2 != 0) {
+        return INITERRF("The points array should be a multiple of 2, got %d items", coordslen);
+    }
+    p->numpoints = coordslen / 2;
+    if(p->numpoints <= 0) {
+        return INITERRF("Not enough points defined: %zu", p->numpoints);
+    } else if(p->numpoints > PRESETINTERP_MAXPOINTS) {
+        return INITERRF("Too many points, max=%d", PRESETINTERP_MAXPOINTS);
+    }
+    tabinit(csound, p->weights, p->numpoints);
+    p->pointsize = 2;
+    return OK;
+}
+
+
+static int32_t presetinterp_perf(CSOUND *csound, PRESETINTERP *p) {
+    IGN(csound);
+    calculate_mindistances(p->coords, p->mindistances, p->pointsize);
+    calculate_weights(p);
+    return OK;
+}
+
+
+static int32_t presetinterpw_init(CSOUND *csound, PRESETINTERP *p) {
+    int coordslen = p->coords->sizes[0];
+    if(coordslen % 3 != 0) {
+        return INITERRF("The points array should be a multiple of 3, got %d items", coordslen);
+    }
+    p->numpoints = coordslen / 3;
+    if(p->numpoints <= 0) {
+        return INITERRF("Not enough points defined: %zu", p->numpoints);
+    } else if(p->numpoints > PRESETINTERP_MAXPOINTS) {
+        return INITERRF("Too many points, max=%d", PRESETINTERP_MAXPOINTS);
+    }
+    tabinit(csound, p->weights, p->numpoints);
+    p->pointsize = 3;
+    return OK;
+}
+
+
+// ---------------
 // DetectSilence - ported from supercollider
 // ksilenceDetected detectSilence ain, kamp=-1, ktime=-1 (k, aJJ)
 // in: audio, amp: 0.0001, time: 0.1
@@ -4623,8 +4887,6 @@ static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
 
     int endCounter = (int32_t)(csound->GetSr(csound) * ktime);
     int counter = p->counter;
-    // printf("endCounter: %d, counter: %d \n", endCounter, counter);
-
     MYFLT val;
     MYFLT out = 0.;
     MYFLT *in = p->ain;
@@ -4745,6 +5007,7 @@ typedef struct {
 } BALANCE2;
 
 static int32_t balance2_init(CSOUND *csound, BALANCE2 *p) {
+    IGN(csound);
     p->m_pos = clip(*p->kpos, 0, 1);
     p->m_level = *p->klevel;
     MYFLT pos = p->m_pos;
@@ -4755,6 +5018,7 @@ static int32_t balance2_init(CSOUND *csound, BALANCE2 *p) {
 
 static int32_t balance2_ak(CSOUND *csound, BALANCE2 *p) {
     // TODO: sample accurate
+    IGN(csound);
     int32_t nsmps = CS_KSMPS;
 
     MYFLT *leftout = p->leftout;
@@ -4997,15 +5261,15 @@ static OENTRY localops[] = {
     { "interp1d.I_II", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]", (SUBR)interparr_K_KK_ir},
     { "interp1d.I_IIS", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]So", (SUBR)interparr_K_KK_ir},
 
-    // kout interptab kin, ktab, kmode=0, kstep=1, koffset=0
-    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kkSPO", (SUBR)interptab_init, (SUBR)interptab_kr},
-    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kk", (SUBR)interptab_init, (SUBR)interptab_kr},
+    // kout interptab kin, ktab, Smode='linear', kstep=1, koffset=0
+    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kkSPO", (SUBR)interptab_init_kkSkk, (SUBR)interptab_kr},
+    { "interp1d.k",  S(INTERPTAB), 0, 3, "k", "kk", (SUBR)interptab_init_kk, (SUBR)interptab_kr},
 
-    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "iiSpo", (SUBR)interptab_ir},
-    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "ii", (SUBR)interptab_ir},
+    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "iiSpo", (SUBR)interptab_ir5},
+    { "interp1d.i",  S(INTERPTAB), 0, 1, "i", "ii", (SUBR)interptab_ir2},
 
-    { "interp1d.a",  S(INTERPTAB), 0, 3, "a", "akSPO", (SUBR)interptab_init, (SUBR)interptab_a_a_kr},
-    { "interp1d.a",  S(INTERPTAB), 0, 3, "a", "ak", (SUBR)interptab_init, (SUBR)interptab_a_a_kr},
+    { "interp1d.a",  S(INTERPTAB), 0, 3, "a", "akSPO", (SUBR)interptab_init_kkSkk, (SUBR)interptab_a_a_kr},
+    { "interp1d.a",  S(INTERPTAB), 0, 3, "a", "ak", (SUBR)interptab_init_kkSkk, (SUBR)interptab_a_a_kr},
 
 
     // TODO : kout[] interp1d kin[], ktab, Smode=0,kstep=1, koffset=0
@@ -5047,7 +5311,23 @@ static OENTRY localops[] = {
       (SUBR)detectSilence_init, (SUBR)detectSilence_k_a},
     { "panstereo", S(BALANCE2), 0, 3, "aa", "aakP", (SUBR)balance2_init, (SUBR)balance2_ak},
     { "zerocrossing", S(ZEROCROSSING), 0, 3, "a", "a", 
-      (SUBR)zerocrossing_init, (SUBR)zerocrossing_a_a}
+      (SUBR)zerocrossing_init, (SUBR)zerocrossing_a_a },
+    // { "presetinterp", S(PRESETINTERP), 0, 3, "k[]", "kkk[]o",
+    //  (SUBR)presetinterp_init, (SUBR)presetinterp_perf },
+
+    { "presetinterp", S(PRESETINTERP), 0, 3, "k[]", "kkk[]o",
+      (SUBR)presetinterpw_init, (SUBR)presetinterp_perf },
+
+    { "presetinterp", S(PRESETINTERP), 0, 3, "k[]", "kki[]o",
+      (SUBR)presetinterpw_init, (SUBR)presetinterp_perf },
+
+    { "weightedsum", S(ROWSWEIGHTEDSUM), 0, 3, "k[]", "k[]k[]",
+      (SUBR)rowsweightedsum_init, (SUBR)rowsweightedsum_perf },
+    { "weightedsum", S(ROWSWEIGHTEDSUM), 0, 3, "k[]", "i[]k[]",
+      (SUBR)rowsweightedsum_init, (SUBR)rowsweightedsum_perf },
+
+    { "weightedsum", S(ROWSWEIGHTEDSUM), 0, 1, "i[]", "i[]i[]",
+      (SUBR)rowsweightedsum_i },
 
 };
 

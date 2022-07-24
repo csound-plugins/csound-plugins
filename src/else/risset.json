@@ -1,6 +1,6 @@
 {
   "name": "else",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "opcodes": [
     "accum",
     "atstop",
@@ -27,6 +27,7 @@
     "perlin3",
     "pread",
     "pwrite",
+    "presetinterp",
     "ramptrig",
     "ref",
     "refvalid",
@@ -36,6 +37,7 @@
     "standardchaos",
     "throwerror",
     "uniqinstance",
+    "weightedsum",
     "zeroarray",
     "zerocrossing"
   ],

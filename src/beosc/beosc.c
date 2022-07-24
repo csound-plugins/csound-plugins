@@ -1393,6 +1393,11 @@ static OENTRY localops[] = {
     // kOut[] getrowlin kMtrx[], krow, kstart=0, kend=0, kstep=1
     {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "k[]kOOP",
      (SUBR)getrowlin_init, (SUBR)getrowlin_k },
+
+    {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "i[]kOOP",
+     (SUBR)getrowlin_init, (SUBR)getrowlin_k },
+
+
 };
 
 LINKAGE
