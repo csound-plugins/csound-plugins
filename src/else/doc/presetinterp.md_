@@ -1,0 +1,55 @@
+# presetinterp
+
+## Abstract
+
+Interpolates between presets placed in a 2D plane
+
+
+## Description
+
+Given a set of points in 2D, this opcodes determines the weight of each
+point in relation to a cursor. 
+Imagine a set of presets. A preset contains a set of parameters, 
+for example, the formant frequencies, amplitudes and bandwidths of the
+a given vowel. Each preset is associated with a point in the plane. 
+This opcode returns an array of weights, one for each point,
+indicating how much each preset should contribute to the result. 
+These weights can be used together with other array opcodes (particularly
+with [weightedsum](weightedsum.md)) to interpolate the actual parameters.
+
+## Syntax
+
+```csound
+kweights[]  presetinterp kx, ky, kpoints[], iclamp=0
+kweights[]  presetinterp kx, ky, ipoints[], iclamp=0
+```
+    
+## Arguments
+
+* `kx`: the x coordinate of the cursor
+* `ky`: the y coordinate of the cursor
+* `kpoints[]`: a 1D array with the coordinates and weights representing the points. 
+Each point is represented by 3 numbers: x, y, weight (the size of the array should
+be 3x the number of points defined). The weight is normally a number between 0-1
+which can be used to scale the presence of a particular preset. It is 
+often needed for points placed at the center of the 2D plane
+* `iclamp`: if given, a value in the range `(0, 1]`. Presets which would get an associated 
+weight less than `iclamp * averageWeight` (where *averageWeight* is `1/numberOfPoints`) 
+are clamped to 0 and their weight is redistributed (`kweights` always sums up to 1)
+        
+## Output
+
+* `kweights`: an array with the same size as the number of presets given, representing
+the weight for each point in the same order the points were defined. The weights in 
+this array always sum up to 1.0. 
+  
+## See Also
+
+* [weightedsum](weightedsum.md)
+* [hypot](https://csound.com/docs/manual/hypot.html)
+
+
+## Examples
+
+{example}
+
