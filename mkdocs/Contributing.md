@@ -12,7 +12,7 @@ The tree can be structured as follows:
 
     mylib/
       CMakeLists.txt
-      manifest.json
+      risset.json
       [ README.md ]
       src/
         mylib.c
@@ -51,32 +51,30 @@ At the root folder of this repository, do
     
 
 
-# Manifest
+# Manifest (risset.json)
 
-A manifest is used to automate documentation of the opcodes (wiki, pdf documentation, etc).
-The manifest (named manifest.json) is a .json file. It should have the minimal form: 
+A manifest is used both to automate documentation of the opcodes (wiki, pdf documentation, etc)
+and make the opcode installable via risset. The manifest (named risset.json) is a .json file. 
+It should have the minimal form: 
 
 
 ```json
+
 {
-    "name": "mylib",
-    "opcodes": ["foo", "bar"],
-    "author": "name",
-    "author_email": "name@email.com",
-    "license": "LGPL",
-    "description": "Description of this package",
-    "url": "http://github.com/..."
+  "name": "mylib",
+  "version": "1.0.0",
+  "opcodes": [
+    "opcode1",
+    "opcode2",
+    ...
+  ],
+  "short_description": "A short description",
+  "long_description": "A longer description",
+  "csound_version": "6.17",
+  "author": "Name Surname",
+  "email": "name.surname@mail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
 }
-        
-```
-
-In this case, two  opcodes are defined, and these names should correspond to
-the .csd example living inside of the `examples` folder, and a .md file 
-living inside the `doc` folder. 
-
-A risset.json file is a viable manifest.json file. Just create a symlink:
-
-
-    ln -s risset.json manifest.json
-
-   
+     
+```   

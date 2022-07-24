@@ -128,6 +128,7 @@ Miscellaneous plugins
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
+* [presetinterp](opcodes/presetinterp.md): Interpolates between presets placed in a 2D plane 
 * [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
 * [ref](opcodes/ref.md): Get a reference to a variable 
 * [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
@@ -137,6 +138,7 @@ Miscellaneous plugins
 * [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
 * [throwerror](opcodes/throwerror.md): Throws an error message at performance or init 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
+* [weightedsum](opcodes/weightedsum.md): Weighted sum of multiple 1D arrays, or the rows of a 2D array 
 * [zeroarray](opcodes/zeroarray.md): Zero all elements in an array 
 * [zerocrossing](opcodes/zerocrossing.md): Outputs a frequency based on the number of zero-crossings per second. 
 
