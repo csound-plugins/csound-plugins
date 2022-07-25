@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>pathIsAbsolute - Csound Plugins</title>
+    <title>pwriten - Csound Plugins</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
@@ -13,8 +13,8 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "pathIsAbsolute";
-        var mkdocs_page_input_path = "opcodes/pathIsAbsolute.md";
+        var mkdocs_page_name = "pwriten";
+        var mkdocs_page_input_path = "opcodes/pwriten.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -151,27 +151,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="pathIsAbsolute.html">pathIsAbsolute</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="pathIsAbsolute.html">pathIsAbsolute</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathJoin.html">pathJoin</a>
                   </li>
@@ -215,7 +195,31 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pwrite.html">pwrite</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="pwriten.html">pwriten</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="pwriten.html">pwriten</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#dynamic-pfields">Dynamic pfields</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="ramptrig.html">ramptrig</a>
                   </li>
@@ -275,7 +279,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>Opcodes &raquo;</li>
-      <li>pathIsAbsolute</li>
+      <li>pwriten</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -284,47 +288,145 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="pathisabsolute">pathIsAbsolute</h1>
+                <h1 id="pwriten">pwriten</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Returns 1 if the path of a file is absolute</p>
+<p>Modify pfield values of an active instrument instance created via nstance</p>
 <h2 id="description">Description</h2>
-<p>Returns 1 if the path of a file is absolute</p>
+<p><code>pwriten</code> can be used to modify the value of a pfield of a running instance 
+created via <code>nstance</code>. It is similar to <a href="pwrite.html">pwrite</a> but uses the 
+instance id as returned via <code>nstance</code> instead of a fractional p1</p>
+<h3 id="dynamic-pfields">Dynamic pfields</h3>
+<p>In order for pwrite to have any effect, the instrument in question should
+have an assignment of the sort <code>kfreq = p5</code>. </p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Setting a value of a pfield out of range will result in a 
+performance error. </p>
+</div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>i_isabsolute pathIsAbsolute Spath 
-k_isabsolute pathIsAbsolute Spath
+<div class="codehilite"><pre><span></span><code><span class="n">pwriten</span> <span class="kt">k</span><span class="n">instanceid</span><span class="p">,</span> <span class="kt">i</span><span class="n">ndex</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span><span class="p">,</span> <span class="p">[</span><span class="kt">i</span><span class="n">ndex2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
 </code></pre></div>
 
-<h2 id="arguments">Arguments</h2>
+<h3 id="arguments">Arguments</h3>
 <ul>
-<li>`Spath': The path to a file or directory</li>
+<li><code>kinstanceid</code>: the instance number (as returned via nstance)</li>
+<li><code>index</code> (i-, k-): the index of the pfield to modify. If kindex is 4, then p4 will be modified</li>
+<li><code>value</code> (i-, k-): the new value of the given pfield</li>
 </ul>
-<h2 id="output">Output</h2>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>Multiple index:value pairs can be modified simultaneously</p>
+</div>
+<h3 id="execution-time">Execution Time</h3>
 <ul>
-<li><code>i_isabsolute</code>: 1 if the path is absolute, 0 otherwise</li>
-</ul>
-<h2 id="execution-time">Execution Time</h2>
-<ul>
-<li>Init (if the result is i-type)</li>
-<li>Perf (if the result is k-type)</li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">_isabsolute</span> <span class="n">pathAbsolute</span> <span class="s">&quot;relative/path/to/file.txt&quot;</span>
-<span class="nb">prints</span> <span class="s">&quot;Path is absolute: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">_isabsolute</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="s">&quot;yes&quot;</span> <span class="o">:</span> <span class="s">&quot;no&quot;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">-</span><span class="n">odac</span>
+<span class="o">-</span><span class="n">m0</span>
+
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="kd">instr</span> <span class="nf">exit</span>
+  <span class="nb">exitnow</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; Example 1. instr 2 controls instr 1</span>
+
+<span class="kd">instr</span> <span class="nf">1</span>
+  <span class="nb">pset</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span>
+  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinsts</span>
+  <span class="kt">k</span><span class="n">4</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">5</span> <span class="o">=</span> <span class="vi">p5</span>
+  <span class="nb">printf</span> <span class="s">&quot;time: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s">instance: </span><span class="si">%.3f</span><span class="se">\t</span><span class="s">p4: </span><span class="si">%f</span><span class="se">\t</span><span class="s">p5: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="vi">p1</span><span class="p">,</span> <span class="kt">k</span><span class="n">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">5</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">i</span><span class="n">eventid</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">val</span> <span class="nb">line</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
+  <span class="n">pwriten</span> <span class="kt">i</span><span class="n">eventid</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span>
+  <span class="n">pwriten</span> <span class="kt">i</span><span class="n">eventid</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span><span class="o">*</span><span class="mi">2</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example1</span>
+  <span class="kt">i</span><span class="n">eventid</span> <span class="nb">nstance</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span>
+  <span class="k">if</span> <span class="nb">timeinstk</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="kt">k</span><span class="n">eventid</span> <span class="o">=</span> <span class="kt">i</span><span class="n">eventid</span>
+    <span class="nb">schedulek</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="kt">k</span><span class="n">eventid</span>
+  <span class="k">endif</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;-----------------------------</span>
+<span class="c1">; Example 2, one instrument modulates another</span>
+
+<span class="kd">instr</span> <span class="nf">ex2_generator</span>
+  <span class="nb">pset</span> <span class="vi">p1</span><span class="p">,</span> <span class="vi">p2</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">,</span> <span class="mf">0.1</span>
+  <span class="kt">k</span><span class="n">amp</span>       <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">freq</span>      <span class="o">=</span> <span class="vi">p5</span>
+  <span class="kt">k</span><span class="n">cutoff</span>    <span class="o">=</span> <span class="vi">p6</span>
+  <span class="kt">k</span><span class="n">resonance</span> <span class="o">=</span> <span class="vi">p7</span>
+  <span class="kt">a</span><span class="n">saw</span> <span class="nb">vco2</span><span class="p">,</span> <span class="kt">k</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="nb">moogladder2</span><span class="p">,</span> <span class="kt">a</span><span class="n">saw</span><span class="p">,</span> <span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span> <span class="kt">k</span><span class="n">resonance</span>
+  <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>  
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">ex2_control</span>
+  <span class="kt">i</span><span class="n">glissdur</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">freq1</span> <span class="nb">linseg</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;4A&quot;</span><span class="p">),</span> <span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;3A&quot;</span><span class="p">)</span>
+  <span class="kt">k</span><span class="n">freq2</span> <span class="nb">linseg</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;4F&quot;</span><span class="p">),</span> <span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;3F&quot;</span><span class="p">)</span>
+  <span class="kt">i</span><span class="n">amp</span> <span class="o">=</span> <span class="mf">0.2</span>
+  <span class="kt">k</span><span class="n">id1</span> <span class="o">=</span> <span class="nb">nstance</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">amp</span><span class="p">)</span>
+  <span class="kt">k</span><span class="n">id2</span> <span class="o">=</span> <span class="nb">nstance</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">amp</span><span class="p">)</span>
+  <span class="n">pwriten</span> <span class="kt">k</span><span class="n">id1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq1</span>
+  <span class="n">pwriten</span> <span class="kt">k</span><span class="n">id2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq2</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">example2</span>
+  <span class="nb">schedule</span> <span class="s">&quot;ex2_control&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span>
+  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="nb">turnoff</span>
+<span class="kd">endin</span>
+
+<span class="c1">;; Uncomment as needed</span>
+
+<span class="c1">; schedule &quot;example1&quot;, 0, 1</span>
+<span class="nb">schedule</span> <span class="s">&quot;example2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="pathAbsolute.html">pathAbsolute</a></li>
-<li><a href="scriptDir.html">scriptDir</a></li>
+<li><a href="pwrite.html">pwrite</a></li>
+<li><a href="pread.html">pread</a></li>
+<li><a href="https://csound.com/docs/manual/pset.html">pset</a></li>
+<li><a href="https://csound.com/docs/manual/p.html">p</a></li>
+<li><a href="https://csound.com/docs/manual/passign.html">passign</a></li>
+<li><a href="uniqinstance.html">uniqinstance</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2020</p>
+<p>Eduardo Moguillansky, 2022</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="pathAbsolute.html" class="btn btn-neutral float-left" title="pathAbsolute"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="pathJoin.html" class="btn btn-neutral float-right" title="pathJoin">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="pwrite.html" class="btn btn-neutral float-left" title="pwrite"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="ramptrig.html" class="btn btn-neutral float-right" title="ramptrig">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -347,10 +449,10 @@ k_isabsolute pathIsAbsolute Spath
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="pathAbsolute.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="pwrite.html" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="pathJoin.html" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="ramptrig.html" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

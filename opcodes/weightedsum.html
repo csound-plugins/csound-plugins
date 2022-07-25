@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>weightedsum - Csound Plugins</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../css/syntax-highlighting.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "weightedsum";
+        var mkdocs_page_input_path = "opcodes/weightedsum.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../index.html" class="icon icon-home"> Csound Plugins
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../index.html">Csound Plugins</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../Contributing.html">Contributing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../Installation.html">Installation</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Opcodes</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="accum.html">accum</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="atstop.html">atstop</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="beadsynt.html">beadsynt</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="beosc.html">beosc</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="bisect.html">bisect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="crackle.html">crackle</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="defer.html">defer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="deref.html">deref</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="detectsilence.html">detectsilence</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_del.html">dict_del</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_get.html">dict_get</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_geti.html">dict_geti</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_iter.html">dict_iter</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_loadstr.html">dict_loadstr</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_new.html">dict_new</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_print.html">dict_print</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_query.html">dict_query</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_set.html">dict_set</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_size.html">dict_size</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="diode_ringmod.html">diode_ringmod</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="extendarray.html">extendarray</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="fileexists.html">file_exists</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="filereadmeta.html">filereadmeta</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="findFileInPath.html">findFileInPath</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="findarray.html">findarray</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="frac2int.html">frac2int</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="ftfill.html">ftfill</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="ftfind.html">ftfind</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="ftnew.html">ftnew</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="ftsetparams.html">ftsetparams</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="getEnvVar.html">getEnvVar</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="getrowlin.html">getrowlin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="initerror.html">initerror</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="interp1d.html">interp1d</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="jsfx.html">jsfx</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="jsfx_getslider.html">jsfx_setslider</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="jsfx_new.html">jsfx_new</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="jsfx_play.html">jsfx_play</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="jsfx_setslider.html">jsfx_setslider</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="lfnoise.html">lfnoise</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="linenv.html">linenv</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="loadnpy.html">loadnpy</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="memview.html">memview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathIsAbsolute.html">pathIsAbsolute</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathJoin.html">pathJoin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathNative.html">pathNative</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathSplit.html">pathSplit</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathSplitExt.html">pathSplitExt</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathSplitExtk.html">pathSplitExtk</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathSplitk.html">pathSplitk</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="perlin3.html">perlin3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="poly.html">poly</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="poly0.html">poly0</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="polyseq.html">polyseq</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_at.html">pool_at</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_capacity.html">pool_capacity</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_gen.html">pool_gen</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_isfull.html">pool_isfull</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_new.html">pool_new</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_pop.html">pool_pop</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_push.html">pool_push</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_size.html">pool_size</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pread.html">pread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="presetinterp.html">presetinterp</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pwrite.html">pwrite</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pwriten.html">pwriten</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="ramptrig.html">ramptrig</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="ref.html">ref</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="refvalid.html">refvalid</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="risset.html">risset</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="schmitt.html">schmitt</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="scriptDir.html">scriptDir</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="sderef.html">sderef</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="setslice.html">setslice</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="sigmdrive.html">sigmdrive</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="sref.html">sref</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="standardchaos.html">standardchaos</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="strjoin.html">strjoin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="strsplit.html">strsplit</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="sysPlatform.html">sysPlatform</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="tabrowlin.html">tabrowlin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="throwerror.html">throwerror</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="tubeharmonics.html">tubeharmonics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="uniqinstance.html">uniqinstance</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="weightedsum.html">weightedsum</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="zeroarray.html">zeroarray</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="zerocrossing.html">zerocrossing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Csound Plugins</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Opcodes &raquo;</li>
+      <li>weightedsum</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="weightedsum">weightedsum</h1>
+<h2 id="abstract">Abstract</h2>
+<p>Weighted sum of multiple 1D arrays, or the rows of a 2D array</p>
+<h2 id="description">Description</h2>
+<p>Given a 2D array, <code>weightedsum</code> takes an array of factors (the weights),
+one for each row, and multiplies each element in a row by its factor adding
+all 1D arrays together to produce a weighted sum of such arrays. If the
+2D array has a shape <code>(numrows, numcolumns)</code> then the weights array
+should be a 1D array of size <code>numrows</code> and the output array is also
+a 1D array of size <code>numcolumns</code>.</p>
+<p>In the following example <code>weightedsum</code> performs an average between the 2nd
+and the 4th row, effectively a vowel sound halfway between E and O</p>
+<p>Notice that the absolute value of the weights is not really important, since these
+are relative weights. The same result would be achieved with <code>kweights[] fillarray 0, 0.5, 0, 0.5,0</code></p>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">formantFreqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1150</span><span class="p">,</span> <span class="mi">2900</span><span class="p">,</span> <span class="mi">3900</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span> <span class="err">\</span>  <span class="c1">; A</span>
+                          <span class="mi">350</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">2800</span><span class="p">,</span> <span class="mi">3600</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span> <span class="err">\</span>  <span class="c1">; E</span>
+                          <span class="mi">270</span><span class="p">,</span> <span class="mi">2140</span><span class="p">,</span> <span class="mi">2950</span><span class="p">,</span> <span class="mi">3900</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span> <span class="err">\</span>  <span class="c1">; I</span>
+                          <span class="mi">450</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">2830</span><span class="p">,</span> <span class="mi">3800</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span>  <span class="err">\</span>  <span class="c1">; O</span>
+                          <span class="mi">325</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">2700</span><span class="p">,</span> <span class="mi">3800</span><span class="p">,</span> <span class="mi">4950</span>      <span class="c1">; U</span>
+
+<span class="nb">reshapearray</span> <span class="kt">i</span><span class="n">formantFreqs</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+<span class="kt">k</span><span class="n">weights</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+<span class="kt">k</span><span class="n">formants</span><span class="p">[]</span> <span class="kt">w</span><span class="n">eightedsum</span> <span class="kt">i</span><span class="n">formantFreqs</span><span class="p">,</span> <span class="kt">k</span><span class="n">weights</span>
+
+<span class="o">-&gt;</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="mi">1400</span><span class="p">,</span> <span class="mi">2815</span><span class="p">,</span> <span class="mi">3700</span><span class="p">,</span> <span class="mi">4950</span><span class="p">]</span>
+</code></pre></div>
+
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span><span class="p">[]</span>  <span class="kt">w</span><span class="n">eightedsum</span> <span class="kt">k</span><span class="n">matrix</span><span class="p">[],</span> <span class="kt">k</span><span class="n">weights</span><span class="p">[]</span>
+<span class="kt">k</span><span class="n">out</span><span class="p">[]</span>  <span class="kt">w</span><span class="n">eightedsum</span> <span class="kt">i</span><span class="n">matrix</span><span class="p">[],</span> <span class="kt">k</span><span class="n">weights</span><span class="p">[]</span>
+</code></pre></div>
+
+<h2 id="arguments">Arguments</h2>
+<ul>
+<li><strong>kmatrix</strong> / <strong>imatrix</strong>: a 2D array. Each element in a row will be multiplied by the row's
+    weight (given in <code>kweights</code>) and all rows will be summed together</li>
+<li><strong>kweights</strong>: the weight of each row of <code>kmatrix</code> (normally a value between 0-1). This
+    should be a 1D array with a size equal to the number of rows in <code>kmatrix</code></li>
+</ul>
+<h2 id="output">Output</h2>
+<ul>
+<li><strong>kout</strong>: a 1D array of size <code>numcolumns</code> with the weighted sum of the input array weighted
+    by the given weights.</li>
+</ul>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="interp1d.html">interp1d</a></li>
+</ul>
+<h2 id="examples">Examples</h2>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">-</span><span class="n">odac</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="kt">gi</span><span class="n">formantFreqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1150</span><span class="p">,</span> <span class="mi">2900</span><span class="p">,</span> <span class="mi">3900</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span> <span class="err">\</span>  <span class="c1">; A</span>
+                           <span class="mi">350</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">2800</span><span class="p">,</span> <span class="mi">3600</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span> <span class="err">\</span>  <span class="c1">; E</span>
+                           <span class="mi">270</span><span class="p">,</span> <span class="mi">2140</span><span class="p">,</span> <span class="mi">2950</span><span class="p">,</span> <span class="mi">3900</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span> <span class="err">\</span>  <span class="c1">; I</span>
+                           <span class="mi">450</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">2830</span><span class="p">,</span> <span class="mi">3800</span><span class="p">,</span> <span class="mi">4950</span><span class="p">,</span>  <span class="err">\</span>  <span class="c1">; O</span>
+                           <span class="mi">325</span><span class="p">,</span> <span class="mi">700</span><span class="p">,</span> <span class="mi">2700</span><span class="p">,</span> <span class="mi">3800</span><span class="p">,</span> <span class="mi">4950</span>      <span class="c1">; U</span>
+
+
+
+<span class="kt">gi</span><span class="n">formantDbs</span><span class="p">[]</span> <span class="nb">fillarray</span>   <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">32</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">15</span><span class="p">,</span> <span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">56</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="o">-</span><span class="mi">26</span><span class="p">,</span> <span class="o">-</span><span class="mi">26</span><span class="p">,</span> <span class="o">-</span><span class="mi">44</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">11</span><span class="p">,</span> <span class="o">-</span><span class="mi">22</span><span class="p">,</span> <span class="o">-</span><span class="mi">22</span><span class="p">,</span> <span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">16</span><span class="p">,</span> <span class="o">-</span><span class="mi">35</span><span class="p">,</span> <span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">60</span>
+
+<span class="kt">gi</span><span class="n">formantBws</span><span class="p">[]</span> <span class="nb">fillarray</span>   <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">60</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="w">\</span>
+                           <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">170</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">200</span>
+
+
+<span class="kt">gi</span><span class="n">formantAmps</span><span class="p">[]</span> <span class="nb">maparray</span> <span class="kt">gi</span><span class="n">formantDbs</span><span class="p">,</span> <span class="s">&quot;ampdb&quot;</span>
+
+<span class="nb">reshapearray</span> <span class="kt">gi</span><span class="n">formantFreqs</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+<span class="nb">reshapearray</span> <span class="kt">gi</span><span class="n">formantAmps</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+<span class="nb">reshapearray</span> <span class="kt">gi</span><span class="n">formantBws</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span>
+
+<span class="kd">instr</span> <span class="nf">10</span>
+  <span class="kt">k</span><span class="n">midi</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">amp</span> <span class="o">=</span> <span class="vi">p5</span>
+  <span class="kt">k</span><span class="n">x</span> <span class="o">=</span> <span class="vi">p6</span>
+  <span class="kt">k</span><span class="n">y</span> <span class="o">=</span> <span class="vi">p7</span>
+  <span class="kt">k</span><span class="n">midi</span> <span class="o">=</span> <span class="nb">lag</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">k</span><span class="n">midi</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+
+  <span class="kt">k</span><span class="n">vibfreq</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">4.5</span>
+  <span class="kt">i</span><span class="n">vibsemi</span> <span class="o">=</span> <span class="mf">0.1</span>
+  <span class="kt">k</span><span class="n">vib</span> <span class="nb">oscil</span> <span class="kt">i</span><span class="n">vibsemi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="kt">k</span><span class="n">vibfreq</span>
+  <span class="kt">k</span><span class="n">vib</span> <span class="o">-=</span> <span class="kt">i</span><span class="n">vibsemi</span> <span class="o">/</span> <span class="mi">2</span>
+  <span class="kt">k</span><span class="n">pitch</span> <span class="o">=</span> <span class="kt">k</span><span class="n">midi</span> <span class="o">+</span> <span class="kt">k</span><span class="n">vib</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="nb">lag</span><span class="p">(</span><span class="nb">mtof</span><span class="p">(</span><span class="kt">k</span><span class="n">pitch</span><span class="p">),</span> <span class="mf">0.2</span><span class="p">)</span>
+
+  <span class="c1">; asource = mpulse:a(kamp*10, 1/kfreq)</span>
+  <span class="kt">a</span><span class="n">source</span> <span class="nb">vco2</span> <span class="kt">k</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
+  <span class="kt">a</span><span class="n">source</span> <span class="o">=</span> <span class="nb">butterlp</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="kt">a</span><span class="n">source</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
+
+  <span class="c1">;                   x    y    weight</span>
+  <span class="kt">k</span><span class="n">coords</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>      <span class="err">\</span>    <span class="c1">; A</span>
+                      <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span>    <span class="err">\</span>    <span class="c1">; E</span>
+                      <span class="mi">1</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>      <span class="err">\</span>    <span class="c1">; I</span>
+                      <span class="mi">0</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>      <span class="err">\</span>    <span class="c1">; O</span>
+                      <span class="mi">1</span><span class="p">,</span>   <span class="mi">1</span><span class="p">,</span>   <span class="mi">1</span>            <span class="c1">; U</span>
+  <span class="kt">k</span><span class="n">weights</span><span class="p">[]</span> <span class="nb">init</span> <span class="mi">5</span>
+  <span class="kt">k</span><span class="n">formantFreqs</span><span class="p">[]</span> <span class="nb">init</span> <span class="mi">5</span>
+  <span class="kt">k</span><span class="n">formantBws</span><span class="p">[]</span> <span class="nb">init</span> <span class="mi">5</span>
+  <span class="kt">k</span><span class="n">formantAmps</span><span class="p">[]</span> <span class="nb">init</span> <span class="mi">5</span>
+
+  <span class="k">if</span> <span class="nb">changed</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">k</span><span class="n">x</span><span class="p">,</span> <span class="kt">k</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="kt">k</span><span class="n">weights</span> <span class="n">presetinterpw</span> <span class="kt">k</span><span class="n">x</span><span class="p">,</span> <span class="kt">k</span><span class="n">y</span><span class="p">,</span> <span class="kt">k</span><span class="n">coords</span><span class="p">,</span> <span class="mf">0.25</span>
+    <span class="nb">printarray</span> <span class="kt">k</span><span class="n">weights</span>
+    <span class="kt">k</span><span class="n">formantFreqs</span> <span class="kt">w</span><span class="n">eightedsum</span> <span class="kt">gi</span><span class="n">formantFreqs</span><span class="p">,</span> <span class="kt">k</span><span class="n">weights</span>
+    <span class="kt">k</span><span class="n">formantBws</span>   <span class="kt">w</span><span class="n">eightedsum</span> <span class="kt">gi</span><span class="n">formantBws</span><span class="p">,</span> <span class="kt">k</span><span class="n">weights</span>
+    <span class="kt">k</span><span class="n">formantAmps</span>  <span class="kt">w</span><span class="n">eightedsum</span> <span class="kt">gi</span><span class="n">formantAmps</span><span class="p">,</span> <span class="kt">k</span><span class="n">weights</span>
+
+  <span class="k">endif</span>
+  <span class="kt">k</span><span class="n">formantFreqs</span> <span class="n">poly</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;lag&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">formantFreqs</span><span class="p">,</span> <span class="mf">0.1</span>
+  <span class="kt">k</span><span class="n">formantAmps</span> <span class="n">poly</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;lag&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">formantAmps</span><span class="p">,</span> <span class="mf">0.1</span>
+
+  <span class="kt">a</span><span class="n">formants</span><span class="p">[]</span> <span class="n">poly</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;resonx&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">source</span><span class="p">,</span> <span class="kt">k</span><span class="n">formantFreqs</span><span class="p">,</span> <span class="kt">k</span><span class="n">formantBws</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span>
+  <span class="c1">; aformants[] poly 5, &quot;butterbp&quot;, asource, kformantFreqs, kformantBws</span>
+  <span class="kt">a</span><span class="n">formants</span> <span class="o">*=</span> <span class="kt">k</span><span class="n">formantAmps</span>
+  <span class="kt">a</span><span class="n">sum</span> <span class="nb">sumarray</span> <span class="kt">a</span><span class="n">formants</span>
+  <span class="kt">a</span><span class="n">sum</span> <span class="o">*=</span> <span class="nb">a</span><span class="p">(</span><span class="kt">k</span><span class="n">amp</span><span class="p">)</span>
+  <span class="kt">a</span><span class="n">sum</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="c1">; asum *= 0.1</span>
+  <span class="c1">; dispfft asum, 0.05, 4096</span>
+  <span class="nb">dispfft</span> <span class="kt">a</span><span class="n">source</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">4096</span>
+  <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">sum</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="kt">a</span><span class="n">source</span>
+<span class="kd">endin</span>
+
+<span class="kd">instr</span> <span class="nf">20</span>
+  <span class="kt">i</span><span class="n">p1</span> <span class="o">=</span> <span class="vi">p4</span>
+  <span class="kt">k</span><span class="n">t</span> <span class="o">=</span> <span class="nb">timeinsts</span><span class="p">()</span>
+  <span class="kt">k</span><span class="n">midi</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">36</span>
+  <span class="kt">k</span><span class="n">amp</span> <span class="o">=</span> <span class="mf">0.1</span>
+  <span class="kt">k</span><span class="n">radius</span> <span class="nb">linseg</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span>
+  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="mi">10</span>
+  <span class="kt">k</span><span class="n">x</span> <span class="o">=</span> <span class="nb">oscil</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">k</span><span class="n">radius</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span>
+  <span class="kt">k</span><span class="n">y</span> <span class="o">=</span> <span class="nb">oscil</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">k</span><span class="n">radius</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">3.1415</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span>
+  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">midi</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">amp</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="kt">k</span><span class="n">x</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="kt">k</span><span class="n">y</span>
+  <span class="k">if</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="nb">outvalue</span> <span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">x</span>
+    <span class="nb">outvalue</span> <span class="s">&quot;y&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">y</span>
+    <span class="nb">outvalue</span> <span class="s">&quot;note&quot;</span><span class="p">,</span> <span class="nb">mton</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="kt">k</span><span class="n">midi</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+  <span class="k">endif</span>
+<span class="kd">endin</span>
+
+<span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="nb">schedule</span> <span class="mf">10.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">48</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+<span class="nb">schedule</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mf">10.01</span>
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="o">&lt;</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="n">Widgets</span><span class="o">&lt;/</span><span class="n">label</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
+ <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">833</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">631</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">uuid</span><span class="o">/&gt;</span>
+ <span class="o">&lt;</span><span class="n">bgcolor</span> <span class="nb">mode</span><span class="o">=</span><span class="s">&quot;background&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">40</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">40</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">40</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">bsbObject</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBGraph&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">graph1</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">5</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">9</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">828</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">313</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="err">{</span><span class="kt">a</span><span class="n">386abff</span><span class="o">-</span><span class="kt">a</span><span class="n">2e9</span><span class="o">-</span><span class="mi">4</span><span class="err">fd</span><span class="mi">5</span><span class="o">-</span><span class="kt">a</span><span class="n">2a1</span><span class="o">-</span><span class="mi">044</span><span class="err">b</span><span class="mi">268</span><span class="err">f</span><span class="mi">027</span><span class="err">e}</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midichan</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midichan</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midicc</span><span class="o">&gt;-</span><span class="mi">3</span><span class="o">&lt;/</span><span class="n">midicc</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">description</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">value</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">objectName2</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">zoomx</span><span class="o">&gt;</span><span class="mf">4.00000000</span><span class="o">&lt;/</span><span class="n">zoomx</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">zoomy</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">zoomy</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">dispx</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">dispx</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">dispy</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">dispy</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">modex</span><span class="o">&gt;</span><span class="n">lin</span><span class="o">&lt;/</span><span class="n">modex</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">modey</span><span class="o">&gt;</span><span class="n">lin</span><span class="o">&lt;/</span><span class="n">modey</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">showSelector</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">showSelector</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">showGrid</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">showGrid</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">showTableInfo</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">showTableInfo</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">showScrollbars</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">showScrollbars</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">enableTables</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">enableTables</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">enableDisplays</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">enableDisplays</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">a</span><span class="n">ll</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="kt">a</span><span class="n">ll</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">bsbObject</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBController&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">x</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">171</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">332</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">300</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">300</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="err">{</span><span class="kt">f</span><span class="n">50d2326</span><span class="o">-</span><span class="mf">9e70</span><span class="o">-</span><span class="mi">41</span><span class="err">bf</span><span class="o">-</span><span class="kt">a</span><span class="n">9d2</span><span class="o">-</span><span class="n">ea39b20ad45b</span><span class="err">}</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midichan</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midichan</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midicc</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midicc</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">description</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">objectName2</span><span class="o">&gt;</span><span class="n">y</span><span class="o">&lt;/</span><span class="n">objectName2</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">xMin</span><span class="o">&gt;</span><span class="mf">0.00000000</span><span class="o">&lt;/</span><span class="n">xMin</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">xMax</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">xMax</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">yMin</span><span class="o">&gt;</span><span class="mf">0.00000000</span><span class="o">&lt;/</span><span class="n">yMin</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">yMax</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">yMax</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">xValue</span><span class="o">&gt;</span><span class="mf">0.99604966</span><span class="o">&lt;/</span><span class="n">xValue</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">yValue</span><span class="o">&gt;</span><span class="mf">0.54824522</span><span class="o">&lt;/</span><span class="n">yValue</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">point</span><span class="o">&lt;/</span><span class="n">type</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">pointsize</span><span class="o">&gt;</span><span class="mi">20</span><span class="o">&lt;/</span><span class="n">pointsize</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">f</span><span class="n">adeSpeed</span><span class="o">&gt;</span><span class="mf">0.00000000</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">adeSpeed</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">mouseControl</span> <span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">&quot;press&quot;</span><span class="o">&gt;</span><span class="n">jump</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">bordermode</span><span class="o">&gt;</span><span class="n">border</span><span class="o">&lt;/</span><span class="n">bordermode</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">borderColor</span><span class="o">&gt;#</span><span class="mi">007800</span><span class="o">&lt;/</span><span class="n">borderColor</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">234</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">randomizable</span> <span class="nb">mode</span><span class="o">=</span><span class="s">&quot;both&quot;</span> <span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">bgcolor</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">80</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">bgcolormode</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">bgcolormode</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">bsbObject</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBDisplay&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">note</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">96</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">332</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">64</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">36</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="err">{</span><span class="n">ede113aa</span><span class="o">-</span><span class="mi">8</span><span class="err">dda</span><span class="o">-</span><span class="mi">4374</span><span class="o">-</span><span class="kt">a</span><span class="n">b74</span><span class="o">-</span><span class="mi">995</span><span class="err">b</span><span class="mi">45</span><span class="err">a</span><span class="mi">818</span><span class="err">df}</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midichan</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midichan</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midicc</span><span class="o">&gt;-</span><span class="mi">3</span><span class="o">&lt;/</span><span class="n">midicc</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">description</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="mi">4</span><span class="err">C</span><span class="o">&lt;/</span><span class="n">label</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">a</span><span class="n">lignment</span><span class="o">&gt;</span><span class="n">left</span><span class="o">&lt;/</span><span class="kt">a</span><span class="n">lignment</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">valignment</span><span class="o">&gt;</span><span class="n">center</span><span class="o">&lt;/</span><span class="n">valignment</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">f</span><span class="n">ont</span><span class="o">&gt;</span><span class="n">Liberation</span> <span class="kt">S</span><span class="n">ans</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">ont</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">f</span><span class="n">ontsize</span><span class="o">&gt;</span><span class="mi">16</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">ontsize</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">precision</span><span class="o">&gt;</span><span class="mi">3</span><span class="o">&lt;/</span><span class="n">precision</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">bgcolor</span> <span class="nb">mode</span><span class="o">=</span><span class="s">&quot;background&quot;</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">24</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">24</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">24</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">bordermode</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">bordermode</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">borderradius</span><span class="o">&gt;</span><span class="mi">5</span><span class="o">&lt;/</span><span class="n">borderradius</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">borderwidth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">borderwidth</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">bsbObject</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBLabel&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">50</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">336</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">43</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">26</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="err">{</span><span class="mi">1</span><span class="err">b</span><span class="mf">1e8</span><span class="err">fcb</span><span class="o">-</span><span class="n">efcc</span><span class="o">-</span><span class="mi">4236</span><span class="o">-</span><span class="kt">a</span><span class="n">315</span><span class="o">-</span><span class="n">e07e13fafec0</span><span class="err">}</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midichan</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midichan</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midicc</span><span class="o">&gt;-</span><span class="mi">3</span><span class="o">&lt;/</span><span class="n">midicc</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">description</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="n">Pitch</span><span class="o">&lt;/</span><span class="n">label</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">a</span><span class="n">lignment</span><span class="o">&gt;</span><span class="n">right</span><span class="o">&lt;/</span><span class="kt">a</span><span class="n">lignment</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">valignment</span><span class="o">&gt;</span><span class="n">center</span><span class="o">&lt;/</span><span class="n">valignment</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">f</span><span class="n">ont</span><span class="o">&gt;</span><span class="n">Liberation</span> <span class="kt">S</span><span class="n">ans</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">ont</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">f</span><span class="n">ontsize</span><span class="o">&gt;</span><span class="mi">12</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">ontsize</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">precision</span><span class="o">&gt;</span><span class="mi">3</span><span class="o">&lt;/</span><span class="n">precision</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">239</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">239</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">239</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">bgcolor</span> <span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
+   <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">bordermode</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">bordermode</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">borderradius</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">borderradius</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">borderwidth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">borderwidth</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
+ <span class="o">&lt;</span><span class="n">bsbObject</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBScope&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">483</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">332</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">350</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">150</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="err">{</span><span class="mf">735224e3</span><span class="o">-</span><span class="kt">f</span><span class="n">c71</span><span class="o">-</span><span class="mi">454</span><span class="err">b</span><span class="o">-</span><span class="mi">9</span><span class="err">aee</span><span class="o">-</span><span class="kt">f</span><span class="n">857e8ea1b89</span><span class="err">}</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midichan</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midichan</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">midicc</span><span class="o">&gt;-</span><span class="mi">3</span><span class="o">&lt;/</span><span class="n">midicc</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">description</span><span class="o">/&gt;</span>
+  <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="mf">3.00000000</span><span class="o">&lt;/</span><span class="n">value</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">scope</span><span class="o">&lt;/</span><span class="n">type</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">zoomx</span><span class="o">&gt;</span><span class="mf">8.00000000</span><span class="o">&lt;/</span><span class="n">zoomx</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">zoomy</span><span class="o">&gt;</span><span class="mf">2.00000000</span><span class="o">&lt;/</span><span class="n">zoomy</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">dispx</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">dispx</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">dispy</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">dispy</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="nb">mode</span><span class="o">&gt;</span><span class="mf">0.00000000</span><span class="o">&lt;/</span><span class="nb">mode</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">triggermode</span><span class="o">&gt;</span><span class="n">TriggerUp</span><span class="o">&lt;/</span><span class="n">triggermode</span><span class="o">&gt;</span>
+ <span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="uniqinstance.html" class="btn btn-neutral float-left" title="uniqinstance"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="zeroarray.html" class="btn btn-neutral float-right" title="zeroarray">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="uniqinstance.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="zeroarray.html" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
