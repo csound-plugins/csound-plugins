@@ -128,6 +128,7 @@ Miscellaneous plugins
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
+* [pwriten](opcodes/pwriten.md): Modify pfield values of an active instrument instance created via nstance 
 * [presetinterp](opcodes/presetinterp.md): Interpolates between presets placed in a 2D plane 
 * [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
 * [ref](opcodes/ref.md): Get a reference to a variable 

@@ -73,6 +73,7 @@ pwrite instrnum:i, index:i|k, value:i|k, [index2, value2, ...]
 
 ## See also
 
+* [pwriten](pwriten.md)
 * [pread](pread.md)
 * [pset](https://csound.com/docs/manual/pset.html)
 * [p](https://csound.com/docs/manual/p.html)

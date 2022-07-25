@@ -2010,6 +2010,27 @@ pwrite_i(CSOUND *csound, PWRITE *p) {
     return pwrite_perf(csound, p);
 }
 
+static int32_t
+pwriten_init(CSOUND *csound, PWRITE *p) {
+    p->p1 = 0;
+    p->broadcasting = 0;
+    p->numpairs = (csound->GetInputArgCnt(p) - 1) / 2;
+    p->status = FirstRun;
+    p->instrtxt = NULL;
+    p->maxpfield = 0;
+    return OK;
+}
+
+static int32_t
+pwriten_perf(CSOUND *csound, PWRITE *p) {
+    INSDS *instance = (INSDS *) ((uintptr_t)*p->instrnum);
+    p->maxpfield = instance->instr->pmax;
+    if (instance->actflg) {
+        pwrite_writevalues(csound, p, &(instance->p0));
+    }
+    return OK;
+}
+
 
 /** uniqinstance
  *
@@ -5185,6 +5206,9 @@ static OENTRY localops[] = {
     { "pwrite.i", S(PWRITE), 0, 1, "", "im", (SUBR)pwrite_i},
     { "pwrite.k", S(PWRITE), 0, 3, "", "i*",
       (SUBR)pwrite_initcommon, (SUBR)pwrite_perf},
+
+    { "pwriten.k", S(PWRITE), 0, 3, "", "k*",
+      (SUBR)pwriten_init, (SUBR)pwriten_perf},
 
     { "uniqinstance.i", S(UNIQINSTANCE),   0, 1, "i", "io", (SUBR)uniqueinstance_i},
     { "uniqinstance.S_i", S(UNIQINSTANCE), 0, 1, "i", "So", (SUBR)uniqueinstance_S_init},

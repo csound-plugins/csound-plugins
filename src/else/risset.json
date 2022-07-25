@@ -27,6 +27,7 @@
     "perlin3",
     "pread",
     "pwrite",
+    "pwriten",
     "presetinterp",
     "ramptrig",
     "ref",
