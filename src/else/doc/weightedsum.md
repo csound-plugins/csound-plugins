@@ -13,6 +13,12 @@ all 1D arrays together to produce a weighted sum of such arrays. If the
 should be a 1D array of size `numrows` and the output array is also
 a 1D array of size `numcolumns`.
 
+In the following example `weightedsum` performs an average between the 2nd
+and the 4th row, effectively a vowel sound halfway between E and O
+
+Notice that the absolute value of the weights is not really important, since these
+are relative weights. The same result would be achieved with `kweights[] fillarray 0, 0.5, 0, 0.5,0`
+
 ```csound
 
 iformantFreqs[] fillarray 800, 1150, 2900, 3900, 4950, \  ; A
@@ -37,13 +43,14 @@ kout[]  weightedsum imatrix[], kweights[]
     
 ## Arguments
 
-* `kmatrix` / `imatrix`: a 2D array
-* `kweights`: the weight of each row of `kmatrix` (normally a value between 0-1). This
-    should be a 1D array of size `numrows`
+* **kmatrix** / **imatrix**: a 2D array. Each element in a row will be multiplied by the row's
+    weight (given in `kweights`) and all rows will be summed together
+* **kweights**: the weight of each row of `kmatrix` (normally a value between 0-1). This
+    should be a 1D array with a size equal to the number of rows in `kmatrix`
         
 ## Output
 
-* `kout`: a 1D array of size `numcolumns` with the weighted sum of the input array weighted
+* **kout**: a 1D array of size `numcolumns` with the weighted sum of the input array weighted
     by the given weights.
   
 ## See Also
@@ -382,4 +389,3 @@ schedule 20, 0, idur, 10.01
 
 
 ```
-

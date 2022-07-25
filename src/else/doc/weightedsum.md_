@@ -1,0 +1,63 @@
+# weightedsum
+
+## Abstract
+
+Weighted sum of multiple 1D arrays, or the rows of a 2D array
+
+## Description
+
+Given a 2D array, `weightedsum` takes an array of factors (the weights),
+one for each row, and multiplies each element in a row by its factor adding
+all 1D arrays together to produce a weighted sum of such arrays. If the
+2D array has a shape `(numrows, numcolumns)` then the weights array
+should be a 1D array of size `numrows` and the output array is also
+a 1D array of size `numcolumns`.
+
+In the following example `weightedsum` performs an average between the 2nd
+and the 4th row, effectively a vowel sound halfway between E and O
+
+Notice that the absolute value of the weights is not really important, since these
+are relative weights. The same result would be achieved with `kweights[] fillarray 0, 0.5, 0, 0.5,0`
+
+```csound
+
+iformantFreqs[] fillarray 800, 1150, 2900, 3900, 4950, \  ; A
+                          350, 2000, 2800, 3600, 4950, \  ; E
+                          270, 2140, 2950, 3900, 4950, \  ; I
+                          450, 800, 2830, 3800, 4950,  \  ; O
+                          325, 700, 2700, 3800, 4950      ; U
+
+reshapearray iformantFreqs, 5, 5
+kweights[] fillarray 0, 1, 0, 1, 0
+kformants[] weightedsum iformantFreqs, kweights
+
+-> [400, 1400, 2815, 3700, 4950]
+```
+
+## Syntax
+
+```csound
+kout[]  weightedsum kmatrix[], kweights[]
+kout[]  weightedsum imatrix[], kweights[]
+```
+    
+## Arguments
+
+* **kmatrix** / **imatrix**: a 2D array. Each element in a row will be multiplied by the row's
+    weight (given in `kweights`) and all rows will be summed together
+* **kweights**: the weight of each row of `kmatrix` (normally a value between 0-1). This
+    should be a 1D array with a size equal to the number of rows in `kmatrix`
+        
+## Output
+
+* **kout**: a 1D array of size `numcolumns` with the weighted sum of the input array weighted
+    by the given weights.
+  
+## See Also
+
+* [interp1d](interp1d.md)
+
+
+## Examples
+
+{example}
