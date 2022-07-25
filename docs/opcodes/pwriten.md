@@ -1,13 +1,14 @@
-# pwrite
+# pwriten
 
 ## Abstract
 
-Modify pfield values of an active instrument instance
+Modify pfield values of an active instrument instance created via nstance
 
 ## Description
 
-`pwrite` can be used to modify the value of a pfield of a running instance 
-(possibly a fractional instrument number).
+`pwriten` can be used to modify the value of a pfield of a running instance 
+created via `nstance`. It is similar to [pwrite](pwrite.md) but uses the 
+instance id as returned via `nstance` instead of a fractional p1
 
 
 ### Dynamic pfields
@@ -15,26 +16,6 @@ Modify pfield values of an active instrument instance
 In order for pwrite to have any effect, the instrument in question should
 have an assignment of the sort `kfreq = p5`. 
 
-
-### Behaviour
-
-A matching instance is searched at performance time, so that its
-behaviour can be controlled via `if` or `timout` statements.
-
-If no active instance is found, search is retried until a matching
-instance is found. To avoid retrying, set `instrnum` to a negative value.
-
-If the instance ceases to exist during another instrument is modifying
-its pfield values, nothing happens. `pwrite` notices that the instance
-is not active anymore and becomes a `NOOP`.
-
-### Exact instance vs Broadcasting
-
-If `instrnum` is a fractional instrument number, pwrite will only affect
-the first instance matching this exact number.
-
-If `instrnum` is set to an integer number, `pwrite` will **broadcast** the
-changes to **ALL** instruments with the same integer number.
 
 !!! warning
 
@@ -45,13 +26,13 @@ changes to **ALL** instruments with the same integer number.
 
 ```csound
 
-pwrite instrnum:i, index:i|k, value:i|k, [index2, value2, ...]
+pwriten kinstanceid, index:i|k, value:i|k, [index2, value2, ...]
 
 ```
     
 ### Arguments
 
-* `instrnum` (init only): the (fractional) instrument number to modify
+* `kinstanceid`: the instance number (as returned via nstance)
 * `index` (i-, k-): the index of the pfield to modify. If kindex is 4, then p4 will be modified
 * `value` (i-, k-): the new value of the given pfield
 
@@ -63,8 +44,7 @@ pwrite instrnum:i, index:i|k, value:i|k, [index2, value2, ...]
 
 ### Execution Time
 
-* Init (if index and value are i-values)
-* Performance (if any index or value are k-variables)
+* Performance
 
 ## Examples
 
@@ -89,7 +69,7 @@ instr exit
   exitnow
 endin
   
-;; Example 1. instr 2 creates and controls instr 1
+;; Example 1. instr 2 controls instr 1
   
 instr 1
   pset 0, 0, 0, 40, 50
@@ -100,16 +80,18 @@ instr 1
 endin
 
 instr 2
+  ieventid = p4
   kval line 0, p3, 1
-  pwrite 1.01, 4, kval
-  pwrite 1.02, 5, kval*2
+  pwriten ieventid, 4, kval
+  pwriten ieventid, 5, kval*2
 endin
 
 instr example1
-  schedule 1.01, 0, 4, -1
-  schedule 1.02, 0, 4, -1
-  schedule 2,    1, 1
-  schedule "exit", 4, -1
+  ieventid nstance 1, 0, 10, 40, 50
+  if timeinstk() == 1 then
+  	keventid = ieventid
+  	schedulek 2, 0, 10, keventid
+  endif
   turnoff
 endin
 
@@ -130,29 +112,17 @@ endin
 
 instr ex2_control
   iglissdur = p4
-  inum = nstrnum("ex2_generator")
-  inum1 = inum + 0.001
-  inum2 = inum + 0.002
   kfreq1 linseg ntof("4A"), iglissdur, ntof("3A")
   kfreq2 linseg ntof("4F"), iglissdur, ntof("3F")
-  ;                      amp
-  schedule inum1, 0, p3, 0.2 
-  schedule inum2, 0, p3, 0.2
-  pwrite inum1, 5, kfreq1
-  pwrite inum2, 5, kfreq2
-endin
-
-instr ex2_broadcast
-  printf "filter start\n", 1
-  inum = nstrnum("ex2_generator")
-  kcutoff    linseg 4000, p3, 400
-  kresonance linseg 0.1, p3*0.5, 0.8
-  pwrite inum, 6, kcutoff, 7, kresonance
+  iamp = 0.2
+  kid1 = nstance:i("ex2_generator", 0, p3, iamp)
+  kid2 = nstance:i("ex2_generator", 0, p3, iamp)
+  pwriten kid1, 5, kfreq1
+  pwriten kid2, 5, kfreq2
 endin
 
 instr example2
   schedule "ex2_control", 0, 8, 4
-  schedule "ex2_broadcast", 4, 4
   schedule "exit", 8.5, -1
   turnoff
 endin
@@ -175,7 +145,7 @@ schedule "example2", 0, 1
 
 ## See also
 
-* [pwriten](pwriten.md)
+* [pwrite](pwrite.md)
 * [pread](pread.md)
 * [pset](https://csound.com/docs/manual/pset.html)
 * [p](https://csound.com/docs/manual/p.html)
@@ -184,4 +154,4 @@ schedule "example2", 0, 1
 
 ## Credits
 
-Eduardo Moguillansky, 2019
+Eduardo Moguillansky, 2022
