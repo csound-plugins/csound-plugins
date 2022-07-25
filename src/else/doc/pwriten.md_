@@ -1,0 +1,65 @@
+# pwriten
+
+## Abstract
+
+Modify pfield values of an active instrument instance created via nstance
+
+## Description
+
+`pwriten` can be used to modify the value of a pfield of a running instance 
+created via `nstance`. It is similar to [pwrite](pwrite.md) but uses the 
+instance id as returned via `nstance` instead of a fractional p1
+
+
+### Dynamic pfields
+
+In order for pwrite to have any effect, the instrument in question should
+have an assignment of the sort `kfreq = p5`. 
+
+
+!!! warning
+
+    Setting a value of a pfield out of range will result in a 
+    performance error. 
+
+## Syntax
+
+```csound
+
+pwriten kinstanceid, index:i|k, value:i|k, [index2, value2, ...]
+
+```
+    
+### Arguments
+
+* `kinstanceid`: the instance number (as returned via nstance)
+* `index` (i-, k-): the index of the pfield to modify. If kindex is 4, then p4 will be modified
+* `value` (i-, k-): the new value of the given pfield
+
+
+!!! info
+
+    Multiple index:value pairs can be modified simultaneously
+
+
+### Execution Time
+
+* Performance
+
+## Examples
+
+{example}
+
+
+## See also
+
+* [pwrite](pwrite.md)
+* [pread](pread.md)
+* [pset](https://csound.com/docs/manual/pset.html)
+* [p](https://csound.com/docs/manual/p.html)
+* [passign](https://csound.com/docs/manual/passign.html)
+* [uniqinstance](uniqinstance.md)
+
+## Credits
+
+Eduardo Moguillansky, 2022
