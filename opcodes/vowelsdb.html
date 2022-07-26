@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>pool_push - Csound Plugins</title>
+    <title>vowelsdb - Csound Plugins</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
@@ -13,8 +13,8 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "pool_push";
-        var mkdocs_page_input_path = "opcodes/pool_push.md";
+        var mkdocs_page_name = "vowelsdb";
+        var mkdocs_page_input_path = "opcodes/vowelsdb.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -185,29 +185,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pool_pop.html">pool_pop</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="pool_push.html">pool_push</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="pool_push.html">pool_push</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pool_size.html">pool_size</a>
                   </li>
@@ -255,7 +233,23 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="uniqinstance.html">uniqinstance</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="vowelsdb.html">vowelsdb</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="vowelsdb.html">vowelsdb</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="weightedsum.html">weightedsum</a>
                   </li>
@@ -279,7 +273,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>Opcodes &raquo;</li>
-      <li>pool_push</li>
+      <li>vowelsdb</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -288,39 +282,66 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="pool_push">pool_push</h1>
+                <h1 id="vowelsdb">vowelsdb</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Push an item into a pool</p>
+<p>A database of vowel sounds</p>
 <h2 id="description">Description</h2>
-<p>A pool is actually a stack of numbers, based on an array.</p>
-<p>The pool_ opcodes implement a stack of numbers. This is useful when assigning
-ids to resources, like assigning fractional numbers to instrument instances to
-access them individually. To get a value, call <code>pool_pop</code> and when finished
-using it the value is returned to the pool with <code>pool_push</code>.</p>
-<h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>pool_push ipool, ivalue, iwhen=0
-pool_push ipool, kvalue
+<p><code>vowelsdb</code> provides a list of speaker definitions with formant frequencies,
+bandwidths and amplitudes for the first 5 formants. It includes all the
+speaker definitions found in the csound manual plus speakers from
+other sources, such as praat and VocalTractLab (vtl).</p>
+<p>The user requests formant data from a given speaker and a selection
+of vowels and the opcode returns three 2D arrays: frequencies, bandwidths and amplitudes.
+Each row contains the information for the corrsponding vowel and has always a 
+size of 5, corresponding to the first 5 formants. The number of rows is the same
+as the number of vowels queried.</p>
+<p>Even if the generated arrays can be k-arrays, the opcode only works at init time 
+(similar to how <code>fillarray</code> works for k-arrays)</p>
+<p>Speakers available:</p>
+<div class="codehilite"><pre><span></span><code>* csound-soprano
+* csound-alto
+* csound-countertenor
+* csound-tenor
+* csound-bass
+* vtl-male
+* vtl-female
 </code></pre></div>
 
-<h3 id="arguments">Arguments</h3>
+<p>Vowels (not all speakers define all vowels): a, e, i, o, u, ae, oe, y</p>
+<h2 id="syntax">Syntax</h2>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">freqs</span><span class="p">[][],</span> <span class="kt">i</span><span class="n">bandwidths</span><span class="p">[][],</span> <span class="kt">i</span><span class="n">amps</span><span class="p">[][]</span> <span class="n">vowelsdb</span> <span class="kt">S</span><span class="n">speakername</span><span class="p">,</span> <span class="kt">S</span><span class="n">vowels</span>
+<span class="kt">k</span><span class="n">freqs</span><span class="p">[][],</span> <span class="kt">k</span><span class="n">bandwidths</span><span class="p">[][],</span> <span class="kt">k</span><span class="n">amps</span><span class="p">[][]</span> <span class="n">vowelsdb</span> <span class="kt">S</span><span class="n">speakername</span><span class="p">,</span> <span class="kt">S</span><span class="n">vowels</span>
+</code></pre></div>
+
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ipool</code>: the pool to push the value to</li>
-<li><code>ivalue</code> / <code>kvalue</code>: the value to push</li>
-<li><code>iwhen</code>: if 0, the value is pushed at init time, if 1 the value is pushed at
-  release time. This argument can only be used when calling the opcode at init
-  time</li>
+<li><strong>Sspeakername</strong>: one of the available speaker names. At thethe x coordinate of the cursor</li>
+<li><strong>Svowels</strong>: the vowels to retrieve from the database, as a space delimited list (for example: "a e i o u")
+    The order is important, since each row in the returned data arrays corresponds to each vowel given, in
+    the order given. In the case of "a e i o u", the first row in the <code>ifreqs</code> array would hold the
+    frequencies of the first five formants of 'a'.</li>
 </ul>
-<h3 id="output">Output</h3>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li>Init</li>
-<li>Performance</li>
+<li><strong>ifreqs</strong> / <strong>kfreqs</strong>: a 2D array, where each row holds the frequencies of the first five 
+    formants for the corresponding vowel (there are as many rows as vowels in <em>Svowels</em>)</li>
+<li><strong>ibandwidths</strong> / <strong>kbandwidths</strong>: a 2D array were each row holds the bandwidths of the
+    first five formants for the corresponding vowel</li>
+<li><strong>iamps</strong> / <strong>kamps</strong>: a 2D array were each row holds the amplitudes of the
+    first five formants for the corresponding vowel (<strong>NB</strong>: these amplitudes
+    are already converted to linear amplitudes and <strong>are not in dB</strong>)</li>
+</ul>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="presetinterp.html">presetinterp</a></li>
+<li><a href="weightedsum.html">weightedsum</a></li>
+<li><a href="http://www.csounds.com/manual/html/fof2.html">fof2</a></li>
+<li><a href="http://www.csounds.com/manual/html/MiscFormants.html">Csound Formant tables</a></li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 <span class="o">--</span><span class="n">nosound</span>
-<span class="o">-</span><span class="n">m0</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -329,129 +350,81 @@ pool_push ipool, kvalue
 <span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
 
-<span class="c1">; create a global pool for all instances</span>
-<span class="kt">gi</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span>
-
-<span class="c1">; create audio buses</span>
-<span class="kt">gi</span><span class="n">numbuses</span> <span class="o">=</span> <span class="mi">200</span>
-<span class="nb">zakinit</span> <span class="kt">gi</span><span class="n">numbuses</span><span class="p">,</span> <span class="mi">1</span>
-
-<span class="c1">; a pool of buses</span>
-<span class="kt">gi</span><span class="n">buses</span> <span class="n">pool_gen</span> <span class="kt">gi</span><span class="n">numbuses</span>
-
-<span class="c1">; release item back to instance pool, print a message</span>
-<span class="c1">; when that happens</span>
-<span class="kd">opcode</span> <span class="nf">pool_release_instance</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">ii</span>
-  <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">p1</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">val</span> <span class="o">=</span> <span class="kt">f</span><span class="n">rac2int</span><span class="p">(</span><span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="n">pool_capacity</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">))</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;releasing back to pool </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">val</span>
-  <span class="n">pool_push</span> <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">val</span><span class="p">,</span> <span class="mi">1</span>
-<span class="kd">endop</span>
-
-<span class="kd">instr</span> <span class="nf">exit</span>
-  <span class="nb">exitnow</span>
+<span class="kd">instr</span> <span class="nf">1</span>
+    <span class="kt">i</span><span class="n">freqs</span><span class="p">[][],</span> <span class="kt">i</span><span class="n">bws</span><span class="p">[][],</span> <span class="kt">i</span><span class="n">amps</span><span class="p">[][]</span> <span class="n">vowelsdb</span> <span class="s">&quot;csound-tenor&quot;</span><span class="p">,</span> <span class="s">&quot;a e i o   u&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">i</span><span class="n">freqs</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;ifreqs =&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">i</span><span class="n">bws</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;ibws =&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">i</span><span class="n">amps</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;iamps =&quot;</span>
 <span class="kd">endin</span>
 
-<span class="c1">; schedule and control audio generator</span>
-<span class="kd">instr</span> <span class="nf">controlsaw</span>
-  <span class="c1">; get an unused bus</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">buses</span><span class="p">)</span>
-  <span class="nb">prints</span> <span class="s">&quot;Using bus </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span>
-  <span class="kt">i</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">i</span><span class="n">cap</span> <span class="n">pool_capacity</span> <span class="kt">gi</span><span class="n">pool</span>
-
-  <span class="c1">; get a unique instance number for &quot;saw&quot; instrument</span>
-  <span class="kt">i</span><span class="n">saw</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;saw&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span> <span class="o">/</span> <span class="kt">i</span><span class="n">cap</span>
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">saw</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span>
-
-  <span class="c1">; modulate the frequency</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">saw</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">linseg</span><span class="p">(</span><span class="kt">i</span><span class="n">freq</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">*</span><span class="mf">0.1</span><span class="p">)</span>
-
-  <span class="c1">; get a unique instance number for filter instrument</span>
-  <span class="kt">i</span><span class="n">filter</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;filter&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span> <span class="o">/</span> <span class="kt">i</span><span class="n">cap</span>
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">filter</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="mi">100</span>
-
-  <span class="c1">; modulate its cutoff freq.</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">filter</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">linseg</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
-
-  <span class="c1">; release bus back to pool when finished (notice the 1 at the end)</span>
-  <span class="c1">; we could have done</span>
-  <span class="c1">;  defer &quot;pool_push&quot;, gibuses, ibus</span>
-  <span class="n">pool_push</span> <span class="kt">gi</span><span class="n">buses</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="mi">1</span>
+<span class="kd">instr</span> <span class="nf">2</span>
+    <span class="kt">k</span><span class="n">freqs</span><span class="p">[][],</span> <span class="kt">k</span><span class="n">bws</span><span class="p">[][],</span> <span class="kt">k</span><span class="n">amps</span><span class="p">[][]</span> <span class="n">vowelsdb</span> <span class="s">&quot;csound-bass&quot;</span><span class="p">,</span> <span class="s">&quot;a e i o   u&quot;</span>
+    <span class="nb">println</span> <span class="s">&quot;kfreqs =&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">k</span><span class="n">freqs</span>
+    <span class="nb">println</span> <span class="s">&quot;kbws =&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">k</span><span class="n">bws</span>
+    <span class="nb">println</span> <span class="s">&quot;kamps =&quot;</span>
+    <span class="nb">printarray</span> <span class="kt">k</span><span class="n">amps</span>
+    <span class="nb">turnoff</span>
 <span class="kd">endin</span>
-
-
-<span class="kd">instr</span> <span class="nf">saw</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">i</span><span class="n">amp</span>  <span class="o">=</span> <span class="mf">0.02</span>
-  <span class="kt">i</span><span class="n">fade</span> <span class="o">=</span> <span class="mf">0.05</span>
-  <span class="kt">a</span><span class="n">0</span>  <span class="o">=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">cosseg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-
-  <span class="c1">; write audio to bus</span>
-  <span class="nb">zawm</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span>
-
-  <span class="c1">; release instance back to the pool</span>
-  <span class="nf">pool_release_instance</span> <span class="kt">gi</span><span class="n">pool</span><span class="p">,</span> <span class="vi">p1</span>
-<span class="kd">endin</span>
-
-<span class="c1">; filter audio in bus, output to the outside world</span>
-<span class="kd">instr</span> <span class="nf">filter</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">zar</span> <span class="kt">i</span><span class="n">bus</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">zdf_ladder</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="mi">18</span>
-  <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="p">+</span><span class="nf">example1</span>
-  <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">10</span>                          <span class="c1">; dur of each note</span>
-  <span class="kt">i</span><span class="n">offset</span> <span class="o">=</span> <span class="mf">0.6</span>                      <span class="c1">; offset between notes</span>
-  <span class="kt">i</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">100</span>  <span class="c1">; begin freq. of gliss. for each note</span>
-
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Freqs</span>
-
-  <span class="c1">; create a note for each frequency</span>
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Freqs</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nb">schedule</span> <span class="s">&quot;controlsaw&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">Freqs</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
-
-  <span class="c1">; clear zak </span>
-  <span class="nb">zacl</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">numbuses</span>
-
-  <span class="c1">; schedule exit</span>
-  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span> <span class="o">+</span> <span class="kt">i</span><span class="n">dur</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-<span class="kd">endin</span>
-
-<span class="nb">schedule</span> <span class="s">&quot;example1&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 
+<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="kt">i</span><span class="n">2</span> <span class="mi">0</span> <span class="mf">0.1</span>
+<span class="c1">; f0 3600</span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
 
-<h2 id="see-also">See also</h2>
-<ul>
-<li><a href="pool_pop.html">pool_pop</a></li>
-<li><a href="pool_new.html">pool_new</a></li>
-<li><a href="pool_gen.html">pool_gen</a></li>
-</ul>
-<h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<div class="codehilite"><pre><span></span><code>new alloc for instr 1:
+ifreqs =
+   0: 650 1080 2650 2900 3250
+   1: 400 1700 2600 3200 3580
+   2: 290 1870 2800 3250 3540
+   3: 400 800 2600 2800 3000
+   4: 350 600 2700 2900 3300
+ibws =
+   0: 80 90 120 130 140
+   1: 70 80 100 120 120
+   2: 40 90 100 120 120
+   3: 70 80 100 130 135
+   4: 40 60 100 120 120
+iamps =
+   0: 1.0001 0.5012 0.4467 0.3981 0.0794
+   1: 1.0001 0.1995 0.2512 0.1995 0.1000
+   2: 1.0001 0.1778 0.1259 0.1000 0.0316
+   3: 1.0001 0.3162 0.2512 0.2512 0.0501
+   4: 1.0001 0.1000 0.1413 0.1995 0.0501
+new alloc for instr 2:
+kfreqs =
+   0: 600.0000 1040.0000 2250.0000 2450.0000 2750.0000
+   1: 400.0000 1620.0000 2400.0000 2800.0000 3100.0000
+   2: 250.0000 1750.0000 2600.0000 3050.0000 3340.0000
+   3: 400.0000 750.0000 2400.0000 2600.0000 2900.0000
+   4: 350.0000 600.0000 2400.0000 2675.0000 2950.0000
+kbws =
+   0: 60.0000 70.0000 110.0000 120.0000 130.0000
+   1: 40.0000 80.0000 100.0000 120.0000 120.0000
+   2: 60.0000 90.0000 100.0000 120.0000 120.0000
+   3: 40.0000 80.0000 100.0000 120.0000 120.0000
+   4: 40.0000 80.0000 100.0000 120.0000 120.0000
+kamps =
+   0: 1.0001 0.4467 0.3548 0.3548 0.1000
+   1: 1.0001 0.2512 0.3548 0.2512 0.1259
+   2: 1.0001 0.0316 0.1585 0.0794 0.0398
+   3: 1.0001 0.2818 0.0891 0.1000 0.0100
+   4: 1.0001 0.1000 0.0251 0.0398 0.0158
+</code></pre></div>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="pool_pop.html" class="btn btn-neutral float-left" title="pool_pop"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="pool_size.html" class="btn btn-neutral float-right" title="pool_size">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="uniqinstance.html" class="btn btn-neutral float-left" title="uniqinstance"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="weightedsum.html" class="btn btn-neutral float-right" title="weightedsum">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -474,10 +447,10 @@ pool_push ipool, kvalue
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="pool_pop.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="uniqinstance.html" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="pool_size.html" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="weightedsum.html" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
