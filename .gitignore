@@ -1,4 +1,5 @@
 build/
+.cache/
 site/
 test.wav
 CMakeLists.txt.user

@@ -5163,6 +5163,363 @@ static int32_t zerocrossing_a_a(CSOUND *csound, ZEROCROSSING *p) {
     return OK;
 }
 
+// ----------------------------------------
+// vowelsdb
+// iformants[], ibws[], iamps[] vowelsdb Sspeakername, Svowels
+// Svowels: a space separated list of vowels to get from the database
+// Example:
+// iformants[], ibws[], iamps[] vowelsdb "vtl-male", "a e i o u ae"
+// If the speaker does not define a given vowel then the row will be empty
+
+#define MAX_VOWELS 20
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *freqs, *bws, *amps;
+    STRINGDAT *speaker;
+    STRINGDAT *vowels;
+
+    int vowelindexes[MAX_VOWELS];
+
+} VOWELSDB;
+
+
+typedef struct {
+    char name[32];
+    MYFLT freqs[MAX_VOWELS][5];
+    MYFLT bws[MAX_VOWELS][5];
+    MYFLT amps[MAX_VOWELS][5];
+} vowelspeaker;
+
+const static vowelspeaker voweldb[] = {
+    {
+        .name = "vtl-male",
+        .freqs = {
+            {668, 1191, 2428, 3321, 4600}, // A
+            {327, 2157, 2754, 3630, 4600}, // E
+            {208, 2152, 3128, 3425, 4200}, // I
+            {335, 628, 2689, 3515, 4200},  // O
+            {254, 796, 2515, 3274, 4160}   // U
+        },
+        .bws = {
+            {80, 90, 120, 130, 140},
+            {60, 100, 120, 150, 200},
+            {60, 90, 100, 120, 120},
+            {40, 80, 100, 120, 120},
+            {50, 60, 170, 180, 200}
+        },
+        .amps = {
+            {25, 25, 12, 10, 10},
+            {5.6, 17.7, 15.8, 10, 14},
+            {3.16, 10, 22.4, 19.9, 10},
+            {5.6, 7.9, 1.78, 2.24, 3.98},
+            {3.98, 3.16, 1.99, 1.77, 3.98}
+        }
+    },
+    {
+        .name = "csound-soprano",
+        .freqs = {
+            {800, 1150, 2900, 3900, 4950}, // A
+            {350, 2000, 2800, 3600, 4950}, // E
+            {270, 2140, 2950, 3900, 4950}, // I
+            {450, 800,  2830, 3800, 4950}, // O
+            {325, 700,  2700, 3800, 4950}, // U
+        },
+        .bws = {
+            {80, 90,  120, 130, 140},
+            {60, 100, 120, 150, 200},
+            {60, 90,  100, 120, 120},
+            {40, 80,  100, 120, 120},
+            {50, 60,  170, 180, 200}
+
+        },
+        .amps = {
+            {1.000115, 0.501187, 0.025119, 0.1, 0.003162},
+            {1.000115, 0.1, 0.177828, 0.01, 0.001585},
+            {1.000115, 0.251189, 0.050119, 0.050119, 0.00631},
+            {1.000115, 0.281838, 0.079433, 0.079433, 0.003162},
+            {1.000115, 0.158489, 0.017783, 0.01, 0.001}
+
+        }
+    },
+    {
+        .name = "csound-alto",
+        .freqs = {
+            {800, 1150, 2800, 3500, 4950},  // A
+            {400, 1600, 2700, 3300, 4950},  // E
+            {350, 1700, 2700, 3700, 4950},  // I
+            {450, 800, 2830, 3500, 4950},   // O
+            {325, 700, 2530, 3500, 4950}    // U
+        },
+        .bws = {
+            {80, 90, 120, 130, 140},
+            {60, 80, 120, 150, 200},
+            {50, 100, 120, 150, 200},
+            {70, 80, 100, 130, 135},
+            {50, 60, 170, 180, 200}
+        },
+        .amps = {
+            {1.000115, 0.630957, 0.1, 0.015849, 0.001},
+            {1.000115, 0.063096, 0.031623, 0.017783, 0.001},
+            {1.000115, 0.1, 0.031623, 0.015849, 0.001},
+            {1.000115, 0.354813, 0.158489, 0.039811, 0.001778},
+            {1.000115, 0.251189, 0.031623, 0.01, 0.000631}
+        }
+    },
+    {
+        .name = "csound-countertenor",
+        .freqs = {
+            {660, 1120, 2750, 3000, 3350},  // A
+            {440, 1800, 2700, 3000, 3300},  // E
+            {270, 1850, 2900, 3350, 3590},  // I
+            {430, 820, 2700, 3000, 3300},   // O
+            {370, 630, 2750, 3000, 3400}    // U
+        },
+        .bws = {
+            {80, 90, 120, 130, 140},
+            {70, 80, 100, 120, 120},
+            {40, 90, 100, 120, 120},
+            {40, 80, 100, 120, 120},
+            {40, 60, 100, 120, 120}
+        },
+        .amps = {
+            {1.000115, 0.501187, 0.070795, 0.063096, 0.012589},
+            {1.000115, 0.199526, 0.125893, 0.1, 0.1},
+            {1.000115, 0.063096, 0.063096, 0.015849, 0.015849},
+            {1.000115, 0.316228, 0.050119, 0.079433, 0.019953},
+            {1.000115, 0.1, 0.070795, 0.031623, 0.019953}
+        }
+    },
+    {
+        .name = "csound-tenor",
+        .freqs = {
+            {650, 1080, 2650, 2900, 3250},
+            {400, 1700, 2600, 3200, 3580},
+            {290, 1870, 2800, 3250, 3540},
+            {400, 800, 2600, 2800, 3000},
+            {350, 600, 2700, 2900, 3300}
+        },
+        .bws = {
+            {80, 90, 120, 130, 140},
+            {70, 80, 100, 120, 120},
+            {40, 90, 100, 120, 120},
+            {70, 80, 100, 130, 135},
+            {40, 60, 100, 120, 120}
+        },
+        .amps = {
+            {1.000115, 0.501187, 0.446684, 0.398107, 0.079433},
+            {1.000115, 0.199526, 0.251189, 0.199526, 0.1},
+            {1.000115, 0.177828, 0.125893, 0.1, 0.031623},
+            {1.000115, 0.316228, 0.251189, 0.251189, 0.050119},
+            {1.000115, 0.1, 0.141254, 0.199526, 0.050119}
+        }
+    },
+    {
+        .name = "csound-bass",
+        .freqs = {
+            {600, 1040, 2250, 2450, 2750},
+            {400, 1620, 2400, 2800, 3100},
+            {250, 1750, 2600, 3050, 3340},
+            {400, 750, 2400, 2600, 2900},
+            {350, 600, 2400, 2675, 2950}
+        },
+        .bws = {
+            {60, 70, 110, 120, 130},
+            {40, 80, 100, 120, 120},
+            {60, 90, 100, 120, 120},
+            {40, 80, 100, 120, 120},
+            {40, 80, 100, 120, 120}
+        },
+        .amps = {
+            {1.000115, 0.446684, 0.354813, 0.354813, 0.1},
+            {1.000115, 0.251189, 0.354813, 0.251189, 0.125893},
+            {1.000115, 0.031623, 0.158489, 0.079433, 0.039811},
+            {1.000115, 0.281838, 0.089125, 0.1, 0.01},
+            {1.000115, 0.1, 0.025119, 0.039811, 0.015849}
+        }
+    },
+    // this definition should be last
+    {
+        .name = ""
+    }
+};
+
+const char *_defined_speakers = "vtl-male, csound-soprano, csound-alto, csound-countertenor, csound-tenor, csound-bass";
+
+
+int speaker_name_to_index(char *name) {
+    if(strcmp(name, "vtl-male")==0)
+        return 0;
+    return -1;
+}
+
+static char* vowelnames[] = {
+    "a",   // 0
+    "e",   // 1
+    "i",   // 2
+    "o",   // 3
+    "u"    // 4
+};
+
+int vowel_to_index(char *vowel) {
+    int l = strlen(vowel);
+    if(l == 1) {
+        char vowel0 = vowel[0];
+        switch(vowel0) {
+        case 'a':
+        case 'A':
+            return 0;
+        case 'e':
+        case 'E':
+            return 1;
+        case 'i':
+        case 'I':
+            return 2;
+        case 'o':
+        case 'O':
+            return 3;
+        case 'u':
+        case 'U':
+            return 4;
+        }
+    }
+    return -1;
+}
+
+static char * _strsep(char **sp, char *sep) {
+    char *p, *s;
+    if (sp == NULL || *sp == NULL || **sp == '\0') return(NULL);
+    s = *sp;
+    p = s + strcspn(s, sep);
+    if (*p != '\0') *p++ = '\0';
+    *sp = p;
+    return(s);
+}
+
+int parse_requested_vowels(const char *vowelsdef, int vowelindexes[MAX_VOWELS]) {
+    char vowelsbuf[256];
+    char *vowels = vowelsbuf;
+    strncpy(vowelsbuf, vowelsdef, 255);
+    char *token;
+    int numvowels = 0;
+    while ((token = _strsep(&vowels, " "))) {
+        if(strlen(token)==0)
+            continue;
+        int vowelindex = vowel_to_index(token);
+        if(vowelindex == -1) {
+            printf("Unknown vowel: '%s'\n", token);
+            return -1;
+        }
+        vowelindexes[numvowels] = vowel_to_index(token);
+        numvowels++;
+        if(numvowels == MAX_VOWELS) {
+            break;
+        }
+    }
+    return numvowels;
+}
+
+int32_t arraymake2d(CSOUND *csound, ARRAYDAT *arr, int numcols) {
+    if(arr->dimensions != 1) {
+        printf("arraymake2d: array is not 1D\n");
+        return NOTOK;
+    }
+    int flatsize = arr->sizes[0];
+    if(flatsize % numcols != 0) {
+        printf("arraymale2d: array size %d is not divisible by colsize %d\n", flatsize, numcols);
+        return NOTOK;
+    }
+    arr->sizes = csound->ReAlloc(csound, arr->sizes, sizeof(int32_t)*2);
+    arr->dimensions = 2;
+    arr->sizes[0] = flatsize / numcols;
+    arr->sizes[1] = numcols;
+    return OK;
+}
+
+int32_t tabinit2d(CSOUND *csound, ARRAYDAT *arr, int numrows, int numcols) {
+    int numelements = numrows * numcols;
+    tabinit(csound, arr, numelements);
+    int res = arraymake2d(csound, arr, numcols);
+    return res;
+}
+
+const vowelspeaker *find_speaker(char *speakername) {
+    for(int i=0;;i++) {
+        const vowelspeaker *speaker = &voweldb[i];
+        if(speaker->name[0] == '\0')
+            return NULL;
+        if(!strcmp(speaker->name, speakername))
+            return speaker;
+    }
+}
+
+static int32_t vowelsdb_i(CSOUND *csound, VOWELSDB *p) {
+    int numvowels = parse_requested_vowels(p->vowels->data, p->vowelindexes);
+    if(numvowels == -1) {
+        return INITERRF("Could not parse vowels: %s", p->vowels->data);
+    }
+    tabinit2d(csound, p->freqs, numvowels, 5);
+    tabinit2d(csound, p->bws, numvowels, 5);
+    tabinit2d(csound, p->amps, numvowels, 5);
+    const vowelspeaker *speaker = find_speaker(p->speaker->data);
+    if(speaker == NULL) {
+        return INITERRF("Speaker not found: %s. Defined speakers: %s", p->speaker->data, _defined_speakers);
+    }
+    for(int i=0; i < numvowels; i++) {
+        int vowelindex = p->vowelindexes[i];
+        for(int j=0; j < 5; j++) {
+            p->freqs->data[i*5 + j] = speaker->freqs[vowelindex][j];
+            p->amps->data[i*5 + j] = speaker->amps[vowelindex][j];
+            p->bws->data[i*5 + j] = speaker->bws[vowelindex][j];
+        }
+    }
+
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *kfreq;
+    MYFLT *initphase;
+    MYFLT accum;
+    size_t counter;
+    MYFLT lastfreq;
+} MTRO;
+
+static int32_t mtro_init(CSOUND *csound, MTRO *p) {
+    p->counter = 0;
+    p->lastfreq = 0;
+    p->accum = *p->initphase;
+    return OK;
+}
+
+static int32_t mtro(CSOUND *csound, MTRO *p) {
+    MYFLT freq = *p->kfreq;
+    if(freq != p->lastfreq) {
+        MYFLT lastdx = p->lastfreq * CS_ONEDKR;
+        p->accum = p->accum + p->counter * lastdx;
+        p->counter = 0;
+        p->lastfreq = freq;
+    }
+    MYFLT dx = freq * CS_ONEDKR;
+
+    MYFLT phase = p->accum + p->counter * dx;
+    // printf("kcount: %d, phase: %f\n", CS_KCNT, phase);
+    if(phase >= 1.) {
+        p->accum = phase - 1.0;
+        p->counter = 0;
+        *p->out= 1.;
+    } else {
+        *p->out = 0.;
+    }
+    p->counter++;
+
+    return OK;
+}
+
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -5352,6 +5709,10 @@ static OENTRY localops[] = {
 
     { "weightedsum", S(ROWSWEIGHTEDSUM), 0, 1, "i[]", "i[]i[]",
       (SUBR)rowsweightedsum_i },
+
+    { "vowelsdb", S(VOWELSDB), 0, 1, "i[]i[]i[]", "SS", (SUBR)vowelsdb_i },
+    { "vowelsdb", S(VOWELSDB), 0, 1, "k[]k[]k[]", "SS", (SUBR)vowelsdb_i },
+    { "mtro", S(MTRO), 0, 3, "k", "kp", (SUBR)mtro_init, (SUBR)mtro}
 
 };
 
