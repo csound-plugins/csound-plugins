@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>pathJoin - Csound Plugins</title>
+    <title>mtro - Csound Plugins</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
@@ -13,8 +13,8 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "pathJoin";
-        var mkdocs_page_input_path = "opcodes/pathJoin.md";
+        var mkdocs_page_name = "mtro";
+        var mkdocs_page_input_path = "opcodes/mtro.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -147,15 +147,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="memview.html">memview</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="pathIsAbsolute.html">pathIsAbsolute</a>
-                  </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="pathJoin.html">pathJoin</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="mtro.html">mtro</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
     </li>
@@ -176,6 +168,14 @@
     <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
     </li>
     </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathIsAbsolute.html">pathIsAbsolute</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="pathJoin.html">pathJoin</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathNative.html">pathNative</a>
                   </li>
@@ -279,7 +279,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>Opcodes &raquo;</li>
-      <li>pathJoin</li>
+      <li>mtro</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -288,71 +288,73 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="pathjoin">pathJoin</h1>
+                <h1 id="mtro">mtro</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Join two parts of a path according to the current platform</p>
+<p>an accurate version of metro</p>
 <h2 id="description">Description</h2>
-<p>Given a directory and a filename, or a base directory and a relative path, join 
-these according to the current platform</p>
+<p><code>mtro</code> is a drop-in replacement of <code>metro</code> without the
+drifting over time. <code>metro</code> is implemented by adding a phase
+each cycle, which results in drifting over time due to rounding errors.
+<code>mtro</code> avoids this problem by keeping a counter and doing multiplication
+so that the error is limited.</p>
+<p>Following metro's implementation by default <code>mtro</code> is triggered at time=0. This
+is because <code>i_initphase</code> is set to 1 by default. It is possible to make <code>mtro</code> skip the
+0 trigger by setting <code>i_initphase</code> to 0.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>Sout pathJoin Spath1, Spath2
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">mtro</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="kt">i</span><span class="n">_initphase</span><span class="o">=</span><span class="mi">1</span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>Spath1</code>: The first part to join</li>
-<li><code>Spath2</code>: The second part to join</li>
+<li><strong>kfreq</strong>: the frequency of the trigger</li>
+<li><strong>i_initphase</strong>: the initial phase (a value between 0 and 1). If set to 0, there is no trigger at time 0.
+    If set to 1, <code>mtro</code> triggers at time=0, similar to <code>metro</code></li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
-<li><code>Sout</code>: the result of joining both paths</li>
+<li><strong>kout</strong>: 1 if the mtro has triggered, 0 otherwise</li>
 </ul>
 <h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init </li>
+<li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">-</span><span class="n">odac</span> 
 <span class="o">--</span><span class="n">nosound</span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+
+<span class="vg">sr</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
+
+
+<span class="kd">opcode</span> <span class="nf">gettime</span><span class="p">,</span> <span class="kt">k</span><span class="p">,</span> <span class="kt">0</span>
+  <span class="nb">xout</span> <span class="p">(</span><span class="nb">timeinstk</span><span class="p">:</span><span class="kt">k</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="vg">ksmps</span><span class="o">/</span><span class="vg">sr</span><span class="p">)</span>
+<span class="kd">endop</span>
 
 <span class="kd">instr</span> <span class="nf">1</span>
-    <span class="kt">S</span><span class="n">dir</span> <span class="o">=</span> <span class="s">&quot;/home/bar&quot;</span>
-    <span class="kt">S</span><span class="n">base</span> <span class="o">=</span> <span class="s">&quot;filename.ext&quot;</span>
-    <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathJoin</span><span class="p">(</span><span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span><span class="p">)</span>
-    <span class="nb">prints</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
-
-    <span class="kt">S</span><span class="n">dir</span> <span class="o">=</span> <span class="s">&quot;/home/bar/&quot;</span>
-    <span class="kt">S</span><span class="n">base</span> <span class="o">=</span> <span class="s">&quot;filename.ext&quot;</span>
-    <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathJoin</span><span class="p">(</span><span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span><span class="p">)</span>
-    <span class="nb">prints</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
-
-    <span class="kt">S</span><span class="n">dir</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
-    <span class="kt">S</span><span class="n">base</span> <span class="o">=</span> <span class="s">&quot;filename.ext&quot;</span>
-    <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathJoin</span><span class="p">(</span><span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span><span class="p">)</span>
-    <span class="nb">prints</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
-
-    <span class="kt">S</span><span class="n">dir</span> <span class="o">=</span> <span class="s">&quot;/home/bar&quot;</span>
-    <span class="kt">S</span><span class="n">base</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
-    <span class="kt">S</span><span class="n">path</span> <span class="o">=</span> <span class="n">pathJoin</span><span class="p">(</span><span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span><span class="p">)</span>
-    <span class="nb">prints</span> <span class="s">&quot;Spath: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sdir: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, Sbase: </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">path</span><span class="p">,</span> <span class="kt">S</span><span class="n">dir</span><span class="p">,</span> <span class="kt">S</span><span class="n">base</span>
-
-    <span class="nb">turnoff</span>
+  <span class="kt">k</span><span class="n">trig</span> <span class="n">mtro</span> <span class="mi">7</span>
+  <span class="kt">k</span><span class="n">t</span> <span class="o">=</span> <span class="nf">gettime</span><span class="p">()</span>
+  <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="nb">println</span> <span class="s">&quot;triggered! time: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">t</span>
+  <span class="k">endif</span>
 <span class="kd">endin</span>
 
+<span class="kd">instr</span> <span class="nf">2</span>
+  <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">7</span>
+  <span class="kt">k</span><span class="n">t</span> <span class="o">=</span> <span class="nf">gettime</span><span class="p">()</span>
+  <span class="k">if</span> <span class="kt">k</span><span class="n">trig</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="nb">println</span> <span class="s">&quot;triggered! time: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">t</span>
+  <span class="k">endif</span>
+<span class="kd">endin</span>
+
+
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
-<span class="c1">; f0 3600</span>
+<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">20</span>
+<span class="c1">; i 2 0 20</span>
 
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -360,17 +362,16 @@ these according to the current platform</p>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="pathSplit.html">pathSplit</a></li>
-<li><a href="pathSplitExt.html">pathSplitExt</a></li>
+<li><a href="https://csound.com/docs/manual/metro.html">metro</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2020</p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="pathIsAbsolute.html" class="btn btn-neutral float-left" title="pathIsAbsolute"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="pathNative.html" class="btn btn-neutral float-right" title="pathNative">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="memview.html" class="btn btn-neutral float-left" title="memview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="panstereo.html" class="btn btn-neutral float-right" title="panstereo">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -393,10 +394,10 @@ these according to the current platform</p>
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="pathIsAbsolute.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="memview.html" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="pathNative.html" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="panstereo.html" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
