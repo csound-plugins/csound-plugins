@@ -1,6 +1,6 @@
 {
   "name": "else",
-  "version": "1.13.2",
+  "version": "1.14.0",
   "opcodes": [
     "accum",
     "atstop",
@@ -24,6 +24,7 @@
     "loadnpy",
     "memview",
     "mtro",
+    "nametoinstrnum",
     "panstereo",
     "perlin3",
     "pread",
