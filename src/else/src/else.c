@@ -2930,7 +2930,7 @@ static int32_t errormsg_init(CSOUND *csound, ERRORMSG *p) {
 
 static int32_t initerror(CSOUND *csound, ERRORMSG *p) {
     IGN(csound);
-    INITERRF("\n   %s\n", p->S2->data);
+    INITERRF("\n   %s\n", p->S1->data);
     return NOTOK;
 }
 
@@ -5518,6 +5518,21 @@ static int32_t mtro(CSOUND *csound, MTRO *p) {
     return OK;
 }
 
+typedef struct {
+    OPDS h;
+    MYFLT *instrnum;
+    STRINGDAT *instrname;
+} NAMETOINSTRNUM;
+
+static int32_t nametoinstrnum(CSOUND *csound, NAMETOINSTRNUM *p) {
+    int instrnum = csound->strarg2insno(csound, ((STRINGDAT*)p->instrname)->data, 1);
+    if(instrnum == NOT_AN_INSTRUMENT) {
+        *p->instrnum = -1;
+    } else {
+        *p->instrnum = (MYFLT)instrnum;
+    }
+    return OK;
+}
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5712,7 +5727,11 @@ static OENTRY localops[] = {
 
     { "vowelsdb", S(VOWELSDB), 0, 1, "i[]i[]i[]", "SS", (SUBR)vowelsdb_i },
     { "vowelsdb", S(VOWELSDB), 0, 1, "k[]k[]k[]", "SS", (SUBR)vowelsdb_i },
-    { "mtro", S(MTRO), 0, 3, "k", "kp", (SUBR)mtro_init, (SUBR)mtro}
+    { "mtro", S(MTRO), 0, 3, "k", "kp", (SUBR)mtro_init, (SUBR)mtro},
+    { "nametoinstrnum.i", S(NAMETOINSTRNUM), 0, 1, "i", "S", (SUBR)nametoinstrnum },
+
+    { "nametoinstrnum.k", S(NAMETOINSTRNUM), 0, 2, "k", "S",
+        NULL, (SUBR)nametoinstrnum },
 
 };
 
