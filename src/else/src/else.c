@@ -2151,8 +2151,9 @@ endin
 
   schedule an instrument when the note stops
 
-  NB: this is scheduled not at release start, but when the
-  note is deallocated
+  atstop works at instr deinit. Any k-variable
+  might already be deallocated so we copy all arguments
+  at init time
 
   atstop Sintr, idelay, idur, pfields...
   atstop instrnum, idelay, idur, pfields...
@@ -2172,6 +2173,9 @@ typedef struct {
     // internal
     MYFLT instrnum;   // cached instrnum
 
+    MYFLT pargscopy[ATSTOP_MAXPARGS];
+    size_t numargs;
+
 } SCHED_DEINIT;
 
 
@@ -2183,12 +2187,13 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     evt.strarg = NULL;
     evt.scnt = 0;
     evt.pinstance = NULL;
-    evt.p2orig = *p->pargs[0];
-    evt.p3orig = *p->pargs[1];
-    uint32_t pcnt = max(3, p->INOCOUNT);
+    evt.p2orig = p->pargscopy[0]; // *p->pargs[0];
+    evt.p3orig = p->pargscopy[1]; // *p->pargs[1];
+    size_t pcnt = p->numargs;
     evt.p[1] = p->instrnum;
-    for(uint32_t i=0; i < pcnt-1; i++) {
-        evt.p[2+i] = *p->pargs[i];
+    for(size_t i=0; i < pcnt-1; i++) {
+        evt.p[2+i] = p->pargscopy[i];
+        // evt.p[2+i] = *p->pargs[i];
     }
     evt.pcnt = (int16_t) pcnt;
     csound->insert_score_event_at_sample(csound, &evt,
@@ -2200,6 +2205,10 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
 static int32_t
 atstop_(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
     p->instrnum = instrnum;
+    p->numargs = max(3, p->INOCOUNT);
+    for(size_t i=0; i < p->numargs - 1;i++) {
+        p->pargscopy[i] = *p->pargs[i];
+    }
     register_deinit(csound, p, atstop_deinit);
     return OK;
 }
@@ -5589,8 +5598,8 @@ static OENTRY localops[] = {
     { "atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s },
     { "atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i },
     { "atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i },
-    { "atstop.k", S(SCHED_DEINIT), 0, 1, "", "iii*", (SUBR)atstop_i },
-    { "atstop.Sk", S(SCHED_DEINIT), 0, 1, "", "Sii*", (SUBR)atstop_s },
+    // { "atstop.k", S(SCHED_DEINIT), 0, 1, "", "iii*", (SUBR)atstop_i },
+    // { "atstop.Sk", S(SCHED_DEINIT), 0, 1, "", "Sii*", (SUBR)atstop_s },
 
     { "accum.k", S(ACCUM), 0, 3, "k", "koO", (SUBR)accum_init, (SUBR)accum_perf},
     { "accum.a", S(ACCUM), 0, 3, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio},
