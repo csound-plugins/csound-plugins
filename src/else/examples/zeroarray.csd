@@ -21,7 +21,7 @@ Syntax
 */
 
 ksmps = 32
-nchnls = 2
+nchnls = 8
 0dbfs  = 1
 
 gabuses[] init 4
@@ -37,13 +37,22 @@ instr 20
     zeroarray gabuses
 endin
 
+instr 30
+	; test masked zeroying
+	kfreqs[] fillarray 200, 300, 400, 500, 600, 700, 800, 900
+	asigs[] poly 8, "oscili", 0.1, kfreqs
+	; imask[] fillarray 0, 0, 1, 0, 1, 0, 0, 0
+	imask ftfill 0, 0, 1, 0, 1, 0, 0, 0
+	zeroarray asigs, imask
+	out asigs
+endin
 
 </CsInstruments>
 
 <CsScore>
 
-i 10 0 10
-i 20 0 10
-
+; i 10 0 10
+; i 20 0 10
+i 30 0 10
 </CsScore>
 </CsoundSynthesizer>

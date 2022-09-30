@@ -2414,8 +2414,7 @@ static int tabalias_deinit(CSOUND *csound, TABALIAS *p) {
 }
 
 static int tabalias_init(CSOUND *csound, TABALIAS *p) {
-    FUNC *ftp;
-    ftp = csound->FTnp2Find(csound, p->ifn);
+    FUNC *ftp = csound->FTnp2Find(csound, p->ifn);
     if (UNLIKELY(ftp == NULL))
         return NOTOK;
     int tabsize = ftp->flen;
@@ -4372,14 +4371,78 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
 typedef struct {
     OPDS h;
     ARRAYDAT *arr;
-    
+    ARRAYDAT *mask;
 } ZEROARR;
+
+typedef struct {
+    OPDS h;
+    ARRAYDAT *arr;
+    MYFLT *masktab;
+    FUNC *ftp;
+} ZEROARR_TAB;
+
 
 static int32_t zeroarr_perf(CSOUND *csound, ZEROARR *p) {
     MYFLT *data = p->arr->data;
-    size_t numbytes = p->arr->allocated;
+    // size_t numbytes = p->arr->allocated;
     // TODO: zero only the used part of an array
+    // The size might change between cycles
+    size_t size = 1;
+    for(int dim=0; dim<p->arr->dimensions; dim++) {
+        size *= p->arr->sizes[dim] * size;
+    }
+    size_t numbytes = size * p->arr->arrayMemberSize;
     memset(data, 0, numbytes);
+    return OK;
+}
+
+void inline _zeroarr_masked(CSOUND *csound, ARRAYDAT *arr, MYFLT *mask) {
+    // This is only for 1D audio arrays
+    // For audio arrays arrayMemberSize holds the number of bytes of an audio signal,
+    // that is ksmps * sizeof(MYFLT)
+    size_t arrsize = arr->sizes[0];
+    int ksmpsbytes = arr->arrayMemberSize;
+    MYFLT *arrdata = arr->data;
+    for(size_t i=0; i < arrsize; i++) {
+        if(mask[i] > 0) {
+            memset((char *)(arrdata) + i*ksmpsbytes, 0, ksmpsbytes);
+        }
+    }
+
+}
+
+static int32_t zeroarr_masked_perf(CSOUND *csound, ZEROARR *p) {
+    if(p->arr->dimensions != 1) {
+        return PERFERR("Only 1D audio arrays supported");
+    }
+    if(p->arr->sizes[0] > p->mask->sizes[0]) {
+        PERFERRF("The mask is too small (mask size=%d, array size=%d)", p->mask->sizes[0], p->arr->sizes[0]);
+        return NOTOK;
+    }
+    MYFLT *maskdata = p->mask->data;
+    _zeroarr_masked(csound, p->arr, maskdata);
+    return OK;
+}
+
+static int32_t zeroarr_maskedtab_init(CSOUND *csound, ZEROARR_TAB *p) {
+    FUNC *ftp = csound->FTnp2Find(csound, p->masktab);
+    if (UNLIKELY(ftp == NULL))
+        return NOTOK;
+    p->ftp = ftp;
+    return OK;
+}
+
+static int32_t zeroarr_maskedtab_perf(CSOUND *csound, ZEROARR_TAB *p) {
+    if(p->arr->dimensions != 1) {
+        return PERFERR("Only 1D audio arrays supported");
+    }
+    int tabsize = p->ftp->flen;
+    if(p->arr->sizes[0] > tabsize) {
+        PERFERRF("The mask is too small (mask size=%d, array size=%d)", tabsize, p->arr->sizes[0]);
+        return NOTOK;
+    }
+    MYFLT *maskdata = p->ftp->ftable;
+    _zeroarr_masked(csound, p->arr, maskdata);
     return OK;
 }
 
@@ -5701,6 +5764,10 @@ static OENTRY localops[] = {
     { "zeroarray.k", S(ZEROARR), 0, 2, "", "k[]", NULL, (SUBR)zeroarr_perf},
     { "zeroarray.a", S(ZEROARR), 0, 2, "", "a[]", NULL, (SUBR)zeroarr_perf},
     { "zeroarray.i", S(ZEROARR), 0, 1, "", "i[]", (SUBR)zeroarr_perf},
+    { "zeroarray.masked_k", S(ZEROARR), 0, 2, "", "a[]k[]", NULL, (SUBR)zeroarr_masked_perf},
+    { "zeroarray.masked_i", S(ZEROARR), 0, 2, "", "a[]i[]", NULL, (SUBR)zeroarr_masked_perf},
+    { "zeroarray.masked_tab", S(ZEROARR_TAB), 0, 3, "", "a[]k", (SUBR)zeroarr_maskedtab_init, (SUBR)zeroarr_maskedtab_perf},
+
     { "mixarray.a", S(ZEROARR), 0, 2, "", "a[]ka", NULL, (SUBR)mixarray_perf},
 
     { "findarray.k", S(FINDARR), 0, 2, "k", ".[]kj", NULL, (SUBR)findarr_perf},

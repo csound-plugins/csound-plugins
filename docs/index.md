@@ -125,6 +125,7 @@ Miscellaneous plugins
 * [loadnpy](opcodes/loadnpy.md): Load an array (of any number of dimensions) saved as a .npy file 
 * [memview](opcodes/memview.md): Create a view into a table or another array 
 * [mtro](opcodes/mtro.md): an accurate version of metro 
+* [nametoinstrnum](opcodes/nametoinstrnum.md): Returns the number of a named instrument 
 * [panstereo](opcodes/panstereo.md): Stereo signal balancer 
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 

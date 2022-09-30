@@ -9,14 +9,20 @@ Zero all elements in an array
 
 ``zeroarray`` sets all elements in an array to 0. 
 
+In the case of an audio array it is possible to pass a mask array of the same size 
+as the audio array indicating which audio items in the array need to be zeroed
+(only those audio items  will be zeroed for which the corresponding scalar item
+in the mask array is higher than 0). The mask can also be a table
+
 ## Syntax
 
 
 ```csound
 
-zeroarray iArr
-zeroarray kArr
-zeroarray aArr
+zeroarray iArr[]
+zeroarray kArr[]
+zeroarray aArr[] [, kMask[]]
+zeroarray aArr[], imasktable=0
 
 ```
     
@@ -47,4 +53,4 @@ zeroarray aArr
 
 ## Credits
 
-Eduardo Moguillansky, 2021
+Eduardo Moguillansky, 2021 (masked version 2022)
