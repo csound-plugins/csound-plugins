@@ -72,10 +72,11 @@ instr 1
   ; create a pull of fixed size, filled with the integers 0 to 9
   ipool pool_gen 10
   i1 pool_pop ipool
+  prints "pool is full? %d\n", pool_isfull:i(ipool)
   pool_push ipool, i1
   
   if pool_isfull:i(ipool) == 1 then
-    prints "pool is full\n"
+    prints "pool is full!!\n"
   endif
   ; this should fail
   pool_push ipool, 10
@@ -90,6 +91,7 @@ i1 0 1
 
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```

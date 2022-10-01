@@ -4441,8 +4441,7 @@ static int32_t zeroarr_maskedtab_perf(CSOUND *csound, ZEROARR_TAB *p) {
         PERFERRF("The mask is too small (mask size=%d, array size=%d)", tabsize, p->arr->sizes[0]);
         return NOTOK;
     }
-    MYFLT *maskdata = p->ftp->ftable;
-    _zeroarr_masked(csound, p->arr, maskdata);
+    _zeroarr_masked(csound, p->arr, p->ftp->ftable);
     return OK;
 }
 
