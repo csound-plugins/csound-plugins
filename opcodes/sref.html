@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -303,8 +305,8 @@ not be modified since it is a "view" of the original string. </p>
 index.</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>    <span class="kt">i</span><span class="n">dx</span>  <span class="n">sref</span> <span class="kt">S</span><span class="n">str</span>
-    <span class="kt">k</span><span class="n">dx</span>  <span class="n">sref</span> <span class="kt">S</span><span class="n">str</span>
+<div class="codehilite"><pre><span></span><code><span class="w">    </span><span class="kt">i</span><span class="n">dx</span><span class="w">  </span><span class="n">sref</span><span class="w"> </span><span class="kt">S</span><span class="n">str</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">dx</span><span class="w">  </span><span class="n">sref</span><span class="w"> </span><span class="kt">S</span><span class="n">str</span><span class="w"></span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
@@ -318,76 +320,76 @@ index.</p>
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">--</span><span class="n">nosound</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
 <span class="cm">/*</span>
 
 <span class="cm">Example file for sref / sderef</span>
 
-<span class="cm">*/</span>
+<span class="cm">*/</span><span class="w"></span>
 
-<span class="c1">; Use sref to pass multiple strings between instruments</span>
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="c1">; Use sref to pass multiple strings between instruments</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">event_i</span><span class="w"> </span><span class="s">&quot;i&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">sref</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="c1">;; get a read-only string from the cache</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="n">sderef</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="n">sderef</span> <span class="vi">p5</span>
-  <span class="nb">prints</span> <span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; get a read-only string from the cache</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">1</span><span class="w"> </span><span class="n">sderef</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">2</span><span class="w"> </span><span class="n">sderef</span><span class="w"> </span><span class="vi">p5</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;S1=</span><span class="si">%s</span><span class="s">   S2=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">2</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">;; Use sref to store strings inside a numeric array</span>
-<span class="kd">instr</span> <span class="nf">3</span>
-  <span class="kt">i</span><span class="n">Struct</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;Bach&quot;</span><span class="p">),</span> <span class="mi">1675</span><span class="p">,</span> <span class="mi">1750</span>
-  <span class="nb">prints</span> <span class="s">&quot;Name = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">Struct</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="kd">endin</span>
+<span class="c1">;; Use sref to store strings inside a numeric array</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Struct</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="n">sref</span><span class="p">(</span><span class="s">&quot;Bach&quot;</span><span class="p">),</span><span class="w"> </span><span class="mi">1675</span><span class="p">,</span><span class="w"> </span><span class="mi">1750</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Name = </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">Struct</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">4</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="o">=</span> <span class="s">&quot;foo bar&quot;</span>
-  <span class="kt">i</span><span class="n">S1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
-  <span class="c1">;; S2 is a read-only view of the cached S1, it should not be modified</span>
-  <span class="kt">S</span><span class="n">2</span> <span class="o">=</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">S1</span><span class="p">)</span>
-  <span class="nb">prints</span> <span class="s">&quot;S2 = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">2</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;foo bar&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">S1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sref</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; S2 is a read-only view of the cached S1, it should not be modified</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">S1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;S2 = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">2</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">test_same_idx</span>
-  <span class="c1">;; Calling sref with the same string should result in the same index</span>
-  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
-  <span class="kt">i</span><span class="n">dx2</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span>
-  <span class="nb">prints</span> <span class="s">&quot;These indices should be the same: idx1=</span><span class="si">%d</span><span class="s">, idx2=</span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dx2</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">test_same_idx</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; Calling sref with the same string should result in the same index</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dx1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dx2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sref</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;These indices should be the same: idx1=</span><span class="si">%d</span><span class="s">, idx2=</span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dx1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dx2</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">test_sderef</span>
-  <span class="kt">S</span><span class="n">1</span> <span class="o">=</span> <span class="s">&quot;uniquestring&quot;</span>
-  <span class="kt">i</span><span class="n">dx1</span> <span class="o">=</span> <span class="n">sref</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span>
-  <span class="kt">S</span><span class="n">view</span> <span class="o">=</span> <span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">dx1</span><span class="p">)</span>
-  <span class="nb">prints</span> <span class="s">&quot;Sview = &#39;</span><span class="si">%s</span><span class="s">&#39; (should be &#39;</span><span class="si">%s</span><span class="s">&#39;) </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">view</span><span class="p">,</span> <span class="kt">S</span><span class="n">1</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">test_sderef</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;uniquestring&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dx1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sref</span><span class="p">(</span><span class="kt">S</span><span class="n">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sderef</span><span class="p">(</span><span class="kt">i</span><span class="n">dx1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Sview = &#39;</span><span class="si">%s</span><span class="s">&#39; (should be &#39;</span><span class="si">%s</span><span class="s">&#39;) </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="c1">; i 1 0 0.1</span>
-<span class="c1">; i 3 + 0.1</span>
-<span class="c1">; i 4 + 0.1</span>
-<span class="nb">i</span> <span class="s">&quot;test_same_idx&quot;</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="c1">; i 1 0 0.1</span><span class="w"></span>
+<span class="c1">; i 3 + 0.1</span><span class="w"></span>
+<span class="c1">; i 4 + 0.1</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="s">&quot;test_same_idx&quot;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="c1">; i &quot;test_sderef&quot; 0 1</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="c1">; i &quot;test_sderef&quot; 0 1</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="credits">Credits</h2>

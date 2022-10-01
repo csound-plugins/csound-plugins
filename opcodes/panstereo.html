@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="panstereo.html">panstereo</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
@@ -311,7 +313,7 @@ Notice that even if <code>kpan</code> is a scalar (k-) variable, it is interpola
 to prevent discontinuities ("zipper" noise).</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">outL</span><span class="p">,</span> <span class="kt">a</span><span class="n">outR</span> <span class="n">panstereo</span> <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span><span class="p">,</span> <span class="kt">k</span><span class="n">pan</span><span class="p">,</span> <span class="kt">k</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">outL</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">outR</span><span class="w"> </span><span class="n">panstereo</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pan</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
@@ -332,102 +334,102 @@ to prevent discontinuities ("zipper" noise).</p>
 </ul>
 <hr />
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>              
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">-</span><span class="n">odac</span><span class="w">              </span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="vg">sr</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="kd">opcode</span> <span class="nf">panst</span><span class="p">,</span> <span class="kt">aa</span><span class="p">,</span> <span class="kt">aak</span>
-  <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">pos</span> <span class="nb">xin</span>
-    <span class="kt">a</span><span class="n">L</span><span class="p">,</span>  <span class="kt">a</span><span class="n">R</span>  <span class="nb">pan2</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">pos</span>
-    <span class="kt">a</span><span class="n">L1</span><span class="p">,</span> <span class="kt">a</span><span class="n">R1</span> <span class="nb">pan2</span> <span class="kt">a</span><span class="n">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">pos</span>
-    <span class="kt">a</span><span class="n">L</span> <span class="o">+=</span> <span class="kt">a</span><span class="n">L1</span>
-    <span class="kt">a</span><span class="n">R</span> <span class="o">+=</span> <span class="kt">a</span><span class="n">R1</span>
-    <span class="nb">xout</span> <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span>
-<span class="kd">endop</span>
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">panst</span><span class="p">,</span><span class="w"> </span><span class="kt">aa</span><span class="p">,</span><span class="w"> </span><span class="kt">aak</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pos</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w">  </span><span class="kt">a</span><span class="n">R</span><span class="w">  </span><span class="nb">pan2</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pos</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">L1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R1</span><span class="w"> </span><span class="nb">pan2</span><span class="w"> </span><span class="kt">a</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pos</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">L</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="kt">a</span><span class="n">L1</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="kt">a</span><span class="n">R1</span><span class="w"></span>
+<span class="w">    </span><span class="nb">xout</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">a</span><span class="n">noise</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.5</span>
-  <span class="kt">a</span><span class="n">L</span> <span class="o">=</span> <span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">R</span> <span class="o">=</span> <span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-  <span class="c1">; aR oscili 0.1, 1000</span>
-  <span class="kt">k</span><span class="n">pan</span> <span class="o">=</span> <span class="nb">lfo</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
-  <span class="nb">println</span> <span class="s">&quot;kpan: </span><span class="si">%.3f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">pan</span>
-  <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span> <span class="n">panstereo</span> <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span><span class="p">,</span> <span class="kt">k</span><span class="n">pan</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">noise</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pinker</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; aR oscili 0.1, 1000</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">pan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">lfo</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nb">println</span><span class="w"> </span><span class="s">&quot;kpan: </span><span class="si">%.3f</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pan</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="n">panstereo</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pan</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">a</span><span class="n">noise</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.5</span>
-  <span class="kt">a</span><span class="n">L</span> <span class="o">=</span> <span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">R</span> <span class="o">=</span> <span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-  <span class="c1">; aR oscili 0.1, 1000</span>
-  <span class="kt">k</span><span class="n">pan</span> <span class="nb">invalue</span> <span class="s">&quot;pan&quot;</span>
-  <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span> <span class="n">panstereo</span> <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span><span class="p">,</span> <span class="kt">k</span><span class="n">pan</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">L</span><span class="p">,</span> <span class="kt">a</span><span class="n">R</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">noise</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pinker</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">reson</span><span class="p">(</span><span class="kt">a</span><span class="n">noise</span><span class="p">,</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; aR oscili 0.1, 1000</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">pan</span><span class="w"> </span><span class="nb">invalue</span><span class="w"> </span><span class="s">&quot;pan&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="n">panstereo</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pan</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="kt">i</span><span class="n">2</span> <span class="mf">0.1</span> <span class="mi">100</span>
+<span class="kt">i</span><span class="n">2</span><span class="w"> </span><span class="mf">0.1</span><span class="w"> </span><span class="mi">100</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="n">Widgets</span><span class="o">&lt;/</span><span class="n">label</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
- <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">uuid</span><span class="o">/&gt;</span>
- <span class="o">&lt;</span><span class="n">bgcolor</span> <span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
- <span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
- <span class="o">&lt;</span><span class="n">bsbObject</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBKnob&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="nb">pan</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">32</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">10</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">200</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">200</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="err">{</span><span class="mi">96</span><span class="err">c</span><span class="mi">2</span><span class="err">fd</span><span class="mi">58</span><span class="o">-</span><span class="mi">8</span><span class="err">a</span><span class="mf">8e-4</span><span class="err">c</span><span class="mi">1</span><span class="err">c</span><span class="o">-</span><span class="mi">9</span><span class="err">be</span><span class="mi">9</span><span class="o">-</span><span class="n">d33e4934e239</span><span class="err">}</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">midichan</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midichan</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">midicc</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midicc</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">description</span><span class="o">/&gt;</span>
-  <span class="o">&lt;</span><span class="n">minimum</span><span class="o">&gt;</span><span class="mf">0.00000000</span><span class="o">&lt;/</span><span class="n">minimum</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">maximum</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">maximum</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="mf">0.55500000</span><span class="o">&lt;/</span><span class="n">value</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="nb">mode</span><span class="o">&gt;</span><span class="n">lin</span><span class="o">&lt;/</span><span class="nb">mode</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">mouseControl</span> <span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">resolution</span><span class="o">&gt;</span><span class="mf">0.01000000</span><span class="o">&lt;/</span><span class="n">resolution</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">randomizable</span> <span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span>
-   <span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">245</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
-   <span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">124</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
-   <span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
-  <span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">textcolor</span><span class="o">&gt;#</span><span class="mi">512900</span><span class="o">&lt;/</span><span class="n">textcolor</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">border</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">border</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">borderColor</span><span class="o">&gt;#</span><span class="mi">512900</span><span class="o">&lt;/</span><span class="n">borderColor</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="n">showvalue</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">showvalue</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span>
-  <span class="o">&lt;</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span>
- <span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">bsbPanel</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">bsbPresets</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">bsbPanel</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">label</span><span class="o">&gt;</span><span class="n">Widgets</span><span class="o">&lt;/</span><span class="n">label</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">uuid</span><span class="o">/&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBKnob&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="nb">pan</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">32</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">10</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="mi">200</span><span class="o">&lt;/</span><span class="kt">w</span><span class="n">idth</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">200</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">uuid</span><span class="o">&gt;</span><span class="err">{</span><span class="mi">96</span><span class="err">c</span><span class="mi">2</span><span class="err">fd</span><span class="mi">58</span><span class="o">-</span><span class="mi">8</span><span class="err">a</span><span class="mf">8e-4</span><span class="err">c</span><span class="mi">1</span><span class="err">c</span><span class="o">-</span><span class="mi">9</span><span class="err">be</span><span class="mi">9</span><span class="o">-</span><span class="n">d33e4934e239</span><span class="err">}</span><span class="o">&lt;/</span><span class="n">uuid</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">midichan</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midichan</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">midicc</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">midicc</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">description</span><span class="o">/&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">minimum</span><span class="o">&gt;</span><span class="mf">0.00000000</span><span class="o">&lt;/</span><span class="n">minimum</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">maximum</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">maximum</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="mf">0.55500000</span><span class="o">&lt;/</span><span class="n">value</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="nb">mode</span><span class="o">&gt;</span><span class="n">lin</span><span class="o">&lt;/</span><span class="nb">mode</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">mouseControl</span><span class="w"> </span><span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">resolution</span><span class="o">&gt;</span><span class="mf">0.01000000</span><span class="o">&lt;/</span><span class="n">resolution</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">245</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">124</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">textcolor</span><span class="o">&gt;#</span><span class="mi">512900</span><span class="o">&lt;/</span><span class="n">textcolor</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">border</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">border</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">borderColor</span><span class="o">&gt;#</span><span class="mi">512900</span><span class="o">&lt;/</span><span class="n">borderColor</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">showvalue</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">showvalue</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="o">&lt;</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">bsbPanel</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">bsbPresets</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">bsbPresets</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <hr />
@@ -444,7 +446,7 @@ to prevent discontinuities ("zipper" noise).</p>
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="mtro.html" class="btn btn-neutral float-left" title="mtro"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="nametoinstrnum.html" class="btn btn-neutral float-left" title="nametoinstrnum"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="pathAbsolute.html" class="btn btn-neutral float-right" title="pathAbsolute">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
@@ -468,7 +470,7 @@ to prevent discontinuities ("zipper" noise).</p>
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="mtro.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="nametoinstrnum.html" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="pathAbsolute.html" style="color: #fcfcfc">Next &raquo;</a></span>

@@ -173,6 +173,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -348,37 +350,37 @@ the end of the collection.</p>
 </ul>
 <h2 id="usage">Usage</h2>
 <p>There are two ways to use <code>dict_iter</code>, either in a <code>while</code> loop, or using gotos</p>
-<div class="codehilite"><pre><span></span><code><span class="c1">; iterate in a while loop</span>
-<span class="kt">k</span><span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">while</span> <span class="kt">k</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span> <span class="k">do</span>
-    <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span> <span class="n">dict_iter</span> <span class="kt">i</span><span class="n">dict</span>
-    <span class="nb">printf</span> <span class="s">&quot;key: </span><span class="si">%s</span><span class="s">  value: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span>
-<span class="k">od</span>
+<div class="codehilite"><pre><span></span><code><span class="c1">; iterate in a while loop</span><span class="w"></span>
+<span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="k">while</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="k">do</span><span class="w"></span>
+<span class="w">    </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="n">dict_iter</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;key: </span><span class="si">%s</span><span class="s">  value: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="w"></span>
+<span class="k">od</span><span class="w"></span>
 
-<span class="c1">; iterate with goto</span>
-<span class="nl">loop</span><span class="p">:</span>
-    <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span> <span class="n">dict_iter</span> <span class="kt">i</span><span class="n">dict</span>
-    <span class="k">if</span> <span class="kt">k</span><span class="n">idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">goto</span> <span class="nl">break</span>
-    <span class="nb">printf</span> <span class="s">&quot;key: </span><span class="si">%s</span><span class="s">  value: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span>
-    <span class="k">kgoto</span> <span class="nl">loop</span>
-<span class="nl">break</span><span class="p">:</span>
+<span class="c1">; iterate with goto</span><span class="w"></span>
+<span class="nl">loop</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="n">dict_iter</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="k">goto</span><span class="w"> </span><span class="nl">break</span><span class="w"></span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;key: </span><span class="si">%s</span><span class="s">  value: </span><span class="si">%f</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="w"></span>
+<span class="w">    </span><span class="k">kgoto</span><span class="w"> </span><span class="nl">loop</span><span class="w"></span>
+<span class="nl">break</span><span class="p">:</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span> 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">--</span><span class="n">nosound</span><span class="w"> </span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
 <span class="cm">/*</span>
 
 <span class="cm">  # Example file for dict_iter opcode </span>
 
-<span class="cm">*/</span>
+<span class="cm">*/</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="cm">/*</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="cm">/*</span>
 
 <span class="cm">  dict_iter</span>
 
@@ -392,35 +394,35 @@ the end of the collection.</p>
 <span class="cm">                 In this mode, iteration happens at most once</span>
 <span class="cm">           1  -&gt; iteration starts over every k-cycle</span>
 <span class="cm">           2  -&gt; iteration restarts after stopping   </span>
-<span class="cm">  */</span>
+<span class="cm">  */</span><span class="w"></span>
 
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;str:float&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s">&quot;bee&quot;</span><span class="p">,</span> <span class="mi">9</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;str:float&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bee&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="w"></span>
 
-  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinstk</span>
-  <span class="c1">; iterate with a while loop</span>
-  <span class="kt">k</span><span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">k</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">do</span> 
-    <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span> <span class="n">dict_iter</span> <span class="kt">i</span><span class="n">dict</span> 
-    <span class="nb">printf</span> <span class="s">&quot;while) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span>
-  <span class="k">od</span>   
+<span class="w">  </span><span class="kt">k</span><span class="n">t</span><span class="w"> </span><span class="nb">timeinstk</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; iterate with a while loop</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="n">dict_iter</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;while) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="w"></span>
+<span class="w">  </span><span class="k">od</span><span class="w">   </span>
 
-  <span class="c1">; the same but with goto</span>
-<span class="nl">loop</span><span class="p">:</span>
-  <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span> <span class="n">dict_iter</span> <span class="kt">i</span><span class="n">dict</span>
-  <span class="k">if</span> <span class="kt">k</span><span class="n">idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">goto</span> <span class="nl">break</span>
-  <span class="nb">printf</span> <span class="s">&quot;loop) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span>
-  <span class="k">kgoto</span> <span class="nl">loop</span>
-<span class="nl">break</span><span class="p">:</span>
+<span class="w">  </span><span class="c1">; the same but with goto</span><span class="w"></span>
+<span class="nl">loop</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="n">dict_iter</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="k">goto</span><span class="w"> </span><span class="nl">break</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;loop) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="w"></span>
+<span class="w">  </span><span class="k">kgoto</span><span class="w"> </span><span class="nl">loop</span><span class="w"></span>
+<span class="nl">break</span><span class="p">:</span><span class="w"></span>
 
-<span class="kd">endin</span>
+<span class="kd">endin</span><span class="w"></span>
 
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mf">0.05</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mf">0.05</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

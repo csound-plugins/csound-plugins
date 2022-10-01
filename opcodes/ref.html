@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -297,15 +299,15 @@ allowing to share it across instruments, opcodes, etc. Refs are reference counte
 deallocate themselves when out of scope and not being used by any
 object. It makes it possible to pass arrays by reference to user defined
 opcodes, allowing to modify an array in place, skip copying memory, etc.</p>
-<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">X</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span>
-<span class="kt">i</span><span class="n">ref</span>  <span class="n">ref</span> <span class="kt">i</span><span class="n">X</span>
-<span class="kt">i</span><span class="n">Y</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">X</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="kt">i</span><span class="n">ref</span><span class="w">  </span><span class="n">ref</span><span class="w"> </span><span class="kt">i</span><span class="n">X</span><span class="w"></span>
+<span class="kt">i</span><span class="n">Y</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
 </code></pre></div>
 
 <p>In the case above, <code>iY</code> shares the same memory as <code>iX</code> and any modification in
 one array will be visible in the other. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="n">xArray</span><span class="p">,</span> <span class="p">[</span><span class="kt">i</span><span class="n">extrarefs</span><span class="o">=</span><span class="mi">0</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="n">ref</span><span class="w"> </span><span class="n">xArray</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="kt">i</span><span class="n">extrarefs</span><span class="o">=</span><span class="mi">0</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
@@ -325,252 +327,252 @@ one array will be visible in the other. </p>
 <li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">--</span><span class="n">nosound</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="c1">;; Example file for ref - deref</span>
+<span class="c1">;; Example file for ref - deref</span><span class="w"></span>
 
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="vg">sr</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="kt">gi</span><span class="n">A</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">3000</span>
+<span class="kt">gi</span><span class="n">A</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span><span class="w"> </span><span class="mi">3000</span><span class="w"></span>
 
-<span class="c1">; Example 1: take a ref from an array, deref it to create a second view of it </span>
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="c1">; a source array</span>
-  <span class="kt">i</span><span class="n">X</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span>
+<span class="c1">; Example 1: take a ref from an array, deref it to create a second view of it </span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; a source array</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">X</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="mi">40</span><span class="w"></span>
 
-  <span class="c1">; create a ref of iXs, return the index </span>
-  <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">i</span><span class="n">X</span>
-  <span class="c1">; now iYs points to iXs</span>
-  <span class="kt">i</span><span class="n">Y</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Y</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;instrument 1, iY&quot;</span>
-
-
-  <span class="kt">i</span><span class="n">Z</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span>
-
-  <span class="c1">; create a ref, pass it to instr. 2</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Z</span><span class="p">)</span>
-
-  <span class="c1">; create another ref of iZ. In this case the event is scheduled</span>
-  <span class="c1">; in the future, so the source will not exist anymore when instr. 2</span>
-  <span class="c1">; is scheduled. This should fail.</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Z</span><span class="p">)</span>
-
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">ref</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="k">if</span> <span class="n">refvalid</span><span class="p">(</span><span class="kt">i</span><span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-    <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Zs</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;p1=2, iZs&quot;</span>
-  <span class="k">else</span>
-    <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">    The reference has become invalid</span><span class="se">\n</span><span class="s">&quot;</span>
-  <span class="k">endif</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
-
-<span class="c1">; Example 2: extra references to keep array alive</span>
-<span class="kd">instr</span> <span class="nf">3</span>
-  <span class="c1">; create a source array</span>
-  <span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span>
-
-  <span class="c1">; In order to bridge the time gap between the end of life of the source</span>
-  <span class="c1">; of a ref and the scheduled event where a deref is taken, it is possible</span>
-  <span class="c1">; to create a forward reference, a &quot;promise&quot; that one deref has been scheduled</span>
-  <span class="c1">; in the future.</span>
-
-  <span class="c1">; short lived event, ends before this event</span>
-  <span class="nb">schedule</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">),</span> <span class="mi">0</span>
-
-  <span class="c1">; starts before we end, but survives us</span>
-  <span class="nb">schedule</span> <span class="mi">4</span><span class="p">,</span> <span class="vi">p3</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">),</span> <span class="mi">0</span>
-
-  <span class="c1">; starts after we end, we need an extra reference </span>
-  <span class="nb">schedule</span> <span class="mi">4</span><span class="p">,</span> <span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span>
-
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;  --- instr. 3 finished --- </span><span class="se">\n</span><span class="s">&quot;</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">4</span>
-  <span class="nb">prints</span> <span class="s">&quot;instr. 4</span><span class="se">\n</span><span class="s">   &quot;</span>
-  <span class="kt">k</span><span class="n">View</span><span class="p">[]</span> <span class="n">deref</span> <span class="vi">p4</span><span class="p">,</span> <span class="vi">p5</span>
-  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">View</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot; --- instr. 4 finished --- </span><span class="se">\n</span><span class="s">&quot;</span>
-  <span class="c1">; At deinition time the memory of the `iView` array is marked as deallocated.</span>
-  <span class="c1">; The handle (a global structure created by the `ref` opcode) which owns the memory,</span>
-  <span class="c1">; is signaled that no other clients of this data are alive. It deallocates the</span>
-  <span class="c1">; original memory and frees itself</span>
-<span class="kd">endin</span>
-
-  <span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
-
-  <span class="c1">; test: multiple derefs</span>
-<span class="kd">instr</span> <span class="nf">5</span>
-  <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span>
-  <span class="kt">i</span><span class="n">ref</span> <span class="n">ref</span> <span class="kt">i</span><span class="n">Xs</span>
-
-  <span class="kt">i</span><span class="n">Ys</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Ys</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Zs</span>
-  <span class="kt">i</span><span class="n">Xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Zs</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="c1">; test performance of pass-by-value vs pass-by-reference</span>
-<span class="kd">opcode</span> <span class="nf">arrayadd</span><span class="p">,</span> <span class="kt">i[]</span><span class="p">,</span> <span class="kt">i[]i</span>
-  <span class="c1">; pass by value in and out</span>
-  <span class="kt">i</span><span class="n">In</span><span class="p">[],</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">i</span><span class="n">In</span> <span class="o">+</span> <span class="kt">i</span><span class="n">x</span>
-  <span class="nb">xout</span> <span class="kt">i</span><span class="n">Out</span>
-<span class="kd">endop</span>
-
-<span class="kd">opcode</span> <span class="nf">arrayaddref</span><span class="p">,</span> <span class="kt">i[]</span><span class="p">,</span> <span class="kt">ii</span>
-  <span class="c1">; pass by ref in, by value out</span>
-  <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">In</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">i</span><span class="n">In</span> <span class="o">+</span> <span class="kt">i</span><span class="n">x</span>
-  <span class="nb">xout</span> <span class="kt">i</span><span class="n">Out</span>
-<span class="kd">endop</span>
-
-<span class="kd">opcode</span> <span class="nf">arrayadd_inplace</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">ii</span>
-  <span class="c1">; in place </span>
-  <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">In</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">ref</span>
-  <span class="kt">i</span><span class="n">In</span> <span class="o">+=</span> <span class="kt">i</span><span class="n">x</span>
-<span class="kd">endop</span>
-
-<span class="kd">opcode</span> <span class="nf">arrayadd_byref_inout</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">iii</span>
-  <span class="c1">; pass by ref in and out</span>
-  <span class="kt">i</span><span class="n">refin</span><span class="p">,</span> <span class="kt">i</span><span class="n">refout</span><span class="p">,</span> <span class="kt">i</span><span class="n">x</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">In</span><span class="p">[]</span>  <span class="n">deref</span> <span class="kt">i</span><span class="n">refin</span>
-  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="n">deref</span> <span class="kt">i</span><span class="n">refout</span>
-  <span class="k">if</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">)</span> <span class="k">then</span>
-    <span class="kt">i</span><span class="n">Out</span> <span class="o">=</span> <span class="kt">i</span><span class="n">In</span> <span class="o">+</span> <span class="kt">i</span><span class="n">x</span>
-  <span class="k">endif</span>
-<span class="kd">endop</span>
-
-<span class="kd">instr</span> <span class="nf">testUdoPerformance1</span>
-  <span class="c1">; Here we test the performance gain of passing arrays by reference.</span>
-  <span class="c1">; Passing the input array by reference seems to produce a speedup of ~25%,</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="mi">10000</span>
-  <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span>
-  <span class="kt">i</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="kt">i</span><span class="n">t0</span> <span class="nb">rtclock</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">20</span> <span class="k">do</span>
-    <span class="kt">i</span><span class="n">Ys</span><span class="p">[]</span> <span class="nf">arrayadd</span> <span class="kt">i</span><span class="n">Xs</span><span class="p">,</span> <span class="mf">2.0</span>
-    <span class="kt">i</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
-  <span class="kt">i</span><span class="n">t1</span> <span class="nb">rtclock</span>
-  <span class="nb">prints</span> <span class="s">&quot;Dur UDO pass by value = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
-
-  <span class="kt">i</span><span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Xs</span><span class="p">)</span>
-  <span class="kt">i</span><span class="n">t0</span> <span class="nb">rtclock</span>
-  <span class="kt">i</span><span class="n">Y0</span><span class="p">[]</span> <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.1</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.2</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">Y0</span>   <span class="nf">arrayaddref</span> <span class="kt">i</span><span class="n">ref</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">i</span><span class="n">t1</span> <span class="nb">rtclock</span>
-  <span class="nb">prints</span> <span class="s">&quot;Dur UDO pass by ref input = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
-
-  <span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span>
-  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">init</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span>
-
-  <span class="kt">i</span><span class="n">t0</span> <span class="nb">rtclock</span>
-  <span class="kt">i</span><span class="n">refZ</span> <span class="o">=</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span>
-  <span class="kt">i</span><span class="n">refOut</span> <span class="o">=</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">)</span>  
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="kt">i</span><span class="n">refZ</span><span class="p">,</span> <span class="kt">i</span><span class="n">refOut</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="kt">i</span><span class="n">t1</span> <span class="nb">rtclock</span>
-
-  <span class="nb">prints</span> <span class="s">&quot;Dur UDO pass by ref in and out=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">t1</span> <span class="o">-</span> <span class="kt">i</span><span class="n">t0</span>
-  <span class="c1">; printarray iOut</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">7</span>
-  <span class="kt">i</span><span class="n">In</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span>
-  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">init</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">)</span>
-  <span class="nf">arrayadd_byref_inout</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">),</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">),</span> <span class="mf">0.5</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">8</span>
-  <span class="c1">; test k arrays</span>
-  <span class="c1">; 1. A way to convert a i-array to a k-array by taking a reference</span>
-  <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">99</span>
-  <span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span> <span class="n">deref</span> <span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Xs</span><span class="p">)</span>
-
-  <span class="kt">k</span><span class="n">Xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">timeinsts</span><span class="p">()</span>
-  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Xs</span><span class="p">,</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">9</span>
-  <span class="c1">; we need genarray_i because otherwise kXs is not initialized at i-time</span>
-  <span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">9</span>
-  <span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span> <span class="n">deref</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">)</span>
-  <span class="kt">i</span><span class="n">Xs</span> <span class="o">+=</span> <span class="mi">10</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Xs</span>
-  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Xs</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="c1">; create a ref of iXs, return the index </span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="n">ref</span><span class="w"> </span><span class="kt">i</span><span class="n">X</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; now iYs points to iXs</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;instrument 1, iY&quot;</span><span class="w"></span>
 
 
-<span class="c1">; schedule 1, 0, 1</span>
-<span class="c1">; schedule 3, 0, 1</span>
-<span class="c1">; schedule 5, 0, 0.1</span>
-<span class="nb">schedule</span> <span class="s">&quot;testUdoPerformance1&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span>
-<span class="c1">; schedule 8, 0, 4</span>
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Z</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="n">e</span> <span class="mi">10</span> 
+<span class="w">  </span><span class="c1">; create a ref, pass it to instr. 2</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Z</span><span class="p">)</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="c1">; create another ref of iZ. In this case the event is scheduled</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; in the future, so the source will not exist anymore when instr. 2</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; is scheduled. This should fail.</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Z</span><span class="p">)</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="n">refvalid</span><span class="p">(</span><span class="kt">i</span><span class="n">ref</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
+<span class="w">    </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Zs</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;p1=2, iZs&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="k">else</span><span class="w"></span>
+<span class="w">    </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\n</span><span class="s">    The reference has become invalid</span><span class="se">\n</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="k">endif</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span><span class="w"></span>
+
+<span class="c1">; Example 2: extra references to keep array alive</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">3</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; create a source array</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">13</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">; In order to bridge the time gap between the end of life of the source</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; of a ref and the scheduled event where a deref is taken, it is possible</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; to create a forward reference, a &quot;promise&quot; that one deref has been scheduled</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; in the future.</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">; short lived event, ends before this event</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">; starts before we end, but survives us</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">; starts after we end, we need an extra reference </span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+
+<span class="w">  </span><span class="n">defer</span><span class="w"> </span><span class="s">&quot;prints&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;  --- instr. 3 finished --- </span><span class="se">\n</span><span class="s">&quot;</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">4</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;instr. 4</span><span class="se">\n</span><span class="s">   &quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">View</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="vi">p4</span><span class="p">,</span><span class="w"> </span><span class="vi">p5</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">View</span><span class="w"></span>
+<span class="w">  </span><span class="n">defer</span><span class="w"> </span><span class="s">&quot;prints&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot; --- instr. 4 finished --- </span><span class="se">\n</span><span class="s">&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; At deinition time the memory of the `iView` array is marked as deallocated.</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; The handle (a global structure created by the `ref` opcode) which owns the memory,</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; is signaled that no other clients of this data are alive. It deallocates the</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; original memory and frees itself</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span><span class="w"></span>
+
+<span class="w">  </span><span class="c1">; test: multiple derefs</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="n">ref</span><span class="w"> </span><span class="kt">i</span><span class="n">Xs</span><span class="w"></span>
+
+<span class="w">  </span><span class="kt">i</span><span class="n">Ys</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Ys</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Zs</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Zs</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="c1">; test performance of pass-by-value vs pass-by-reference</span><span class="w"></span>
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">arrayadd</span><span class="p">,</span><span class="w"> </span><span class="kt">i[]</span><span class="p">,</span><span class="w"> </span><span class="kt">i[]i</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; pass by value in and out</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">In</span><span class="p">[],</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">In</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"></span>
+<span class="w">  </span><span class="nb">xout</span><span class="w"> </span><span class="kt">i</span><span class="n">Out</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
+
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">arrayaddref</span><span class="p">,</span><span class="w"> </span><span class="kt">i[]</span><span class="p">,</span><span class="w"> </span><span class="kt">ii</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; pass by ref in, by value out</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">In</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">In</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"></span>
+<span class="w">  </span><span class="nb">xout</span><span class="w"> </span><span class="kt">i</span><span class="n">Out</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
+
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">arrayadd_inplace</span><span class="p">,</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span><span class="w"> </span><span class="kt">ii</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; in place </span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">In</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">In</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
+
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">arrayadd_byref_inout</span><span class="p">,</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span><span class="w"> </span><span class="kt">iii</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; pass by ref in and out</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">refin</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refout</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">In</span><span class="p">[]</span><span class="w">  </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">refin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">refout</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">Out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">In</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">i</span><span class="n">x</span><span class="w"></span>
+<span class="w">  </span><span class="k">endif</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">testUdoPerformance1</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; Here we test the performance gain of passing arrays by reference.</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; Passing the input array by reference seems to produce a speedup of ~25%,</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10000</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">t0</span><span class="w"> </span><span class="nb">rtclock</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">i</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="k">do</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">Ys</span><span class="p">[]</span><span class="w"> </span><span class="nf">arrayadd</span><span class="w"> </span><span class="kt">i</span><span class="n">Xs</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="k">od</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="nb">rtclock</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Dur UDO pass by value = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span><span class="w"></span>
+
+<span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Xs</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">t0</span><span class="w"> </span><span class="nb">rtclock</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="p">[]</span><span class="w"> </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="nb">rtclock</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Dur UDO pass by ref input = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span><span class="w"></span>
+
+<span class="w">  </span><span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">  </span><span class="kt">i</span><span class="n">t0</span><span class="w"> </span><span class="nb">rtclock</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">refZ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">refOut</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">)</span><span class="w">  </span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="nb">rtclock</span><span class="w"></span>
+
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Dur UDO pass by ref in and out=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; printarray iOut</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">7</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">In</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">In</span><span class="p">),</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Out</span><span class="p">),</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">8</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; test k arrays</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; 1. A way to convert a i-array to a k-array by taking a reference</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">99</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Xs</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">  </span><span class="kt">k</span><span class="n">Xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">timeinsts</span><span class="p">()</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">Xs</span><span class="p">,</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">9</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; we need genarray_i because otherwise kXs is not initialized at i-time</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Xs</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Xs</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Xs</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">10</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Xs</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">Xs</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+
+<span class="c1">; schedule 1, 0, 1</span><span class="w"></span>
+<span class="c1">; schedule 3, 0, 1</span><span class="w"></span>
+<span class="c1">; schedule 5, 0, 0.1</span><span class="w"></span>
+<span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;testUdoPerformance1&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="w"></span>
+<span class="c1">; schedule 8, 0, 4</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="n">e</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span>
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

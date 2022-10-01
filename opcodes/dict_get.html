@@ -171,6 +171,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -338,68 +340,68 @@ In the case of a dict of type "str:str", dict_get returns an empty string if the
 <p><code>dict_get</code> executes at <strong>i-time</strong> and <strong>k-time</strong> depending on the output value. In the case of 
 a dict of type "str:str" <code>dict_get</code> runs at k-time. Use <code>dict_geti</code> for an init time version</p>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="c1">; -odac  -iadc    ;;;RT audio out and in</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="c1">; -odac  -iadc    ;;;RT audio out and in</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">sr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">32</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span> 
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"> </span>
+<span class="w">  </span><span class="c1">; create a local dict, mapping strings to numbers</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="w"></span>
 
-  <span class="c1">; set key a key:value pair</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>
+<span class="w">  </span><span class="c1">; set key a key:value pair</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">123</span><span class="w"></span>
 
-  <span class="c1">; retrieve the value</span>
-  <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
+<span class="w">  </span><span class="c1">; retrieve the value</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">bar</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="w"></span>
 
-  <span class="c1">; get a non-existent key, will output the default</span>
-  <span class="kt">k</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> 
+<span class="w">  </span><span class="c1">; get a non-existent key, will output the default</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span>
 
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span> 
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bar</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span>
 
-  <span class="c1">; now create another dict, this one will outlive this note</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
+<span class="w">  </span><span class="c1">; now create another dict, this one will outlive this note</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict2</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;ss&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bazvalue&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foovalue&quot;</span><span class="w"></span>
 
-  <span class="c1">; schedule another inst, pass this dict</span>
-  <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict2</span>
+<span class="w">  </span><span class="c1">; schedule another inst, pass this dict</span><span class="w"></span>
+<span class="w">  </span><span class="nb">event</span><span class="w"> </span><span class="s">&quot;i&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="w"></span>
 
-  <span class="nb">turnoff</span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
 
-<span class="kd">endin</span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">S</span><span class="n">baz</span> <span class="o">=</span> <span class="n">dict_get</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">)</span>
-  <span class="nb">printf</span> <span class="s">&quot;instr 2, kbaz = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">baz</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">baz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dict_get</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;instr 2, kbaz = </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">baz</span><span class="w"></span>
 
-  <span class="c1">; free dict at the end of this note</span>
-  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span>  
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="c1">; free dict at the end of this note</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_free</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">  </span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; schedule 1, 0, 1</span>
+<span class="c1">; schedule 1, 0, 1</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">2</span>
+<span class="nb">i</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"> </span>
 </code></pre></div>
 
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
 <span class="cm">/*</span>
 
@@ -414,71 +416,71 @@ a dict of type "str:str" <code>dict_get</code> runs at k-time. Use <code>dict_ge
 <span class="cm">  is returned when the key is not found. For int values, a default </span>
 <span class="cm">  value given by the user is returned when the key is not found.</span>
 
-<span class="cm">*/</span>
+<span class="cm">*/</span><span class="w"></span>
 
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="vg">ksmps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="c1">; create a local dict, mapping strings to numbers</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
-  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; create a local dict, mapping strings to numbers</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_free</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
 
-  <span class="c1">; set key a key:value pair</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">123</span>
+<span class="w">  </span><span class="c1">; set key a key:value pair</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">123</span><span class="w"></span>
 
-  <span class="c1">; retrieve teh value</span>
-  <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
+<span class="w">  </span><span class="c1">; retrieve teh value</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">bar</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="w"></span>
 
-  <span class="c1">; get a non-existent key, will output the default</span>
-  <span class="kt">k</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> 
+<span class="w">  </span><span class="c1">; get a non-existent key, will output the default</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span>
 
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span> 
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;&gt;&gt;&gt;&gt; bar: </span><span class="si">%f</span><span class="s">,  foo: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bar</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span>
 
-  <span class="c1">; now create another dict, mapping strings to strings</span>
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span>
+<span class="w">  </span><span class="c1">; now create another dict, mapping strings to strings</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict2</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;ss&quot;</span><span class="w"></span>
 
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="s">&quot;bazvalue&quot;</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;hoo&quot;</span><span class="p">,</span> <span class="s">&quot;hoovalue&quot;</span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bazvalue&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;hoo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;hoovalue&quot;</span><span class="w"></span>
 
-  <span class="kt">S</span><span class="n">baz</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span>
-  <span class="kt">S</span><span class="n">hoo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;hoo&quot;</span>
+<span class="w">  </span><span class="kt">S</span><span class="n">baz</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">hoo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;hoo&quot;</span><span class="w"></span>
 
-  <span class="nb">printf</span> <span class="s">&quot;&gt;&gt;&gt;&gt; baz: </span><span class="si">%s</span><span class="s">,  hoo: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">baz</span><span class="p">,</span> <span class="kt">S</span><span class="n">hoo</span> 
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;&gt;&gt;&gt;&gt; baz: </span><span class="si">%s</span><span class="s">,  hoo: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">baz</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">hoo</span><span class="w"> </span>
 
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="c1">;; set and get </span>
-  <span class="k">if</span> <span class="nb">timeinstk</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">kgoto</span> <span class="nl">perf</span>    <span class="c1">;; this starts at 1</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;; set and get </span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">timeinstk</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">kgoto</span><span class="w"> </span><span class="nl">perf</span><span class="w">    </span><span class="c1">;; this starts at 1</span><span class="w"></span>
 
-  <span class="kt">i</span><span class="n">maxcnt</span> <span class="o">=</span> <span class="mi">100</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">maxcnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;ss&quot;</span><span class="w"></span>
 
-  <span class="kt">k</span><span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">k</span><span class="n">cnt</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">maxcnt</span> <span class="k">do</span>
-    <span class="kt">S</span><span class="n">key</span> <span class="nb">sprintfk</span> <span class="s">&quot;key_</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">cnt</span>
-    <span class="kt">S</span><span class="n">value</span> <span class="nb">sprintfk</span> <span class="s">&quot;value_</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">cnt</span> 
-    <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">S</span><span class="n">value</span> 
-    <span class="kt">k</span><span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span> 
-  <span class="k">od</span> 
+<span class="w">  </span><span class="kt">k</span><span class="n">cnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">k</span><span class="n">cnt</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="kt">i</span><span class="n">maxcnt</span><span class="w"> </span><span class="k">do</span><span class="w"></span>
+<span class="w">    </span><span class="kt">S</span><span class="n">key</span><span class="w"> </span><span class="nb">sprintfk</span><span class="w"> </span><span class="s">&quot;key_</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">cnt</span><span class="w"></span>
+<span class="w">    </span><span class="kt">S</span><span class="n">value</span><span class="w"> </span><span class="nb">sprintfk</span><span class="w"> </span><span class="s">&quot;value_</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">cnt</span><span class="w"> </span>
+<span class="w">    </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">value</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">k</span><span class="n">cnt</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span>
+<span class="w">  </span><span class="k">od</span><span class="w"> </span>
 
-<span class="nl">perf</span><span class="p">:</span>
-  <span class="kt">k</span><span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">k</span><span class="n">cnt</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">maxcnt</span> <span class="k">do</span> 
-    <span class="kt">S</span><span class="n">key</span>  <span class="nb">sprintfk</span> <span class="s">&quot;key_</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">cnt</span>
-    <span class="c1">; the same for get, the key can change at k-time</span>
-    <span class="kt">S</span><span class="n">value</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span>
-    <span class="nb">printf</span> <span class="s">&quot;key: </span><span class="si">%s</span><span class="s">,  value: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">cnt</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">S</span><span class="n">value</span> 
-    <span class="kt">k</span><span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span> 
-<span class="kd">endin</span>
+<span class="nl">perf</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">cnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">k</span><span class="n">cnt</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="kt">i</span><span class="n">maxcnt</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">S</span><span class="n">key</span><span class="w">  </span><span class="nb">sprintfk</span><span class="w"> </span><span class="s">&quot;key_</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">cnt</span><span class="w"></span>
+<span class="w">    </span><span class="c1">; the same for get, the key can change at k-time</span><span class="w"></span>
+<span class="w">    </span><span class="kt">S</span><span class="n">value</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="w"></span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;key: </span><span class="si">%s</span><span class="s">,  value: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">cnt</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">value</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">k</span><span class="n">cnt</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="k">od</span><span class="w"> </span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">3</span>
-  <span class="cm">/*</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">3</span><span class="w"></span>
+<span class="w">  </span><span class="cm">/*</span>
 
 <span class="cm">  dict_iter</span>
 
@@ -492,190 +494,190 @@ a dict of type "str:str" <code>dict_get</code> runs at k-time. Use <code>dict_ge
 <span class="cm">                 In this mode, iteration happens at most once</span>
 <span class="cm">           1  -&gt; iteration starts over every k-cycle</span>
 <span class="cm">           2  -&gt; iteration restarts after stopping   </span>
-<span class="cm">  */</span>
+<span class="cm">  */</span><span class="w"></span>
 
-  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinstk</span> 
-  <span class="k">if</span> <span class="kt">k</span><span class="n">t</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">kgoto</span> <span class="nl">perf</span> 
+<span class="w">  </span><span class="kt">k</span><span class="n">t</span><span class="w"> </span><span class="nb">timeinstk</span><span class="w"> </span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="kt">k</span><span class="n">t</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">kgoto</span><span class="w"> </span><span class="nl">perf</span><span class="w"> </span>
 
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">2</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">15</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bee&quot;</span><span class="p">,</span> <span class="mi">9</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bee&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="w"></span>
 
-<span class="nl">perf</span><span class="p">:</span>
-  <span class="c1">; iterate with a while loop</span>
-  <span class="kt">k</span><span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">k</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">do</span> 
-    <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span> <span class="n">dict_iter</span> <span class="kt">i</span><span class="n">dict</span> 
-    <span class="nb">printf</span> <span class="s">&quot;while) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span>
-  <span class="k">od</span>   
+<span class="nl">perf</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; iterate with a while loop</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="n">dict_iter</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;while) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="w"></span>
+<span class="w">  </span><span class="k">od</span><span class="w">   </span>
 
-  <span class="c1">; the same but with goto</span>
-<span class="nl">loop</span><span class="p">:</span>
-  <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span> <span class="n">dict_iter</span> <span class="kt">i</span><span class="n">dict</span>
-  <span class="k">if</span> <span class="kt">k</span><span class="n">idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">goto</span> <span class="nl">break</span>
-  <span class="nb">printf</span> <span class="s">&quot;loop) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">k</span><span class="n">value</span>
-  <span class="k">kgoto</span> <span class="nl">loop</span>
-<span class="nl">break</span><span class="p">:</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="c1">; the same but with goto</span><span class="w"></span>
+<span class="nl">loop</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="n">dict_iter</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="k">goto</span><span class="w"> </span><span class="nl">break</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;loop) </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">idx</span><span class="o">+</span><span class="kt">k</span><span class="n">t</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="w"></span>
+<span class="w">  </span><span class="k">kgoto</span><span class="w"> </span><span class="nl">loop</span><span class="w"></span>
+<span class="nl">break</span><span class="p">:</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">4</span>
-  <span class="c1">; test deleting a key</span>
-  <span class="c1">; ~~~~~~~~~~~~~~~~~~~</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">4</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; test deleting a key</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; ~~~~~~~~~~~~~~~~~~~</span><span class="w"></span>
 
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;ss&quot;</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;ss&quot;</span><span class="w"></span>
 
-  <span class="c1">; set a key:value pair</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;foovalue&quot;</span>
+<span class="w">  </span><span class="c1">; set a key:value pair</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foovalue&quot;</span><span class="w"></span>
 
-  <span class="c1">; get the value, print it</span>
-  <span class="kt">S</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
-  <span class="nb">printf</span> <span class="s">&quot;key: foo  value: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">foo</span>
+<span class="w">  </span><span class="c1">; get the value, print it</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">foo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;key: foo  value: </span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">foo</span><span class="w"></span>
 
-  <span class="c1">; dict_set without value deletes the key:value pair</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
+<span class="w">  </span><span class="c1">; dict_set without value deletes the key:value pair</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="w"></span>
 
-  <span class="c1">; now check that the pair is gone</span>
-  <span class="kt">S</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
-  <span class="k">if</span><span class="p">(</span><span class="nb">strlen</span><span class="p">(</span><span class="kt">S</span><span class="n">foo</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span> 
-    <span class="nb">printf</span> <span class="s">&quot;key does not exist </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="k">endif</span>
+<span class="w">  </span><span class="c1">; now check that the pair is gone</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">foo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="p">(</span><span class="nb">strlen</span><span class="p">(</span><span class="kt">S</span><span class="n">foo</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"> </span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;key does not exist </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="k">endif</span><span class="w"></span>
 
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
 
-<span class="kd">instr</span> <span class="nf">5</span>
-  <span class="c1">; dicts can be passed between instruments</span>
-  <span class="c1">; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">5</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; dicts can be passed between instruments</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span><span class="w"></span>
 
-  <span class="k">if</span> <span class="nb">timeinstk</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">goto</span> <span class="nl">perf</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">timeinstk</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">goto</span><span class="w"> </span><span class="nl">perf</span><span class="w"></span>
 
-  <span class="c1">; create a dict which survives this note</span>
-  <span class="kt">i</span><span class="n">dict1</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="mi">1</span>
+<span class="w">  </span><span class="c1">; create a dict which survives this note</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict1</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-  <span class="c1">; set some initial values once </span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict1</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict1</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">2</span>
+<span class="w">  </span><span class="c1">; set some initial values once </span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
 
-  <span class="c1">; launch instr 6, which will outlive this note, pass idict as p4</span>
-  <span class="nb">event</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="s">&quot;midifydict&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict1</span> 
+<span class="w">  </span><span class="c1">; launch instr 6, which will outlive this note, pass idict as p4</span><span class="w"></span>
+<span class="w">  </span><span class="nb">event</span><span class="w"> </span><span class="s">&quot;i&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;midifydict&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="w"> </span>
 
-<span class="nl">perf</span><span class="p">:</span>
-  <span class="kt">k</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict1</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
-  <span class="nb">printk2</span> <span class="kt">k</span><span class="n">foo</span>
+<span class="nl">perf</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printk2</span><span class="w"> </span><span class="kt">k</span><span class="n">foo</span><span class="w"></span>
 
-<span class="kd">endin</span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">modifydict</span>
-  <span class="c1">; here we modify instr 5&#39;s dictionary</span>
-  <span class="c1">; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">modifydict</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; here we modify instr 5&#39;s dictionary</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span><span class="w"></span>
 
-  <span class="c1">; the dict was created by instr 5</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
+<span class="w">  </span><span class="c1">; the dict was created by instr 5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
 
-  <span class="kt">k</span><span class="n">foo</span> <span class="nb">line</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">foo</span> 
+<span class="w">  </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span><span class="nb">line</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span>
 
-  <span class="n">dict_free</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="mi">1</span> <span class="c1">; 1 = free dict when note ends</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="n">dict_free</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1">; 1 = free dict when note ends</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">7</span>
-  <span class="c1">; it is possible to create a new dict and set initial</span>
-  <span class="c1">; values at once. This is only executed at i-time</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mi">30</span>
-  <span class="kt">k</span><span class="n">baz</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span>
-  <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
-  <span class="kt">k</span><span class="n">xx</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;xx&quot;</span><span class="p">,</span> <span class="mi">99</span>
-  <span class="nb">printf</span> <span class="s">&quot;baz: </span><span class="si">%f</span><span class="s">  bar: </span><span class="si">%f</span><span class="s">  xx: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">baz</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span><span class="p">,</span> <span class="kt">k</span><span class="n">xx</span> 
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">7</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; it is possible to create a new dict and set initial</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; values at once. This is only executed at i-time</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">baz</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">bar</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">xx</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;xx&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">99</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;baz: </span><span class="si">%f</span><span class="s">  bar: </span><span class="si">%f</span><span class="s">  xx: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">baz</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bar</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">xx</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">8</span>
-  <span class="c1">; get all the keys as an array</span>
-  <span class="kt">i</span><span class="n">dict1</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&quot;keyA&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;keyB&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;keyC&quot;</span><span class="p">,</span> <span class="mi">3</span>
-  <span class="kt">S</span><span class="n">Keys</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict1</span><span class="p">,</span> <span class="s">&quot;keys&quot;</span>
-  <span class="nb">printarray</span> <span class="kt">S</span><span class="n">Keys</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">8</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; get all the keys as an array</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict1</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keyA&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keyB&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keyC&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">Keys</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keys&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">S</span><span class="n">Keys</span><span class="w"></span>
 
-  <span class="kt">i</span><span class="n">dict2</span> <span class="n">dict_new</span> <span class="s">&quot;if&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span><span class="mi">200</span>
-  <span class="kt">k</span><span class="n">Keys</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;keys&quot;</span>
-  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Keys</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%.0f</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict2</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;if&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="mi">200</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Keys</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keys&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">Keys</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;</span><span class="si">%.0f</span><span class="s">&quot;</span><span class="w"></span>
 
-  <span class="c1">; get values as an array</span>
-  <span class="kt">i</span><span class="n">dict3</span> <span class="n">dict_new</span> <span class="s">&quot;is&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span>
-  <span class="kt">S</span><span class="n">vals</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict3</span><span class="p">,</span> <span class="s">&quot;values&quot;</span>
-  <span class="nb">printarray</span> <span class="kt">S</span><span class="n">vals</span>
+<span class="w">  </span><span class="c1">; get values as an array</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict3</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;is&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">vals</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict3</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;values&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">S</span><span class="n">vals</span><span class="w"></span>
 
-  <span class="kt">k</span><span class="n">Vals</span><span class="p">[]</span> <span class="n">dict_query</span> <span class="kt">i</span><span class="n">dict2</span><span class="p">,</span> <span class="s">&quot;values&quot;</span>
-  <span class="nb">printarray</span> <span class="kt">k</span><span class="n">Vals</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Vals</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;values&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">Vals</span><span class="w"></span>
 
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; One convenient use of dicts is to pass arguments to an instr</span>
-<span class="kd">instr</span> <span class="nf">100</span>
-  <span class="c1">; create our communication dict, set initial values</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;sf&quot;</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span>
-  <span class="c1">; the launched instr will last longer, so will have to deal with</span>
-  <span class="c1">; this dict ceasing to exist</span>
-  <span class="nb">event_i</span> <span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dict</span>
+<span class="c1">; One convenient use of dicts is to pass arguments to an instr</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">100</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; create our communication dict, set initial values</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;amp&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;freq&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; the launched instr will last longer, so will have to deal with</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; this dict ceasing to exist</span><span class="w"></span>
+<span class="w">  </span><span class="nb">event_i</span><span class="w"> </span><span class="s">&quot;i&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">101</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
 
-  <span class="c1">; now we can control the synth with the dict</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="nb">linseg</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mi">440</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">455</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">; now we can control the synth with the dict</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;freq&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">linseg</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mi">440</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">455</span><span class="p">)</span><span class="w"></span>
 
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">440</span>
-  <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span> 
-<span class="kd">endin</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">440</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; a variation on dict_get where we either get the value corresponding to a key,</span>
-<span class="c1">; or the last value, if the dict does not exist</span>
-<span class="kd">opcode</span> <span class="nf">dict_receive</span><span class="p">,</span> <span class="kt">k</span><span class="p">,</span><span class="kt">iSi</span> 
-  <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">i</span><span class="n">val0</span> <span class="nb">xin</span>
-  <span class="kt">k</span><span class="n">last</span> <span class="nb">init</span> <span class="kt">i</span><span class="n">val0</span>
-  <span class="k">if</span> <span class="p">(</span><span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">)</span> <span class="k">then</span>
-    <span class="kt">k</span><span class="n">val</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="kt">S</span><span class="n">key</span><span class="p">,</span> <span class="kt">i</span><span class="n">val0</span>
-    <span class="kt">k</span><span class="n">last</span> <span class="o">=</span> <span class="kt">k</span><span class="n">val</span>
-  <span class="k">else</span> 
-    <span class="kt">k</span><span class="n">val</span> <span class="o">=</span> <span class="kt">k</span><span class="n">last</span> 
-  <span class="k">endif</span> 
-  <span class="nb">xout</span> <span class="kt">k</span><span class="n">val</span> 
-<span class="kd">endop</span>
+<span class="c1">; a variation on dict_get where we either get the value corresponding to a key,</span><span class="w"></span>
+<span class="c1">; or the last value, if the dict does not exist</span><span class="w"></span>
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">dict_receive</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="p">,</span><span class="kt">iSi</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">val0</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">last</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="kt">i</span><span class="n">val0</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dict_size</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">val</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">val0</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">last</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">k</span><span class="n">val</span><span class="w"></span>
+<span class="w">  </span><span class="k">else</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">k</span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">k</span><span class="n">last</span><span class="w"> </span>
+<span class="w">  </span><span class="k">endif</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">xout</span><span class="w"> </span><span class="kt">k</span><span class="n">val</span><span class="w"> </span>
+<span class="kd">endop</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">101</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="c1">; get the value for a given key. when the dict does not exist, just</span>
-  <span class="c1">; outputs the last value</span>
-  <span class="kt">k</span><span class="n">amp</span> <span class="nf">dict_receive</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;amp&quot;</span><span class="p">,</span> <span class="mf">0.1</span> 
-  <span class="kt">k</span><span class="n">freq</span> <span class="nf">dict_receive</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;freq&quot;</span><span class="p">,</span> <span class="mi">1000</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="kt">k</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> 
-  <span class="nb">outch</span> <span class="mi">2</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">101</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; get the value for a given key. when the dict does not exist, just</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; outputs the last value</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">amp</span><span class="w"> </span><span class="nf">dict_receive</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;amp&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="nf">dict_receive</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;freq&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="kt">k</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">200</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_new</span> <span class="s">&quot;str:any&quot;</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="s">&quot;fooval&quot;</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span><span class="p">,</span> <span class="mi">10</span>
-  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
-  <span class="kt">S</span><span class="n">foo</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;foo&quot;</span>
-  <span class="kt">k</span><span class="n">bar</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;bar&quot;</span>
-  <span class="nb">printf</span> <span class="s">&quot;foo=</span><span class="si">%s</span><span class="s">, bar=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">S</span><span class="n">foo</span><span class="p">,</span> <span class="kt">k</span><span class="n">bar</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="kt">i</span><span class="n">baz</span> <span class="n">dict_get</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;baz&quot;</span>
-  <span class="kt">S</span><span class="n">moo</span> <span class="o">=</span> <span class="s">&quot;moo!&quot;</span>
-  <span class="n">dict_set</span> <span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;moo&quot;</span><span class="p">,</span> <span class="kt">S</span><span class="n">moo</span>
-  <span class="nb">printf</span> <span class="s">&quot;baz=</span><span class="si">%f</span><span class="s">,  moo=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">baz</span><span class="p">,</span> <span class="kt">S</span><span class="n">moo</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>  
+<span class="kd">instr</span><span class="w"> </span><span class="nf">200</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;str:any&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;fooval&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_print</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">foo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">bar</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;foo=</span><span class="si">%s</span><span class="s">, bar=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bar</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">baz</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">moo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;moo!&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;moo&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">moo</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;baz=</span><span class="si">%f</span><span class="s">,  moo=</span><span class="si">%s</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">baz</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">moo</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w">  </span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="c1">; i 1 0 0.01</span>
-<span class="c1">; i 2 0 0.01</span>
-<span class="c1">; i 8 0 0.1</span>
-<span class="c1">; i 100 0 10</span>
-<span class="nb">i</span> <span class="mi">200</span> <span class="mi">0</span> <span class="mi">1</span>
-<span class="n">f</span> <span class="mi">0</span> <span class="mi">1</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="c1">; i 1 0 0.01</span><span class="w"></span>
+<span class="c1">; i 2 0 0.01</span><span class="w"></span>
+<span class="c1">; i 8 0 0.1</span><span class="w"></span>
+<span class="c1">; i 100 0 10</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="n">f</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -324,7 +326,7 @@ changes to <strong>ALL</strong> instruments with the same integer number.</p>
 performance error. </p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">pwrite</span> <span class="kt">i</span><span class="n">nstrnum</span><span class="p">:</span><span class="n">i</span><span class="p">,</span> <span class="kt">i</span><span class="n">ndex</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span><span class="p">,</span> <span class="p">[</span><span class="kt">i</span><span class="n">ndex2</span><span class="p">,</span> <span class="n">value2</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="n">pwrite</span><span class="w"> </span><span class="kt">i</span><span class="n">nstrnum</span><span class="p">:</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">ndex</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="n">i</span><span class="o">|</span><span class="nb">k</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="kt">i</span><span class="n">ndex2</span><span class="p">,</span><span class="w"> </span><span class="n">value2</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
@@ -343,102 +345,102 @@ performance error. </p>
 <li>Performance (if any index or value are k-variables)</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">-</span><span class="n">odac</span>
-<span class="o">-</span><span class="n">m0</span>
+<span class="o">-</span><span class="n">odac</span><span class="w"></span>
+<span class="o">-</span><span class="n">m0</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="vg">sr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">exit</span>
-  <span class="nb">exitnow</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">exit</span><span class="w"></span>
+<span class="w">  </span><span class="nb">exitnow</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">;; Example 1. instr 2 creates and controls instr 1</span>
+<span class="c1">;; Example 1. instr 2 creates and controls instr 1</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="nb">pset</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span>
-  <span class="kt">k</span><span class="n">t</span> <span class="nb">timeinsts</span>
-  <span class="kt">k</span><span class="n">4</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">5</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="nb">printf</span> <span class="s">&quot;time: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s">instance: </span><span class="si">%.3f</span><span class="se">\t</span><span class="s">p4: </span><span class="si">%f</span><span class="se">\t</span><span class="s">p5: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="kt">k</span><span class="n">t</span><span class="p">,</span> <span class="vi">p1</span><span class="p">,</span> <span class="kt">k</span><span class="n">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">5</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">pset</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">40</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">t</span><span class="w"> </span><span class="nb">timeinsts</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p5</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;time: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s">instance: </span><span class="si">%.3f</span><span class="se">\t</span><span class="s">p4: </span><span class="si">%f</span><span class="se">\t</span><span class="s">p5: </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span><span class="w"> </span><span class="kt">k</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="vi">p1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">4</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">5</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">k</span><span class="n">val</span> <span class="nb">line</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="n">pwrite</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span>
-  <span class="n">pwrite</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">val</span><span class="o">*</span><span class="mi">2</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">val</span><span class="w"> </span><span class="nb">line</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="n">pwrite</span><span class="w"> </span><span class="mf">1.01</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">val</span><span class="w"></span>
+<span class="w">  </span><span class="n">pwrite</span><span class="w"> </span><span class="mf">1.02</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">val</span><span class="o">*</span><span class="mi">2</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">example1</span>
-  <span class="nb">schedule</span> <span class="mf">1.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span>    <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">example1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mf">1.01</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mf">1.02</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">    </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;exit&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">;-----------------------------</span>
-<span class="c1">; Example 2, one instrument modulates another</span>
+<span class="c1">;-----------------------------</span><span class="w"></span>
+<span class="c1">; Example 2, one instrument modulates another</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">ex2_generator</span>
-  <span class="nb">pset</span> <span class="vi">p1</span><span class="p">,</span> <span class="vi">p2</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">4000</span><span class="p">,</span> <span class="mf">0.1</span>
-  <span class="kt">k</span><span class="n">amp</span>       <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">freq</span>      <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">k</span><span class="n">cutoff</span>    <span class="o">=</span> <span class="vi">p6</span>
-  <span class="kt">k</span><span class="n">resonance</span> <span class="o">=</span> <span class="vi">p7</span>
-  <span class="kt">a</span><span class="n">saw</span> <span class="nb">vco2</span><span class="p">,</span> <span class="kt">k</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
-  <span class="kt">a</span><span class="n">out</span> <span class="nb">moogladder2</span><span class="p">,</span> <span class="kt">a</span><span class="n">saw</span><span class="p">,</span> <span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span> <span class="kt">k</span><span class="n">resonance</span>
-  <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>  
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">ex2_generator</span><span class="w"></span>
+<span class="w">  </span><span class="nb">pset</span><span class="w"> </span><span class="vi">p1</span><span class="p">,</span><span class="w"> </span><span class="vi">p2</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">4000</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">amp</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="vi">p5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">cutoff</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="vi">p6</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">resonance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p7</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">saw</span><span class="w"> </span><span class="nb">vco2</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="nb">moogladder2</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">saw</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">resonance</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">out</span><span class="w">  </span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">ex2_control</span>
-  <span class="kt">i</span><span class="n">glissdur</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">)</span>
-  <span class="kt">i</span><span class="n">num1</span> <span class="o">=</span> <span class="kt">i</span><span class="n">num</span> <span class="o">+</span> <span class="mf">0.001</span>
-  <span class="kt">i</span><span class="n">num2</span> <span class="o">=</span> <span class="kt">i</span><span class="n">num</span> <span class="o">+</span> <span class="mf">0.002</span>
-  <span class="kt">k</span><span class="n">freq1</span> <span class="nb">linseg</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;4A&quot;</span><span class="p">),</span> <span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;3A&quot;</span><span class="p">)</span>
-  <span class="kt">k</span><span class="n">freq2</span> <span class="nb">linseg</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;4F&quot;</span><span class="p">),</span> <span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span> <span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;3F&quot;</span><span class="p">)</span>
-  <span class="c1">;                      amp</span>
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.2</span> 
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">num2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.2</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">num1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq1</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">num2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq2</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">ex2_control</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">glissdur</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.001</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.002</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq1</span><span class="w"> </span><span class="nb">linseg</span><span class="w"> </span><span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;4A&quot;</span><span class="p">),</span><span class="w"> </span><span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span><span class="w"> </span><span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;3A&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq2</span><span class="w"> </span><span class="nb">linseg</span><span class="w"> </span><span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;4F&quot;</span><span class="p">),</span><span class="w"> </span><span class="kt">i</span><span class="n">glissdur</span><span class="p">,</span><span class="w"> </span><span class="nb">ntof</span><span class="p">(</span><span class="s">&quot;3F&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;                      amp</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="kt">i</span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="kt">i</span><span class="n">num2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="w"></span>
+<span class="w">  </span><span class="n">pwrite</span><span class="w"> </span><span class="kt">i</span><span class="n">num1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq1</span><span class="w"></span>
+<span class="w">  </span><span class="n">pwrite</span><span class="w"> </span><span class="kt">i</span><span class="n">num2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq2</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">ex2_broadcast</span>
-  <span class="nb">printf</span> <span class="s">&quot;filter start</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">)</span>
-  <span class="kt">k</span><span class="n">cutoff</span>    <span class="nb">linseg</span> <span class="mi">4000</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">400</span>
-  <span class="kt">k</span><span class="n">resonance</span> <span class="nb">linseg</span> <span class="mf">0.1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.8</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="kt">k</span><span class="n">resonance</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">ex2_broadcast</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;filter start</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;ex2_generator&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">cutoff</span><span class="w">    </span><span class="nb">linseg</span><span class="w"> </span><span class="mi">4000</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">400</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">resonance</span><span class="w"> </span><span class="nb">linseg</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="w"></span>
+<span class="w">  </span><span class="n">pwrite</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">cutoff</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">resonance</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">example2</span>
-  <span class="nb">schedule</span> <span class="s">&quot;ex2_control&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span>
-  <span class="nb">schedule</span> <span class="s">&quot;ex2_broadcast&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span>
-  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">example2</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;ex2_control&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;ex2_broadcast&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;exit&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">8.5</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">;; Uncomment as needed</span>
+<span class="c1">;; Uncomment as needed</span><span class="w"></span>
 
-<span class="c1">; schedule &quot;example1&quot;, 0, 1</span>
-<span class="nb">schedule</span> <span class="s">&quot;example2&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+<span class="c1">; schedule &quot;example1&quot;, 0, 1</span><span class="w"></span>
+<span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;example2&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -299,7 +301,7 @@ The X intercepts are determined via linear interpolation so this gives better th
 wavelength resolution. This is a very crude pitch follower, but can be useful in some situations.</p>
 <p><code>zerocrossing</code> is a port of supercollider's ZeroCrossing ugen. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">freq</span> <span class="n">zerocrossing</span> <span class="kt">a</span><span class="n">sig</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">freq</span><span class="w"> </span><span class="n">zerocrossing</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
@@ -315,16 +317,16 @@ wavelength resolution. This is a very crude pitch follower, but can be useful in
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>           
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">-</span><span class="n">odac</span><span class="w">           </span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="vg">sr</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
 <span class="cm">/* Example file for zerocrossing</span>
 
@@ -336,30 +338,30 @@ wavelength resolution. This is a very crude pitch follower, but can be useful in
 <span class="cm">  but can be useful in some situations.</span>
 
 <span class="cm">  zerocrossing is a port of supercollider&#39;s ZeroCrossing ugen</span>
-<span class="cm">*/</span>
+<span class="cm">*/</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="nb">line</span> <span class="mi">500</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">600</span>
-  <span class="kt">a</span><span class="n">sin</span> <span class="o">=</span> <span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">noise</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span>
-  <span class="kt">k</span><span class="n">source</span> <span class="o">=</span> <span class="nb">bpf</span><span class="p">(</span><span class="nb">timeinsts</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.51</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="kt">a</span><span class="n">sin</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="kt">k</span><span class="n">source</span><span class="p">)</span> <span class="o">+</span> <span class="kt">a</span><span class="n">noise</span> <span class="o">*</span> <span class="kt">k</span><span class="n">source</span>  
-  <span class="kt">a</span><span class="n">crossings</span> <span class="n">zerocrossing</span> <span class="kt">a</span><span class="n">sig</span>
-  <span class="kt">k</span><span class="n">crossings</span> <span class="o">=</span> <span class="nb">k</span><span class="p">(</span><span class="kt">a</span><span class="n">crossings</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">resynth</span> <span class="o">=</span> <span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="kt">k</span><span class="n">crossings</span><span class="p">)</span>
-  <span class="kt">k</span><span class="n">isnoise</span> <span class="o">=</span> <span class="nb">lagud</span><span class="p">(</span><span class="kt">k</span><span class="n">crossings</span> <span class="o">&gt;</span> <span class="mi">1000</span> <span class="o">?</span> <span class="mi">1</span> <span class="o">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span> 
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">resynth</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="kt">k</span><span class="n">isnoise</span><span class="p">)</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="nb">line</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">600</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">noise</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pinker</span><span class="p">()</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">bpf</span><span class="p">(</span><span class="nb">timeinsts</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.51</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">a</span><span class="n">sin</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="kt">k</span><span class="n">source</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">a</span><span class="n">noise</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">k</span><span class="n">source</span><span class="w">  </span>
+<span class="w">  </span><span class="kt">a</span><span class="n">crossings</span><span class="w"> </span><span class="n">zerocrossing</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">crossings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">k</span><span class="p">(</span><span class="kt">a</span><span class="n">crossings</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">resynth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">crossings</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">isnoise</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">lagud</span><span class="p">(</span><span class="kt">k</span><span class="n">crossings</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1000</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.001</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">)</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">resynth</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">k</span><span class="n">isnoise</span><span class="p">)</span><span class="w"></span>
 
-  <span class="nb">println</span> <span class="s">&quot;kfreq: </span><span class="si">%.1f</span><span class="s">, zero-crossings: </span><span class="si">%.1f</span><span class="s">, noise detected: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="kt">k</span><span class="n">crossings</span><span class="p">,</span> <span class="kt">k</span><span class="n">isnoise</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="nb">println</span><span class="w"> </span><span class="s">&quot;kfreq: </span><span class="si">%.1f</span><span class="s">, zero-crossings: </span><span class="si">%.1f</span><span class="s">, noise detected: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">crossings</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">isnoise</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">3</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="kt">i</span><span class="n">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

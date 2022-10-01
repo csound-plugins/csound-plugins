@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -321,12 +323,12 @@ kitem pool_at ipool, kindex
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">--</span><span class="n">nosound</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
 <span class="cm">/*</span>
 <span class="cm">   Example file for pool_at</span>
@@ -336,37 +338,37 @@ kitem pool_at ipool, kindex
 <span class="cm">   item pool_at ipool, idx</span>
 <span class="cm">   ktem pool_at ipool, kidx</span>
 
-<span class="cm">*/</span>
+<span class="cm">*/</span><span class="w"></span>
 
-<span class="kd">opcode</span> <span class="nf">print_pool</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">i</span>
-  <span class="kt">i</span><span class="n">pool</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="kt">i</span><span class="n">size</span> <span class="o">=</span> <span class="n">pool_size</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">size</span> <span class="k">do</span>
-    <span class="kt">i</span><span class="n">tem</span> <span class="o">=</span> <span class="n">pool_at</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">0</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="kt">i</span><span class="n">tem</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
-<span class="kd">endop</span>
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">print_pool</span><span class="p">,</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">pool</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool_size</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="kt">i</span><span class="n">size</span><span class="w"> </span><span class="k">do</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">tem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool_at</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="nb">print</span><span class="w"> </span><span class="kt">i</span><span class="n">tem</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="k">od</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">i</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">10</span>
-  <span class="kt">i</span><span class="n">1</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="kt">i</span><span class="n">2</span> <span class="n">pool_pop</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="nb">prints</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&lt;&lt;&lt; pool size: </span><span class="si">%d</span><span class="s">, pool capacity: </span><span class="si">%d</span><span class="s"> &gt;&gt;&gt; </span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="w">\</span>
-         <span class="n">pool_size</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">),</span> <span class="n">pool_capacity</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span>
-  <span class="nf">print_pool</span> <span class="kt">i</span><span class="n">pool</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">pool</span><span class="w"> </span><span class="n">pool_gen</span><span class="w"> </span><span class="mi">10</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">1</span><span class="w"> </span><span class="n">pool_pop</span><span class="w"> </span><span class="kt">i</span><span class="n">pool</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">2</span><span class="w"> </span><span class="n">pool_pop</span><span class="w"> </span><span class="kt">i</span><span class="n">pool</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&lt;&lt;&lt; pool size: </span><span class="si">%d</span><span class="s">, pool capacity: </span><span class="si">%d</span><span class="s"> &gt;&gt;&gt; </span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span>\<span class="w"></span>
+<span class="w">         </span><span class="n">pool_size</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">),</span><span class="w"> </span><span class="n">pool_capacity</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nf">print_pool</span><span class="w"> </span><span class="kt">i</span><span class="n">pool</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="kt">i</span><span class="n">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

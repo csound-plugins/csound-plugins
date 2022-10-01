@@ -167,6 +167,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -317,12 +319,12 @@ able to retrieve that as a dictionary inside csound</p>
 <li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">--</span><span class="n">nosound</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
 <span class="cm">/*</span>
 <span class="cm">  # Example file for dict_loadstr</span>
@@ -344,51 +346,51 @@ able to retrieve that as a dictionary inside csound</p>
 <span class="cm">  to a string, for example in the metadata of a soundfile, and be</span>
 <span class="cm">  able to retrieve that as a dictionary inside csound</span>
 
-<span class="cm">*/</span>
-<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="cm">*/</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
 
-<span class="kd">instr</span> <span class="nf">example1</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_loadstr</span> <span class="s">&quot;foo: 10,  bar :&#39;barvalue&#39;, </span><span class="se">\n</span><span class="s">baz: unquoted string&quot;</span>
-  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">example1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_loadstr</span><span class="w"> </span><span class="s">&quot;foo: 10,  bar :&#39;barvalue&#39;, </span><span class="se">\n</span><span class="s">baz: unquoted string&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_print</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">example2</span>
-  <span class="c1">; Read the metadata of a .mtx first</span>
-  <span class="kt">S</span><span class="n">comment</span> <span class="n">sfreadmeta</span> <span class="s">&quot;test.mtx&quot;</span><span class="p">,</span> <span class="s">&quot;comment&quot;</span>
-  <span class="k">if</span> <span class="nb">strlen</span><span class="p">(</span><span class="kt">S</span><span class="n">comment</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">then</span>
-    <span class="kt">i</span><span class="n">niterror</span> <span class="s">&quot;The .mtx file has no metadata&quot;</span>
-  <span class="k">endif</span>
-  <span class="c1">; Parse the metadata as a dict</span>
-  <span class="kt">i</span><span class="n">dict</span> <span class="n">dict_loadstr</span> <span class="kt">S</span><span class="n">comment</span>
-  <span class="n">dict_print</span> <span class="kt">i</span><span class="n">dict</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">example2</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; Read the metadata of a .mtx first</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">comment</span><span class="w"> </span><span class="n">sfreadmeta</span><span class="w"> </span><span class="s">&quot;test.mtx&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;comment&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">strlen</span><span class="p">(</span><span class="kt">S</span><span class="n">comment</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">niterror</span><span class="w"> </span><span class="s">&quot;The .mtx file has no metadata&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="k">endif</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; Parse the metadata as a dict</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_loadstr</span><span class="w"> </span><span class="kt">S</span><span class="n">comment</span><span class="w"></span>
+<span class="w">  </span><span class="n">dict_print</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
 
-  <span class="c1">; Now we load the data itself. The mtx format consists of a flat array of floats</span>
-  <span class="c1">; where the first numbers include the dimensions of the matrix saved. </span>
-  <span class="c1">; As the columns metadata should show, the mtx file has a header:</span>
-  <span class="c1">; HeaderSize NumRows NumColumns [optionally other values] &lt;The matrix as a flat array&gt;</span>
-  <span class="c1">; The same header is duplicated in the metadata itself, so we can use that directly</span>
-  <span class="c1">; to make the code more self-documenting.</span>
-  <span class="kt">i</span><span class="n">tab</span> <span class="nb">ftgen</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;test.mtx&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+<span class="w">  </span><span class="c1">; Now we load the data itself. The mtx format consists of a flat array of floats</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; where the first numbers include the dimensions of the matrix saved. </span><span class="w"></span>
+<span class="w">  </span><span class="c1">; As the columns metadata should show, the mtx file has a header:</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; HeaderSize NumRows NumColumns [optionally other values] &lt;The matrix as a flat array&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; The same header is duplicated in the metadata itself, so we can use that directly</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; to make the code more self-documenting.</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">tab</span><span class="w"> </span><span class="nb">ftgen</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;test.mtx&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
 
-  <span class="c1">; If the data is needed as an array it is possible to create an alias via memview.</span>
-  <span class="c1">; Otherwise use tab2array to create a copy</span>
-  <span class="kt">i</span><span class="n">Arr</span><span class="p">[]</span> <span class="n">memview</span> <span class="kt">i</span><span class="n">tab</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;HeaderSize&quot;</span><span class="p">)</span>
-  <span class="c1">; iArr[] tab2array itab, dict_get:i(idict, &quot;HeaderSize&quot;)</span>
+<span class="w">  </span><span class="c1">; If the data is needed as an array it is possible to create an alias via memview.</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; Otherwise use tab2array to create a copy</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Arr</span><span class="p">[]</span><span class="w"> </span><span class="n">memview</span><span class="w"> </span><span class="kt">i</span><span class="n">tab</span><span class="p">,</span><span class="w"> </span><span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;HeaderSize&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; iArr[] tab2array itab, dict_get:i(idict, &quot;HeaderSize&quot;)</span><span class="w"></span>
 
-  <span class="c1">; Now reshape the array to recreate the original matrix</span>
-  <span class="nb">reshapearray</span> <span class="kt">i</span><span class="n">Arr</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;NumRows&quot;</span><span class="p">),</span> <span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span> <span class="s">&quot;NumColumns&quot;</span><span class="p">)</span>
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Arr</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="c1">; Now reshape the array to recreate the original matrix</span><span class="w"></span>
+<span class="w">  </span><span class="nb">reshapearray</span><span class="w"> </span><span class="kt">i</span><span class="n">Arr</span><span class="p">,</span><span class="w"> </span><span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;NumRows&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">dict_get</span><span class="p">:</span><span class="n">i</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;NumColumns&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Arr</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="nb">i</span> <span class="s">&quot;example2&quot;</span> <span class="mi">0</span> <span class="mf">0.1</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="s">&quot;example2&quot;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mf">0.1</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

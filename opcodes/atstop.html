@@ -167,6 +167,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -313,8 +315,8 @@ via <code>xtratim</code> is through. </p>
 not running anymore at this point.  </p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">tstop</span> <span class="kt">i</span><span class="n">nstrnum</span>   <span class="p">[,</span> <span class="kt">i</span><span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="vi">p4</span><span class="p">,</span> <span class="vi">p5</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
-<span class="kt">a</span><span class="n">tstop</span> <span class="kt">S</span><span class="n">instrname</span> <span class="p">[,</span> <span class="kt">i</span><span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="vi">p4</span><span class="p">,</span> <span class="vi">p5</span><span class="p">,</span> <span class="err">...</span><span class="p">]</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="kt">i</span><span class="n">nstrnum</span><span class="w">   </span><span class="p">[,</span><span class="w"> </span><span class="kt">i</span><span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p4</span><span class="p">,</span><span class="w"> </span><span class="vi">p5</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">]</span><span class="w"></span>
+<span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="kt">S</span><span class="n">instrname</span><span class="w"> </span><span class="p">[,</span><span class="w"> </span><span class="kt">i</span><span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p4</span><span class="p">,</span><span class="w"> </span><span class="vi">p5</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">]</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
@@ -330,12 +332,12 @@ not running anymore at this point.  </p>
 <li>Init </li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">-</span><span class="n">odac</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
 <span class="cm">/*</span>
 
@@ -358,117 +360,117 @@ not running anymore at this point.  </p>
 <span class="cm">  * idelay: time offset to this note stop</span>
 <span class="cm">  * idur: duration of the scheduled event (-1 = forever)</span>
 
-<span class="cm">*/</span>
+<span class="cm">*/</span><span class="w"></span>
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">0dbfs</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="vg">sr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
 
-<span class="kd">opcode</span> <span class="nf">myvco</span><span class="p">,</span><span class="kt">a</span><span class="p">,</span><span class="kt">ii</span>
-  <span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span> <span class="nb">xin</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">vco2</span><span class="p">,</span> <span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-  <span class="nb">xout</span> <span class="kt">a</span><span class="n">0</span>
-<span class="kd">endop</span>
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">myvco</span><span class="p">,</span><span class="kt">a</span><span class="p">,</span><span class="kt">ii</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">vco2</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">xout</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
 
-<span class="c1">; brownian walk</span>
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nf">myvco</span> <span class="mf">0.1</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-  <span class="kt">i</span><span class="n">delta</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="nb">rnd</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
-  <span class="kt">i</span><span class="n">delta</span> <span class="o">=</span> <span class="kt">i</span><span class="n">delta</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">?</span> <span class="kt">i</span><span class="n">delta</span> <span class="o">:</span> <span class="o">-</span><span class="mf">0.5</span>
-  <span class="kt">i</span><span class="n">midi2</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">+</span> <span class="kt">i</span><span class="n">delta</span>
-  <span class="kt">i</span><span class="n">midi2</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi2</span> <span class="o">&lt;</span> <span class="mi">96</span> <span class="o">?</span> <span class="kt">i</span><span class="n">midi2</span> <span class="o">:</span> <span class="mi">48</span>
-  <span class="kt">i</span><span class="n">durnext</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">rnd</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">/</span> <span class="mi">8</span>
-  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">durnext</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi2</span>
-<span class="kd">endin</span>
+<span class="c1">; brownian walk</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nf">myvco</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">round</span><span class="p">((</span><span class="nb">rnd</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">delta</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kt">i</span><span class="n">delta</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">midi2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">i</span><span class="n">delta</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">midi2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">midi2</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">96</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kt">i</span><span class="n">midi2</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">48</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">durnext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">round</span><span class="p">(</span><span class="nb">rnd</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">8</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">durnext</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">midi2</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; ping-pong</span>
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">&lt;</span> <span class="mi">96</span> <span class="o">?</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">:</span> <span class="mi">48</span>
+<span class="c1">; ping-pong</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">96</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">48</span><span class="w"></span>
 
-  <span class="kt">a</span><span class="n">0</span> <span class="nf">myvco</span> <span class="mf">0.1</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nf">myvco</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
 
-  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.97</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.97</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">3</span>
-  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">i</span><span class="n">midi</span> <span class="o">=</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">&lt;</span> <span class="mi">88</span> <span class="o">?</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">:</span> <span class="mi">48</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.8</span><span class="p">,</span> <span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.050</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.95</span><span class="p">,</span> <span class="kt">i</span><span class="n">midi</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="kd">endin</span>
-
-
-<span class="c1">; test calling a named instr at stop</span>
-<span class="kd">instr</span> <span class="nf">10</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">440</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-  <span class="kt">a</span><span class="n">tstop</span> <span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">foo</span> 
-  <span class="kt">i</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">oscili</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-<span class="kd">endin</span>
-
-<span class="c1">; test simple case with optional pargs</span>
-<span class="kd">instr</span> <span class="nf">first</span>
-  <span class="kt">a</span><span class="n">tstop</span> <span class="s">&quot;second&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="kt">a</span><span class="n">tstop</span> <span class="s">&quot;second&quot;</span><span class="p">,</span> <span class="mf">0.5</span>
-  <span class="kt">a</span><span class="n">tstop</span> <span class="mi">200</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">second</span>
-  <span class="nb">printf</span> <span class="s">&quot;second!  p4 =</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p4</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">200</span>
-  <span class="nb">printf</span> <span class="s">&quot;200! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="c1">; test atstop with k args</span>
-<span class="kd">instr</span> <span class="nf">_printCounter</span>
-  <span class="kt">i</span><span class="n">counter</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="nb">prints</span> <span class="s">&quot;counter: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">counter</span>
-  <span class="nb">turnoff</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">kargs</span>
-  <span class="kt">k</span><span class="n">counter</span> <span class="nb">init</span> <span class="mi">0</span>
-  <span class="kt">k</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="kt">a</span><span class="n">tstop</span> <span class="s">&quot;_printCounter&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">counter</span>
-<span class="kd">endin</span>
-
-<span class="kd">instr</span> <span class="nf">StopPerformance</span>
-  <span class="nb">exitnow</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">88</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">48</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">midi</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="nb">linsegr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.050</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.95</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">midi</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="c1">; i 1 0 0.25 36</span>
+<span class="c1">; test calling a named instr at stop</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">10</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">440</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; i 2 0 0.25 48</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">foo</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">i</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; i 10 0 1</span>
-<span class="c1">; i &quot;StopPerformance&quot; 10 1</span>
-<span class="c1">; i &quot;first&quot; 1 0.5</span>
-<span class="nb">i</span> <span class="s">&quot;kargs&quot;</span> <span class="mi">0</span> <span class="mi">1</span>
-<span class="n">f</span> <span class="mi">0</span> <span class="mi">5</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="c1">; test simple case with optional pargs</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">first</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;second&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;second&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="mi">200</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">second</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;second!  p4 =</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">200</span><span class="w"></span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;200! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="c1">; test atstop with k args</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">_printCounter</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">counter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;counter: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">counter</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">kargs</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">counter</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">counter</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;_printCounter&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">counter</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+<span class="kd">instr</span><span class="w"> </span><span class="nf">StopPerformance</span><span class="w"></span>
+<span class="w">  </span><span class="nb">exitnow</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
+
+
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="c1">; i 1 0 0.25 36</span><span class="w"></span>
+
+<span class="c1">; i 2 0 0.25 48</span><span class="w"></span>
+
+<span class="c1">; i 10 0 1</span><span class="w"></span>
+<span class="c1">; i &quot;StopPerformance&quot; 10 1</span><span class="w"></span>
+<span class="c1">; i &quot;first&quot; 1 0.5</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="s">&quot;kargs&quot;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="n">f</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">5</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

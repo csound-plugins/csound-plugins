@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -299,8 +301,8 @@ deallocates itself when it falls out of scope without being referenced by any
 object. Since a reference is just an integer, <code>refvalid</code> can be used to check if
 the given reference index corresponds to a valid reference</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">out</span> <span class="n">refvalid</span> <span class="kt">i</span><span class="n">ref</span>
-<span class="kt">k</span><span class="n">out</span> <span class="n">refvalid</span> <span class="kt">k</span><span class="n">ref</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">out</span><span class="w"> </span><span class="n">refvalid</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="w"></span>
+<span class="kt">k</span><span class="n">out</span><span class="w"> </span><span class="n">refvalid</span><span class="w"> </span><span class="kt">k</span><span class="n">ref</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
@@ -317,42 +319,42 @@ the given reference index corresponds to a valid reference</p>
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">m0</span>
-<span class="o">-</span><span class="n">d</span>
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">-</span><span class="n">m0</span><span class="w"></span>
+<span class="o">-</span><span class="n">d</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="vg">sr</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="nb">linseg</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">1</span>
-  <span class="nb">schedule</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">freq</span><span class="p">)</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="nb">linseg</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">freq</span><span class="p">)</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="k">if</span> <span class="n">refvalid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="n">deref</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span>
-  <span class="k">else</span>
-    <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="mi">1000</span>
-  <span class="k">endif</span>
-  <span class="kt">a</span><span class="n">sig</span> <span class="nb">vco2</span> <span class="mf">0.2</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span>
-  <span class="nb">schedule</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="n">ref</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">)</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="n">refvalid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deref</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="k">else</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1000</span><span class="w"></span>
+<span class="w">  </span><span class="k">endif</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="nb">vco2</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">)</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">3</span>
-  <span class="k">if</span> <span class="n">refvalid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="kt">a</span><span class="n">in</span> <span class="n">deref</span> <span class="vi">p4</span>
-  <span class="k">else</span>
-    <span class="kt">a</span><span class="n">in</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">endif</span>
-  <span class="kt">a</span><span class="n">out</span> <span class="nb">lpf18</span> <span class="kt">a</span><span class="n">in</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.2</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">out</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">3</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="n">refvalid</span><span class="p">(</span><span class="vi">p4</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">in</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="k">else</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="k">endif</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="nb">lpf18</span><span class="w"> </span><span class="kt">a</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="mi">2000</span><span class="p">,</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">out</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

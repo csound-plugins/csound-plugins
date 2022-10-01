@@ -169,6 +169,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -303,7 +305,7 @@ parameters for each partial. To produce noisy components, we
 synthesise with sine wave oscillators that have been modified to allow
 the introduction of variable bandwidth.</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">out</span> <span class="nb">beosc</span> <span class="n">xfreq</span><span class="p">,</span> <span class="kt">k</span><span class="n">bw</span><span class="p">,</span> <span class="kt">i</span><span class="n">fn</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">phs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">noisetype</span><span class="o">=</span><span class="mi">1</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="nb">beosc</span><span class="w"> </span><span class="n">xfreq</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bw</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">fn</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">phs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">noisetype</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
@@ -325,35 +327,35 @@ the introduction of variable bandwidth.</p>
 </ul>
 <h2 id="examples">Examples</h2>
 <p><img alt="" src="assets/beosc.jpg" /></p>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">-</span><span class="n">odac</span> 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">-</span><span class="n">odac</span><span class="w"> </span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span> <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="vg">sr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="kt">i</span><span class="n">dur1</span> <span class="o">=</span> <span class="mi">8</span>
-  <span class="kt">i</span><span class="n">freq</span> <span class="o">=</span> <span class="mi">440</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="nb">linseg</span> <span class="kt">i</span><span class="n">freq</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur1</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur1</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur1</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span>
-  <span class="kt">k</span><span class="n">bw</span>   <span class="nb">cosseg</span>     <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>     <span class="kt">i</span><span class="n">dur1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>       <span class="kt">i</span><span class="n">dur1</span><span class="p">,</span> <span class="mi">0</span>
-  <span class="c1">;          freq   bw   fn  phs              noisetype(0=uniform)</span>
-  <span class="kt">a</span><span class="n">out</span>  <span class="nb">beosc</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="kt">k</span><span class="n">bw</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">unirand</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="mf">6.28</span><span class="p">),</span> <span class="mi">0</span>
-  <span class="kt">a</span><span class="n">env</span>  <span class="nb">linsegr</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span>
-  <span class="kt">a</span><span class="n">out</span> <span class="o">*=</span> <span class="p">(</span><span class="kt">a</span><span class="n">env</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">)</span>
-  <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">out</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dur1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">440</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="nb">linseg</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">bw</span><span class="w">   </span><span class="nb">cosseg</span><span class="w">     </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">     </span><span class="kt">i</span><span class="n">dur1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">       </span><span class="kt">i</span><span class="n">dur1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;          freq   bw   fn  phs              noisetype(0=uniform)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w">  </span><span class="nb">beosc</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bw</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">unirand</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="mf">6.28</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">env</span><span class="w">  </span><span class="nb">linsegr</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="p">(</span><span class="kt">a</span><span class="n">env</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">out</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">32</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span> 
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">32</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"> </span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

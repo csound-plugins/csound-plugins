@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>dict_exists - Csound Plugins</title>
+    <title>nametoinstrnum - Csound Plugins</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
@@ -13,8 +13,8 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "dict_exists";
-        var mkdocs_page_input_path = "opcodes/dict_exists.md";
+        var mkdocs_page_name = "nametoinstrnum";
+        var mkdocs_page_input_path = "opcodes/nametoinstrnum.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -77,29 +77,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="dict_dump.html">dict_dump</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="dict_exists.html">dict_exists</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output">Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#execution-time">Execution Time</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="dict_exists.html">dict_exists</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="dict_free.html">dict_free</a>
                   </li>
@@ -171,7 +149,27 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="nametoinstrnum.html">nametoinstrnum</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#abstract">Abstract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#syntax">Syntax</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#output">Output</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#execution-time">Execution Time</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
@@ -283,7 +281,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../index.html" class="icon icon-home" alt="Docs"></a> &raquo;</li>
           <li>Opcodes &raquo;</li>
-      <li>dict_exists</li>
+      <li>nametoinstrnum</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -292,101 +290,78 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="dict_exists">dict_exists</h1>
+                <h1 id="nametoinstrnum">nametoinstrnum</h1>
 <h2 id="abstract">Abstract</h2>
-<p>Returns 1 if the dict exists, 0 otherwise</p>
+<p>Returns the number of a named instrument</p>
 <h2 id="description">Description</h2>
-<p><code>dict_exists</code> checks if the index passed refers to an existing dict and returns
-1 if it does, 0 otherwise. </p>
-<p><strong>It works at i-time only</strong></p>
+<p>Returns the number of a named instrument, or -1 if the instrument does
+not exist.
+The only difference with <code>nstrnum</code> is that <code>nstrnum</code> throws an error and
+stops the event if the instrument does not exist</p>
+<p><strong>NB</strong>: since this is an init-time opcode the name must be known at init-time</p>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code>iexists dict_exists idict
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">nsno</span><span class="w"> </span><span class="n">nametoinstrnum</span><span class="w"> </span><span class="kt">S</span><span class="n">name</span><span class="w"></span>
 </code></pre></div>
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 <ul>
-<li><code>ìdict</code>: the handle of the dict, as returned by <code>dict_new</code></li>
+<li><strong>Sname</strong>: the name of the instrument</li>
 </ul>
-<h3 id="output">Output</h3>
+<h2 id="output">Output</h2>
 <ul>
-<li><code>iexists</code>: 1 of the dict exists, 0 otherwise</li>
+<li><strong>insno</strong>: the instrument number assigned by csound</li>
 </ul>
-<h3 id="execution-time">Execution Time</h3>
+<h2 id="execution-time">Execution Time</h2>
 <ul>
-<li>Init </li>
+<li>Init</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 <span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
-<span class="o">--</span><span class="n">nosound</span><span class="w"> </span>
+<span class="o">-</span><span class="n">odac</span><span class="w"> </span>
+<span class="o">--</span><span class="n">nosound</span><span class="w"></span>
 <span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 <span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="cm">/*</span>
+<span class="vg">sr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">48000</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
 
-<span class="cm">  Example file for dict_exists</span>
 
-<span class="cm">  iexists dict_exists idict</span>
-
-<span class="cm">*/</span><span class="w"></span>
-
-<span class="kd">opcode</span><span class="w"> </span><span class="nf">accum</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="p">,</span><span class="w"> </span><span class="kt">ko</span><span class="w"></span>
-<span class="w">  </span><span class="kt">k</span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">val</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
-<span class="w">  </span><span class="kt">k</span><span class="n">now</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="kt">i</span><span class="n">val</span><span class="w"></span>
-<span class="w">  </span><span class="nb">xout</span><span class="w"> </span><span class="kt">k</span><span class="n">now</span><span class="w"></span>
-<span class="w">  </span><span class="kt">k</span><span class="n">now</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="kt">k</span><span class="n">step</span><span class="w"></span>
-<span class="kd">endop</span><span class="w"></span>
-
-<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
-<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
-<span class="w">  </span><span class="nb">print</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
-<span class="w">  </span><span class="k">if</span><span class="p">(</span><span class="n">dict_exists</span><span class="p">(</span><span class="kt">i</span><span class="n">dict</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
-<span class="w">    </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="kt">k</span><span class="n">bar</span><span class="w"> </span><span class="n">dict_get</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="c1">; dict_free idict, 1</span><span class="w"></span>
-<span class="w">  </span><span class="k">else</span><span class="w"></span>
-<span class="w">    </span><span class="kt">k</span><span class="n">foo</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">10</span><span class="w"></span>
-<span class="w">    </span><span class="kt">k</span><span class="n">bar</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">20</span><span class="w"></span>
-<span class="w">  </span><span class="k">endif</span><span class="w"></span>
-
-<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;$$$ foo=</span><span class="si">%f</span><span class="s">  bar=</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">accum</span><span class="p">(</span><span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bar</span><span class="p">)),</span><span class="w"> </span><span class="kt">k</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">bar</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">foo</span><span class="w"></span>
+<span class="w">  </span><span class="nb">turnoff</span><span class="w"></span>
 <span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
-<span class="w">  </span><span class="kt">i</span><span class="n">dict</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;str:float&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
-<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="w"></span>
-<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">linseg</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
-<span class="w">  </span><span class="n">dict_set</span><span class="w"> </span><span class="kt">i</span><span class="n">dict</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">linseg</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">findname</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nametoinstrnum</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">S</span><span class="n">findname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;findname&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nametoinstrnum</span><span class="p">(</span><span class="kt">S</span><span class="n">findname</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nametoinstrnum</span><span class="p">(</span><span class="s">&quot;bar&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;foo has number: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">foo</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;findname has number: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">p1</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;bar has number: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bar</span><span class="w"></span>
+
 <span class="kd">endin</span><span class="w"></span>
-
-<span class="kd">instr</span><span class="w"> </span><span class="nf">3</span><span class="w"></span>
-<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
-<span class="kd">endin</span><span class="w"></span>
-
-
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 <span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
-<span class="nb">i</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
-<span class="nb">i</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="s">&quot;findname&quot;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mf">0.1</span><span class="w"></span>
+
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="dict_iter.html">dict_iter</a></li>
-<li><a href="dict_set.html">dict_size</a></li>
-<li><a href="dict_query.html">dict_query</a></li>
+<li><a href="https://csound.com/docs/manual/metro.html">metro</a></li>
 </ul>
 <h2 id="credits">Credits</h2>
-<p>Eduardo Moguillansky, 2019</p>
+<p>Eduardo Moguillansky, 2021</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="dict_dump.html" class="btn btn-neutral float-left" title="dict_dump"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="dict_free.html" class="btn btn-neutral float-right" title="dict_free">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="mtro.html" class="btn btn-neutral float-left" title="mtro"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="panstereo.html" class="btn btn-neutral float-right" title="panstereo">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -409,10 +384,10 @@
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="dict_dump.html" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="mtro.html" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="dict_free.html" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="panstereo.html" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

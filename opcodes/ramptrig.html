@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -305,9 +307,9 @@ where <code>ramptrig</code> is used as a triggerable phasor, passed as an argume
 which generates the envelope. See examples</p>
 </div>
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
-<span class="kt">a</span><span class="n">out</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dir</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span>
-<span class="kt">k</span><span class="n">out</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">out</span><span class="w"> </span><span class="n">ramptrig</span><span class="w"> </span><span class="kt">k</span><span class="n">trig</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
+<span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="n">ramptrig</span><span class="w"> </span><span class="kt">k</span><span class="n">trig</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
+<span class="kt">k</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">finished</span><span class="w"> </span><span class="n">ramptrig</span><span class="w"> </span><span class="kt">k</span><span class="n">trig</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">valuepost</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">valuepre</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
 </code></pre></div>
 
 <h3 id="arguments">Arguments</h3>
@@ -328,63 +330,63 @@ which generates the envelope. See examples</p>
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="c1">; This is the example file of ramptrig</span>
-<span class="c1">; ramptrig is a triggerable ramp from 0 to 1</span>
-<span class="c1">; xout ramptrig xtrig, kdur</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="c1">; This is the example file of ramptrig</span><span class="w"></span>
+<span class="c1">; ramptrig is a triggerable ramp from 0 to 1</span><span class="w"></span>
+<span class="c1">; xout ramptrig xtrig, kdur</span><span class="w"></span>
 
-<span class="vg">sr</span> <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="vg">sr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="c1">; Use Case #1: An envelope which can be retriggered</span>
-<span class="kd">instr</span> <span class="nf">1</span>
-    <span class="c1">; Duration of envelope</span>
-    <span class="kt">k</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="c1">; This is the gate, could be any irregular signal, midi, osc, etc.    </span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mf">0.5</span>
-    <span class="c1">; Whenever ktrig is possitive and higher than previous value, </span>
-    <span class="c1">; kx ramps from 0 to 1 in kdur seconds</span>
-    <span class="kt">k</span><span class="n">x</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span>
-    <span class="c1">; actual envelope</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">x</span><span class="o">*</span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="nb">oscili</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">1000</span>
-    <span class="c1">; asig pinker</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">*=</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
-<span class="kd">endin</span>
+<span class="c1">; Use Case #1: An envelope which can be retriggered</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">    </span><span class="c1">; Duration of envelope</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">dur</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<span class="w">    </span><span class="c1">; This is the gate, could be any irregular signal, midi, osc, etc.    </span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">trig</span><span class="w"> </span><span class="nb">metro</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">    </span><span class="c1">; Whenever ktrig is possitive and higher than previous value, </span><span class="w"></span>
+<span class="w">    </span><span class="c1">; kx ramps from 0 to 1 in kdur seconds</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">x</span><span class="w"> </span><span class="n">ramptrig</span><span class="w"> </span><span class="kt">k</span><span class="n">trig</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">dur</span><span class="w"></span>
+<span class="w">    </span><span class="c1">; actual envelope</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">env</span><span class="w"> </span><span class="nb">bpf</span><span class="w"> </span><span class="kt">k</span><span class="n">x</span><span class="o">*</span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.02</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">dur</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w"></span>
+<span class="w">    </span><span class="c1">; asig pinker</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; Use Case #2: Use finished trigger to signal something</span>
-<span class="kd">instr</span> <span class="nf">2</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">metro</span> <span class="mi">1</span><span class="o">/</span><span class="mi">4</span>
-    <span class="kt">k</span><span class="n">trig</span> <span class="nb">delayk</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mf">0.5</span>
-    <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="kt">k</span><span class="n">phase</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span> <span class="n">ramptrig</span> <span class="kt">k</span><span class="n">trig</span><span class="p">,</span> <span class="mi">2</span>
-    <span class="nb">printf</span> <span class="s">&quot;finished! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">finished1</span>
-    <span class="kt">k</span><span class="n">env</span> <span class="nb">bpf</span> <span class="kt">k</span><span class="n">phase</span> <span class="o">*</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span>
-    <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="nb">pinker</span><span class="p">()</span> <span class="o">*</span> <span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
-    <span class="nb">outs</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span>
-<span class="kd">endin</span>
-
-
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-
-<span class="kt">i</span><span class="n">1</span> <span class="mi">0</span> <span class="mi">10</span>
-<span class="c1">; i2 0 12</span>
-<span class="c1">; i3 0 20</span>
-<span class="c1">; f0 3600</span>
+<span class="c1">; Use Case #2: Use finished trigger to signal something</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">trig</span><span class="w"> </span><span class="nb">metro</span><span class="w"> </span><span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">trig</span><span class="w"> </span><span class="nb">delayk</span><span class="w"> </span><span class="kt">k</span><span class="n">trig</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">dur</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">phase</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">finished1</span><span class="w"> </span><span class="n">ramptrig</span><span class="w"> </span><span class="kt">k</span><span class="n">trig</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;finished! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">finished1</span><span class="w"></span>
+<span class="w">    </span><span class="kt">k</span><span class="n">env</span><span class="w"> </span><span class="nb">bpf</span><span class="w"> </span><span class="kt">k</span><span class="n">phase</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">i</span><span class="n">dur</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">    </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pinker</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">interp</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+
+<span class="kt">i</span><span class="n">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">10</span><span class="w"></span>
+<span class="c1">; i2 0 12</span><span class="w"></span>
+<span class="c1">; i3 0 20</span><span class="w"></span>
+<span class="c1">; f0 3600</span><span class="w"></span>
+
+
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

@@ -151,6 +151,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="opcodes/mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="opcodes/nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="opcodes/panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="opcodes/pathAbsolute.html">pathAbsolute</a>
@@ -313,22 +315,22 @@ cmake --install .
 <p>A manifest is used both to automate documentation of the opcodes (wiki, pdf documentation, etc)
 and make the opcode installable via risset. The manifest (named risset.json) is a .json file. 
 It should have the minimal form: </p>
-<div class="codehilite"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;mylib&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;opcodes&quot;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&quot;opcode1&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;opcode2&quot;</span><span class="p">,</span>
-    <span class="err">...</span>
-  <span class="p">],</span>
-  <span class="nt">&quot;short_description&quot;</span><span class="p">:</span> <span class="s2">&quot;A short description&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;long_description&quot;</span><span class="p">:</span> <span class="s2">&quot;A longer description&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;csound_version&quot;</span><span class="p">:</span> <span class="s2">&quot;6.17&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;author&quot;</span><span class="p">:</span> <span class="s2">&quot;Name Surname&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;name.surname@mail.com&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;license&quot;</span><span class="p">:</span> <span class="s2">&quot;LGPL&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;repository&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/csound-plugins/csound-plugins&quot;</span><span class="p">,</span>
-<span class="p">}</span>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mylib&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;opcodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;opcode1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;opcode2&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="err">...</span><span class="w"></span>
+<span class="w">  </span><span class="p">],</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;short_description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A short description&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;long_description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A longer description&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;csound_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.17&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Name Surname&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name.surname@mail.com&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;license&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LGPL&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;repository&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/csound-plugins/csound-plugins&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div>
               
             </div>

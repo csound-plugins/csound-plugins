@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -298,12 +300,12 @@ This operation is done in place. It is the equivalent of this code:</p>
 </code></pre></div>
 
 <h2 id="syntax">Syntax</h2>
-<div class="codehilite"><pre><span></span><code><span class="n">setslice</span> <span class="kt">i</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">i</span><span class="n">value</span><span class="p">,</span> <span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span>
-<span class="n">setslice</span> <span class="kt">k</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">k</span><span class="n">value</span><span class="p">,</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span>
+<div class="codehilite"><pre><span></span><code><span class="n">setslice</span><span class="w"> </span><span class="kt">i</span><span class="n">Array</span><span class="p">[],</span><span class="w"> </span><span class="kt">i</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
+<span class="n">setslice</span><span class="w"> </span><span class="kt">k</span><span class="n">Array</span><span class="p">[],</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">end</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="w"></span>
 
-<span class="n">setslice</span> <span class="kt">i</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">i</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
-<span class="n">setslice</span> <span class="kt">k</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">k</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
-<span class="n">setslice</span> <span class="kt">S</span><span class="n">Array</span><span class="p">[],</span> <span class="kt">S</span><span class="n">Source</span><span class="p">[],</span> <span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">setslice</span><span class="w"> </span><span class="kt">i</span><span class="n">Array</span><span class="p">[],</span><span class="w"> </span><span class="kt">i</span><span class="n">Source</span><span class="p">[],</span><span class="w"> </span><span class="kt">i</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
+<span class="n">setslice</span><span class="w"> </span><span class="kt">k</span><span class="n">Array</span><span class="p">[],</span><span class="w"> </span><span class="kt">k</span><span class="n">Source</span><span class="p">[],</span><span class="w"> </span><span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
+<span class="n">setslice</span><span class="w"> </span><span class="kt">S</span><span class="n">Array</span><span class="p">[],</span><span class="w"> </span><span class="kt">S</span><span class="n">Source</span><span class="p">[],</span><span class="w"> </span><span class="kt">k</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="arguments">Arguments</h2>
@@ -322,21 +324,21 @@ This operation is done in place. It is the equivalent of this code:</p>
 <li>Performance (if any argument is of k type)</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">A</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span>
-<span class="n">setslice</span> <span class="kt">i</span><span class="n">A</span><span class="p">,</span> <span class="mf">0.5</span>  <span class="c1">; will set all elements of iA to 0.5</span>
-<span class="nb">printarray</span> <span class="kt">i</span><span class="n">A</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">i</span><span class="n">A</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w"></span>
+<span class="n">setslice</span><span class="w"> </span><span class="kt">i</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="w">  </span><span class="c1">; will set all elements of iA to 0.5</span><span class="w"></span>
+<span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">A</span><span class="w"></span>
 
-<span class="kt">k</span><span class="n">B</span><span class="p">[]</span> <span class="nb">init</span> <span class="mi">10</span>
-<span class="c1">; if the condition is met setslice will set the even indexes</span>
-<span class="c1">; between 0 to 6 of kB to -1 </span>
+<span class="kt">k</span><span class="n">B</span><span class="p">[]</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">10</span><span class="w"></span>
+<span class="c1">; if the condition is met setslice will set the even indexes</span><span class="w"></span>
+<span class="c1">; between 0 to 6 of kB to -1 </span><span class="w"></span>
 
-<span class="k">if</span> <span class="kt">k</span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="n">setslice</span> <span class="kt">k</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span>
-<span class="k">endif</span>
-<span class="k">if</span> <span class="nb">changed2</span><span class="p">(</span><span class="kt">k</span><span class="n">B</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
-    <span class="nb">printarray</span> <span class="kt">k</span><span class="n">B</span>
-<span class="k">endif</span>
-<span class="c1">; kB: -1, 0, -1, 0, -1, 0, 0, 0, 0, 0</span>
+<span class="k">if</span><span class="w"> </span><span class="kt">k</span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="n">setslice</span><span class="w"> </span><span class="kt">k</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="k">endif</span><span class="w"></span>
+<span class="k">if</span><span class="w"> </span><span class="nb">changed2</span><span class="p">(</span><span class="kt">k</span><span class="n">B</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span><span class="w"></span>
+<span class="w">    </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">B</span><span class="w"></span>
+<span class="k">endif</span><span class="w"></span>
+<span class="c1">; kB: -1, 0, -1, 0, -1, 0, 0, 0, 0, 0</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

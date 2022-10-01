@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -300,8 +302,8 @@ input arguments. For example, the opcode <code>oscili</code> as used like <code>
 has a signature <code>a / kk</code> (<code>a</code> as output, <code>kk</code> as input).</p>
 <p>To follow this example, to create 10 parallel versions of this opcode (an oscillator bank)
 it is possible to use <code>poly</code> like this:</p>
-<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">220</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">330</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">440</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">550</span>
-<span class="kt">a</span><span class="n">Out</span><span class="p">[]</span> <span class="n">poly</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;oscili&quot;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span>
+<div class="codehilite"><pre><span></span><code><span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">110</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">220</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="mi">330</span><span class="p">,</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="mi">440</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="mi">550</span><span class="w"></span>
+<span class="kt">a</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="n">poly</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;oscili&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">Freqs</span><span class="w"></span>
 </code></pre></div>
 
 <p>Notice that it is possible to set one value for each instance, as given by <code>kFreqs</code>, or
@@ -342,139 +344,139 @@ an opcode like <code>aout oscili 0.1, kfreq</code> will output an array of audio
 <code>pan2</code> will output two audio arrays.</p>
 <h2 id="examples">Examples</h2>
 <p><a href="https://raw.githubusercontent.com/gesellkammer/csound-plugins/master/src/poly/examples/poly.mp3">LISTEN</a></p>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="c1">; -odac           </span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="c1">; -odac           </span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">32</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="vg">sr</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">32</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
 
-<span class="c1">; create an array of random values between 0-1</span>
-<span class="c1">; inum: number of elements in the array</span>
-<span class="kd">opcode</span> <span class="nf">rndarr</span><span class="p">,</span> <span class="kt">i[]</span><span class="p">,</span> <span class="kt">i</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="nb">xin</span> 
-  <span class="kt">i</span><span class="n">Out</span><span class="p">[]</span> <span class="nb">init</span> <span class="kt">i</span><span class="n">num</span> 
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="kt">i</span><span class="n">num</span> <span class="k">do</span> 
-    <span class="kt">i</span><span class="n">Out</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">unirand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span> 
-  <span class="nb">xout</span> <span class="kt">i</span><span class="n">Out</span>
-<span class="kd">endop</span>
+<span class="c1">; create an array of random values between 0-1</span><span class="w"></span>
+<span class="c1">; inum: number of elements in the array</span><span class="w"></span>
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">rndarr</span><span class="p">,</span><span class="w"> </span><span class="kt">i[]</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="nb">xin</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>
+<span class="w">    </span><span class="kt">i</span><span class="n">Out</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">unirand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="k">od</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">xout</span><span class="w"> </span><span class="kt">i</span><span class="n">Out</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
 
-<span class="c1">; multiple oscillators, mixed down to mono</span>
-<span class="kd">instr</span> <span class="nf">1</span>
-  <span class="c1">; number of oscillators</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1">; multiple oscillators, mixed down to mono</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">1</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; number of oscillators</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w"></span>
 
-  <span class="c1">; fundamental</span>
-  <span class="kt">k</span><span class="n">midi</span> <span class="o">=</span> <span class="nb">line</span><span class="p">(</span><span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;2G&quot;</span><span class="p">),</span> <span class="vi">p3</span><span class="p">,</span> <span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;1C&quot;</span><span class="p">))</span>
-  <span class="kt">k</span><span class="n">f0</span> <span class="o">=</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">k</span><span class="n">midi</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">; fundamental</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">midi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">line</span><span class="p">(</span><span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;2G&quot;</span><span class="p">),</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;1C&quot;</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">f0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">mtof</span><span class="p">(</span><span class="kt">k</span><span class="n">midi</span><span class="p">)</span><span class="w"></span>
 
-  <span class="c1">; each oscillator is an overtone of f0</span>
-  <span class="kt">k</span><span class="n">Ratios</span><span class="p">[]</span> <span class="nb">genarray_i</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span>
+<span class="w">  </span><span class="c1">; each oscillator is an overtone of f0</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Ratios</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray_i</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"></span>
 
-  <span class="c1">; harmonicity over time</span>
-  <span class="kt">k</span><span class="n">exp</span> <span class="nb">line</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">1.32</span>
+<span class="w">  </span><span class="c1">; harmonicity over time</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">exp</span><span class="w"> </span><span class="nb">line</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mf">1.32</span><span class="w"></span>
 
-  <span class="c1">; the freq. of each oscillator</span>
-  <span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span> <span class="o">=</span> <span class="p">(</span><span class="kt">k</span><span class="n">Ratios</span> <span class="o">^</span> <span class="kt">k</span><span class="n">exp</span><span class="p">)</span> <span class="o">*</span> <span class="kt">k</span><span class="n">f0</span>
+<span class="w">  </span><span class="c1">; the freq. of each oscillator</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">k</span><span class="n">Ratios</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="kt">k</span><span class="n">exp</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">k</span><span class="n">f0</span><span class="w"></span>
 
-  <span class="c1">; array of random phases, to avoid synchronous start</span>
-  <span class="kt">i</span><span class="n">Phs</span><span class="p">[]</span> <span class="nf">rndarr</span> <span class="kt">i</span><span class="n">num</span> 
+<span class="w">  </span><span class="c1">; array of random phases, to avoid synchronous start</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Phs</span><span class="p">[]</span><span class="w"> </span><span class="nf">rndarr</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span>
 
-  <span class="c1">; generate the oscillators. </span>
-  <span class="kt">a</span><span class="n">Oscils</span><span class="p">[]</span> <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;oscili&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">Phs</span>
+<span class="w">  </span><span class="c1">; generate the oscillators. </span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">Oscils</span><span class="p">[]</span><span class="w"> </span><span class="n">poly</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;oscili&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="o">/</span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">Freqs</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">Phs</span><span class="w"></span>
 
-  <span class="kt">a</span><span class="n">mono</span> <span class="nb">sumarray</span> <span class="kt">a</span><span class="n">Oscils</span>
-  <span class="kt">a</span><span class="n">mono</span> <span class="o">*=</span> <span class="nb">linsegr</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">mono</span><span class="p">,</span> <span class="kt">a</span><span class="n">mono</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">mono</span><span class="w"> </span><span class="nb">sumarray</span><span class="w"> </span><span class="kt">a</span><span class="n">Oscils</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">mono</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="nb">linsegr</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">mono</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">mono</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; poly instances stacked as a processing pipe</span>
-<span class="kd">instr</span> <span class="nf">2</span>
-  <span class="c1">; amount of polyphony</span>
-  <span class="kt">i</span><span class="n">num</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="c1">; poly instances stacked as a processing pipe</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">2</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; amount of polyphony</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"></span>
 
-  <span class="kt">i</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nf">rndarr</span> <span class="kt">i</span><span class="n">num</span> 
+<span class="w">  </span><span class="kt">i</span><span class="n">Freqs</span><span class="p">[]</span><span class="w"> </span><span class="nf">rndarr</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"> </span>
 
-  <span class="c1">; the ratios of the overtones</span>
-  <span class="kt">k</span><span class="n">Ratios</span><span class="p">[]</span> <span class="nb">genarray_i</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">i</span><span class="n">num</span>
+<span class="w">  </span><span class="c1">; the ratios of the overtones</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Ratios</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray_i</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="w"></span>
 
-  <span class="c1">; a down gliss</span>
-  <span class="kt">k</span><span class="n">m0</span> <span class="nb">linseg</span> <span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;2C&quot;</span><span class="p">),</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.8</span><span class="p">,</span> <span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;1C&quot;</span><span class="p">)</span>
-  <span class="kt">k</span><span class="n">f0</span> <span class="o">=</span> <span class="nb">mtof</span><span class="p">(</span><span class="kt">k</span><span class="n">m0</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">; a down gliss</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">m0</span><span class="w"> </span><span class="nb">linseg</span><span class="w"> </span><span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;2C&quot;</span><span class="p">),</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="nb">ntom</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="s">&quot;1C&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">f0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">mtof</span><span class="p">(</span><span class="kt">k</span><span class="n">m0</span><span class="p">)</span><span class="w"></span>
 
-  <span class="c1">; harmonicity curve</span>
-  <span class="kt">k</span><span class="n">p</span> <span class="nb">linsegb</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.68</span>
+<span class="w">  </span><span class="c1">; harmonicity curve</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">p</span><span class="w"> </span><span class="nb">linsegb</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="mf">1.68</span><span class="w"></span>
 
-  <span class="c1">; calculate actual freqs.</span>
-  <span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span> <span class="o">=</span> <span class="p">(</span><span class="kt">k</span><span class="n">Ratios</span> <span class="o">^</span> <span class="kt">k</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="kt">k</span><span class="n">f0</span>
+<span class="w">  </span><span class="c1">; calculate actual freqs.</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Freqs</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">k</span><span class="n">Ratios</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="kt">k</span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">k</span><span class="n">f0</span><span class="w"></span>
 
-  <span class="c1">; lfo freqs. used for AM and panning</span>
-  <span class="kt">k</span><span class="n">f</span> <span class="nb">linsegb</span> <span class="mf">0.1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.62</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.96</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">60</span>
-  <span class="kt">k</span><span class="n">LfoFreqs</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">i</span><span class="n">Freqs</span> <span class="o">*</span> <span class="kt">k</span><span class="n">f</span> 
+<span class="w">  </span><span class="c1">; lfo freqs. used for AM and panning</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">f</span><span class="w"> </span><span class="nb">linsegb</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.62</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.96</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">60</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">LfoFreqs</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i</span><span class="n">Freqs</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">k</span><span class="n">f</span><span class="w"> </span>
 
-  <span class="c1">; multiple noise instances, amplitude modulated</span>
-  <span class="kt">a</span><span class="n">A</span><span class="p">[]</span>    <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;noise&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span>
-  <span class="kt">a</span><span class="n">Amps</span><span class="p">[]</span> <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;oscili&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">k</span><span class="n">LfoFreqs</span><span class="o">*</span><span class="mf">0.6</span>
-  <span class="kt">a</span><span class="n">A</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">Amps</span>
+<span class="w">  </span><span class="c1">; multiple noise instances, amplitude modulated</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">A</span><span class="p">[]</span><span class="w">    </span><span class="n">poly</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;noise&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">Amps</span><span class="p">[]</span><span class="w"> </span><span class="n">poly</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;oscili&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">LfoFreqs</span><span class="o">*</span><span class="mf">0.6</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">A</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="kt">a</span><span class="n">Amps</span><span class="w"></span>
 
-  <span class="c1">; filter noise with bandpass </span>
-  <span class="kt">k</span><span class="n">Q</span> <span class="nb">linsegb</span> <span class="mf">0.5</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mf">0.0001</span>
-  <span class="kt">k</span><span class="n">Bands</span><span class="p">[]</span> <span class="o">=</span> <span class="kt">k</span><span class="n">Freqs</span> <span class="o">*</span> <span class="kt">k</span><span class="n">Q</span>
-  <span class="kt">a</span><span class="n">B</span><span class="p">[]</span> <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;resonr&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">A</span><span class="p">,</span> <span class="kt">k</span><span class="n">Freqs</span><span class="p">,</span> <span class="kt">k</span><span class="n">Bands</span>
+<span class="w">  </span><span class="c1">; filter noise with bandpass </span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Q</span><span class="w"> </span><span class="nb">linsegb</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.02</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0001</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Bands</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">k</span><span class="n">Freqs</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">k</span><span class="n">Q</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">B</span><span class="p">[]</span><span class="w"> </span><span class="n">poly</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;resonr&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">Freqs</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">Bands</span><span class="w"></span>
 
-  <span class="c1">; panning. poly works also with k-rate and with </span>
-  <span class="c1">; opcodes producing multiple outputs, like pan2</span>
-  <span class="kt">k</span><span class="n">PanPos</span><span class="p">[]</span> <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;lfo&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="kt">k</span><span class="n">LfoFreqs</span>
-  <span class="kt">k</span><span class="n">PanPos</span> <span class="o">+=</span> <span class="mf">0.5</span>  <span class="c1">; lfo in the range 0-1 for panning</span>
-  <span class="kt">a</span><span class="n">L</span><span class="p">[],</span> <span class="kt">a</span><span class="n">R</span><span class="p">[]</span> <span class="n">poly</span> <span class="kt">i</span><span class="n">num</span><span class="p">,</span> <span class="s">&quot;pan2&quot;</span><span class="p">,</span> <span class="kt">a</span><span class="n">B</span><span class="p">,</span> <span class="kt">k</span><span class="n">PanPos</span>
+<span class="w">  </span><span class="c1">; panning. poly works also with k-rate and with </span><span class="w"></span>
+<span class="w">  </span><span class="c1">; opcodes producing multiple outputs, like pan2</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">PanPos</span><span class="p">[]</span><span class="w"> </span><span class="n">poly</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;lfo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">LfoFreqs</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">PanPos</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">0.5</span><span class="w">  </span><span class="c1">; lfo in the range 0-1 for panning</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="p">[],</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">[]</span><span class="w"> </span><span class="n">poly</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pan2&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">PanPos</span><span class="w"></span>
 
-  <span class="kt">a</span><span class="n">left</span>  <span class="nb">sumarray</span> <span class="kt">a</span><span class="n">L</span> 
-  <span class="kt">a</span><span class="n">right</span> <span class="nb">sumarray</span> <span class="kt">a</span><span class="n">R</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">left</span><span class="w">  </span><span class="nb">sumarray</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">a</span><span class="n">right</span><span class="w"> </span><span class="nb">sumarray</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="w"></span>
 
-  <span class="c1">; compress / fade</span>
-  <span class="kt">a</span><span class="n">ref</span> <span class="nb">init</span> <span class="mi">1</span> 
-  <span class="kt">a</span><span class="n">sig</span> <span class="o">=</span> <span class="mf">0.707</span> <span class="o">*</span> <span class="p">(</span><span class="kt">a</span><span class="n">left</span> <span class="o">+</span> <span class="kt">a</span><span class="n">right</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">gain</span> <span class="nb">compress2</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="kt">a</span><span class="n">sig</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">48</span><span class="p">,</span> <span class="o">-</span><span class="mi">24</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.05</span>
-  <span class="kt">a</span><span class="n">left</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">gain</span> 
-  <span class="kt">a</span><span class="n">right</span> <span class="o">*=</span> <span class="kt">a</span><span class="n">gain</span> 
+<span class="w">  </span><span class="c1">; compress / fade</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">ref</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.707</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">a</span><span class="n">left</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">a</span><span class="n">right</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">gain</span><span class="w"> </span><span class="nb">compress2</span><span class="w"> </span><span class="kt">a</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">48</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">24</span><span class="p">,</span><span class="w"> </span><span class="mf">2.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">left</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="kt">a</span><span class="n">gain</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">a</span><span class="n">right</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="kt">a</span><span class="n">gain</span><span class="w"> </span>
 
-  <span class="kt">a</span><span class="n">gain2</span> <span class="nb">compress2</span> <span class="kt">a</span><span class="n">ref</span><span class="p">,</span> <span class="p">(</span><span class="kt">a</span><span class="n">left</span><span class="o">+</span><span class="kt">a</span><span class="n">right</span><span class="p">)</span><span class="o">*</span><span class="mf">0.707</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.010</span><span class="p">,</span> <span class="mf">0.02</span>
-  <span class="kt">a</span><span class="n">env</span> <span class="o">=</span> <span class="kt">a</span><span class="n">gain2</span> <span class="o">*</span> <span class="nb">cossegr</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">left</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span><span class="p">,</span> <span class="kt">a</span><span class="n">right</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">gain2</span><span class="w"> </span><span class="nb">compress2</span><span class="w"> </span><span class="kt">a</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">a</span><span class="n">left</span><span class="o">+</span><span class="kt">a</span><span class="n">right</span><span class="p">)</span><span class="o">*</span><span class="mf">0.707</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mf">0.002</span><span class="p">,</span><span class="w"> </span><span class="mf">0.010</span><span class="p">,</span><span class="w"> </span><span class="mf">0.02</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">a</span><span class="n">gain2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">cossegr</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">left</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">right</span><span class="o">*</span><span class="kt">a</span><span class="n">env</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">opcode</span> <span class="nf">test</span><span class="p">,</span> <span class="kt">a</span><span class="p">,</span> <span class="kt">k</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="nb">xin</span> 
-  <span class="kt">a</span><span class="n">out</span> <span class="nb">oscili</span> <span class="mf">0.1</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> 
-  <span class="nb">xout</span> <span class="kt">a</span><span class="n">out</span> 
-<span class="kd">endop</span> 
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">test</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="nb">xin</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span>
+<span class="w">  </span><span class="nb">xout</span><span class="w"> </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span>
+<span class="kd">endop</span><span class="w"> </span>
 
-<span class="kd">instr</span> <span class="nf">3</span>
-  <span class="c1">; test udo</span>
-  <span class="kt">k</span><span class="n">freqs</span><span class="p">[]</span> <span class="nb">fillarray</span> <span class="mi">440</span><span class="p">,</span> <span class="mi">443</span> 
-  <span class="kt">a</span><span class="n">A</span><span class="p">[]</span> <span class="n">poly</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;test&quot;</span><span class="p">,</span> <span class="kt">k</span><span class="n">freqs</span> 
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">sumarray</span> <span class="kt">a</span><span class="n">A</span>
-  <span class="nb">outs</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span> 
-<span class="kd">endin</span> 
+<span class="kd">instr</span><span class="w"> </span><span class="nf">3</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; test udo</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freqs</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">440</span><span class="p">,</span><span class="w"> </span><span class="mi">443</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">a</span><span class="n">A</span><span class="p">[]</span><span class="w"> </span><span class="n">poly</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;test&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freqs</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">sumarray</span><span class="w"> </span><span class="kt">a</span><span class="n">A</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span>
+<span class="kd">endin</span><span class="w"> </span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="nb">i</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">8</span>
-<span class="nb">i</span> <span class="mi">2</span> <span class="mi">9</span> <span class="mi">50</span>
-<span class="c1">; i 3 0 1</span>
+<span class="nb">i</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">8</span><span class="w"></span>
+<span class="nb">i</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">9</span><span class="w"> </span><span class="mi">50</span><span class="w"></span>
+<span class="c1">; i 3 0 1</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>

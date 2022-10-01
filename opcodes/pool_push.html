@@ -149,6 +149,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="mtro.html">mtro</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="nametoinstrnum.html">nametoinstrnum</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="panstereo.html">panstereo</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="pathAbsolute.html">pathAbsolute</a>
@@ -319,125 +321,125 @@ pool_push ipool, kvalue
 <li>Performance</li>
 </ul>
 <h2 id="examples">Examples</h2>
-<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span>
-<span class="o">--</span><span class="n">nosound</span>
-<span class="o">-</span><span class="n">m0</span>
-<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&lt;</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">--</span><span class="n">nosound</span><span class="w"></span>
+<span class="o">-</span><span class="n">m0</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsOptions</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
-<span class="vg">sr</span>     <span class="o">=</span> <span class="mi">44100</span>
-<span class="vg">ksmps</span>  <span class="o">=</span> <span class="mi">64</span>
-<span class="vg">nchnls</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="vg">0dbfs</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="o">&lt;</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
+<span class="vg">sr</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="mi">44100</span><span class="w"></span>
+<span class="vg">ksmps</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="c1">; create a global pool for all instances</span>
-<span class="kt">gi</span><span class="n">pool</span> <span class="n">pool_gen</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span>
+<span class="c1">; create a global pool for all instances</span><span class="w"></span>
+<span class="kt">gi</span><span class="n">pool</span><span class="w"> </span><span class="n">pool_gen</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w"></span>
 
-<span class="c1">; create audio buses</span>
-<span class="kt">gi</span><span class="n">numbuses</span> <span class="o">=</span> <span class="mi">200</span>
-<span class="nb">zakinit</span> <span class="kt">gi</span><span class="n">numbuses</span><span class="p">,</span> <span class="mi">1</span>
+<span class="c1">; create audio buses</span><span class="w"></span>
+<span class="kt">gi</span><span class="n">numbuses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">200</span><span class="w"></span>
+<span class="nb">zakinit</span><span class="w"> </span><span class="kt">gi</span><span class="n">numbuses</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
 
-<span class="c1">; a pool of buses</span>
-<span class="kt">gi</span><span class="n">buses</span> <span class="n">pool_gen</span> <span class="kt">gi</span><span class="n">numbuses</span>
+<span class="c1">; a pool of buses</span><span class="w"></span>
+<span class="kt">gi</span><span class="n">buses</span><span class="w"> </span><span class="n">pool_gen</span><span class="w"> </span><span class="kt">gi</span><span class="n">numbuses</span><span class="w"></span>
 
-<span class="c1">; release item back to instance pool, print a message</span>
-<span class="c1">; when that happens</span>
-<span class="kd">opcode</span> <span class="nf">pool_release_instance</span><span class="p">,</span> <span class="kt">0</span><span class="p">,</span> <span class="kt">ii</span>
-  <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">p1</span> <span class="nb">xin</span>
-  <span class="kt">i</span><span class="n">val</span> <span class="o">=</span> <span class="kt">f</span><span class="n">rac2int</span><span class="p">(</span><span class="kt">i</span><span class="n">p1</span><span class="p">,</span> <span class="n">pool_capacity</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">))</span>
-  <span class="n">defer</span> <span class="s">&quot;prints&quot;</span><span class="p">,</span> <span class="s">&quot;releasing back to pool </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">val</span>
-  <span class="n">pool_push</span> <span class="kt">i</span><span class="n">pool</span><span class="p">,</span> <span class="kt">i</span><span class="n">val</span><span class="p">,</span> <span class="mi">1</span>
-<span class="kd">endop</span>
+<span class="c1">; release item back to instance pool, print a message</span><span class="w"></span>
+<span class="c1">; when that happens</span><span class="w"></span>
+<span class="kd">opcode</span><span class="w"> </span><span class="nf">pool_release_instance</span><span class="p">,</span><span class="w"> </span><span class="kt">0</span><span class="p">,</span><span class="w"> </span><span class="kt">ii</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">p1</span><span class="w"> </span><span class="nb">xin</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">f</span><span class="n">rac2int</span><span class="p">(</span><span class="kt">i</span><span class="n">p1</span><span class="p">,</span><span class="w"> </span><span class="n">pool_capacity</span><span class="p">(</span><span class="kt">i</span><span class="n">pool</span><span class="p">))</span><span class="w"></span>
+<span class="w">  </span><span class="n">defer</span><span class="w"> </span><span class="s">&quot;prints&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;releasing back to pool </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">val</span><span class="w"></span>
+<span class="w">  </span><span class="n">pool_push</span><span class="w"> </span><span class="kt">i</span><span class="n">pool</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">val</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="kd">endop</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="nf">exit</span>
-  <span class="nb">exitnow</span>
-<span class="kd">endin</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">exit</span><span class="w"></span>
+<span class="w">  </span><span class="nb">exitnow</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; schedule and control audio generator</span>
-<span class="kd">instr</span> <span class="nf">controlsaw</span>
-  <span class="c1">; get an unused bus</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">buses</span><span class="p">)</span>
-  <span class="nb">prints</span> <span class="s">&quot;Using bus </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span>
-  <span class="kt">i</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">i</span><span class="n">cap</span> <span class="n">pool_capacity</span> <span class="kt">gi</span><span class="n">pool</span>
+<span class="c1">; schedule and control audio generator</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">controlsaw</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; get an unused bus</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">bus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">buses</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Using bus </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bus</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">cap</span><span class="w"> </span><span class="n">pool_capacity</span><span class="w"> </span><span class="kt">gi</span><span class="n">pool</span><span class="w"></span>
 
-  <span class="c1">; get a unique instance number for &quot;saw&quot; instrument</span>
-  <span class="kt">i</span><span class="n">saw</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;saw&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span> <span class="o">/</span> <span class="kt">i</span><span class="n">cap</span>
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">saw</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span>
+<span class="w">  </span><span class="c1">; get a unique instance number for &quot;saw&quot; instrument</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">saw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;saw&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="kt">i</span><span class="n">cap</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="kt">i</span><span class="n">saw</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bus</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="w"></span>
 
-  <span class="c1">; modulate the frequency</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">saw</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">linseg</span><span class="p">(</span><span class="kt">i</span><span class="n">freq</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">freq</span><span class="o">*</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">; modulate the frequency</span><span class="w"></span>
+<span class="w">  </span><span class="n">pwrite</span><span class="w"> </span><span class="kt">i</span><span class="n">saw</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nb">linseg</span><span class="p">(</span><span class="kt">i</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="o">*</span><span class="mf">0.1</span><span class="p">)</span><span class="w"></span>
 
-  <span class="c1">; get a unique instance number for filter instrument</span>
-  <span class="kt">i</span><span class="n">filter</span> <span class="o">=</span> <span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;filter&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span> <span class="o">/</span> <span class="kt">i</span><span class="n">cap</span>
-  <span class="nb">schedule</span> <span class="kt">i</span><span class="n">filter</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="mi">100</span>
+<span class="w">  </span><span class="c1">; get a unique instance number for filter instrument</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">filter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nstrnum</span><span class="p">(</span><span class="s">&quot;filter&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pool_pop</span><span class="p">(</span><span class="kt">gi</span><span class="n">pool</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="kt">i</span><span class="n">cap</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="kt">i</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bus</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w"></span>
 
-  <span class="c1">; modulate its cutoff freq.</span>
-  <span class="n">pwrite</span> <span class="kt">i</span><span class="n">filter</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">linseg</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="vi">p3</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">; modulate its cutoff freq.</span><span class="w"></span>
+<span class="w">  </span><span class="n">pwrite</span><span class="w"> </span><span class="kt">i</span><span class="n">filter</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nb">linseg</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="p">,</span><span class="w"> </span><span class="mi">4000</span><span class="p">)</span><span class="w"></span>
 
-  <span class="c1">; release bus back to pool when finished (notice the 1 at the end)</span>
-  <span class="c1">; we could have done</span>
-  <span class="c1">;  defer &quot;pool_push&quot;, gibuses, ibus</span>
-  <span class="n">pool_push</span> <span class="kt">gi</span><span class="n">buses</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span><span class="p">,</span> <span class="mi">1</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="c1">; release bus back to pool when finished (notice the 1 at the end)</span><span class="w"></span>
+<span class="w">  </span><span class="c1">; we could have done</span><span class="w"></span>
+<span class="w">  </span><span class="c1">;  defer &quot;pool_push&quot;, gibuses, ibus</span><span class="w"></span>
+<span class="w">  </span><span class="n">pool_push</span><span class="w"> </span><span class="kt">gi</span><span class="n">buses</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bus</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
 
-<span class="kd">instr</span> <span class="nf">saw</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">i</span><span class="n">amp</span>  <span class="o">=</span> <span class="mf">0.02</span>
-  <span class="kt">i</span><span class="n">fade</span> <span class="o">=</span> <span class="mf">0.05</span>
-  <span class="kt">a</span><span class="n">0</span>  <span class="o">=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">+=</span> <span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">)</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="o">*=</span> <span class="nb">cosseg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">saw</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">bus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">amp</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mf">0.02</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">fade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.05</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nb">vco2</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.25</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="nb">cosseg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
 
-  <span class="c1">; write audio to bus</span>
-  <span class="nb">zawm</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">bus</span>
+<span class="w">  </span><span class="c1">; write audio to bus</span><span class="w"></span>
+<span class="w">  </span><span class="nb">zawm</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bus</span><span class="w"></span>
 
-  <span class="c1">; release instance back to the pool</span>
-  <span class="nf">pool_release_instance</span> <span class="kt">gi</span><span class="n">pool</span><span class="p">,</span> <span class="vi">p1</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="c1">; release instance back to the pool</span><span class="w"></span>
+<span class="w">  </span><span class="nf">pool_release_instance</span><span class="w"> </span><span class="kt">gi</span><span class="n">pool</span><span class="p">,</span><span class="w"> </span><span class="vi">p1</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="c1">; filter audio in bus, output to the outside world</span>
-<span class="kd">instr</span> <span class="nf">filter</span>
-  <span class="kt">i</span><span class="n">bus</span> <span class="o">=</span> <span class="vi">p4</span>
-  <span class="kt">k</span><span class="n">freq</span> <span class="o">=</span> <span class="vi">p5</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">zar</span> <span class="kt">i</span><span class="n">bus</span>
-  <span class="kt">a</span><span class="n">0</span> <span class="nb">zdf_ladder</span> <span class="kt">a</span><span class="n">0</span><span class="p">,</span> <span class="kt">k</span><span class="n">freq</span><span class="p">,</span> <span class="mi">18</span>
-  <span class="nb">outch</span> <span class="mi">1</span><span class="p">,</span> <span class="kt">a</span><span class="n">0</span>
-<span class="kd">endin</span>
+<span class="c1">; filter audio in bus, output to the outside world</span><span class="w"></span>
+<span class="kd">instr</span><span class="w"> </span><span class="nf">filter</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">bus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span><span class="w"></span>
+<span class="w">  </span><span class="kt">k</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p5</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">zar</span><span class="w"> </span><span class="kt">i</span><span class="n">bus</span><span class="w"></span>
+<span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">zdf_ladder</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="mi">18</span><span class="w"></span>
+<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="kd">instr</span> <span class="p">+</span><span class="nf">example1</span>
-  <span class="kt">i</span><span class="n">dur</span> <span class="o">=</span> <span class="mi">10</span>                          <span class="c1">; dur of each note</span>
-  <span class="kt">i</span><span class="n">offset</span> <span class="o">=</span> <span class="mf">0.6</span>                      <span class="c1">; offset between notes</span>
-  <span class="kt">i</span><span class="n">Freqs</span><span class="p">[]</span> <span class="nb">genarray</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">100</span>  <span class="c1">; begin freq. of gliss. for each note</span>
+<span class="kd">instr</span><span class="w"> </span><span class="p">+</span><span class="nf">example1</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dur</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w">                          </span><span class="c1">; dur of each note</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.6</span><span class="w">                      </span><span class="c1">; offset between notes</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">Freqs</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">8000</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">  </span><span class="c1">; begin freq. of gliss. for each note</span><span class="w"></span>
 
-  <span class="nb">printarray</span> <span class="kt">i</span><span class="n">Freqs</span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Freqs</span><span class="w"></span>
 
-  <span class="c1">; create a note for each frequency</span>
-  <span class="kt">i</span><span class="n">0</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">while</span> <span class="kt">i</span><span class="n">0</span> <span class="o">&lt;</span> <span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Freqs</span><span class="p">)</span> <span class="k">do</span>
-    <span class="nb">schedule</span> <span class="s">&quot;controlsaw&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">dur</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">i</span><span class="n">Freqs</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span>
-    <span class="kt">i</span><span class="n">0</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">od</span>
+<span class="w">  </span><span class="c1">; create a note for each frequency</span><span class="w"></span>
+<span class="w">  </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Freqs</span><span class="p">)</span><span class="w"> </span><span class="k">do</span><span class="w"></span>
+<span class="w">    </span><span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;controlsaw&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dur</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">Freqs</span><span class="p">[</span><span class="kt">i</span><span class="n">0</span><span class="p">]</span><span class="w"></span>
+<span class="w">    </span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">  </span><span class="k">od</span><span class="w"></span>
 
-  <span class="c1">; clear zak </span>
-  <span class="nb">zacl</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">gi</span><span class="n">numbuses</span>
+<span class="w">  </span><span class="c1">; clear zak </span><span class="w"></span>
+<span class="w">  </span><span class="nb">zacl</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">gi</span><span class="n">numbuses</span><span class="w"></span>
 
-  <span class="c1">; schedule exit</span>
-  <span class="nb">schedule</span> <span class="s">&quot;exit&quot;</span><span class="p">,</span> <span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span> <span class="o">+</span> <span class="kt">i</span><span class="n">dur</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
-<span class="kd">endin</span>
+<span class="w">  </span><span class="c1">; schedule exit</span><span class="w"></span>
+<span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;exit&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">offset</span><span class="o">*</span><span class="kt">i</span><span class="n">0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">i</span><span class="n">dur</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
+<span class="kd">endin</span><span class="w"></span>
 
-<span class="nb">schedule</span> <span class="s">&quot;example1&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+<span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;example1&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span>
-<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
+<span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span><span class="w"></span>
 
-<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span><span class="w"></span>
 </code></pre></div>
 
 <h2 id="see-also">See also</h2>
