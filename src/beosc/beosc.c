@@ -753,13 +753,13 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     uint32_t n, nsmps = CS_KSMPS;
 
     if (UNLIKELY(p->inerr))
-      return INITERR(Str("beadsynt: not initialised"));
+      return PERFERR(Str("beadsynt: not initialised"));
 
     ftp = p->ftp;
     MYFLT sampledur = 1/csound->GetSr(csound);
 
     ftpdata  = ftp->ftable;
-    lobits   = ftp->lobits;
+    lobits   = ftp->lobits + 2;     // +2 added march 2023. Used to be just 0, what happened here??
     lodiv    = ftp->lodiv;
     lomask   = ftp->lomask;
     cpstoinc = p->cpstoinc;
@@ -813,6 +813,10 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
 
       phs    = lphs[c];
       ampinc = (amp - ampnow) * CS_ONEDKSMPS;
+
+      if(UNLIKELY(flags >= 8 || flags < 0)) {
+          return PERFERRF(Str("beadsynt: invalid flag %d (should be 0 <= flags < 8"), flags);
+      }
 
       if(LIKELY(bwin != 0)) {
         x1 = coefs->x1; x2 = coefs->x2; x3 = coefs->x3;
@@ -968,17 +972,17 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
         case 0:  // 000
         case 1:  // 001
           for (n=offset; n<nsmps; n++) {
+            // out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
+            // MYFLT samp = lookup(ftpdata, phs, lomask);
             out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
-            // out[n] += lookup(ftpdata, phs, lomask2) * ampnow;
-            phs    += inc; phs &= PHMASK; ampnow += ampinc;
+            phs += inc; phs &= PHMASK; ampnow += ampinc;
             // phs    += inc2; ampnow += ampinc;
           }
           break;
         case 2:  // 010
         case 3:  // 011
           for (n=offset; n<nsmps; n++) {
-            out[n] +=
-              cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+            out[n] += cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
             phs += inc; phs &= PHMASK; ampnow += ampinc;
           }
           break;
