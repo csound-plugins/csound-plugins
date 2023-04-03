@@ -1,8 +1,63 @@
 name: Build And Publish
 on: push
 jobs:
-  buildjob:
-    name: Build plugins on ${{ matrix.os }}
+  buildjob7:
+    name: Build plugins on ${{ matrix.os }} (csound 7)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        # os: [windows-2019]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Checkout submodules
+        run: |
+          git submodule update --init --recursive
+          cd csound
+          git switch develop
+
+      - name: linux build
+        if: runner.os == 'linux'
+        run: |
+          sudo apt-get install libsndfile1-dev
+          sudo apt-get install nasm
+          # sudo apt-get install libfluidsynth-dev
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master --rebase
+          git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-linux
+          mkdir build-linux
+          cd build-linux
+
+          # cmake -DSKIP_FAST_MATH=True ..
+          cmake ..
+          make -j4
+          ls
+          ARCHIVE=csound7-plugins--linux.zip
+          7z a $ARCHIVE *.so
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plugins
+          path: artifacts/*.zip
+
+
+
+  buildjob6:
+    name: Build plugins on ${{ matrix.os }} (csound 6)
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
