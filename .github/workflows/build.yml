@@ -18,6 +18,98 @@ jobs:
           cd csound
           git switch develop
 
+      - name: macos build
+        if: runner.os == 'macOS'
+        run: |
+          curl -Ls -o nasm-2.14.02.zip 'https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip'
+          unzip nasm-2.14.02.zip
+          nasmdir=$PWD/nasm-2.14.02
+          # cd $nasmdir
+          # ls
+          # sudo cp * /usr/local/bin
+          # cd ..
+
+          export PATH="$nasmdir:$PATH"
+          nasm --version
+
+          brew update
+          brew install libsndfile
+          # brew install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-macos
+          mkdir build-macos
+          cd build-macos
+
+          cmake -DSKIP_FAST_MATH=True ..
+          cmake --build . --parallel
+          ls
+          ARCHIVE=csound7-plugins--macos.zip
+          7z a $ARCHIVE *.dylib
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - name: windows build
+        if: runner.os == 'windows'
+        run: |
+          # where.exe vcpkg
+          # $VCPKG_ROOT/vcpkg integrate install
+          # vcpkg integrate install
+          # $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
+
+          #vcpkg install libsndfile:x64-windows
+
+          choco install libsndfile
+          ls "${ENV:PROGRAMFILES}\libsndfile\include"
+
+
+          # choco install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+          echo "Finished submodules"
+
+          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
+          ls
+
+          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
+
+          mkdir build-windows
+          cd build-windows
+
+          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+
+          echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
+          ls "$VCPKG_ROOT" -recurse
+
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake --build . --parallel --config Release
+          ls Release
+
+          rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
+
+          set-variable -name ARCHIVE -value "csound7-plugins--win64.zip"
+          rm $ARCHIVE -ErrorAction Ignore
+          7z a $ARCHIVE ./Release/*.dll
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          if(!(Test-Path ../artifacts)) {
+            New-Item -ItemType directory -Path ../artifacts
+          }
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
       - name: linux build
         if: runner.os == 'linux'
         run: |
@@ -39,7 +131,8 @@ jobs:
 
           # cmake -DSKIP_FAST_MATH=True ..
           cmake ..
-          make -j4
+          cmake --build . --parallel
+
           ls
           ARCHIVE=csound7-plugins--linux.zip
           7z a $ARCHIVE *.so
@@ -55,7 +148,6 @@ jobs:
           path: artifacts/*.zip
 
 
-
   buildjob6:
     name: Build plugins on ${{ matrix.os }} (csound 6)
     runs-on: ${{ matrix.os }}
@@ -68,7 +160,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Checkout submodules
-        run: git submodule update --init --recursive
+        run: |
+            git submodule update --init --recursive
+            cd csound
+            git switch csound6
 
       - name: macos build
         if: runner.os == 'macOS'
@@ -101,7 +196,9 @@ jobs:
           cd build-macos
 
           cmake -DSKIP_FAST_MATH=True ..
-          make -j4
+          # make -j4
+          cmake --build . --parallel
+
           ls
           # ARCHIVE=csound-plugins--${{matrix.os}}.zip
           ARCHIVE=csound-plugins--macos.zip
@@ -134,7 +231,9 @@ jobs:
 
           # cmake -DSKIP_FAST_MATH=True ..
           cmake ..
-          make -j4
+          # make -j4
+          cmake --build . --parallel
+
           ls
           ARCHIVE=csound-plugins--linux.zip
           7z a $ARCHIVE *.so
@@ -194,7 +293,7 @@ jobs:
           ls "$VCPKG_ROOT" -recurse
 
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
-          cmake --build . --config Release
+          cmake --build . --parallel --config Release
           ls Release
 
           rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
