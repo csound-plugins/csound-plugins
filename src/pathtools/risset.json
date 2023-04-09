@@ -1,44 +1,57 @@
 {
-  "name": "pathtools",
-  "version": "1.15.0",
-  "opcodes": [
-    "findFileInPath",
-    "getEnvVar",
-    "pathAbsolute",
-    "pathIsAbsolute",
-    "pathJoin",
-    "pathNative",
-    "pathSplit",
-    "pathSplitk",
-    "pathSplitExt",
-    "pathSplitExtk",
-    "scriptDir",
-    "sysPlatform",
-    "strsplit",
-    "strjoin"
-  ],
-  "short_description": "Cross-platform path handling and string opcodes",
-  "long_description": "This plugin provides opcodes for working with files and strings in a cross-platform way",
-  "csound_version": "6.15",
-  "author": "Eduardo Moguillansky",
-  "email": "eduardo.moguillansky@gmail.com",
-  "license": "LGPL",
-  "repository": "https://github.com/csound-plugins/csound-plugins",
-  "binaries": {
-    "linux": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-      "extractpath": "libpathtools.so",
-      "build_platform": "Ubuntu 18.04"
-    },
-    "macos": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-      "extractpath": "libpathtools.dylib",
-      "build_platform": "10.14.0"
-    },
-    "windows": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-      "extractpath": "pathtools.dll",
-      "build_platform": "Windows 10"
+    "name": "pathtools",
+    "version": "1.15.0",
+    "opcodes": [
+        "findFileInPath",
+        "getEnvVar",
+        "pathAbsolute",
+        "pathIsAbsolute",
+        "pathJoin",
+        "pathNative",
+        "pathSplit",
+        "pathSplitk",
+        "pathSplitExt",
+        "pathSplitExtk",
+        "scriptDir",
+        "sysPlatform",
+        "strsplit",
+        "strjoin"
+    ],
+    "short_description": "Cross-platform path handling and string opcodes",
+    "long_description": "This plugin provides opcodes for working with files and strings in a cross-platform way",
+    "author": "Eduardo Moguillansky",
+    "email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "repository": "https://github.com/csound-plugins/csound-plugins",
+    "binaries": [
+        {
+            "platform": "linux",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+            "extractpath": "libpathtools.so",
+            "csound_version": ">=6.18<7.0",
+        },
+        {
+            "platform": "linux",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
+            "extractpath": "libpathtools.so",
+            "csound_version": ">=7.0",
+        }
+    ],
+    "_binaries": {
+        "linux": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+            "extractpath": "libpathtools.so",
+            "build_platform": "Ubuntu 18.04"
+        },
+        "macos": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+            "extractpath": "libpathtools.dylib",
+            "build_platform": "10.14.0"
+        },
+        "windows": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+            "extractpath": "pathtools.dll",
+            "build_platform": "Windows 10"
+        }
     }
-  }
 }

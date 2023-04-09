@@ -1,31 +1,45 @@
 {
-  "name": "risset",
-  "version": "1.15.0",
-  "opcodes": [
-    "risset"
-  ],
-  "short_description": "Opcodes to access risset package metadata",
-  "long_description": "Opcodes for accessing metadata about packages installed via the risset package manager",
-  "csound_version": "6.16",
-  "author": "Eduardo Moguillansky",
-  "email": "eduardo.moguillansky@gmail.com",
-  "license": "LGPL",
-  "repository": "https://github.com/csound-plugins/csound-plugins",
-  "binaries": {
-    "linux": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-      "extractpath": "librisset.so",
-      "build_platform": "Ubuntu 18.04"
-    },
-    "macos": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-      "extractpath": "librisset.dylib",
-      "build_platform": "10.14.0"
-    },
-    "windows": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-      "extractpath": "risset.dll",
-      "build_platform": "Windows 10"
+    "name": "risset",
+    "version": "1.15.0",
+    "opcodes": [
+        "risset"
+    ],
+    "short_description": "Opcodes to access risset package metadata",
+    "long_description": "Opcodes for accessing metadata about packages installed via the risset package manager",
+    "csound_version": "6.16",
+    "author": "Eduardo Moguillansky",
+    "email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "repository": "https://github.com/csound-plugins/csound-plugins",
+    "binaries": [
+        {
+            "platform": "linux",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+            "extractpath": "librisset.so",
+            "csound_version": ">=6.18<7.0"
+        },
+        {
+            "platform": "linux",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
+            "extractpath": "librisset.so",
+            "csound_version": ">=7.0"
+        }
+    ],
+    "_binaries": {
+        "linux": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+            "extractpath": "librisset.so",
+            "build_platform": "Ubuntu 18.04"
+        },
+        "macos": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+            "extractpath": "librisset.dylib",
+            "build_platform": "10.14.0"
+        },
+        "windows": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+            "extractpath": "risset.dll",
+            "build_platform": "Windows 10"
+        }
     }
-  }
 }

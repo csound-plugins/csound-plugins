@@ -1,34 +1,47 @@
 {
-  "name": "poly",
-  "version": "1.15.0",
-  "opcodes": [
-    "poly",
-    "polyseq",
-    "poly0",
-    "defer"
-  ],
-  "short_description": "Multiple (parallel or sequential) instances of an opcode",
-  "long_description": "Multiple (parallel or sequential) instances of an opcode",
-  "csound_version": "6.14",
-  "author": "Eduardo Moguillansky",
-  "email": "eduardo.moguillansky@gmail.com",
-  "license": "LGPL",
-  "repository": "https://github.com/csound-plugins/csound-plugins",
-  "binaries": {
-    "linux": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-      "extractpath": "libpoly.so",
-      "build_platform": "Ubuntu 18.04"
-    },
-    "macos": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-      "extractpath": "libpoly.dylib",
-      "build_platform": "10.14.0"
-    },
-    "windows": {
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-      "extractpath": "poly.dll",
-      "build_platform": "Windows 10"
+    "name": "poly",
+    "version": "1.15.0",
+    "opcodes": [
+        "poly",
+        "polyseq",
+        "poly0",
+        "defer"
+    ],
+    "short_description": "Multiple (parallel or sequential) instances of an opcode",
+    "long_description": "Multiple (parallel or sequential) instances of an opcode",
+    "author": "Eduardo Moguillansky",
+    "email": "eduardo.moguillansky@gmail.com",
+    "license": "LGPL",
+    "repository": "https://github.com/csound-plugins/csound-plugins",
+    "binaries": [
+        {
+            "paltform": "linux",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+            "extractpath": "libpoly.so",
+            "csound_version": ">=6.18<7.0"
+        },
+        {
+            "paltform": "linux",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
+            "extractpath": "libpoly.so",
+            "csound_version": ">=7.0"
+        }
+    ],
+    "_binaries": {
+        "linux": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+            "extractpath": "libpoly.so",
+            "build_platform": "Ubuntu 18.04"
+        },
+        "macos": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+            "extractpath": "libpoly.dylib",
+            "build_platform": "10.14.0"
+        },
+        "windows": {
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+            "extractpath": "poly.dll",
+            "build_platform": "Windows 10"
+        }
     }
-  }
 }
