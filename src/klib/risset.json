@@ -39,15 +39,15 @@
             "platform": "linux",
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
             "extractpath": "libklib.so",
-            "csound_version": ">=6.18<7.0",
+            "csound_version": ">=6.18<7.0"
         },
         {
             "platform": "linux",
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
             "extractpath": "libklib.so",
-            "csound_version": ">=7.0",
+            "csound_version": ">=7.0"
         }
-    ]
+    ],
     "_binaries": {
         "linux": {
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",

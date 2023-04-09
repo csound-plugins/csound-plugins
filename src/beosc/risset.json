@@ -26,7 +26,7 @@
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
       "extractpath": "libbeosc.so",
       "csound_version": ">=7.0"
-    },
+    }
   ],
   "_binaries": {
     "linux": {
