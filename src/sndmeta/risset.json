@@ -13,13 +13,13 @@
     "repository": "https://github.com/csound-plugins/csound-plugins",
     "binaries": [
         {
-            "platform": "linux",
+            "platform": "macos",
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
             "extractpath": "libsndmeta.so",
             "csound_version": ">=6.18<7.0"
         },
         {
-            "platform": "linux",
+            "platform": "macos",
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--linux.zip",
             "extractpath": "libsndmeta.so",
             "csound_version": ">=7.0"
