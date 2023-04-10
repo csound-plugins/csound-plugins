@@ -16,30 +16,37 @@
             "platform": "linux",
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
             "extractpath": "libsndmeta.so",
+            "csound_version": ">=6.18<7.0"
+        },
+        {
+            "platform": "linux",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--linux.zip",
+            "extractpath": "libsndmeta.so",
             "csound_version": ">=7.0"
         },
         {
             "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--linux.zip",
-            "extractpath": "libsndmeta.so",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+            "extractpath": "libsndmeta.dylib",
+            "csound_version": ">=6.18<7.0"
+        },
+        {
+            "platform": "macos",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--macos.zip",
+            "extractpath": "libsndmeta.dylib",
+            "csound_version": ">=7.0"
+        },
+        {
+            "platform": "windows",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--windows.zip",
+            "extractpath": "sndmeta.dll",
+            "csound_version": ">=6.18<7.0"
+        },
+        {
+            "platform": "windows",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--windows.zip",
+            "extractpath": "sndmeta.dll",
             "csound_version": ">=7.0"
         }
-    ],
-    "_binaries": {
-        "linux": {
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-            "extractpath": "libsndmeta.so",
-            "build_platform": "Ubuntu 18.04"
-        },
-        "macos": {
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-            "extractpath": "libelse.dylib",
-            "build_platform": "10.14.0"
-        },
-        "windows": {
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-            "extractpath": "sndmeta.dll",
-            "build_platform": "Windows 10"
-        }
-    }
+    ]
 }
