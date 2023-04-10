@@ -19,7 +19,7 @@
             "platform": "linux",
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
             "extractpath": "libbeosc.so",
-            "csound_version": ">=6.18<7.0"
+            "csound_version": ">=6.17<7.0"
         },
         {
             "platform": "linux",
@@ -32,7 +32,7 @@
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
             "extractpath": "beosc.dll",
             "build_platform": "Windows 10",
-            "csound_version": ">=6.18<7.0"
+            "csound_version": ">=6.17<7.0"
         },
         {
             "platform": "windows",
@@ -46,7 +46,7 @@
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
             "extractpath": "libbeosc.dylib",
             "build_platform": "10.14.0",
-            "csound_version": ">=6.18<7.0"
+            "csound_version": ">=6.17<7.0"
         },
         {
             "platform": "macos",
