@@ -38,13 +38,13 @@
         },
         {
             "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--windows.zip",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
             "extractpath": "sndmeta.dll",
             "csound_version": ">=6.17<7.0"
         },
         {
             "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--windows.zip",
+            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--win64.zip",
             "extractpath": "sndmeta.dll",
             "csound_version": ">=7.0"
         }
