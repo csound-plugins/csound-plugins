@@ -41,7 +41,7 @@
             "extractpath": "libklib.so",
             "csound_version": ">=6.17<7.0"
         },
-!        {
+        {
             "platform": "linux",
             "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
             "extractpath": "libklib.so",
