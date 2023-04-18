@@ -1,65 +1,64 @@
 {
-    "name": "jsfx",
-    "version": "1.15.0",
-    "opcodes": [
-        "jsfx",
-        "jsfx_new",
-        "jsfx_play",
-        "jsfx_getslider",
-        "jsfx_setslider",
-        "tubeharmonics"
-    ],
-    "libname": "libjsfx",
-    "short_description": "jsfx support for csound",
-    "long_description": "A csound interface to the opensource implementation of jsfx (a jitted language for dsp)",
-    "author": "Eduardo Moguillansky",
-    "email": "eduardo.moguillansky@gmail.com",
-    "license": "LGPL",
-    "repository": "https://github.com/csound-plugins/csound-plugins",
-    "binaries": [
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-            "extractpath": "libjsfx.so",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
-            "extractpath": "libjsfx.so",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-            "extractpath": "libjsfx.dylib",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
-            "extractpath": "libjsfx.dylib",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-            "extractpath": "jsfx.dll",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
-            "extractpath": "jsfx.dll",
-            "csound_version": ">=7.0"
-        }
-
-    ],
-    "assets": [
-        {
-            "name": "jsfx liteon scripts",
-            "platform": "all",
-            "extractpath": "assets/*"
-        }
-    ]
+  "name": "jsfx",
+  "version": "1.16.0",
+  "opcodes": [
+    "jsfx",
+    "jsfx_new",
+    "jsfx_play",
+    "jsfx_getslider",
+    "jsfx_setslider",
+    "tubeharmonics"
+  ],
+  "libname": "libjsfx",
+  "short_description": "jsfx support for csound",
+  "long_description": "A csound interface to the opensource implementation of jsfx (a jitted language for dsp)",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": [
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+      "extractpath": "libjsfx.so",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
+      "extractpath": "libjsfx.so",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+      "extractpath": "libjsfx.dylib",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
+      "extractpath": "libjsfx.dylib",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+      "extractpath": "jsfx.dll",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
+      "extractpath": "jsfx.dll",
+      "csound_version": ">=7.0"
+    }
+  ],
+  "assets": [
+    {
+      "name": "jsfx liteon scripts",
+      "platform": "all",
+      "extractpath": "assets/*"
+    }
+  ]
 }

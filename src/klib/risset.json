@@ -1,75 +1,75 @@
 {
-    "name": "klib",
-    "version": "1.15.0",
-    "opcodes": [
-        "dict_new",
-        "dict_dump",
-        "dict_free",
-        "dict_get",
-        "dict_geti",
-        "dict_loadstr",
-        "dict_set",
-        "dict_size",
-        "dict_query",
-        "dict_exists",
-        "dict_print",
-        "dict_iter",
-        "dict_del",
-        "sref",
-        "sderef",
-        "pool_new",
-        "pool_gen",
-        "pool_pop",
-        "pool_push",
-        "pool_size",
-        "pool_capacity",
-        "pool_at",
-        "pool_isfull"
-    ],
-    "libname": "libklib",
-    "short_description": "A hashtable for csound",
-    "long_description": "A hashtable for csound",
-    "csound_version": "6.15",
-    "author": "Eduardo Moguillansky",
-    "email": "eduardo.moguillansky@gmail.com",
-    "license": "LGPL",
-    "repository": "https://github.com/csound-plugins/csound-plugins",
-    "binaries": [
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-            "extractpath": "libklib.so",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
-            "extractpath": "libklib.so",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-            "extractpath": "libklib.dylib",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
-            "extractpath": "libklib.dylib",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-            "extractpath": "klib.dll",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
-            "extractpath": "klib.dll",
-            "csound_version": ">=7.0"
-        }
-    ]
+  "name": "klib",
+  "version": "1.16.0",
+  "opcodes": [
+    "dict_new",
+    "dict_dump",
+    "dict_free",
+    "dict_get",
+    "dict_geti",
+    "dict_loadstr",
+    "dict_set",
+    "dict_size",
+    "dict_query",
+    "dict_exists",
+    "dict_print",
+    "dict_iter",
+    "dict_del",
+    "sref",
+    "sderef",
+    "pool_new",
+    "pool_gen",
+    "pool_pop",
+    "pool_push",
+    "pool_size",
+    "pool_capacity",
+    "pool_at",
+    "pool_isfull"
+  ],
+  "libname": "libklib",
+  "short_description": "A hashtable for csound",
+  "long_description": "A hashtable for csound",
+  "csound_version": "6.15",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": [
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+      "extractpath": "libklib.so",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
+      "extractpath": "libklib.so",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+      "extractpath": "libklib.dylib",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
+      "extractpath": "libklib.dylib",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+      "extractpath": "klib.dll",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
+      "extractpath": "klib.dll",
+      "csound_version": ">=7.0"
+    }
+  ]
 }

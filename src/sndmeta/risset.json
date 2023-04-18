@@ -1,52 +1,52 @@
 {
-    "name": "sndmeta",
-    "version": "1.15.0",
-    "opcodes": [
-        "filereadmeta"
-    ],
-    "short_description": "opcodes using libsndfile",
-    "long_description": "Opcodes to query a soundfile regarding its metadata",
-    "csound_version": "6.15",
-    "author": "Eduardo Moguillansky",
-    "email": "eduardo.moguillansky@gmail.com",
-    "license": "LGPL",
-    "repository": "https://github.com/csound-plugins/csound-plugins",
-    "binaries": [
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-            "extractpath": "libsndmeta.so",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--linux.zip",
-            "extractpath": "libsndmeta.so",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-            "extractpath": "libsndmeta.dylib",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--macos.zip",
-            "extractpath": "libsndmeta.dylib",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-            "extractpath": "sndmeta.dll",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--win64.zip",
-            "extractpath": "sndmeta.dll",
-            "csound_version": ">=7.0"
-        }
-    ]
+  "name": "sndmeta",
+  "version": "1.16.0",
+  "opcodes": [
+    "filereadmeta"
+  ],
+  "short_description": "opcodes using libsndfile",
+  "long_description": "Opcodes to query a soundfile regarding its metadata",
+  "csound_version": "6.15",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": [
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+      "extractpath": "libsndmeta.so",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--linux.zip",
+      "extractpath": "libsndmeta.so",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+      "extractpath": "libsndmeta.dylib",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--macos.zip",
+      "extractpath": "libsndmeta.dylib",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+      "extractpath": "sndmeta.dll",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7plugins--win64.zip",
+      "extractpath": "sndmeta.dll",
+      "csound_version": ">=7.0"
+    }
+  ]
 }
