@@ -17,8 +17,8 @@ jobs:
       - name: build
         run: |
           set -x
-          brew update
-          brew install libsndfile
+          # brew update
+          # brew install libsndfile
           # brew install fluidsynth
 
           git submodule update --init --recursive --remote
@@ -35,10 +35,10 @@ jobs:
 
           ls ..
 
-          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
+          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" ..
           cmake --build . --parallel
           ls
-          ARCHIVE=csound-plugins--macos-universal2.zip
+          ARCHIVE=csound-plugins--macos-arm64.zip
           7z a $ARCHIVE *.dylib
           7z a $ARCHIVE ../assets/README.txt
           7z l $ARCHIVE
