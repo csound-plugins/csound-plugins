@@ -4,7 +4,6 @@ jobs:
   buildmacarm:
     name: Build plugins for csound 6 on mac arm64
     runs-on: macos-latest
-    arch: arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v2
