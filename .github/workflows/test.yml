@@ -10,6 +10,8 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       
       - name: linux build and test
         if: runner.os == 'linux'
