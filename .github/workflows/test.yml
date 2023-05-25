@@ -16,10 +16,11 @@ jobs:
       - name: linux build and test
         if: runner.os == 'linux'
         run: |
+          set -x
+          
           sudo apt install csound
           
-          sudo apt-get install libsndfile1-dev
-          sudo apt-get install nasm
+          sudo apt-get install libsndfile1-dev nasm
           # sudo apt-get install libfluidsynth-dev
 
           git submodule update --init --recursive --remote
@@ -44,6 +45,7 @@ jobs:
           
           cd src/beosc/examples
           csound -o beadsynt.flac beadsynt.csd
+          ls *.flac
           cp beadsynt.flac ../../../artifacts
 
           cd ../../..
