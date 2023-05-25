@@ -37,7 +37,7 @@ jobs:
           # cmake -DSKIP_FAST_MATH=True ..
           cmake ..
           cmake --build . --parallel
-          cmake --install
+          cmake --install .
 
           cd ..
           mkdir -p artifacts
