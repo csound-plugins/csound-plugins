@@ -62,9 +62,9 @@ jobs:
           mkdir -p artifacts
           
           cd src/beosc/examples
-          csound -o beadsynt.flac beadsynt.csd
-          ls *.flac
-          cp beadsynt.flac ../../../artifacts
+          csound -o beadsynt.wav beadsynt.csd
+          ls *.wav
+          cp beadsynt.wav ../../../artifacts
 
           cd ../../..
           ls artifacts/*
