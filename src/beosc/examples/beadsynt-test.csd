@@ -70,7 +70,23 @@ nchnls = 2
 gispectrum ftgen 0, 0, 0, -1, "fox.mtx", 0, 0, 0
 
 instr 1
+  ;    1  2  3  4  5  6  7  8  9  0
+  pset 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
+  kspeed = p4
+  kloop = p5
+  kminfreq = p6
+  kmaxfreq = p7
+  
+  iflags = p8
+  istart = p9
+  istop = p10
+  
+  ifade = 0.02
+  
   ifn = gispectrum
+  
+  kplayhead init istart
+  
   iskip      tab_i 0, ifn
   inumrows   tab_i 1, ifn
   inumcols   tab_i 2, ifn
@@ -81,56 +97,64 @@ instr 1
   imaxrow = inumrows - 2
   it = ksmps / sr
   igain init 1
-  ispeed init 0.3
-  idur = imaxrow * idt / ispeed
+  idur = imaxrow * idt
+  istop = istop > 0 ? istop : idur
+  
+  prints "skip: %d, numcols: %d, numrows: %d, idt: %f \n", iskip, inumcols, inumrows, idt
+  
   kGains[] init inumpartials
   kfilter init 0
   ifreqscale init 1
   
-  kt timeinsts
-  kplayhead = phasor:k(ispeed/idur)*idur
   krow = kplayhead / idt
+  
   ; each row has the format frametime, freq0, amp0, bandwidth0, freq1, amp1, bandwidth1, ...
-  prints "numcols: %d, numrows: %d \n", inumcols, inumrows
   kF[] getrowlin krow, ifn, inumcols, iskip, 1, 0, 3
   kA[] getrowlin krow, ifn, inumcols, iskip, 2, 0, 3
   kB[] getrowlin krow, ifn, inumcols, iskip, 3, 0, 3
-
-  ; println "Frame time: %f, kt: %f", tab:k(iskip+inumcols*floor(krow), ifn), kt
-
-  if(kt > idur*0.6) then
-    if metro(0) == 1 then
-      println "Applying filter: bandpass between 1000-1500 Hz"
-    endif
-    kfilter = 1
+  kSel[] init inumcols / 3
+  
+  if kmaxfreq > 0 || kminfreq > 0 then
+    kmaxfreq = kmaxfreq > 0 ? kmaxfreq : sr / 2
+    kSel cmp kminfreq, "<=", kF, "<=", kmaxfreq
+    kA *= kSel
   endif
   
-  ifilterGain = 3    
-  if (kfilter == 1) then
-    kGains bpf kF, 990, 0.001, 1000, ifilterGain, 1500, ifilterGain, 1510, 0.01
-    kA *= kGains
-  endif 
-
-  iflags = 7    ; uniform noise, no interpolation
   aout beadsynt kF, kA, kB, -1, iflags, ifreqscale
-  ; printarray kB, metro:k(10)
-  ; println "kF: %d. kA: %d, kB: %d", lenarray:k(kF), lenarray:k(kA), lenarray:k(kB)
   
-  ; aout = 0
-  if(kt > idur) then
-    event "e", 0, 0, 0
-  endif
-  aenv cosseg 0, 0.02, igain, idur-0.02-0.1, igain, 0.1, 0
-  ; aout *= aenv
+  aenv cossegr 0, ifade, igain, ifade, 0
+  aout *= aenv
   outs aout, aout
+  
+  kplayhead += ksmps/sr * kspeed
+  if kplayhead >= istop then
+    kplayhead = istart
+    if kloop == 0 && release() == 0 then  
+      println "Exiting..."
+      turnoff
+    endif
+  endif
+  
 endin
 
-schedule 1, 0, -1
+; schedule 1, 0, -1, 0.5, 1
+
 
 </CsInstruments>
 <CsScore>
+i 1 0 z 0.01 1 1000 2000 7 0.5 0.6
+f 0 10
 </CsScore>
 </CsoundSynthesizer>
+
+
+
+
+
+
+
+
+
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>

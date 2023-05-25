@@ -36,7 +36,7 @@ jobs:
 
           ls ..
 
-          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" ..
+          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION="6.0"..
           cmake --build . --parallel
           ls
           ARCHIVE=csound-plugins--macos-arm64.zip
@@ -99,7 +99,7 @@ jobs:
           mkdir build-macos
           cd build-macos
 
-          cmake -DSKIP_FAST_MATH=True ..
+          cmake -DSKIP_FAST_MATH=True -DAPIVERSION="7.0" ..
           cmake --build . --parallel
           ls
           ARCHIVE=csound7-plugins--macos.zip
@@ -144,7 +144,7 @@ jobs:
           echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
           ls "$VCPKG_ROOT" -recurse
 
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DAPIVERSION="7.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --parallel --config Release
           ls Release
 
