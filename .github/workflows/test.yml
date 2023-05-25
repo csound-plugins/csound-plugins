@@ -33,8 +33,7 @@ jobs:
           cmake --build . --parallel
           sudo cmake --install .
           sudo ldconfig
-
-          
+          cd ../..
 
           sudo apt-get install libsndfile1-dev nasm
           # sudo apt-get install libfluidsynth-dev
