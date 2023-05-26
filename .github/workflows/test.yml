@@ -1,19 +1,67 @@
 name: Test plugins
 on: push
 jobs:
-  testjob6:
-    name: Test plugins on ${{ matrix.os }} (csound 6)
+  linuxapt:
+    name: Test plugins on linux against csound package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: linux test against csound package
+        if: runner.os == 'linux'
+        run: |
+          set -x
+
+
+          sudo cp /etc/apt/sources.list /etc/apt/sources.list~
+          sudo sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
+          sudo apt-get update
+
+
+          sudo apt-get install csound libcsnd-dev
+
+          sudo apt-get install libsndfile1-dev nasm
+
+          git submodule update --init --recursive --remote
+          git submodule status --recursive
+
+          # cd csound/include
+          # ln -s ../Android/CsoundAndroid/jni/version.h .
+          # cd ../..
+
+          rm -fr build-linux
+          mkdir build-linux
+          cd build-linux
+
+          # cmake -DSKIP_FAST_MATH=True ..
+          cmake ..
+          cmake --build . --parallel
+          cmake --install .
+
+          cd ..
+
+          bash test/linux-run-tests.sh
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: artifacts-linux-apt
+        path: artifacts/*
+
+  linuxgit:
+    name: Test plugins on linux against csound git
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         # os: [windows-2019, ubuntu-latest, macos-latest]
-        os: [ubuntu-latest]
+        os: [ubuntu-22-04, ubuntu-20.04]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       
-      - name: linux build and test
+      - name: linux test against csound6 - git
         if: runner.os == 'linux'
         run: |
           set -x
@@ -60,19 +108,12 @@ jobs:
           cmake --install .
 
           cd ..
-          mkdir -p artifacts
-          
-          cd src/beosc/examples
-          csound -o beadsynt.wav beadsynt.csd
-          ls *.wav
-          cp beadsynt.wav ../../../artifacts
 
-          cd ../../..
-          ls artifacts/*
-          
+          bash test/linux-run-tests.sh
+
 
       - uses: actions/upload-artifact@v2
         with:
-          name: test-artifacts
+          name: artifacts-linux-git-${{ matrix.os }}
           path: artifacts/*
 
