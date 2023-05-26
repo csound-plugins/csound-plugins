@@ -3,5 +3,5 @@
 	url = https://github.com/asb2m10/jsusfx
 [submodule "csound"]
 	path = csound
-	url = https://github.com/csound/csound.git
-	branch = master
+	url = https://github.com/csound/csound
+	branch = csound6
