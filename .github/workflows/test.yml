@@ -39,9 +39,9 @@ jobs:
           sudo apt-get install libsndfile1-dev nasm
           # sudo apt-get install libfluidsynth-dev
 
-          # git submodule update --init --recursive --remote
+          git submodule update --init --recursive --remote
           # git submodule foreach git pull origin master --rebase
-          # git submodule status --recursive
+          git submodule status --recursive
           # cd csound
           # git switch csound6
           # cd ..
