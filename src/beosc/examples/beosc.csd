@@ -53,7 +53,7 @@ instr 1
   kfreq bpf kt, 0, ifreq, 5, ifreq,  10, ifreq*4, 15, ifreq
   kbw   bpfcos kt, 0, 0,     5, imaxbw, 10, imaxbw,  15, 0, 18, 0, 20, 1
   ;          freq   bw   fn  phs              noisetype(0=uniform)
-  aout  beosc kfreq, kbw^2, -1, 0, 1
+  aout  beosc kfreq, kbw^2, -1, 0, 2
   kamp bpf kbw, 0, 1, 0.1, 0.9, 1, 0.25
   aenv  cosseg 0, 0.2, 1, p3-0.4, 1, 0.15, 0
   aenv *= interp(kamp*0.2)

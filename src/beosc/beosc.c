@@ -230,6 +230,7 @@ lookupi1(const MYFLT* table0, const MYFLT* table1,
     return out;
 }
 
+
 static inline MYFLT
 lookup(const MYFLT *table, int32_t phase, int32_t mask) {
     uint32_t index = ((phase >> xlobits1) & mask);
@@ -340,6 +341,7 @@ beosc_kkiii(CSOUND *csound, BEOSC *p) {
 
     switch (p->flags) {
     case 0:    // uniform noise, no interp.
+      printf("freq: %.1f, phaseinc: %d, tabsize: %d\n", freqin, phaseinc, p->ftp->flen);
       for (n=offset; n<nsmps; n++) {
         x0 = x1; x1 = x2; x2 = x3;
         // kelly uses 6. / GAIN
@@ -740,11 +742,12 @@ beadsynt_init_array(CSOUND *csound, BEADSYNT *p) {
 static int32_t
 beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     FUNC *ftp;
-    MYFLT *out, *ftpdata, *freqs, *amps, *bws, *prevamps, *prevfreqs;
+    MYFLT *out, *ftpdata, *ftpdata1, *freqs, *amps, *bws, *prevamps, *prevfreqs;
     MYFLT freq, freqmul, freqnow, freqinc;
     MYFLT amp, ampnow, ampinc, bwmul, bwin, bw1, bw2;
     MYFLT cpstoinc, sample, lodiv;
-    int32_t phs, inc, lobits, lomask;
+    int32_t phs;
+    // int32_t inc, lobits, lomask;
     int32_t *lphs;
     int flags;
     unsigned int c, count;
@@ -762,10 +765,10 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     MYFLT sampledur = 1/csound->GetSr(csound);
 
     ftpdata  = ftp->ftable;
-    MYFLT *ftpdata1 = ftpdata + 1;
-    lobits   = ftp->lobits + 0;     // +2 added march 2023. Used to be just 0, what happened here??
+    ftpdata1 = ftpdata + 1;
+    // lobits   = ftp->lobits + 0;     // +2 added march 2023. Used to be just 0, what happened here??
     lodiv    = ftp->lodiv;
-    lomask   = ftp->lomask;
+    // lomask   = ftp->lomask;
     cpstoinc = p->cpstoinc;
     freqmul  = *p->kfreq;
     bwmul    = *p->kbw;
@@ -799,10 +802,10 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     // GaussianState *gsptr = &(p->gs);
     seed = p->seed;
 
-    // uint32_t tabsize = ftp->flen;
-    // int32_t lomask2 = (tabsize - 1) << 3;             // FIX
-    // int32_t cpstoinc2 = tabsize * sampledur * 65536;  // FIX
-    // int32_t phaseinc; // FIX
+    uint32_t tabsize = ftp->flen;
+    int32_t lomask2 = (tabsize - 1) << 3;             // FIX
+    MYFLT cpstoinc2 = tabsize * sampledur * 65536;    // FIX
+    int32_t phaseinc; // FIX
 
     for (c=0; c<count; c++) {
         ampnow = prevamps[c];
@@ -813,9 +816,9 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
             continue;
         }
         freq = freqs[c] * freqmul;
-        inc  = (int32_t) (freq * cpstoinc);
+        // inc  = (int32_t) (freq * cpstoinc);
 
-        // phaseinc = (int32_t)(cpstoinc2 * freq);  // FIX
+        phaseinc = (int32_t)(cpstoinc2 * freq);  // FIX
 
         bwin = bws[c] * bwmul;
         bwin = bwin < 0 ? 0 : (bwin > 1 ? 1 : bwin);
@@ -836,25 +839,22 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
             //  +2=osc lookup with linear interp
             //  +4=freq. interp
             case 0:  // 000
-
                 for (n=offset; n<nsmps; n++) {
                     x0  = x1; x1 = x2; x2 = x3;
-                    x3  = FastRandFloat(&seed) * FL(2) - FL(1);
-                    x3 *= FL(0.00012864661681256);
+                    x3  = (FastRandFloat(&seed) * FL(2) - FL(1)) * FL(0.00012864661681256);
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
 
-                    /*
                     sample = lookup(ftpdata, phs, lomask2) * ampnow;
                     out[n] += sample * (bw1 + (y3 * bw2));
                     phs += phaseinc;
-                    ampnow += ampinc;
-                    */
+                    /*
                     sample  = *(ftpdata + (phs >> lobits)) * ampnow;
                     out[n] += sample * (bw1 + (y3*bw2));
                     phs    += inc;
                     phs    &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 break;
@@ -867,14 +867,14 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-                    /*
                     sample = lookup(ftpdata, phs, lomask2) * ampnow;
                     out[n] += sample * (bw1 + (y3 * bw2));
                     phs += phaseinc;
-                    */
+                    /*
                     sample  = *(ftpdata + (phs >> lobits)) * ampnow;
                     out[n] += sample * (bw1 + (y3*bw2));
                     phs    += inc; phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 break;
@@ -886,13 +886,15 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-                    // sample = lookupi1(ftpdata, ftpdata1, phs, lomask2) * ampnow;
-                    // out[n] += sample * (bw1 + (y3 * bw2);
+                    sample = lookupi1(ftpdata, ftpdata1, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    phs += phaseinc;
 
-                    sample =
-                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    /*
+                    sample = cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
                     out[n] += sample * (bw1 + (y3*bw2));
                     phs    += inc; phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 break;
@@ -905,10 +907,15 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-                    sample =
-                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    sample = lookup(ftpdata, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    phs += phaseinc;
+
+                    /*
+                    sample = cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
                     out[n] += sample * (bw1 + (y3*bw2));
                     phs    += inc; phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 break;
@@ -923,10 +930,18 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+
+                    sample = lookup(ftpdata, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    freqnow += freqinc;
+                    phs += (int32_t)(cpstoinc2 * freqnow);
+
+                    /*
                     sample   = *(ftpdata + (phs >> lobits)) * ampnow;
                     out[n]  += sample * (bw1 + (y3*bw2));
                     freqnow += freqinc;
                     phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 prevfreqs[c] = freq;
@@ -942,10 +957,17 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    sample = lookup(ftpdata, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    freqnow += freqinc;
+                    phs += (int32_t)(cpstoinc2 * freqnow);
+
+                    /*
                     sample   = *(ftpdata + (phs >> lobits)) * ampnow;
                     out[n]  += sample * (bw1 + (y3*bw2));
                     freqnow += freqinc;
                     phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 prevfreqs[c] = freq;
@@ -960,11 +982,17 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-                    sample =
-                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    sample = lookupi1(ftpdata, ftpdata1, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    freqnow += freqinc;
+                    phs += (int32_t)(cpstoinc2 * freqnow);
+
+                    /*
+                    sample = cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
                     out[n]  += sample * (bw1 + (y3*bw2));
                     freqnow += freqinc;
                     phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 prevfreqs[c] = freq;
@@ -980,10 +1008,16 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y0  = y1; y1 = y2; y2 = y3;
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    sample = lookupi1(ftpdata, ftpdata1, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    freqnow += freqinc;
+                    phs += (int32_t)(cpstoinc2 * freqnow);
+                    /*
                     sample = cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
                     out[n]  += sample * (bw1 + (y3*bw2));
                     freqnow += freqinc;
                     phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 prevfreqs[c] = freq;
@@ -999,16 +1033,23 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                 for (n=offset; n<nsmps; n++) {
                     // out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
                     // MYFLT samp = lookup(ftpdata, phs, lomask);
-                    out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
-                    phs += inc; phs &= PHMASK; ampnow += ampinc;
+                    out[n] += lookup(ftpdata, phs, lomask2) * ampnow;
+                    phs += phaseinc;
+
+                    // out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
+                    // phs += inc; phs &= PHMASK;
+                    ampnow += ampinc;
                     // phs    += inc2; ampnow += ampinc;
                 }
                 break;
             case 2:  // 010
             case 3:  // 011
                 for (n=offset; n<nsmps; n++) {
-                    out[n] += cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
-                    phs += inc; phs &= PHMASK; ampnow += ampinc;
+                    out[n] += lookupi1(ftpdata, ftpdata1, phs, lomask2) * ampnow;
+                    phs += phaseinc;
+
+                    // out[n] += cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    // phs += inc; phs &= PHMASK; ampnow += ampinc;
                 }
                 break;
             case 4:  // 100
@@ -1016,9 +1057,15 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                 freqnow = prevfreqs[c];
                 freqinc = (freq - freqnow) * CS_ONEDKSMPS;
                 for (n=offset; n<nsmps; n++) {
+                    out[n] += lookup(ftpdata, phs, lomask2) * ampnow;
+                    freqnow += freqinc;
+                    phs += (int32_t)(cpstoinc2 * freqnow);
+
+                    /*
                     out[n]  += *(ftpdata + (phs >> lobits)) * ampnow;
                     freqnow += freqinc;
                     phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 prevfreqs[c] = freq;
@@ -1028,10 +1075,15 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                 freqnow = prevfreqs[c];
                 freqinc = (freq - freqnow) * CS_ONEDKSMPS;
                 for (n=offset; n<nsmps; n++) {
-                    out[n] +=
-                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    out[n] += lookupi1(ftpdata, ftpdata1, phs, lomask2) * ampnow;
                     freqnow += freqinc;
-                    phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    phs += (int32_t)(cpstoinc2 * freqnow);
+
+                    /*
+                    out[n] += cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    freqnow += freqinc;
+                    phs += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    */
                     ampnow += ampinc;
                 }
                 prevfreqs[c] = freq;
