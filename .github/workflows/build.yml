@@ -9,12 +9,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Checkout submodules
-        run: |
-          git submodule update --init --recursive
-          cd csound
-          git switch csound6
-
       - name: build
         run: |
           set -x
@@ -25,6 +19,9 @@ jobs:
           git submodule update --init --recursive --remote
           # git submodule foreach git pull origin master
           git submodule status --recursive
+          cd csound
+          git switch csound6
+          cd ..
 
           cd csound/include
           ln -s ../Android/CsoundAndroid/jni/version.h .
