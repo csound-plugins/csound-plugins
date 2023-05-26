@@ -24,6 +24,7 @@ jobs:
 
 
           #sudo apt-get install csound
+
           sudo apt-get build-dep csound
           sudo apt-get install cmake
           git clone -b csound6 https://github.com/csound/csound.git csound
@@ -38,23 +39,23 @@ jobs:
           sudo apt-get install libsndfile1-dev nasm
           # sudo apt-get install libfluidsynth-dev
 
-          git submodule update --init --recursive --remote
+          # git submodule update --init --recursive --remote
           # git submodule foreach git pull origin master --rebase
-          git submodule status --recursive
-          cd csound
-          git switch csound6
-          cd ..
+          # git submodule status --recursive
+          # cd csound
+          # git switch csound6
+          # cd ..
 
-          cd csound/include
-          ln -s ../Android/CsoundAndroid/jni/version.h .
-          cd ../..
+          # cd csound/include
+          # ln -s ../Android/CsoundAndroid/jni/version.h .
+          # cd ../..
 
           rm -fr build-linux
           mkdir build-linux
           cd build-linux
 
-          # cmake -DSKIP_FAST_MATH=True ..
-          cmake ..
+          cmake -DSKIP_FAST_MATH=True ..
+          # cmake ..
           cmake --build . --parallel
           cmake --install .
 

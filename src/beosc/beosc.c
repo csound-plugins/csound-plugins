@@ -572,6 +572,9 @@ typedef struct {
     MYFLT cpstoinc;
     uint32_t seed;
     int updatearrays;
+
+    int32_t lomask2;
+    int32_t cpstoinc2;
 } BEADSYNT;
 
 static int32_t
@@ -748,18 +751,19 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     MYFLT x0, x1, x2, x3, y0, y1, y2, y3;
     FILTCOEFS *coefs;
     uint32_t seed,
-             offset = p->h.insdshead->ksmps_offset,
-             early = p->h.insdshead->ksmps_no_end;
+            offset = p->h.insdshead->ksmps_offset,
+            early = p->h.insdshead->ksmps_no_end;
     uint32_t n, nsmps = CS_KSMPS;
 
     if (UNLIKELY(p->inerr))
-      return PERFERR(Str("beadsynt: not initialised"));
+        return PERFERR(Str("beadsynt: not initialised"));
 
     ftp = p->ftp;
     MYFLT sampledur = 1/csound->GetSr(csound);
 
     ftpdata  = ftp->ftable;
-    lobits   = ftp->lobits + 2;     // +2 added march 2023. Used to be just 0, what happened here??
+    MYFLT *ftpdata1 = ftpdata + 1;
+    lobits   = ftp->lobits + 0;     // +2 added march 2023. Used to be just 0, what happened here??
     lodiv    = ftp->lodiv;
     lomask   = ftp->lomask;
     cpstoinc = p->cpstoinc;
@@ -770,13 +774,13 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     flags    = (int)*p->iflags;
 
     if(p->updatearrays) {
-      freqs = ((ARRAYDAT *)p->ifreqtbl)->data;
-      amps  = ((ARRAYDAT *)p->iamptbl)->data;
-      bws   = ((ARRAYDAT *)p->ibwtbl)->data;
+        freqs = ((ARRAYDAT *)p->ifreqtbl)->data;
+        amps  = ((ARRAYDAT *)p->iamptbl)->data;
+        bws   = ((ARRAYDAT *)p->ibwtbl)->data;
     } else {
-      freqs = p->freqs;
-      amps  = p->amps;
-      bws   = p->bws;
+        freqs = p->freqs;
+        amps  = p->amps;
+        bws   = p->bws;
     }
 
     lphs = (int32*)p->lphs.auxp;
@@ -787,235 +791,256 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     memset(out, 0, nsmps*sizeof(MYFLT));
 
     if (UNLIKELY(early)) {
-      nsmps -= early;
-      memset(&out[nsmps], '\0', early*sizeof(MYFLT));
+        nsmps -= early;
+        memset(&out[nsmps], '\0', early*sizeof(MYFLT));
     }
 
     coefs = (FILTCOEFS *)(p->filtcoefs.auxp);
     // GaussianState *gsptr = &(p->gs);
     seed = p->seed;
 
+    // uint32_t tabsize = ftp->flen;
+    // int32_t lomask2 = (tabsize - 1) << 3;             // FIX
+    // int32_t cpstoinc2 = tabsize * sampledur * 65536;  // FIX
+    // int32_t phaseinc; // FIX
+
     for (c=0; c<count; c++) {
-      ampnow = prevamps[c];
-      amp    = amps[c];
-      if(ampnow == 0 && amp == 0) {
-        // skip silent partials
+        ampnow = prevamps[c];
+        amp    = amps[c];
+        if(ampnow == 0 && amp == 0) {
+            // skip silent partials
+            coefs++;
+            continue;
+        }
+        freq = freqs[c] * freqmul;
+        inc  = (int32_t) (freq * cpstoinc);
+
+        // phaseinc = (int32_t)(cpstoinc2 * freq);  // FIX
+
+        bwin = bws[c] * bwmul;
+        bwin = bwin < 0 ? 0 : (bwin > 1 ? 1 : bwin);
+        bw1  = sqrt(FL(1.0) - bwin);
+        bw2  = sqrt(FL(2.0) * bwin);
+
+        phs    = lphs[c];
+        ampinc = (amp - ampnow) * CS_ONEDKSMPS;
+
+        if(UNLIKELY(flags >= 8 || flags < 0)) {
+            return PERFERRF(Str("beadsynt: invalid flag %d (should be 0 <= flags < 8"), flags);
+        }
+        if(LIKELY(bwin != 0)) {
+            x1 = coefs->x1; x2 = coefs->x2; x3 = coefs->x3;
+            y1 = coefs->y1; y2 = coefs->y2; y3 = coefs->y3;
+            switch(flags) {
+            // 0-1=uniform | gauss. noise,
+            //  +2=osc lookup with linear interp
+            //  +4=freq. interp
+            case 0:  // 000
+
+                for (n=offset; n<nsmps; n++) {
+                    x0  = x1; x1 = x2; x2 = x3;
+                    x3  = FastRandFloat(&seed) * FL(2) - FL(1);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+
+                    /*
+                    sample = lookup(ftpdata, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    phs += phaseinc;
+                    ampnow += ampinc;
+                    */
+                    sample  = *(ftpdata + (phs >> lobits)) * ampnow;
+                    out[n] += sample * (bw1 + (y3*bw2));
+                    phs    += inc;
+                    phs    &= PHMASK;
+                    ampnow += ampinc;
+                }
+                break;
+            case 1:  // 001
+                for (n=offset; n<nsmps; n++) {
+                    x0 = x1; x1 = x2; x2 = x3;
+                    // x3 = gaussian_normal(gsptr);
+                    x3  = GAUSSIANS_GET(&seed);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    /*
+                    sample = lookup(ftpdata, phs, lomask2) * ampnow;
+                    out[n] += sample * (bw1 + (y3 * bw2));
+                    phs += phaseinc;
+                    */
+                    sample  = *(ftpdata + (phs >> lobits)) * ampnow;
+                    out[n] += sample * (bw1 + (y3*bw2));
+                    phs    += inc; phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                break;
+            case 2:  // 010 (interpol, uniform noise)
+                for (n=offset; n<nsmps; n++) {
+                    x0  = x1; x1 = x2; x2 = x3;
+                    x3  = FastRandFloat(&seed) * FL(2) - FL(1);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    // sample = lookupi1(ftpdata, ftpdata1, phs, lomask2) * ampnow;
+                    // out[n] += sample * (bw1 + (y3 * bw2);
+
+                    sample =
+                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    out[n] += sample * (bw1 + (y3*bw2));
+                    phs    += inc; phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                break;
+            case 3:  // 011
+                // seed = p->gs.seed;
+                for (n=offset; n<nsmps; n++) {
+                    x0  = x1; x1 = x2; x2 = x3;
+                    x3  = GAUSSIANS_GET(&seed);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    sample =
+                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    out[n] += sample * (bw1 + (y3*bw2));
+                    phs    += inc; phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                break;
+            case 4:  // 100
+                freqnow = prevfreqs[c];
+                freqinc = (freq - freqnow) * CS_ONEDKSMPS;
+                // seed = p->gs.seed;
+                for (n=offset; n<nsmps; n++) {
+                    x0  = x1; x1 = x2; x2 = x3;
+                    x3  = FastRandFloat(&seed) * FL(2) - FL(1);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    sample   = *(ftpdata + (phs >> lobits)) * ampnow;
+                    out[n]  += sample * (bw1 + (y3*bw2));
+                    freqnow += freqinc;
+                    phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                prevfreqs[c] = freq;
+                break;
+            case 5:  // 101
+                freqnow = prevfreqs[c];
+                freqinc = (freq - freqnow) * CS_ONEDKSMPS;
+                for (n=offset; n<nsmps; n++) {
+                    x0 = x1; x1 = x2; x2 = x3;
+                    // x3 = gaussian_normal(gsptr);
+                    x3  = GAUSSIANS_GET(&seed);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    sample   = *(ftpdata + (phs >> lobits)) * ampnow;
+                    out[n]  += sample * (bw1 + (y3*bw2));
+                    freqnow += freqinc;
+                    phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                prevfreqs[c] = freq;
+                break;
+            case 6:  // 110
+                freqnow = prevfreqs[c];
+                freqinc = (freq - freqnow) * CS_ONEDKSMPS;
+                for (n=offset; n<nsmps; n++) {
+                    x0  = x1; x1 = x2; x2 = x3;
+                    x3  = FastRandFloat(&seed) * FL(2) - FL(1);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    sample =
+                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    out[n]  += sample * (bw1 + (y3*bw2));
+                    freqnow += freqinc;
+                    phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                prevfreqs[c] = freq;
+                break;
+            case 7:  // 111
+                freqnow = prevfreqs[c];
+                freqinc = (freq - freqnow) * CS_ONEDKSMPS;
+                for (n=offset; n<nsmps; n++) {
+                    x0 = x1; x1 = x2; x2 = x3;
+                    // x3 = gaussian_normal(gsptr);
+                    x3  = GAUSSIANS_GET(&seed);
+                    x3 *= FL(0.00012864661681256);
+                    y0  = y1; y1 = y2; y2 = y3;
+                    y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
+                            (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
+                    sample = cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    out[n]  += sample * (bw1 + (y3*bw2));
+                    freqnow += freqinc;
+                    phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                prevfreqs[c] = freq;
+                break;
+            }
+            coefs->x1 = x1; coefs->x2 = x2; coefs->x3 = x3;
+            coefs->y1 = y1; coefs->y2 = y2; coefs->y3 = y3;
+        } else {
+            // simplified loops when there is no bw
+            switch(flags) {
+            case 0:  // 000
+            case 1:  // 001
+                for (n=offset; n<nsmps; n++) {
+                    // out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
+                    // MYFLT samp = lookup(ftpdata, phs, lomask);
+                    out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
+                    phs += inc; phs &= PHMASK; ampnow += ampinc;
+                    // phs    += inc2; ampnow += ampinc;
+                }
+                break;
+            case 2:  // 010
+            case 3:  // 011
+                for (n=offset; n<nsmps; n++) {
+                    out[n] += cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    phs += inc; phs &= PHMASK; ampnow += ampinc;
+                }
+                break;
+            case 4:  // 100
+            case 5:  // 101
+                freqnow = prevfreqs[c];
+                freqinc = (freq - freqnow) * CS_ONEDKSMPS;
+                for (n=offset; n<nsmps; n++) {
+                    out[n]  += *(ftpdata + (phs >> lobits)) * ampnow;
+                    freqnow += freqinc;
+                    phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                prevfreqs[c] = freq;
+                break;
+            case 6:  // 110
+            case 7:  // 111
+                freqnow = prevfreqs[c];
+                freqinc = (freq - freqnow) * CS_ONEDKSMPS;
+                for (n=offset; n<nsmps; n++) {
+                    out[n] +=
+                            cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
+                    freqnow += freqinc;
+                    phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
+                    ampnow += ampinc;
+                }
+                prevfreqs[c] = freq;
+                break;
+            }
+        }
+        prevamps[c] = amp;
+        lphs[c] = phs;
         coefs++;
-        continue;
-      }
-      freq = freqs[c] * freqmul;
-      inc  = (int32_t) (freq * cpstoinc);
-
-      bwin = bws[c] * bwmul;
-      bwin = bwin < 0 ? 0 : (bwin > 1 ? 1 : bwin);
-      bw1  = sqrt(FL(1.0) - bwin);
-      bw2  = sqrt(FL(2.0) * bwin);
-
-      phs    = lphs[c];
-      ampinc = (amp - ampnow) * CS_ONEDKSMPS;
-
-      if(UNLIKELY(flags >= 8 || flags < 0)) {
-          return PERFERRF(Str("beadsynt: invalid flag %d (should be 0 <= flags < 8"), flags);
-      }
-
-      if(LIKELY(bwin != 0)) {
-        x1 = coefs->x1; x2 = coefs->x2; x3 = coefs->x3;
-        y1 = coefs->y1; y2 = coefs->y2; y3 = coefs->y3;
-        switch(flags) {
-          // 0-1=uniform | gauss. noise,
-          //  +2=osc lookup with linear interp
-          //  +4=freq. interp
-        case 0:  // 000
-          for (n=offset; n<nsmps; n++) {
-            x0  = x1; x1 = x2; x2 = x3;
-            x3  = FastRandFloat(&seed) * FL(2) - FL(1);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-
-            sample  = *(ftpdata + (phs >> lobits)) * ampnow;
-            out[n] += sample * (bw1 + (y3*bw2));
-            phs    += inc;
-            phs    &= PHMASK;
-            ampnow += ampinc;
-          }
-          break;
-        case 1:  // 001
-          for (n=offset; n<nsmps; n++) {
-            x0 = x1; x1 = x2; x2 = x3;
-            // x3 = gaussian_normal(gsptr);
-            x3  = GAUSSIANS_GET(&seed);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-            sample  = *(ftpdata + (phs >> lobits)) * ampnow;
-            out[n] += sample * (bw1 + (y3*bw2));
-            phs    += inc; phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          break;
-        case 2:  // 010
-          for (n=offset; n<nsmps; n++) {
-            x0  = x1; x1 = x2; x2 = x3;
-            x3  = FastRandFloat(&seed) * FL(2) - FL(1);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-            sample =
-              cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
-            out[n] += sample * (bw1 + (y3*bw2));
-            phs    += inc; phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          break;
-        case 3:  // 011
-          // seed = p->gs.seed;
-          for (n=offset; n<nsmps; n++) {
-            x0  = x1; x1 = x2; x2 = x3;
-            x3  = GAUSSIANS_GET(&seed);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-            sample =
-              cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
-            out[n] += sample * (bw1 + (y3*bw2));
-            phs    += inc; phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          break;
-        case 4:  // 100
-          freqnow = prevfreqs[c];
-          freqinc = (freq - freqnow) * CS_ONEDKSMPS;
-          // seed = p->gs.seed;
-          for (n=offset; n<nsmps; n++) {
-            x0  = x1; x1 = x2; x2 = x3;
-            x3  = FastRandFloat(&seed) * FL(2) - FL(1);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-            sample   = *(ftpdata + (phs >> lobits)) * ampnow;
-            out[n]  += sample * (bw1 + (y3*bw2));
-            freqnow += freqinc;
-            phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          prevfreqs[c] = freq;
-          break;
-        case 5:  // 101
-          freqnow = prevfreqs[c];
-          freqinc = (freq - freqnow) * CS_ONEDKSMPS;
-          for (n=offset; n<nsmps; n++) {
-            x0 = x1; x1 = x2; x2 = x3;
-            // x3 = gaussian_normal(gsptr);
-            x3  = GAUSSIANS_GET(&seed);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-            sample   = *(ftpdata + (phs >> lobits)) * ampnow;
-            out[n]  += sample * (bw1 + (y3*bw2));
-            freqnow += freqinc;
-            phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          prevfreqs[c] = freq;
-          break;
-        case 6:  // 110
-          freqnow = prevfreqs[c];
-          freqinc = (freq - freqnow) * CS_ONEDKSMPS;
-          for (n=offset; n<nsmps; n++) {
-            x0  = x1; x1 = x2; x2 = x3;
-            x3  = FastRandFloat(&seed) * FL(2) - FL(1);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-            sample =
-              cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
-            out[n]  += sample * (bw1 + (y3*bw2));
-            freqnow += freqinc;
-            phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          prevfreqs[c] = freq;
-          break;
-        case 7:  // 111
-          freqnow = prevfreqs[c];
-          freqinc = (freq - freqnow) * CS_ONEDKSMPS;
-          for (n=offset; n<nsmps; n++) {
-            x0 = x1; x1 = x2; x2 = x3;
-            // x3 = gaussian_normal(gsptr);
-            x3  = GAUSSIANS_GET(&seed);
-            x3 *= FL(0.00012864661681256);
-            y0  = y1; y1 = y2; y2 = y3;
-            y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
-              (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-            sample = cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
-            out[n]  += sample * (bw1 + (y3*bw2));
-            freqnow += freqinc;
-            phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          prevfreqs[c] = freq;
-          break;
-        }
-        coefs->x1 = x1; coefs->x2 = x2; coefs->x3 = x3;
-        coefs->y1 = y1; coefs->y2 = y2; coefs->y3 = y3;
-      } else {
-        // simplified loops when there is no bw
-        switch(flags) {
-        case 0:  // 000
-        case 1:  // 001
-          for (n=offset; n<nsmps; n++) {
-            // out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
-            // MYFLT samp = lookup(ftpdata, phs, lomask);
-            out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
-            phs += inc; phs &= PHMASK; ampnow += ampinc;
-            // phs    += inc2; ampnow += ampinc;
-          }
-          break;
-        case 2:  // 010
-        case 3:  // 011
-          for (n=offset; n<nsmps; n++) {
-            out[n] += cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
-            phs += inc; phs &= PHMASK; ampnow += ampinc;
-          }
-          break;
-        case 4:  // 100
-        case 5:  // 101
-          freqnow = prevfreqs[c];
-          freqinc = (freq - freqnow) * CS_ONEDKSMPS;
-          for (n=offset; n<nsmps; n++) {
-            out[n]  += *(ftpdata + (phs >> lobits)) * ampnow;
-            freqnow += freqinc;
-            phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          prevfreqs[c] = freq;
-          break;
-        case 6:  // 110
-        case 7:  // 111
-          freqnow = prevfreqs[c];
-          freqinc = (freq - freqnow) * CS_ONEDKSMPS;
-          for (n=offset; n<nsmps; n++) {
-            out[n] +=
-              cs_lookupi(ftpdata, phs, lobits, lomask, lodiv) * ampnow;
-            freqnow += freqinc;
-            phs    += (int32_t)(cpstoinc * freqnow); phs &= PHMASK;
-            ampnow += ampinc;
-          }
-          prevfreqs[c] = freq;
-          break;
-        }
-      }
-      prevamps[c] = amp;
-      lphs[c] = phs;
-      coefs++;
     }
     p->seed = seed;
     return OK;

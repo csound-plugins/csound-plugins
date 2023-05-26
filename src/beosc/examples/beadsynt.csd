@@ -110,7 +110,7 @@ instr 1
     kA *= kGains
   endif 
    
-  iflags = 3    ; gaussian noise, interpolation
+  iflags = 7    ; +1 = gaussian noise, +2 = oscil interpolation, +4 = freq interpol
   aout beadsynt kF, kA, kB, -1, iflags, ifreqscale
    
   if(kt > idur) then

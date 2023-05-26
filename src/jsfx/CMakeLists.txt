@@ -37,3 +37,7 @@ target_include_directories(jsusfx_csound_project PRIVATE ${PROJECT_SOURCE_DIR}/.
 
 target_compile_definitions(jsusfx_csound_project PRIVATE USE_DOUBLE)
 target_link_libraries(jsusfx_csound_project jsusfx)
+
+if(LINUX)
+  target_include_directories(jsusfx_csound_project PRIVATE /usr/local/include/csound)
+endif()

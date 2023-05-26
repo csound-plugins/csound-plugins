@@ -2,7 +2,7 @@ build/
 .cache/
 site/
 test.wav
-CMakeLists.txt.user
+CMakeLists.txt.user*
 *~
 *.html
 *.xml

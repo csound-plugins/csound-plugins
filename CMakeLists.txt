@@ -244,7 +244,11 @@ function(make_c_plugin pluginlib srcs)
   # needs an extra cmake step to generate it
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/Android/CsoundAndroid/jni)
-        
+
+  if(LINUX)
+    target_include_directories(${pluginlib} PRIVATE /usr/local/include/csound)
+  endif()
+
   # target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
   set_property(TARGET ${pluginlib} PROPERTY C_STANDARD 99)
   set_target_properties(${pluginlib} PROPERTIES
@@ -263,6 +267,10 @@ function(make_plugin pluginlib srcs)
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/Android/CsoundAndroid/jni)
   
+  if(LINUX)
+    target_include_directories(${pluginlib} PRIVATE /usr/local/include/csound)
+  endif()
+
   # target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
   set_target_properties(${pluginlib} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
