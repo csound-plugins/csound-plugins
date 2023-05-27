@@ -8,7 +8,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: install csound
+      - name: Go!
         run: |
           curl -L -o csound-binaries.zip https://github.com/csound/csound/releases/download/6.18.1/Csound-6.18.1-windows-x64-binaries.zip
           Expand-Archive csound-binaries.zip -DestinationPath "C:\Program Files\csound-binaries"
@@ -19,8 +19,6 @@ jobs:
           Write-Output $Env:PATH
           csound.exe --version
 
-      - name: build plugins
-        run: |
           choco install libsndfile
           ls "${ENV:PROGRAMFILES}\libsndfile\include"
 
@@ -53,9 +51,6 @@ jobs:
           }
 
           csound.exe -z1
-
-      - name: run tests
-        run: |
 
           cd src/beosc/examples
           csound.exe -o beadsynt.flac beadsynt.csd
