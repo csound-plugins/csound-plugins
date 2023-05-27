@@ -15,9 +15,9 @@ set(APIVERSION "6.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
 message(STATUS "Csound API Version: ${APIVERSION}")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    set(LINUX YES)
+  set(LINUX YES)
 else()
-    set(LINUX NO)
+  set(LINUX NO)
 endif()
 
 # Release or Debug
@@ -42,10 +42,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # add_definitions(-DUSE_DOUBLE -DB64BIT)
 
 if (MSVC)
-    add_compile_options(/W3) #  /WX)
+  add_compile_options(/W3) #  /WX)
 else()
-    # lots of warnings and all warnings as errors
-    add_compile_options(-Wall -Wextra)
+  # lots of warnings and all warnings as errors
+  add_compile_options(-Wall -Wextra)
 endif()
 
 # options
@@ -183,7 +183,7 @@ if(USE_DOUBLE)
   elseif(LINUX)
     set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins64")
   elseif(WIN32)
-    set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins64")
+    set(PLUGIN_INSTALL_DIR "$ENV{LOCALAPPDATA}/csound/${APIVERSION}/plugins64")
   endif()
 else()
   message(STATUS "*************** Building with 32-bit floats ***************")
@@ -192,7 +192,7 @@ else()
   elseif(LINUX)
     set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins")
   elseif(WIN32)
-    set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins")
+    set(PLUGIN_INSTALL_DIR "$ENV{LOCALAPPDATA}/csound/${APIVERSION}/plugins")
   endif()
 endif()
 
@@ -277,9 +277,9 @@ function(make_plugin pluginlib srcs)
   set_target_properties(${pluginlib} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
-    )
+  )
   
-  install(TARGETS ${pluginlib} LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}" )
+  install(TARGETS ${pluginlib} LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}")
   
 endfunction(make_plugin)
 
