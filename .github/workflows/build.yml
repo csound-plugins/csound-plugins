@@ -1,0 +1,391 @@
+name: Build And Publish
+on: push
+jobs:
+
+  buildmacarm:
+    name: Build plugins for csound 6 on mac arm64
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          set -x
+          # brew update
+          # brew install libsndfile
+          # brew install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+          cd csound
+          git switch csound6
+          cd ..
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-macos
+          mkdir build-macos
+          cd build-macos
+
+          ls ..
+
+          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION="6.0" ..
+          cmake --build . --parallel
+          ls
+          ARCHIVE=csound-plugins--macos-arm64.zip
+          7z a $ARCHIVE *.dylib
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plugins
+          path: artifacts/*.zip
+
+
+  buildjob7:
+    name: Build plugins on ${{ matrix.os }} (csound 7)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2019, ubuntu-20.04, macos-11]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Checkout submodules
+        run: |
+          git submodule update --init --recursive
+          cd csound
+          git switch develop
+
+      - name: macos build
+        if: runner.os == 'macOS'
+        run: |
+          curl -Ls -o nasm-2.14.02.zip 'https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip'
+          unzip nasm-2.14.02.zip
+          nasmdir=$PWD/nasm-2.14.02
+          # cd $nasmdir
+          # ls
+          # sudo cp * /usr/local/bin
+          # cd ..
+
+          export PATH="$nasmdir:$PATH"
+          nasm --version
+
+          brew update
+          brew install libsndfile
+          # brew install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-macos
+          mkdir build-macos
+          cd build-macos
+
+          cmake -DSKIP_FAST_MATH=True -DAPIVERSION="7.0" ..
+          cmake --build . --parallel
+          ls
+          ARCHIVE=csound7-plugins--macos.zip
+          7z a $ARCHIVE *.dylib
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - name: windows build
+        if: runner.os == 'windows'
+        run: |
+          # where.exe vcpkg
+          # $VCPKG_ROOT/vcpkg integrate install
+          # vcpkg integrate install
+          # $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
+
+          #vcpkg install libsndfile:x64-windows
+
+          choco install libsndfile
+          ls "${ENV:PROGRAMFILES}\libsndfile\include"
+
+
+          # choco install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+          echo "Finished submodules"
+
+          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
+          ls
+
+          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
+
+          mkdir build-windows
+          cd build-windows
+
+          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+
+          echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
+          ls "$VCPKG_ROOT" -recurse
+
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DAPIVERSION="7.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake --build . --parallel --config Release
+          ls Release
+
+          rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
+
+          set-variable -name ARCHIVE -value "csound7-plugins--win64.zip"
+          rm $ARCHIVE -ErrorAction Ignore
+          7z a $ARCHIVE ./Release/*.dll
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          if(!(Test-Path ../artifacts)) {
+            New-Item -ItemType directory -Path ../artifacts
+          }
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - name: linux build
+        if: runner.os == 'linux'
+        run: |
+          sudo apt-get install libsndfile1-dev
+          sudo apt-get install nasm
+          # sudo apt-get install libfluidsynth-dev
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master --rebase
+          git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-linux
+          mkdir build-linux
+          cd build-linux
+
+          # cmake -DSKIP_FAST_MATH=True ..
+          cmake ..
+          cmake --build . --parallel
+
+          ls
+          ARCHIVE=csound7-plugins--linux.zip
+          7z a $ARCHIVE *.so
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plugins
+          path: artifacts/*.zip
+
+
+  buildjob6:
+    name: Build plugins on ${{ matrix.os }} (csound 6)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2019, ubuntu-20.04, macos-11]
+        # os: [windows-2019]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Checkout submodules
+        run: |
+            git submodule update --init --recursive
+            cd csound
+            git switch csound6
+
+      - name: macos build
+        if: runner.os == 'macOS'
+        run: |
+          curl -Ls -o nasm-2.14.02.zip 'https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip'
+          unzip nasm-2.14.02.zip
+          nasmdir=$PWD/nasm-2.14.02
+          # cd $nasmdir
+          # ls
+          # sudo cp * /usr/local/bin
+          # cd ..
+
+          export PATH="$nasmdir:$PATH"
+          nasm --version
+
+          brew update
+          brew install libsndfile
+          # brew install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-macos
+          mkdir build-macos
+          cd build-macos
+
+          cmake -DSKIP_FAST_MATH=True ..
+          # make -j4
+          cmake --build . --parallel
+
+          ls
+          # ARCHIVE=csound-plugins--${{matrix.os}}.zip
+          ARCHIVE=csound-plugins--macos.zip
+          7z a $ARCHIVE *.dylib
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+
+      - name: linux build
+        if: runner.os == 'linux'
+        run: |
+          sudo apt-get install libsndfile1-dev
+          sudo apt-get install nasm
+          # sudo apt-get install libfluidsynth-dev
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master --rebase
+          git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-linux
+          mkdir build-linux
+          cd build-linux
+
+          # cmake -DSKIP_FAST_MATH=True ..
+          cmake ..
+          # make -j4
+          cmake --build . --parallel
+
+          ls
+          ARCHIVE=csound-plugins--linux.zip
+          7z a $ARCHIVE *.so
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+
+      # Windows: Restore from cache the previously built ports.
+      # If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
+      #- name: Restore from cache and install vcpkg
+      #  if: runner.os == 'windows'
+      #  # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
+      #  uses: lukka/run-vcpkg@v6
+      #  with:
+      #    vcpkgArguments: libsndfile:x64-windows  # fluidsynth:x64-windows
+      #    vcpkgTriplet: x64-windows
+      #    vcpkgGitCommitId: "0bf3923f9fab4001c00f0f429682a0853b5749e0"
+      #    # setupOnly: true
+
+      - name: windows build
+        if: runner.os == 'windows'
+        run: |
+          # where.exe vcpkg
+          # $VCPKG_ROOT/vcpkg integrate install
+          # vcpkg integrate install
+          # $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
+
+          #vcpkg install libsndfile:x64-windows
+
+          choco install libsndfile
+          ls "${ENV:PROGRAMFILES}\libsndfile\include"
+
+
+          # choco install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+          echo "Finished submodules"
+
+          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
+
+          ls
+
+          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
+
+
+          mkdir build-windows
+          cd build-windows
+
+          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+
+          echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
+          ls "$VCPKG_ROOT" -recurse
+
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake --build . --parallel --config Release
+          ls Release
+
+          rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
+
+          set-variable -name ARCHIVE -value "csound-plugins--win64.zip"
+          rm $ARCHIVE -ErrorAction Ignore
+          7z a $ARCHIVE ./Release/*.dll
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          if(!(Test-Path ../artifacts)) {
+            New-Item -ItemType directory -Path ../artifacts
+          }
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plugins
+          path: artifacts/*.zip
+
+  publish:
+    name: Publish artifacts as a Pre-Release
+    # if: contains(github.ref, 'tags/v')
+    needs: [buildjob6, buildjob7, buildmacarm]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v2
+        with:
+          name: plugins
+          path: plugins
+
+      - name: List files
+        run: |
+          ls -R
+
+      - name: Publish
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          title: "Development Build"
+          prerelease: True
+          files: |
+            plugins/*.zip
