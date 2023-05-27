@@ -1,7 +1,60 @@
 name: Test plugins
 on: push
 jobs:
-  windows-6:
+  macos-csound6:
+    name: Test plugins on mac against csound package
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: ["x86_64", "arm64"]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: macos - install csound
+        run: |
+          curl -L -o csound6.18.dmg https://github.com/csound/csound/releases/download/6.18.1/Csound-MacOS-universal-6.18.1.dmg
+          brew install p7zip
+          7z x csound6.18.dmg
+          cd Csound-universal-6.18.1
+          sudo installer -pkg csound-MacOS-universal-6.18.1.pkg -target /
+          csound --version
+          cd ..
+
+      - name: Install plugins
+        run: |
+          brew update
+          brew install libsndfile
+          # brew install fluidsynth
+
+          git submodule update --init --recursive --remote
+          git submodule status --recursive
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-macos
+          mkdir build-macos
+          cd build-macos
+
+          cmake -DSKIP_FAST_MATH=True -DAPIVERSION="6.0" -DBUILD_JSUSFX_OPCODES=OFF ..
+          cmake --build . --parallel
+          cmake --install .
+
+          csound -z1
+
+      - name: Run tests
+        run: |
+
+          bash test/macos-run-tests.sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: artifacts-macos-${{ matrix.arch }}
+          path: artifacts/*
+
+
+  windows-csound6:
     name: Test plugins on windows against csound package
     runs-on: windows-latest
     steps:
