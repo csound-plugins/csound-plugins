@@ -22,6 +22,8 @@ jobs:
 
       - name: Install plugins
         run: |
+          set -x
+
           brew update
           brew install libsndfile
           # brew install fluidsynth
@@ -41,7 +43,7 @@ jobs:
           cmake --build . --parallel
           cmake --install .
 
-          csound -z1
+          csound -z1 2>&1 | grep atstop
 
       - name: Run tests
         run: |
