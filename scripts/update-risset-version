@@ -7,11 +7,6 @@ import argparse
 import json
 import shutil
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--nobackup", action="store_true", help="Do not backup manifest files")
-parser.add_argument("version", help="New version, something like 1.20.0")
-args = parser.parse_args()
-version = args.version
 
 root = subprocess.getoutput("git rev-parse --show-toplevel")
 if root.startswith("fatal"):
@@ -19,6 +14,26 @@ if root.startswith("fatal"):
     sys.exit(1)
 root = Path(root)
 src = root/"src"
+
+manifests = list(src.glob("*/risset.json"))
+
+def get_versions():
+    versions = {}
+    for manifest in manifests:
+        d = json.load(open(manifest))
+        version = d['version']
+        versions[manifest] = version
+    return versions
+
+for manifest, version in get_versions().items():
+    print(f"Manifest: {manifest}, version: {version}")
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--nobackup", action="store_true", help="Do not backup manifest files")
+parser.add_argument("version", help="New version, something like 1.20.0")
+args = parser.parse_args()
+version = args.version
+
 
 def modify_version(manifest, version, backup=True):
     d = json.load(open(manifest))
