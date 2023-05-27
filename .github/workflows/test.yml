@@ -52,13 +52,13 @@ jobs:
               New-Item -ItemType directory -Path artifacts
           }
 
-          csound -z1
+          csound.exe -z1
 
       - name: run tests
         run: |
 
           cd src/beosc/examples
-          csound -o beadsynt.flac beadsynt.csd
+          csound.exe -o beadsynt.flac beadsynt.csd
           cp *.flac ../../../artifacts
           cd ../../..
 
