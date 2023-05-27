@@ -12,6 +12,8 @@ cmake_minimum_required(VERSION 3.8)
 
 set(APIVERSION "6.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
 
+message(STATUS "Csound API Version: ${APIVERSION}")
+
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(LINUX YES)
 else()
@@ -79,7 +81,7 @@ MACRO(SUBDIRLIST result curdir)
   FOREACH(child ${children})
     message(STATUS "looking at ${child}")
     IF(IS_DIRECTORY ${curdir}/${child})
-        LIST(APPEND dirlist ${child})
+      LIST(APPEND dirlist ${child})
     ENDIF()
   ENDFOREACH()
   SET(${result} ${dirlist})
@@ -107,10 +109,10 @@ endif()
 
 check_cxx_compiler_flag(-fvisibility=hidden HAS_CXX_VISIBILITY_HIDDEN)
 if (HAS_VISIBILITY_HIDDEN)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 endif()
 if (HAS_CXX_VISIBILITY_HIDDEN)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 endif()
 
 # set optimization flags
@@ -172,26 +174,26 @@ message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
 
 # plugin install directories (CS_USER_PLUGIN)
 if(USE_DOUBLE)
-    add_definitions(-DUSE_DOUBLE)
-    add_definitions(-DB64BIT)
-  
-    message(STATUS "Building with 64-bit floats")
-    if(APPLE)
-        set(PLUGIN_INSTALL_DIR "$ENV{HOME}/Library/csound/${APIVERSION}/plugins64")
-    elseif(LINUX)
-      set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins64")
-     elseif(WIN32)
-      set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins64")
-    endif()
+  add_definitions(-DUSE_DOUBLE)
+  add_definitions(-DB64BIT)
+
+  message(STATUS "Building with 64-bit floats")
+  if(APPLE)
+    set(PLUGIN_INSTALL_DIR "$ENV{HOME}/Library/csound/${APIVERSION}/plugins64")
+  elseif(LINUX)
+    set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins64")
+  elseif(WIN32)
+    set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins64")
+  endif()
 else()
-    message(STATUS "Building with 32-bit floats")
-    if(APPLE)
-        set(PLUGIN_INSTALL_DIR "$ENV{HOME}/Library/csound/${APIVERSION}/plugins")
-    elseif(LINUX)
-      set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins")
-     elseif(WIN32)
-      set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins")
-      endif()
+  message(STATUS "*************** Building with 32-bit floats ***************")
+  if(APPLE)
+    set(PLUGIN_INSTALL_DIR "$ENV{HOME}/Library/csound/${APIVERSION}/plugins")
+  elseif(LINUX)
+    set(PLUGIN_INSTALL_DIR "$ENV{HOME}/.local/lib/csound/${APIVERSION}/plugins")
+  elseif(WIN32)
+    set(PLUGIN_INSTALL_DIR "${env.LOCALAPPDATA}/csound/${APIVERSION}/plugins")
+  endif()
 endif()
 
 #[[
@@ -209,7 +211,7 @@ if(USE_DOUBLE)
     set(PLUGIN_INSTALL_DIR "${LIBRARY_INSTALL_DIR}/csound/plugins64-${APIVERSION}")
   endif()
 else()
-  message(STATUS ">>> not using doubles")
+  message(STATUS ">>> not using doubles !!!!!!!!!!!! ")
   if(APPLE)
     set(CSOUNDLIB "CsoundLib")
     set(PLUGIN_INSTALL_DIR "${CS_FRAMEWORK_DEST}/${CSOUNDLIB}.framework/Versions/${APIVERSION}/Resources/Opcodes")
@@ -231,10 +233,10 @@ set(BUILD_PLUGINS_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 function(add_shared_library target srcs)
   if(APPLE)
-      add_library(${pluginlib} SHARED ${srcs})
-    else()
-      add_library(${pluginlib} MODULE ${srcs})
-    endif()
+    add_library(${pluginlib} SHARED ${srcs})
+  else()
+    add_library(${pluginlib} MODULE ${srcs})
+  endif()
 endfunction(add_shared_library)
 
 function(make_c_plugin pluginlib srcs)
@@ -253,10 +255,10 @@ function(make_c_plugin pluginlib srcs)
   set_property(TARGET ${pluginlib} PROPERTY C_STANDARD 99)
   set_target_properties(${pluginlib} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
-    LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR})
+    LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
+  )
   
-  install(TARGETS ${pluginlib}
-    LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}" )
+  install(TARGETS ${pluginlib} LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}" )
 endfunction(make_c_plugin)
 
 # pluginlib: name of the plugin
@@ -274,10 +276,10 @@ function(make_plugin pluginlib srcs)
   # target_compile_definitions(${pluginlib} PRIVATE USE_DOUBLE)
   set_target_properties(${pluginlib} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
-    LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR})
+    LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
+    )
   
-  install(TARGETS ${pluginlib}
-    LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}" )
+  install(TARGETS ${pluginlib} LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}" )
   
 endfunction(make_plugin)
 

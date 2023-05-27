@@ -39,10 +39,12 @@ jobs:
           echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
           ls "$VCPKG_ROOT" -recurse
 
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DAPIVERSION="7.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -DAPIVERSION="6.0" -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --parallel --config Release
           ls Release
           cmake --install .
+
+          echo ("LOCALAPPDATA='" + $env:LOCALAPPDATA + "'")
 
           cd ..
 
