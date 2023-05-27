@@ -1,6 +1,74 @@
 name: Test plugins
 on: push
 jobs:
+  windows-6:
+    name: Test plugins on windows against csound package
+    runs-on: windows-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: install csound
+        run: |
+          curl -L -o csound-binaries.zip https://github.com/csound/csound/releases/download/6.18.1/Csound-6.18.1-windows-x64-binaries.zip
+          Expand-Archive csound-binaries.zip -DestinationPath "C:\Program Files\csound-binaries"
+          ls -r "C:\Program Files\csound-binaries"
+
+          [Environment]::SetEnvironmentVariable("PATH", $Env:PATH + ";C:\Program Files\csound-binaries\build\Release", [EnvironmentVariableTarget]::Machine)
+          $Env:Path = $Env:Path + ";C:\Program Files\csound-binaries\build\Release"
+          Write-Output $Env:PATH
+          csound.exe --version
+
+      - name: build plugins
+        run: |
+          choco install libsndfile
+          ls "${ENV:PROGRAMFILES}\libsndfile\include"
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+          echo "Finished submodules"
+
+          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
+          ls
+
+          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
+
+          mkdir build-windows
+          cd build-windows
+
+          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
+          ls "$VCPKG_ROOT" -recurse
+
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DAPIVERSION="7.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake --build . --parallel --config Release
+          ls Release
+          cmake --install .
+
+          cd ..
+
+          if(!(Test-Path artifacts)) {
+              New-Item -ItemType directory -Path artifacts
+          }
+
+          csound -z1
+
+      - name: run tests
+        run: |
+
+          cd src/beosc/examples
+          csound -o beadsynt.flac beadsynt.csd
+          cp *.flac ../../../artifacts
+          cd ../../..
+
+          ls artifacts
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: artifacts-windows-csound6
+          path: artifacts/*
+
 
   linuxapt:
     name: Test plugins on linux against csound package
