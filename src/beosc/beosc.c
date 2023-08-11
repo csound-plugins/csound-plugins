@@ -237,6 +237,8 @@ lookup(const MYFLT *table, int32_t phase, int32_t mask) {
     return *(const MYFLT*)((const char*)table + index);
 }
 
+#define LOOKUP(table, phase, mask) ( *(const MYFLT*)((const char*)table + (((phase >> xlobits1) & mask))) )
+
 static inline MYFLT
 cs_lookupi(const MYFLT* ftbl, int32_t phs, int32_t lobits, int32_t lomask,
            MYFLT lodiv) {
@@ -350,7 +352,7 @@ beosc_kkiii(CSOUND *csound, BEOSC *p) {
         y0 = y1; y1 = y2; y2 = y3;
         y3 = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
           (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
-        out[n] = lookup(table0, phase, lomask)
+        out[n] = LOOKUP(table0, phase, lomask)
           * (bw1 + ( y3 * bw2 ));
         phase += phaseinc;
       }
@@ -846,7 +848,7 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
                     y3  = (x0 + x3) + (FL(3) * (x1 + x2)) + (FL(0.9320209047) * y0) + \
                             (FL(-2.8580608588) * y1) + (FL(2.9258684253) * y2);
 
-                    sample = lookup(ftpdata, phs, lomask2) * ampnow;
+                    sample = LOOKUP(ftpdata, phs, lomask2) * ampnow;
                     out[n] += sample * (bw1 + (y3 * bw2));
                     phs += phaseinc;
                     /*

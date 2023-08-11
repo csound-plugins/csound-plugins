@@ -3113,20 +3113,20 @@ double perlin_noise(double x, double y, double z) {
     int X = (int)x & 255,
         Y = (int)y & 255,
         Z = (int)z & 255;
-	x -= floor(x);                                // FIND RELATIVE X,Y,Z
-	y -= floor(y);                                // OF POINT IN CUBE.
-	z -= floor(z);
-	double u = fade(x),                                // COMPUTE FADE CURVES
+    x -= floor(x);                                // FIND RELATIVE X,Y,Z
+    y -= floor(y);                                // OF POINT IN CUBE.
+    z -= floor(z);
+    double u = fade(x),                                // COMPUTE FADE CURVES
            v = fade(y),                                // FOR EACH OF X,Y,Z.
            w = fade(z);
-	int A  = _p[X  ]+Y,
-	    AA = _p[A]+Z,
-	    AB = _p[A+1]+Z,      // HASH COORDINATES OF
+    int A  = _p[X  ]+Y,
+        AA = _p[A]+Z,
+        AB = _p[A+1]+Z,      // HASH COORDINATES OF
         B  = _p[X+1]+Y,
         BA = _p[B]+Z,
         BB = _p[B+1]+Z;      // THE 8 CUBE CORNERS,
 
-	return lerp(w, lerp(v, lerp(u, grad(_p[AA  ], x  , y  , z   ),  // AND ADD
+    return lerp(w, lerp(v, lerp(u, grad(_p[AA  ], x  , y  , z   ),  // AND ADD
                                 grad(_p[BA  ], x-1, y  , z   )), // BLENDED
                         lerp(u, grad(_p[AB  ], x  , y-1, z   ),  // RESULTS
                              grad(_p[BB  ], x-1, y-1, z   ))),// FROM  8
@@ -3157,13 +3157,13 @@ static int32_t perlin3_init(CSOUND *csound, PERLIN3 *p) {
 }
 
 static int32_t perlin3_k_kkk(CSOUND *csound, PERLIN3 *p) {
-	IGN(csound);
-	*p->out = perlin_noise(*p->x, *p->y, *p->z);
-	return OK;
+    IGN(csound);
+    *p->out = perlin_noise(*p->x, *p->y, *p->z);
+    return OK;
 }
 
 static int32_t perlin3_a_aaa(CSOUND *csound, PERLIN3 *p) {
-	IGN(csound);
+    IGN(csound);
     MYFLT *out = p->out;
 
     SAMPLE_ACCURATE(out);
@@ -3928,17 +3928,28 @@ static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t la
     if(x <= xs[0]) {
         return -1;
     }
+
     if(x >= xs[xslen-1]) {
         return -2;
     }
-    if(lastidx >= 0 && lastidx < xslen-2 && xs[lastidx] <= x && x < xs[lastidx+1]) {
-        return lastidx;
+    
+    int64_t imin;
+    
+    if(lastidx >= 0 && xs[lastidx] <= x) {
+        if(x < xs[lastidx+1]) {
+            return lastidx;
+        }
+        if (lastidx < xslen-2 && x < xs[lastidx+2]) {
+            return lastidx + 1;
+        }
+        imin = lastidx;      
     }
-
-    int64_t imin = 0;
+    else {
+        imin = 0;       
+    }
     int64_t imax = xslen;
-    int64_t imid;
 
+    int64_t imid;
     while (imin < imax) {
         imid = (imax + imin) / 2;
         if (xs[imid] < x)
@@ -3946,6 +3957,7 @@ static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t la
         else
             imax = imid;
     }
+
     // now the right pair is in pairmin
     return imin - 1;
 }
@@ -4472,61 +4484,61 @@ static int32_t mixarray_perf(CSOUND *csound, MIXARRAY1 *p) {
 }
 
 typedef struct {
-	OPDS h;
-	MYFLT *outidx;
-	MYFLT *ftnum;
-	MYFLT *x;
-	MYFLT *tolerance;
+    OPDS h;
+    MYFLT *outidx;
+    MYFLT *ftnum;
+    MYFLT *x;
+    MYFLT *tolerance;
 } FTINDEX;
 
 static int32_t ftindex_perf(CSOUND *csound, FTINDEX *p) {
-	MYFLT x = *p->x;
-	MYFLT tolerance = *p->tolerance;
-	FUNC *ftp = csound->FTnp2Find(csound, p->ftnum);
+    MYFLT x = *p->x;
+    MYFLT tolerance = *p->tolerance;
+    FUNC *ftp = csound->FTnp2Find(csound, p->ftnum);
     if (UNLIKELY(ftp == NULL)) {
         MSGF("table %d not found", (int)*p->ftnum);
         return NOTOK;
     }
-	if(tolerance <= 0) {
-		tolerance = 1e-12;
-	}
-	MYFLT *data = ftp->ftable;
-	size_t len = ftp->flen;
-	for(size_t i=0; i<len; i++) {
-		if(fabs(data[i] - x) < tolerance ) {
-			*p->outidx = i;
-			return OK;
-		}
-	}
-	*p->outidx = -1.0;
-	return OK;
+    if(tolerance <= 0) {
+        tolerance = 1e-12;
+    }
+    MYFLT *data = ftp->ftable;
+    size_t len = ftp->flen;
+    for(size_t i=0; i<len; i++) {
+        if(fabs(data[i] - x) < tolerance ) {
+            *p->outidx = i;
+            return OK;
+        }
+    }
+    *p->outidx = -1.0;
+    return OK;
 }
 
 
 typedef struct {
-	OPDS h;
-	MYFLT *outidx;
-	ARRAYDAT *arr;
-	MYFLT *x;
-	MYFLT *tolerance;
+    OPDS h;
+    MYFLT *outidx;
+    ARRAYDAT *arr;
+    MYFLT *x;
+    MYFLT *tolerance;
 } FINDARR;
 
 static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
     // p->h.insdshead->instr->psetdata
     MYFLT *data = p->arr->data;
-	MYFLT x = *p->x;
-	MYFLT tolerance = *p->tolerance;
-	if(tolerance <= 0) {
-		tolerance = 1e-12;
-	}
-	for(size_t i=0; i<p->arr->sizes[0]; i++) {
-		if(fabs(data[i] - x) < tolerance ) {
+    MYFLT x = *p->x;
+    MYFLT tolerance = *p->tolerance;
+    if(tolerance <= 0) {
+        tolerance = 1e-12;
+    }
+    for(size_t i=0; i<p->arr->sizes[0]; i++) {
+        if(fabs(data[i] - x) < tolerance ) {
             *p->outidx = (MYFLT)i;
-			return OK;
-		}
-	}
-	*p->outidx = -1.0;
-	return OK;
+            return OK;
+        }
+    }
+    *p->outidx = -1.0;
+    return OK;
 }
 
 typedef struct {

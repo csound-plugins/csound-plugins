@@ -58,7 +58,7 @@ See Also
 interp1d, bpf, linlin, getrowlin, linenv
 */
 
-ksmps = 64
+ksmps = 128
 nchnls = 2
 0dbfs  = 1
 
@@ -111,6 +111,16 @@ instr test1
     println "kt: %f, kidx: %f, kmidi: %f", kt, kidx, kmidi
 endin
 
+instr test2
+    ixs[] fillarray 0, 1, 2, 3
+    iys[] fillarray 0, 10, 20, 30
+    kt eventtime
+
+    kidx bisect kt, ixs
+    ky interp1d kidx, iys
+    println "kt: %f, kidx: %f, ky: %f", kt, kidx, ky
+endin
+
 </CsInstruments>
 
 <CsScore>
@@ -119,7 +129,9 @@ endin
 
 ;i "example1" 0 10
 ;i "example2"  0 7
-i "test1" 0 5
+;i "test1" 0 5
+i "test2" 0 4
+
 
 </CsScore>
 </CsoundSynthesizer>
