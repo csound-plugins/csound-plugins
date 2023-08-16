@@ -75,10 +75,9 @@ jobs:
           csound.exe --version
 
           choco install libsndfile
-          ls "${ENV:PROGRAMFILES}\libsndfile\include"
+          # ls "${ENV:PROGRAMFILES}\libsndfile\include"
 
           git submodule update --init --recursive --remote
-          # git submodule foreach git pull origin master
           git submodule status --recursive
           echo "Finished submodules"
 
