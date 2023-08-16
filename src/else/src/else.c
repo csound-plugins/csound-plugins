@@ -1983,7 +1983,10 @@ pwrite_perf(CSOUND *csound, PWRITE *p) {
     }
 
     if (!p->broadcasting) {
-        if(p->instr->actflg) {
+        if(p->instr->actflg && p->p1 == p->instr->p1.value) {
+            // the p1 might change since instr structs are recycled by csound
+            // so a new instance of this int p1 could now have a different
+            // fractional p1
             pwrite_writevalues(csound, p, p->pfields);
         } else {
             // the instr is not active anymore
