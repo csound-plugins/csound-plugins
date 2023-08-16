@@ -13,32 +13,38 @@ Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
 
 # Plugins in this repo
 
-### jsfx
-
-jsfx support in csound, allows any REAPER's jsfx plugin to be loaded and controlled inside csound
-
 ### klib
 
 very efficient hashtables (dictionaries) and other data structures for csound
+
 
 ### poly
 
 Parallel and sequential multiplexing opcodes, they enable the creation and control of multiple 
 instances of a csound opcode
 
+
+## beosc
+
+additive synthesis implementing the loris model sine+noise
+
+
 ### else
 
 A miscellaneous collection of effects (distortion, saturation, ring-modulation), noise 
 generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
+
+
+### jsfx
+
+jsfx support in csound, allows any REAPER's jsfx plugin to be loaded and controlled inside csound
+
 
 ## pathtools
 
 opcodes to handle paths and filenames in a cross-platform manner
 
 
-## beosc
-
-additive synthesis implementing the model sine+noise
 
 ----------------
 
