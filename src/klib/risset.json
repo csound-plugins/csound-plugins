@@ -29,7 +29,7 @@
   "libname": "libklib",
   "short_description": "A hashtable for csound",
   "long_description": "A hashtable for csound",
-  "csound_version": "6.15",
+  "csound_version": "6.16",
   "author": "Eduardo Moguillansky",
   "email": "eduardo.moguillansky@gmail.com",
   "license": "LGPL",
@@ -54,11 +54,24 @@
       "csound_version": ">=6.17<7.0"
     },
     {
+      "platform": "macos-arm64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-arm64.zip",
+      "extractpath": "libklib.dylib",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
       "platform": "macos",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
       "extractpath": "libklib.dylib",
       "csound_version": ">=7.0"
     },
+    {
+          "platform": "macos-arm64",
+          "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos-arm64.zip",
+          "extractpath": "libklib.dylib",
+          "csound_version": ">=7.0"
+    },
+        
     {
       "platform": "windows",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
