@@ -1,7 +1,0 @@
-macos_instance:
-  image: ghcr.io/cirruslabs/macos-ventura-base:latest
-
-task:
-  script: |
-    python -c "import platform; print(platform.machine(), platform.architecture())"
-

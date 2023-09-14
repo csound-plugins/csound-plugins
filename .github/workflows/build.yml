@@ -261,6 +261,7 @@ jobs:
       - name: linux build
         if: runner.os == 'linux'
         run: |
+          sudo apt update
           sudo apt-get install libsndfile1-dev
           sudo apt-get install nasm
           # sudo apt-get install libfluidsynth-dev
