@@ -7,7 +7,6 @@ test_task:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
 
   test_script:
-    - pip install --upgrade pip
     - python3 -c 'import platform; print(platform.machine(), platform.uname())'  # , platform.dist())'
   
 
