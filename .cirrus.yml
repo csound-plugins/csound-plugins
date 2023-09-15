@@ -14,6 +14,9 @@ osx_task:
 
   name: "OSX: py${PY_VER}"
 
+  env:
+    PATH: $HOME/miniconda3/bin/:$PATH
+
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
 
