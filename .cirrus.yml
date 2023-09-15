@@ -4,7 +4,7 @@ container:
 test_task:
 
   macos_instance:
-    image: ghcr.io/cirruslabs/macos-ventura-base:latest
+    image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
 
   test_script:
     - pip install --upgrade pip
