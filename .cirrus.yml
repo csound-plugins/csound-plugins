@@ -20,7 +20,6 @@ osx_task:
   env:
     PATH: $HOME/miniconda3/bin/:$PATH
 
-  task:
-    script: |
-      python -c "import platform; print(platform.machine(), platform.architecture())"
+  check_script:
+    - python -c "import platform; print(platform.machine(), platform.architecture())"
 
