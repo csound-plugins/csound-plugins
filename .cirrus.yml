@@ -5,20 +5,18 @@ test_task:
 
   test_script:
     - pip install --upgrade pip
-    - pip install distro
-    - python -c 'import platform; print(platform.uname())'  # , platform.dist())'
-    - python -c 'import geographiclib; print("geographiclib " + geographiclib.__version__)'
+    - python3 -c 'import platform; print(platform.uname())'  # , platform.dist())'
   
 
 #
 # OSX
 #
-osx_task:
-  auto_cancellation: true
+#osx_task:
+#  auto_cancellation: true
 
-  macos_instance:
-    image: ghcr.io/cirruslabs/macos-ventura-base:latest
-
-  check_script:
-    - python -c "import platform; print(platform.machine(), platform.architecture())"
+#  macos_instance:
+#    image: ghcr.io/cirruslabs/macos-ventura-base:latest
+#
+#  check_script:
+#    - python3 -c "import platform; print(platform.machine(), platform.architecture())"
 
