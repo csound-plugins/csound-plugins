@@ -16,7 +16,9 @@ test_task:
     risset list
     risset info
     risset install else beosc klib
-    csound -z1
+    csound -z1 2>&1
+
+    echo "Running macos tests..."
     bash test/macos-run-tests.sh
 
 #
