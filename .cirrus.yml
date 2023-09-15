@@ -1,7 +1,26 @@
-macos_instance:
-  image: ghcr.io/cirruslabs/macos-ventura-base:latest
+container:
+  image: python:3.9
 
-task:
-  script: |
-    python -c "import platform; print(platform.machine(), platform.architecture())"
+
+#
+# OSX
+#
+osx_task:
+  auto_cancellation: true
+
+  matrix:
+    env:
+      PY_VER: "3.9"
+
+  name: "OSX: py${PY_VER}"
+
+  macos_instance:
+    image: ghcr.io/cirruslabs/macos-ventura-base:latest
+
+  env:
+    PATH: $HOME/miniconda3/bin/:$PATH
+
+  task:
+    script: |
+      python -c "import platform; print(platform.machine(), platform.architecture())"
 
