@@ -1,5 +1,5 @@
 container:
-  image: python:3.9
+  image: python:3.10
 
 
 #
@@ -10,7 +10,7 @@ osx_task:
 
   matrix:
     env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
 
   name: "OSX: py${PY_VER}"
 
@@ -24,5 +24,6 @@ osx_task:
     PATH: $HOME/miniconda3/bin/:$PATH
 
   check_script:
+    - conda list
     - python -c "import platform; print(platform.machine(), platform.architecture())"
 
