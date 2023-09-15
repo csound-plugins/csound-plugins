@@ -7,11 +7,17 @@ test_task:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
 
   test_script:
+    - ls -l
     - python3 -c 'import platform; print(platform.machine(), platform.uname())'  # , platform.dist())'
     - brew install csound
+    - which csound
+    - locate CsoundLib64
     - python3 -m pip install risset
     - risset list
     - risset info
+    - risset install beosc else klib
+    - csound -z1
+    
 
 #
 # OSX
