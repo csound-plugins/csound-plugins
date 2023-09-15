@@ -1,6 +1,14 @@
 container:
-  image: python:3.10
+  image: python:latest
 
+test_task:
+
+  test_script:
+    - pip install --upgrade pip
+    - pip install distro
+    - python -c 'import platform; print(platform.uname())'  # , platform.dist())'
+    - python -c 'import geographiclib; print("geographiclib " + geographiclib.__version__)'
+  
 
 #
 # OSX
@@ -8,22 +16,9 @@ container:
 osx_task:
   auto_cancellation: true
 
-  matrix:
-    env:
-      PY_VER: "3.10"
-
-  name: "OSX: py${PY_VER}"
-
-  env:
-    PATH: $HOME/miniconda3/bin/:$PATH
-
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
 
-  env:
-    PATH: $HOME/miniconda3/bin/:$PATH
-
   check_script:
-    - conda list
     - python -c "import platform; print(platform.machine(), platform.architecture())"
 
