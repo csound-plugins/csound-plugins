@@ -8,7 +8,8 @@ test_task:
 
   test_script:
     - python3 -c 'import platform; print(platform.machine(), platform.uname())'  # , platform.dist())'
-  
+    - python3 -m pip install risset
+    - risset list
 
 #
 # OSX
