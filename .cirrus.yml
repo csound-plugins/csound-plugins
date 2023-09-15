@@ -14,9 +14,12 @@ test_task:
     - python3 -m pip install risset
     - risset list
     - risset info
-    - risset install beosc else klib
+    - risset install beosc
+    - risset install else 
+    - risset install klib
     - csound -z1
-    
+    - cd test
+    - bash macos-run-tests.sh
 
 #
 # OSX
