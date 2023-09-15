@@ -6,20 +6,18 @@ test_task:
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
 
-  test_script:
-    - ls -l
-    - python3 -c 'import platform; print(platform.machine(), platform.uname())'  # , platform.dist())'
-    - brew install csound
-    - which csound
-    - python3 -m pip install risset
-    - risset list
-    - risset info
-    - risset install beosc
-    - risset install else 
-    - risset install klib
-    - csound -z1
-    - cd test
-    - bash macos-run-tests.sh
+  test_script: |
+    set -x
+    ls -l
+    python3 -c 'import platform; print(platform.machine(), platform.uname())'  # , platform.dist())'
+    brew install csound
+    which csound
+    python3 -m pip install risset
+    risset list
+    risset info
+    risset install else beosc klib
+    csound -z1
+    bash test/macos-run-tests.sh
 
 #
 # OSX
