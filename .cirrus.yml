@@ -8,10 +8,10 @@ test_task:
 
   test_script:
     - python3 -c 'import platform; print(platform.machine(), platform.uname())'  # , platform.dist())'
-    - brew list
-    # - python3 -m pip install risset
-    # - risset list
-    # - risset info
+    - brew install csound
+    - python3 -m pip install risset
+    - risset list
+    - risset info
 
 #
 # OSX
