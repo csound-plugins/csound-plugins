@@ -54,6 +54,8 @@ aout diode_ringmod ain, kfreq, kdiode=0, kfeedback=0, knonlinear=0, koversample=
 
     This is the example file for diode_ringmod
 
+    To be run inside CsoundQt
+
     NB: diode_ringmod is a port of the jsfx plugin
     Loser/ringmodulator, which implements diode rectification
     and non linear behavior in the feedback path. 

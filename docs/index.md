@@ -11,6 +11,13 @@ See [Installation](Installation.md)
 ----
 
 
+## risset
+
+Opcodes to access risset package metadata
+
+* [risset](opcodes/risset.md): Get information from risset's package manager 
+
+
 ## poly
 
 Multiple (parallel or sequential) instances of an opcode
@@ -50,18 +57,6 @@ A hashtable for csound
 * [pool_isfull](opcodes/pool_isfull.md): Returns 1 if the pool is full 
 
 
-## jsfx
-
-jsfx support for csound
-
-* [jsfx](opcodes/jsfx.md): Instantiates and runs a jsfx script 
-* [jsfx_new](opcodes/jsfx_new.md): Instantiates a jsfx script 
-* [jsfx_play](opcodes/jsfx_play.md): Processes audio through a jsfx script 
-* [jsfx_getslider](opcodes/jsfx_getslider.md): Gets a slider value of a jsfx instance 
-* [jsfx_setslider](opcodes/jsfx_setslider.md): Sets the slider values of a jsfx script 
-* [tubeharmonics](opcodes/tubeharmonics.md): A distortion with control for odd/even harmonics 
-
-
 ## pathtools
 
 Cross-platform path handling and string opcodes
@@ -92,6 +87,18 @@ Band-enhanced oscillators implementing the sine+noise synthesis model
 * [tabrowlin](opcodes/tabrowlin.md): Copy a row from an f-table to another, interpolating between rows 
 
 
+## jsfx
+
+jsfx support for csound
+
+* [jsfx](opcodes/jsfx.md): Instantiates and runs a jsfx script 
+* [jsfx_new](opcodes/jsfx_new.md): Instantiates a jsfx script 
+* [jsfx_play](opcodes/jsfx_play.md): Processes audio through a jsfx script 
+* [jsfx_getslider](opcodes/jsfx_getslider.md): Gets a slider value of a jsfx instance 
+* [jsfx_setslider](opcodes/jsfx_setslider.md): Sets the slider values of a jsfx script 
+* [tubeharmonics](opcodes/tubeharmonics.md): A distortion with control for odd/even harmonics 
+
+
 ## sndmeta
 
 opcodes using libsndfile
@@ -107,6 +114,7 @@ Miscellaneous plugins
 * [atstop](opcodes/atstop.md): Schedule an instrument at the end of the current instrument 
 * [bisect](opcodes/bisect.md): Returns the fractional index of a value within a sorted array / tab 
 * [crackle](opcodes/crackle.md): generates noise based on a chaotic equation 
+* [cuetrig](opcodes/cuetrig.md): Generate a trigger at given time values 
 * [deref](opcodes/deref.md): Dereference a previously created reference to a variable 
 * [detectsilence](opcodes/detectsilence.md): Detect when input falls below an amplitude threshold 
 * [diode_ringmod](opcodes/diode_ringmod.md): A ring modulator with optional non-linearities 
@@ -145,13 +153,6 @@ Miscellaneous plugins
 * [weightedsum](opcodes/weightedsum.md): Weighted sum of multiple 1D arrays, or the rows of a 2D array 
 * [zeroarray](opcodes/zeroarray.md): Zero all elements in an array 
 * [zerocrossing](opcodes/zerocrossing.md): Outputs a frequency based on the number of zero-crossings per second. 
-
-
-## risset
-
-Opcodes to access risset package metadata
-
-* [risset](opcodes/risset.md): Get information from risset's package manager 
 
 
 

@@ -65,6 +65,8 @@ nchnls = 2
 
 /* Example file for schmitt opcode
 
+	To be used inside csoundqt
+
 	aout schmitt ain, khigh, klow
 	kout schmitt kin, khigh, klow
 	
@@ -85,8 +87,8 @@ instr 1
 	ain = oscili:a(1, 0.25)*0.5+0.5
 	aout schmitt ain, khigh, klow
 	
-	chnset k(ain), "signal"
-	chnset k(aout), "out"
+	chnset ain[0], "signal"
+	chnset aout[0], "out"
 	
 endin
 
@@ -97,6 +99,8 @@ i1 0 100
 
 </CsScore>
 </CsoundSynthesizer>
+
+
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>
@@ -127,7 +131,7 @@ i1 0 100
   <xMax>1.00000000</xMax>
   <yMin>0.00000000</yMin>
   <yMax>1.00000000</yMax>
-  <xValue>0.72000000</xValue>
+  <xValue>0.62800000</xValue>
   <yValue>0.00000000</yValue>
   <type>fill</type>
   <pointsize>1</pointsize>
@@ -140,7 +144,7 @@ i1 0 100
    <g>234</g>
    <b>0</b>
   </color>
-  <randomizable group="0" mode="both">false</randomizable>
+  <randomizable mode="both" group="0">false</randomizable>
   <bgcolor>
    <r>0</r>
    <g>61</g>
@@ -164,7 +168,7 @@ i1 0 100
   <xMax>1.00000000</xMax>
   <yMin>0.00000000</yMin>
   <yMax>1.00000000</yMax>
-  <xValue>0.48800000</xValue>
+  <xValue>0.20400000</xValue>
   <yValue>0.00000000</yValue>
   <type>fill</type>
   <pointsize>1</pointsize>
@@ -177,7 +181,7 @@ i1 0 100
    <g>85</g>
    <b>0</b>
   </color>
-  <randomizable group="0" mode="both">false</randomizable>
+  <randomizable mode="both" group="0">false</randomizable>
   <bgcolor>
    <r>65</r>
    <g>22</g>
@@ -201,7 +205,7 @@ i1 0 100
   <xMax>1.00000000</xMax>
   <yMin>0.00000000</yMin>
   <yMax>1.00000000</yMax>
-  <xValue>0.96176335</xValue>
+  <xValue>0.02908331</xValue>
   <yValue>0.00000000</yValue>
   <type>fill</type>
   <pointsize>1</pointsize>
@@ -214,7 +218,7 @@ i1 0 100
    <g>170</g>
    <b>255</b>
   </color>
-  <randomizable group="0" mode="both">false</randomizable>
+  <randomizable mode="both" group="0">false</randomizable>
   <bgcolor>
    <r>0</r>
    <g>43</g>
@@ -238,7 +242,7 @@ i1 0 100
   <xMax>1.00000000</xMax>
   <yMin>0.00000000</yMin>
   <yMax>1.00000000</yMax>
-  <xValue>1.00000000</xValue>
+  <xValue>0.00000000</xValue>
   <yValue>0.00000000</yValue>
   <type>fill</type>
   <pointsize>1</pointsize>
@@ -251,7 +255,7 @@ i1 0 100
    <g>0</g>
    <b>127</b>
   </color>
-  <randomizable group="0" mode="both">false</randomizable>
+  <randomizable mode="both" group="0">false</randomizable>
   <bgcolor>
    <r>76</r>
    <g>0</g>
