@@ -1,6 +1,6 @@
 {
   "name": "klib",
-  "version": "1.18.2",
+  "version": "1.19.0",
   "opcodes": [
     "dict_new",
     "dict_dump",
@@ -66,12 +66,11 @@
       "csound_version": ">=7.0"
     },
     {
-          "platform": "macos-arm64",
-          "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos-arm64.zip",
-          "extractpath": "libklib.dylib",
-          "csound_version": ">=7.0"
+      "platform": "macos-arm64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos-arm64.zip",
+      "extractpath": "libklib.dylib",
+      "csound_version": ">=7.0"
     },
-        
     {
       "platform": "windows",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",

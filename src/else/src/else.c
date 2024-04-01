@@ -1605,15 +1605,16 @@ INSTRTXT *find_instrdef(INSDS *insdshead, int instrnum) {
     return NULL;
 }
 
-INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum) {
+INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum, int must_be_active) {
+    // Find an exact instance of the given instr, returns NULL if not found
     INSDS *instance = instrdef->instance;
     if(instance == NULL) {
-        printf("find_instance_exact: No instances of instr\n");
+        // printf("find_instance_exact: No instances of instr\n");
         return NULL;
     }
     while(instance) {
         // printf("Searching for %f, looking at %f (active=%c)\n", instrnum, instance->p1.value, instance->actflg);
-        if (instance->actflg && instance->p1.value == instrnum) {
+        if(instance->p1.value == instrnum && (instance->actflg || !must_be_active )) {
             return instance;
         }
         instance = instance->nxtinstance;
@@ -1669,15 +1670,14 @@ int32_t pread_search_(CSOUND *csound, MYFLT p1, INSTRTXT **instrtxt, INSDS **ins
     if(!instrtxt_) {
         instrtxt_ = csound->GetInstrument(csound, (int)p1, NULL);
         if(!instrtxt_) {
-            printf("No instances of instr %d\n", (int)p1);
+            // No instances of instr
             return 0;
         }
     }
     INSDS *instr_;
     if(p1 != floor(p1)) {
         // fractional instrnum
-        // printf("Searching exact instance\n");
-        instr_ = find_instance_exact(instrtxt_, p1);
+        instr_ = find_instance_exact(instrtxt_, p1, 1);
     } else {
         // find first instance of this instr
         instr_ = instrtxt_->instance;
@@ -1931,7 +1931,7 @@ pwrite_search(CSOUND *csound, PWRITE *p) {
     }
     // if we are not broadcasting, search the exact match
     if (!(p->broadcasting)) {
-        INSDS *instr = find_instance_exact(p->instrtxt, p1);
+        INSDS *instr = find_instance_exact(p->instrtxt, p1, 1);
         if(!instr) {
             return 0;
         }
@@ -1978,15 +1978,13 @@ pwrite_perf(CSOUND *csound, PWRITE *p) {
         else
             return OK;
     }
+
     if(p->status != InstanceFound) {
         return PERFERR("This should not happen!");
     }
 
     if (!p->broadcasting) {
         if(p->instr->actflg && p->p1 == p->instr->p1.value) {
-            // the p1 might change since instr structs are recycled by csound
-            // so a new instance of this int p1 could now have a different
-            // fractional p1
             pwrite_writevalues(csound, p, p->pfields);
         } else {
             // the instr is not active anymore
@@ -5621,6 +5619,55 @@ static int32_t nametoinstrnum(CSOUND *csound, NAMETOINSTRNUM *p) {
 }
 
 
+// kt eventtime                    ; time
+// kindex cuetrig kt, 0.1, 0.3, 0.4, 0.9
+// kindex is 0 normally, the index of the cue when kt reaches a value in ifn
+
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *kcursor;
+    MYFLT *pargs [VARGMAX-5];
+    MYFLT nextval;
+    size_t nextidx;
+    MYFLT lastcursor;
+    size_t numargs;
+} CUETRIG;
+
+static int32_t cuetrig_init(CSOUND *csound, CUETRIG *p) {
+    p->lastcursor = -INF;
+    p->numargs = csound->GetInputArgCnt(p) - 1;
+    p->nextidx = 0;
+    p->nextval = *(p->pargs[0]);
+    return OK;
+}
+
+static int32_t cuetrig(CSOUND *csound, CUETRIG *p) {
+    MYFLT cursor = *(p->kcursor);
+    if(cursor < p->lastcursor) {
+        p->nextidx = 0;
+        p->nextval = *(p->pargs[0]);
+    }
+    if(cursor >= p->nextval) {
+        *p->out = p->nextidx + 1;
+        if(p->nextidx + 1 >= p->numargs) {
+            // last trigger
+            p->nextval = INF;
+            p->nextidx = 0;
+        } else {
+            p->nextidx += 1;
+            p->nextval = *(p->pargs[p->nextidx]);
+        }
+    } else {
+        *p->out = 0.;
+    }
+    p->lastcursor = cursor;
+    return OK;
+}
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -5822,7 +5869,7 @@ static OENTRY localops[] = {
 
     { "nametoinstrnum.k", S(NAMETOINSTRNUM), 0, 2, "k", "S",
         NULL, (SUBR)nametoinstrnum },
-
+    { "cuetrig", S(CUETRIG), 0, 3, "k", "kM", (SUBR)cuetrig_init, (SUBR)cuetrig },
 };
 
 LINKAGE

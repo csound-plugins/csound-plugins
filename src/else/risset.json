@@ -1,11 +1,12 @@
 {
   "name": "else",
-  "version": "1.18.2",
+  "version": "1.19.0",
   "opcodes": [
     "accum",
     "atstop",
     "bisect",
     "crackle",
+    "cuetrig",
     "deref",
     "detectsilence",
     "diode_ringmod",

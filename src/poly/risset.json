@@ -1,66 +1,66 @@
 {
-    "name": "poly",
-    "version": "1.18.2",
-    "opcodes": [
-        "poly",
-        "polyseq",
-        "poly0",
-        "defer"
-    ],
-    "short_description": "Multiple (parallel or sequential) instances of an opcode",
-    "long_description": "Multiple (parallel or sequential) instances of an opcode",
-    "author": "Eduardo Moguillansky",
-    "email": "eduardo.moguillansky@gmail.com",
-    "license": "LGPL",
-    "repository": "https://github.com/csound-plugins/csound-plugins",
-    "binaries": [
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
-            "extractpath": "libpoly.so",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "linux",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
-            "extractpath": "libpoly.so",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
-            "extractpath": "libpoly.dylib",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "macos",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
-            "extractpath": "libpoly.dylib",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "macos-arm64",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-arm64.zip",
-            "extractpath": "libpoly.dylib",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "macos-arm64",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos-arm64.zip",
-            "extractpath": "libpoly.dylib",
-            "csound_version": ">=7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
-            "extractpath": "poly.dll",
-            "csound_version": ">=6.17<7.0"
-        },
-        {
-            "platform": "windows",
-            "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
-            "extractpath": "poly.dll",
-            "csound_version": ">=7.0"
-        }
-    ]
+  "name": "poly",
+  "version": "1.19.0",
+  "opcodes": [
+    "poly",
+    "polyseq",
+    "poly0",
+    "defer"
+  ],
+  "short_description": "Multiple (parallel or sequential) instances of an opcode",
+  "long_description": "Multiple (parallel or sequential) instances of an opcode",
+  "author": "Eduardo Moguillansky",
+  "email": "eduardo.moguillansky@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": [
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+      "extractpath": "libpoly.so",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "linux",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
+      "extractpath": "libpoly.so",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+      "extractpath": "libpoly.dylib",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "macos",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
+      "extractpath": "libpoly.dylib",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "macos-arm64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-arm64.zip",
+      "extractpath": "libpoly.dylib",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "macos-arm64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos-arm64.zip",
+      "extractpath": "libpoly.dylib",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+      "extractpath": "poly.dll",
+      "csound_version": ">=6.17<7.0"
+    },
+    {
+      "platform": "windows",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
+      "extractpath": "poly.dll",
+      "csound_version": ">=7.0"
+    }
+  ]
 }

@@ -1588,7 +1588,6 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
             kh_del(khIntFlt, h, k);
             handle->counter++;
         }
-        fflush(stdout);
     } else if(khtype == khIntStr) {
         khash_t(khIntStr) *h = g->handles[idx].hashtab;
         CHECK_HASHTAB_EXISTS(h);
