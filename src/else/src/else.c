@@ -858,6 +858,8 @@ static int32_t standardchaos_perf(CSOUND *csound, STANDARDCHAOS *p) {
 
 enum RampgateState { Off, Attack, Sustain, Release, Retrigger };
 
+char* _rampgateStateNames[] = {"Off", "Attack", "Sustain", "Release", "Retrigger"};
+
 
 typedef struct {
     OPDS h;
@@ -943,11 +945,12 @@ static inline void rampgate_update_segment(RAMPGATE *p, int32_t idx) {
 
 
 static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
-    int gate = (int)*p->gate;
+    int gate = (int)*p->gate > 0 ? 1 : 0;
     int lastgate = p->lastgate;
     MYFLT val;
     if(gate != lastgate) {
-        if(gate == 1) {
+        int oldstate = p->state;
+        if(gate > 0) {
             // are we playing?
             if(p->state == Off) {
                 // not playing yet: start attack
@@ -964,8 +967,10 @@ static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
                 p->segment_end = p->retrigger_ramptime;
                 p->segment_idx = -1;
             } else {
-                return PERFERRF("This should not happen. state = %d", p->state);
+                return PERFERRF("This should not happen, state= %d (%s), kgate=%.1f, lastgate=%d", p->state, _rampgateStateNames[p->state], *p->gate, lastgate);
             }
+            // printf("Gate opened, from %s to %s\n", _rampgateStateNames[oldstate], _rampgateStateNames[p->state]);
+
         } else {
             // transition 1 -> 0
             switch(p->state) {
@@ -977,17 +982,20 @@ static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
                 p->state = Release;
                 break;
             case Attack:
-                if(p->sustain_idx == 0)
-                    break;
+            case Retrigger:
                 p->state = Release;
+                if(p->sustain_idx == 0) {
+                    // No sustain segment
+                    break;
+                }
                 p->t = 0;
                 rampgate_update_segment(p, p->sustain_idx);
                 p->prev_val = p->val;
                 break;
             case Release:
-            case Retrigger:
-                return PERFERRF("This should nothappend.state = %d", p->state);
+                return PERFERRF("This should not happend, gate closed, state = %d (%s), last state: %s", p->state, _rampgateStateNames[p->state], _rampgateStateNames[oldstate]);
             }
+            // printf("Gate closed, from %s to %s\n", _rampgateStateNames[oldstate], _rampgateStateNames[p->state]);
         }
     }
     p->lastgate = gate;
@@ -1042,12 +1050,13 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
 
     SAMPLE_ACCURATE(out);
 
-    int gate = (int)*p->gate;
+    int gate = (int)*p->gate > 0 ? 1 : 0;
     int lastgate = p->lastgate;
     MYFLT **points = p->points;
 
     if(gate != lastgate) {
-        if(gate == 1) {  // gate is opening
+        int oldstate = p->state;
+        if(gate > 0) {  // gate is opening
             if(p->state == Off) {
                 // not playing, just waiting for a gate, so start attack
                 p->t = 0;
@@ -1066,8 +1075,9 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
                 p->next_val = *p->points[0];
                 p->segment_end = p->retrigger_ramptime;
                 p->segment_idx = -1;
-            } else
-                return PERFERRF("This should not happen. state = %d", p->state);
+            } else {
+                return PERFERRF("This should not happen, state= %d (%s), kgate=%.1f, lastgate=%d", p->state, _rampgateStateNames[p->state], *p->gate, lastgate);
+            }
         } else {  // gate is closing
             // transition 1 -> 0
             switch(p->state) {
@@ -1079,16 +1089,16 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
                 p->state = Release;
                 break;
             case Attack:
+            case Retrigger:
+                p->state = Release;
                 if(p->sustain_idx == 0)
                     break;
-                p->state = Release;
                 p->t = 0;
                 rampgate_update_segment(p, p->sustain_idx);
                 p->prev_val = p->val;
                 break;
             case Release:
-            case Retrigger:
-                return PERFERRF("This should nothappend.state = %d", p->state);
+                return PERFERRF("This should not happend, gate closed, state = %d (%s), last state: %s", p->state, _rampgateStateNames[p->state], _rampgateStateNames[oldstate]);
             }
         }
     }
