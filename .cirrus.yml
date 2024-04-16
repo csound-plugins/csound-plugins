@@ -12,7 +12,11 @@ test_risset_task:
     python3 -c 'import platform; print(platform.machine(), platform.uname())'  # , platform.dist())'
     brew install csound
     which csound
-    python3 -m pip install risset
+
+    brew install pipx
+    pipx ensurepath
+    pipx install risset
+    
     risset list
     risset info
     risset install else beosc klib
@@ -32,7 +36,9 @@ test_universal_task:
     brew install csound
     which csound
     file $(which csound)
-    python3 -m pip install risset
+
+    brew install pipx
+    # python3 -m pip install risset
     risset list
     risset info
     wget "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--macos-universal.zip"
