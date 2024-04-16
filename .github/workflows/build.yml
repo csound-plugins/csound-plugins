@@ -2,6 +2,54 @@ name: Build And Publish
 on: push
 jobs:
 
+
+  buildmacuniversal:
+    name: Build plugins for csound 6 on mac arm64+x86_64
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          set -x
+          # brew update
+          # brew install libsndfile
+          # brew install fluidsynth
+
+          git submodule update --init --recursive --remote
+          # git submodule foreach git pull origin master
+          git submodule status --recursive
+          cd csound
+          git switch csound6
+          cd ..
+
+          cd csound/include
+          ln -s ../Android/CsoundAndroid/jni/version.h .
+          cd ../..
+
+          rm -fr build-macos
+          mkdir build-macos
+          cd build-macos
+
+          ls ..
+
+          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DAPIVERSION="6.0" ..
+          cmake --build . --parallel
+          ls
+          ARCHIVE=csound-plugins--macos-universal.zip
+          7z a $ARCHIVE *.dylib
+          7z a $ARCHIVE ../assets/README.txt
+          7z l $ARCHIVE
+          mkdir -p ../artifacts
+          cp $ARCHIVE ../artifacts
+          ls ../artifacts
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plugins
+          path: artifacts/*.zip
+
   buildmacarm:
     name: Build plugins for csound 6 on mac arm64
     runs-on: macos-latest

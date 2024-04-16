@@ -3526,6 +3526,18 @@ static int32_t interparr_K_KK_init(CSOUND *csound, INTERPARR_K_KK *p) {
     return OK;
 }
 
+static int32_t interparr_K_KK_init_simple(CSOUND *csound, INTERPARR_K_KK *p) {
+    p->method = InterpLinear;
+    if(p->idx->dimensions > 1)
+        return INITERR("idx array should be 1D");
+    if(p->arr->dimensions > 1)
+        return INITERR("data array should be 1D");
+    tabinit(csound, p->out, p->idx->sizes[0]);
+    return OK;
+}
+
+
+
 static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
     MYFLT *out = p->out->data;
     MYFLT *in = p->idx->data;
@@ -3586,7 +3598,12 @@ static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
 }
 
 static int32_t interparr_K_KK_ir(CSOUND *csound, INTERPARR_K_KK *p) {
-    interparr_K_KK_init(csound, p);
+    p->method = InterpLinear;
+    if(p->idx->dimensions > 1)
+        return INITERR("idx array should be 1D");
+    if(p->arr->dimensions > 1)
+        return INITERR("data array should be 1D");
+    tabinit(csound, p->out, p->idx->sizes[0]);
     return interparr_K_KK_kr(csound, p);
 }
 
@@ -5794,7 +5811,7 @@ static OENTRY localops[] = {
     { "interp1d.i_iI", S(INTERPARR_x_xK), 0, 1, "i", "ii[]", (SUBR)interparr_k_kK_ir},
     { "interp1d.i_iIS", S(INTERPARR_x_xK), 0, 1, "i", "ii[]So", (SUBR)interparr_k_kK_ir},
 
-    { "interp1d.K_KK", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]", (SUBR)interparr_K_KK_init, (SUBR)interparr_K_KK_kr},
+    { "interp1d.K_KK", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]", (SUBR)interparr_K_KK_init_simple, (SUBR)interparr_K_KK_kr},
     { "interp1d.K_KKS", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]SO", (SUBR)interparr_K_KK_init, (SUBR)interparr_K_KK_kr},
 
     { "interp1d.I_II", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]", (SUBR)interparr_K_KK_ir},
