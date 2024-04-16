@@ -24,7 +24,8 @@ test_risset_task:
     echo "Running macos tests..."
     bash test/macos-run-tests.sh
 
-    csound -z1 2>&1 ; echo finished
+    csound -z1 2>&1 || echo "\n\n--- finished ---"
+    
 
 test_universal_task:
   macos_instance:
@@ -50,11 +51,12 @@ test_universal_task:
     cp libelse.dylib libbeosc.dylib libklib.dylib $HOME/Library/csound/6.0/plugins64
     risset dev codesign
 
-    csound -z1 2>&1 ; echo finished
-      
     echo "Running macos tests..."
     bash test/macos-run-tests.sh
 
+    csound -z1 2>&1 || echo "\n\n--- finished ---"
+      
+    
     
 
 #

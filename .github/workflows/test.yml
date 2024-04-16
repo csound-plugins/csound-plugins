@@ -1,12 +1,65 @@
 name: Test plugins
 on: push
 jobs:
+  macos-test-universal-csound6:
+    name: Test universal plugins on mac x86_64
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: macos - install csound from installer
+        run: |
+          curl -L -o csound6.18.dmg https://github.com/csound/csound/releases/download/6.18.1/Csound-MacOS-universal-6.18.1.dmg
+          brew install p7zip
+          7z x csound6.18.dmg
+          cd Csound-universal-6.18.1
+          sudo installer -pkg csound-MacOS-universal-6.18.1.pkg -target /
+          csound --version
+          cd ..
+
+      - name: Install plugins
+        run: |
+          set -x
+          ls -l
+
+          which csound
+          file $(which csound)
+
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install risset
+
+          risset list
+          risset info
+          wget "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--macos-universal.zip"
+
+          unzip -o csound-plugins--macos-universal.zip
+          ls -l *.dylib
+
+          mkdir -p $HOME/Library/csound/6.0/plugins64
+          cp *.dylib $HOME/Library/csound/6.0/plugins64
+          risset dev codesign
+
+          csound -z1 2>&1 || echo "\n\n--- finished ---"
+
+      - name: Run tests
+        run: |
+
+          bash test/macos-run-tests.sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: artifacts-macos-universal
+          path: artifacts/*
+
+     
   macos-csound6:
     name: Test plugins on mac against csound package
     runs-on: macos-latest
     strategy:
       matrix:
-        arch: ["x86_64", "arm64"]
+        arch: ["x86_64"]
     steps:
       - uses: actions/checkout@v3
 
