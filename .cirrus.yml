@@ -1,7 +1,7 @@
 container:
   image: python:latest
 
-test_task:
+test_risset_task:
 
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
@@ -17,6 +17,29 @@ test_task:
     risset info
     risset install else beosc klib
 
+    echo "Running macos tests..."
+    bash test/macos-run-tests.sh
+
+    csound -z1 2>&1 ; echo finished
+
+test_universal_task:
+  macos_instance:
+    image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
+  
+  test_script: |
+    set -x
+    ls -l
+    brew install csound
+    which csound
+    file $(which csound)
+    python3 -m pip install risset
+    risset list
+    risset info
+    wget "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--macos-universal.zip"
+    7z x csound-plugins--macos-universal.zip
+    cp libelse.dylib libbeosc.dylib libklib.dylib $HOME/Library/csound/6.0/plugins64
+    risset dev codesign
+      
     echo "Running macos tests..."
     bash test/macos-run-tests.sh
 
