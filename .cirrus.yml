@@ -44,16 +44,18 @@ test_universal_task:
     risset list
     risset info
     wget "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--macos-universal.zip"
-    brew install sevenzip
+
     unzip -o csound-plugins--macos-universal.zip
+    mkdir -p $HOME/Library/csound/6.0/plugins64
     cp libelse.dylib libbeosc.dylib libklib.dylib $HOME/Library/csound/6.0/plugins64
     risset dev codesign
+
+    csound -z1 2>&1 ; echo finished
       
     echo "Running macos tests..."
     bash test/macos-run-tests.sh
 
-    csound -z1 2>&1 ; echo finished
-
+    
 
 #
 # OSX
