@@ -15,6 +15,7 @@ test_risset_task:
 
     brew install pipx
     pipx ensurepath
+
     pipx install risset
     
     risset list
@@ -38,7 +39,10 @@ test_universal_task:
     file $(which csound)
 
     brew install pipx
-    # python3 -m pip install risset
+    pipx ensurepath
+
+    pipx install risset
+
     risset list
     risset info
     wget "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--macos-universal.zip"
