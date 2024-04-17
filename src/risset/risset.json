@@ -1,6 +1,6 @@
 {
   "name": "risset",
-  "version": "1.19.1",
+  "version": "1.19.2",
   "opcodes": [
     "risset"
   ],
@@ -25,8 +25,8 @@
       "csound_version": ">=7.0"
     },
     {
-      "platform": "macos",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+      "platform": "macos-x86_64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-universal.zip",
       "extractpath": "librisset.dylib",
       "csound_version": ">=6.17<7.0"
     },

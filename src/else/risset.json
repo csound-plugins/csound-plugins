@@ -1,6 +1,6 @@
 {
   "name": "else",
-  "version": "1.19.1",
+  "version": "1.19.2",
   "opcodes": [
     "accum",
     "atstop",
@@ -55,40 +55,40 @@
   "repository": "https://github.com/csound-plugins/csound-plugins",
   "binaries": [
     {
-      "platform": "linux",
+      "platform": "linux-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
       "extractpath": "libelse.so",
       "csound_version": ">=6.17<7.0"
     },
     {
-      "platform": "linux",
+      "platform": "linux-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
       "extractpath": "libelse.so",
       "csound_version": ">=7.0"
     },
     {
-      "platform": "windows",
+      "platform": "windows-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
       "extractpath": "else.dll",
       "build_platform": "Windows 10",
       "csound_version": ">=6.17<7.0"
     },
     {
-      "platform": "windows",
+      "platform": "windows-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
       "extractpath": "else.dll",
       "build_platform": "Windows 10",
       "csound_version": ">=7.0"
     },
     {
-      "platform": "macos",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos.zip",
+      "platform": "macos-x86_64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-universal.zip",
       "extractpath": "libelse.dylib",
       "build_platform": "10.14.0",
       "csound_version": ">=6.17<7.0"
     },
     {
-      "platform": "macos",
+      "platform": "macos-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
       "extractpath": "libelse.dylib",
       "build_platform": "10.14.0",
@@ -96,7 +96,7 @@
     },
     {
       "platform": "macos-arm64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-arm64.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-universal.zip",
       "extractpath": "libelse.dylib",
       "build_platform": "10.14.0",
       "csound_version": ">=6.17<7.0"
