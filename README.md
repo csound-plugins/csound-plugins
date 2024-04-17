@@ -74,6 +74,15 @@ to show manual pages, list opcodes, etc.
 
 ----------------
 
+# Note for Mac Users
+
+You will probably have to overcome Apple's security mechanism to use the plugins.
+Right-click on each plugin and choose "Open with Terminal". Confirm "Open" in the dialog panel.
+
+To find the plugin location, you can run the command `risset info | grep pluginspath`.
+
+----------------
+
 # Download
 
 Plugins can be manually downloaded from the releases page:
