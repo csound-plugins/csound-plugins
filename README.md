@@ -12,7 +12,7 @@ Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
 --------------
 
 
-# Plugins in this repo
+# Plugins in this repository
 
 ### klib
 
@@ -74,16 +74,7 @@ to show manual pages, list opcodes, etc.
 
 ----------------
 
-# Note for Mac Users
-
-You will probably have to overcome Apple's security mechanism to use the plugins.
-Right-click on each plugin and choose "Open with Terminal". Confirm "Open" in the dialog panel.
-
-To find the plugin location, you can run the command `risset info | grep pluginspath`.
-
-----------------
-
-# Download
+# Manual Installation
 
 Plugins can be manually downloaded from the releases page:
 
@@ -100,6 +91,12 @@ directory needs to be created if it does not exist.
 | windows  | 7              | `C:\\Users\\$USERNAME\\AppData\\Local\\csound\\7.0\\plugins64` |
 | macos    | 6              | `$HOME/Library/csound/6.0/plugins64`                           |
 | macos    | 7              | `$HOME/Library/csound/7.0/plugins64`                           |
+
+
+## Note for Mac Users
+
+You will probably have to overcome Apple's security mechanism to use the plugins.
+Right-click on each plugin and choose "Open with Terminal". Confirm "Open" in the dialog panel.
 
 ----------------
 
