@@ -5695,6 +5695,70 @@ static int32_t cuetrig(CSOUND *csound, CUETRIG *p) {
 }
 
 
+// Map a gain to a velocity
+// gain in 0-1
+// mingain: the gain equivalent to velocity 1 (gain 0 always equals to vel 0)
+// exp: an exponent to apply to the curve
+// minvel=0: the min. velocity
+// round=0: if different than 0, round the resulting velocity to an int
+
+typedef struct {
+    OPDS h;
+    MYFLT *vel;
+    MYFLT *gain;
+    MYFLT *mingain;
+    MYFLT *exp;
+    MYFLT *minvel;
+    MYFLT *round;
+
+} GAINTOVEL;
+
+static int32_t gaintovel(CSOUND *csound, GAINTOVEL *p) {
+    MYFLT gain = *p->gain;
+    MYFLT minvel = max(1., *p->minvel);
+    MYFLT vel;
+    if(gain <= 0.) {
+        vel = 0.;
+    } else {
+        MYFLT mingain = *p->mingain;
+        MYFLT relgain = (gain - mingain) / (1. - mingain);
+        if(relgain <= 0.) {
+            vel = minvel;
+        } else {
+            vel = pow(relgain, *p->exp) * (127 - minvel) + minvel;
+        }
+    }
+    if(vel > 0. && *p->round != 0) {
+        vel = max(minvel, round(vel));
+    }
+    *p->vel = vel;
+    return OK;
+}
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *y;
+    MYFLT *x;
+    MYFLT *exp;
+    MYFLT *x0;
+    MYFLT *x1;
+    MYFLT *y0;
+    MYFLT *y1;
+} LINEXP;
+
+
+static int32_t linexp(CSOUND *csound, LINEXP *p) {
+    MYFLT x0 = *p->x0, x1 = *p->x1, x = *p->x, y0 = *p->y0;
+    MYFLT dx = (x - x0) / (x1 - x0);
+    if(dx < 0) {
+        return NOTOK;
+    }
+    *p->y = pow(dx, *p->exp) * (*p->y1 - y0) + y0;
+    return OK;
+}
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -5897,6 +5961,13 @@ static OENTRY localops[] = {
     { "nametoinstrnum.k", S(NAMETOINSTRNUM), 0, 2, "k", "S",
         NULL, (SUBR)nametoinstrnum },
     { "cuetrig", S(CUETRIG), 0, 3, "k", "kM", (SUBR)cuetrig_init, (SUBR)cuetrig },
+
+    { "gaintovel.i", S(GAINTOVEL), 0, 1, "i", "iiioo", (SUBR)gaintovel },
+    { "gaintovel.k", S(GAINTOVEL), 0, 2, "k", "kkkOO", NULL, (SUBR)gaintovel },
+
+    { "linexp.i", S(LINEXP), 0, 1, "i", "iiiiop", (SUBR)linexp },
+    { "linexp.k", S(LINEXP), 0, 2, "k", "kkkkOP", NULL, (SUBR)linexp },
+
 };
 
 LINKAGE
