@@ -8,8 +8,6 @@ project("csound_plugins")
 
 cmake_minimum_required(VERSION 3.8)
 
-# set(APIVERSION "6.0")
-
 set(APIVERSION "6.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
 
 message(STATUS "Csound API Version: ${APIVERSION}")
