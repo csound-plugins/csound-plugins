@@ -103,7 +103,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-20.04, macos-11]
+        os: [windows-2019, ubuntu-22.04, macos-latest]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -249,7 +249,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-20.04, macos-11]
+        os: [windows-2019, ubuntu-22.04, macos-latest]
         # os: [windows-2019]
     steps:
       - name: Checkout repository

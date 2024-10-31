@@ -42,6 +42,7 @@
     "sigmdrive",
     "standardchaos",
     "throwerror",
+	"transpose",
     "uniqinstance",
     "vowelsdb",
     "weightedsum",

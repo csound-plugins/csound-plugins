@@ -176,6 +176,9 @@
 #include "csdl.h"
 #include "arrays.h"
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
@@ -5759,6 +5762,84 @@ static int32_t linexp(CSOUND *csound, LINEXP *p) {
 }
 
 
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *in;
+    MYFLT *shift;       // in semitones
+    MYFLT *windowdur;   // in seconds
+    MYFLT *xfade;       // in samples
+    MYFLT r0, r1;
+    AUXCH vec;
+    int iota;
+
+} PITCHSHIFT;
+
+
+static int32_t faust_pitchshift_init(CSOUND *csound, PITCHSHIFT *p) {
+    csound->AuxAlloc(csound, sizeof(MYFLT)*131072, &(p->vec));
+    memset(p->vec.auxp, 0, sizeof(MYFLT)*131072);
+
+    if(*p->windowdur < 0.) {
+        *p->windowdur = 0.02;
+    }
+    if(*p->xfade < 0.) {
+        *p->xfade = floor(*p->windowdur * csound->GetSr(csound) / 4.);
+    }
+
+    p->r0 = 0;
+    p->r1 = 0;
+    p->iota = 0;
+    return OK;
+}
+
+
+#define CLAMP(x, minval, maxval) (min(maxval, max(minval, x)))
+
+
+static int32_t faust_pitchshift(CSOUND *csound, PITCHSHIFT *p) {
+
+    MYFLT *vec = (MYFLT*)p->vec.auxp;
+    MYFLT *out = p->out;
+    MYFLT *in = p->in;
+    MYFLT sr = csound->GetSr(csound);
+    MYFLT shift = pow(2.0, 0.08333333 * (*p->shift));
+    MYFLT xfadesamples = floor(*p->xfade);
+    MYFLT windowsize = floor(*p->windowdur * sr);
+
+    MYFLT xfadeperiod = 1.0 / xfadesamples;
+    size_t nsmps = CS_KSMPS;
+    int iota = p->iota;
+    MYFLT r0 = p->r0;
+    MYFLT r1 = p->r1;
+    // fSlow0: shiftratio, fSlow1: window; fSlow2: xfadeperiod
+    for(size_t i=0; i<nsmps; i++) {
+        r0 = fmod(windowsize + (r1 + 1. - shift), windowsize);
+        MYFLT tmp0 = fmin(xfadeperiod * r0, 1.);
+        MYFLT tmp1 = in[i];
+        vec[iota & 131071] = tmp1;
+        MYFLT tmp2 = windowsize + r0;
+        int tmp3 = (int)(tmp2);
+        MYFLT tmp4 = floor(tmp2);
+        MYFLT tmp5 = 1. - r0;
+        int tmp6 = (int)(r0);
+        MYFLT tmp7 = floor(r0);
+        out[i] = (MYFLT)(
+            (vec[(iota - CLAMP(tmp6, 0, 65537)) & 131071] * (tmp7 + tmp5) + (r0 - tmp7) * vec[(iota - CLAMP(tmp6+1, 0, 65537)) & 131071]) * tmp0 +
+            (vec[(iota - CLAMP(tmp3, 0, 65537)) & 131071] * (tmp4 + tmp5 - windowsize) + (windowsize + (r0 - tmp4)) * vec[(iota - CLAMP(tmp3+1, 0, 65537)) & 131071]) * (1.0 - tmp0));
+
+        r1 = r0;
+        iota = iota + 1;
+    }
+    p->iota = iota;
+    p->r0 = r0;
+    p->r1 = r1;
+    return OK;
+
+
+}
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -5967,6 +6048,8 @@ static OENTRY localops[] = {
 
     { "linexp.i", S(LINEXP), 0, 1, "i", "iiiiop", (SUBR)linexp },
     { "linexp.k", S(LINEXP), 0, 2, "k", "kkkkOP", NULL, (SUBR)linexp },
+
+    { "transpose", S(PITCHSHIFT), 0, 3, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift },
 
 };
 
