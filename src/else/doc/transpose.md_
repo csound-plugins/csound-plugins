@@ -1,0 +1,61 @@
+# transpose
+
+## Abstract
+
+Simple delay based pitch shifter inspired on faust's transpose
+
+## Description
+
+A simple pitch shifter based on 2 delay lines
+
+## Syntax
+
+
+```csound
+
+aout transpose ain, ksemitones, kwindur=0.02, kxfade=-1
+
+```
+    
+## Arguments
+
+* **ain**: The audio signal
+* **ksemitones**: The semitones to shift the signal, up or down
+* **kwindur**: The duration of the window used, in seconds. The lower the 
+  sound to be transposed, the longer the duration of the window.
+* **kxfade**: The size of the crossfade, in samples. Defaults to 1/4 of the 
+  window duration, in samples. This parameter is quite sensitive to the kind
+  of sound used (sustained vs. percussive, voiced vs. unvoiced) so some
+  adaptation to each case might be needed.
+
+## Output
+
+* **aout**: The transposed signal
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [pvshift](https://csound.com/docs/manual/pvshift.html)
+* [trshift](https://csound.com/docs/manual/trshift.html))
+
+
+## Credits
+
+Eduardo Moguillansky, 2023
+
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2023
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c
