@@ -1,8 +1,6 @@
 name: Build And Publish
 on: push
 jobs:
-
-
   buildmacuniversal:
     name: Build plugins for csound 6 on mac arm64+x86_64
     runs-on: macos-latest
@@ -50,60 +48,59 @@ jobs:
           name: plugins
           path: artifacts/*.zip
 
-  buildmacarm:
-    name: Build plugins for csound 6 on mac arm64
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # buildmacarm:
+  #   name: Build plugins for csound 6 on mac arm64
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: build
-        run: |
-          set -x
-          # brew update
-          # brew install libsndfile
-          # brew install fluidsynth
+  #     - name: build
+  #       run: |
+  #         set -x
+  #         # brew update
+  #         # brew install libsndfile
+  #         # brew install fluidsynth
 
-          git submodule update --init --recursive --remote
-          # git submodule foreach git pull origin master
-          git submodule status --recursive
-          cd csound
-          git switch csound6
-          cd ..
+  #         git submodule update --init --recursive --remote
+  #         # git submodule foreach git pull origin master
+  #         git submodule status --recursive
+  #         cd csound
+  #         git switch csound6
+  #         cd ..
 
-          cd csound/include
-          ln -s ../Android/CsoundAndroid/jni/version.h .
-          cd ../..
+  #         cd csound/include
+  #         ln -s ../Android/CsoundAndroid/jni/version.h .
+  #         cd ../..
 
-          rm -fr build-macos
-          mkdir build-macos
-          cd build-macos
+  #         rm -fr build-macos
+  #         mkdir build-macos
+  #         cd build-macos
 
-          ls ..
+  #         ls ..
 
-          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION="6.0" ..
-          cmake --build . --parallel
-          ls
-          ARCHIVE=csound-plugins--macos-arm64.zip
-          7z a $ARCHIVE *.dylib
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
-          mkdir -p ../artifacts
-          cp $ARCHIVE ../artifacts
-          ls ../artifacts
+  #         cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION="6.0" ..
+  #         cmake --build . --parallel
+  #         ls
+  #         ARCHIVE=csound-plugins--macos-arm64.zip
+  #         7z a $ARCHIVE *.dylib
+  #         7z a $ARCHIVE ../assets/README.txt
+  #         7z l $ARCHIVE
+  #         mkdir -p ../artifacts
+  #         cp $ARCHIVE ../artifacts
+  #         ls ../artifacts
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: plugins
-          path: artifacts/*.zip
-
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: plugins
+  #         path: artifacts/*.zip
 
   buildjob7:
     name: Build plugins on ${{ matrix.os }} (csound 7)
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-22.04, macos-latest]
+        os: [windows-2019, ubuntu-22.04]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -243,23 +240,21 @@ jobs:
           name: plugins
           path: artifacts/*.zip
 
-
   buildjob6:
     name: Build plugins on ${{ matrix.os }} (csound 6)
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, ubuntu-22.04, macos-latest]
-        # os: [windows-2019]
+        os: [windows-2019, ubuntu-22.04]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Checkout submodules
         run: |
-            git submodule update --init --recursive
-            cd csound
-            git switch csound6
+          git submodule update --init --recursive
+          cd csound
+          git switch csound6
 
       - name: macos build
         if: runner.os == 'macOS'
@@ -305,7 +300,6 @@ jobs:
           cp $ARCHIVE ../artifacts
           ls ../artifacts
 
-
       - name: linux build
         if: runner.os == 'linux'
         run: |
@@ -339,7 +333,6 @@ jobs:
           mkdir -p ../artifacts
           cp $ARCHIVE ../artifacts
           ls ../artifacts
-
 
       # Windows: Restore from cache the previously built ports.
       # If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
@@ -377,14 +370,9 @@ jobs:
           # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
 
           ls
-
           Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
-
-
           mkdir build-windows
           cd build-windows
-
-          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
 
           echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
           ls "$VCPKG_ROOT" -recurse
