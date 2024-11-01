@@ -3,7 +3,7 @@ theme:
   name: material
     
 extra_css:
-  - stylesheets/material-extra.css
+  - css/material-extra.css
     
 markdown_extensions:
   - admonition
