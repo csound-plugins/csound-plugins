@@ -45,7 +45,7 @@ jobs:
           cp $ARCHIVE ../artifacts
           ls ../artifacts
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: plugins
           path: artifacts/*.zip
