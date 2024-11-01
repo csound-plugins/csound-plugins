@@ -45,7 +45,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins
+          name: plugins-csound6-macos-universal
           path: artifacts/*.zip
 
   # buildmacarm:
@@ -237,7 +237,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins
+          name: plugins-csound7
           path: artifacts/*.zip
 
   buildjob6:
@@ -374,6 +374,8 @@ jobs:
           mkdir build-windows
           cd build-windows
 
+          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+
           echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
           ls "$VCPKG_ROOT" -recurse
 
@@ -396,7 +398,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins
+          name: plugins-csound6
           path: artifacts/*.zip
 
   publish:
