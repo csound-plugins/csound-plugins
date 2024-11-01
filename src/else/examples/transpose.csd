@@ -11,7 +11,7 @@ nchnls = 2
 
 
 opcode nativetranspose, a, akkp
-  ; native implementation by J. Heinz
+  ; native implementation by J. Heintz
   asig, ksemitones, kwindur, iwindow xin
   imaxdelay = 2
   kfreqratio = semitone(ksemitones)

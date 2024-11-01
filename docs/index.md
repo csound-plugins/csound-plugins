@@ -11,21 +11,24 @@ See [Installation](Installation.md)
 ----
 
 
-## risset
+## pathtools
 
-Opcodes to access risset package metadata
+Cross-platform path handling and string opcodes
 
-* [risset](opcodes/risset.md): Get information from risset's package manager 
-
-
-## poly
-
-Multiple (parallel or sequential) instances of an opcode
-
-* [poly](opcodes/poly.md): poly creates and controls multiple parallel version of an opcode 
-* [polyseq](opcodes/polyseq.md): polyseq creates and controls multiple sequential version of an opcode 
-* [poly0](opcodes/poly0.md): poly0 creates and controls multiple parallel version of an opcode with no outputs 
-* [defer](opcodes/defer.md): Run an opcode at the end of current event 
+* [findFileInPath](opcodes/findFileInPath.md): Find a file inside the search paths of the csound environment 
+* [getEnvVar](opcodes/getEnvVar.md): Get the value of an environment variable 
+* [pathAbsolute](opcodes/pathAbsolute.md): Returns the absolute path of a file 
+* [pathIsAbsolute](opcodes/pathIsAbsolute.md): Returns 1 if the path of a file is absolute 
+* [pathJoin](opcodes/pathJoin.md): Join two parts of a path according to the current platform 
+* [pathNative](opcodes/pathNative.md): Convert a path to its native version 
+* [pathSplit](opcodes/pathSplit.md): Split a path into directory and basename 
+* [pathSplitk](opcodes/pathSplitk.md): Split a path into directory and basename at perf-time 
+* [pathSplitExt](opcodes/pathSplitExt.md): Split a path into prefix and extension 
+* [pathSplitExtk](opcodes/pathSplitExtk.md): Split a path into prefix and extension at performance time 
+* [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
+* [sysPlatform](opcodes/sysPlatform.md): Get a string description of the current system platform 
+* [strsplit](opcodes/strsplit.md): Split a string at a given separator 
+* [strjoin](opcodes/strjoin.md): Concatenate any number of strings 
 
 
 ## klib
@@ -57,53 +60,18 @@ A hashtable for csound
 * [pool_isfull](opcodes/pool_isfull.md): Returns 1 if the pool is full 
 
 
-## pathtools
-
-Cross-platform path handling and string opcodes
-
-* [findFileInPath](opcodes/findFileInPath.md): Find a file inside the search paths of the csound environment 
-* [getEnvVar](opcodes/getEnvVar.md): Get the value of an environment variable 
-* [pathAbsolute](opcodes/pathAbsolute.md): Returns the absolute path of a file 
-* [pathIsAbsolute](opcodes/pathIsAbsolute.md): Returns 1 if the path of a file is absolute 
-* [pathJoin](opcodes/pathJoin.md): Join two parts of a path according to the current platform 
-* [pathNative](opcodes/pathNative.md): Convert a path to its native version 
-* [pathSplit](opcodes/pathSplit.md): Split a path into directory and basename 
-* [pathSplitk](opcodes/pathSplitk.md): Split a path into directory and basename at perf-time 
-* [pathSplitExt](opcodes/pathSplitExt.md): Split a path into prefix and extension 
-* [pathSplitExtk](opcodes/pathSplitExtk.md): Split a path into prefix and extension at performance time 
-* [scriptDir](opcodes/scriptDir.md): Get the directory of the loaded orc/csd file 
-* [sysPlatform](opcodes/sysPlatform.md): Get a string description of the current system platform 
-* [strsplit](opcodes/strsplit.md): Split a string at a given separator 
-* [strjoin](opcodes/strjoin.md): Concatenate any number of strings 
-
-
-## beosc
-
-Band-enhanced oscillators implementing the sine+noise synthesis model
-
-* [beosc](opcodes/beosc.md): Band-Enhanced Oscillator 
-* [beadsynt](opcodes/beadsynt.md): Band-Enhanced Oscillator-Bank 
-* [getrowlin](opcodes/getrowlin.md): opy a row from a 2D array or table, with interpolation between rows 
-* [tabrowlin](opcodes/tabrowlin.md): Copy a row from an f-table to another, interpolating between rows 
-
-
-## jsfx
-
-jsfx support for csound
-
-* [jsfx](opcodes/jsfx.md): Instantiates and runs a jsfx script 
-* [jsfx_new](opcodes/jsfx_new.md): Instantiates a jsfx script 
-* [jsfx_play](opcodes/jsfx_play.md): Processes audio through a jsfx script 
-* [jsfx_getslider](opcodes/jsfx_getslider.md): Gets a slider value of a jsfx instance 
-* [jsfx_setslider](opcodes/jsfx_setslider.md): Sets the slider values of a jsfx script 
-* [tubeharmonics](opcodes/tubeharmonics.md): A distortion with control for odd/even harmonics 
-
-
 ## sndmeta
 
 opcodes using libsndfile
 
 * [filereadmeta](opcodes/filereadmeta.md): Read metadata from a soundfile 
+
+
+## risset
+
+Opcodes to access risset package metadata
+
+* [risset](opcodes/risset.md): Get information from risset's package manager 
 
 
 ## else
@@ -126,10 +94,12 @@ Miscellaneous plugins
 * [ftfind](opcodes/ftfind.md): Find an element in a table 
 * [ftnew](opcodes/ftnew.md): creates a new table of a given size 
 * [ftsetparams](opcodes/ftsetparams.md): Set metadata parameters of a table, as if it was loaded via GEN1 
+* [gaintovel](opcodes/gaintovel.md): Map amplitude 0-1 to velocity (0-127) 
 * [initerror](opcodes/initerror.md): Throws an error message at init 
 * [interp1d](opcodes/interp1d.md): Interpolate between elements of an array/table 
 * [lfnoise](opcodes/lfnoise.md): low frequency, band-limited noise 
 * [linenv](opcodes/linenv.md): A triggerable linear envelope with sustain segment 
+* [linexp](opcodes/linexp.md): linear to exponentail interpolation 
 * [loadnpy](opcodes/loadnpy.md): Load an array (of any number of dimensions) saved as a .npy file 
 * [memview](opcodes/memview.md): Create a view into a table or another array 
 * [mtro](opcodes/mtro.md): an accurate version of metro 
@@ -148,11 +118,44 @@ Miscellaneous plugins
 * [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
 * [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
 * [throwerror](opcodes/throwerror.md): Throws an error message at performance or init 
+* [transpose](opcodes/transpose.md): Simple delay based pitch shifter inspired on faust's transpose 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
 * [vowelsdb](opcodes/vowelsdb.md): A database of vowel sounds 
 * [weightedsum](opcodes/weightedsum.md): Weighted sum of multiple 1D arrays, or the rows of a 2D array 
 * [zeroarray](opcodes/zeroarray.md): Zero all elements in an array 
 * [zerocrossing](opcodes/zerocrossing.md): Outputs a frequency based on the number of zero-crossings per second. 
+
+
+## poly
+
+Multiple (parallel or sequential) instances of an opcode
+
+* [poly](opcodes/poly.md): poly creates and controls multiple parallel version of an opcode 
+* [polyseq](opcodes/polyseq.md): polyseq creates and controls multiple sequential version of an opcode 
+* [poly0](opcodes/poly0.md): poly0 creates and controls multiple parallel version of an opcode with no outputs 
+* [defer](opcodes/defer.md): Run an opcode at the end of current event 
+
+
+## jsfx
+
+jsfx support for csound
+
+* [jsfx](opcodes/jsfx.md): Instantiates and runs a jsfx script 
+* [jsfx_new](opcodes/jsfx_new.md): Instantiates a jsfx script 
+* [jsfx_play](opcodes/jsfx_play.md): Processes audio through a jsfx script 
+* [jsfx_getslider](opcodes/jsfx_getslider.md): Gets a slider value of a jsfx instance 
+* [jsfx_setslider](opcodes/jsfx_setslider.md): Sets the slider values of a jsfx script 
+* [tubeharmonics](opcodes/tubeharmonics.md): A distortion with control for odd/even harmonics 
+
+
+## beosc
+
+Band-enhanced oscillators implementing the sine+noise synthesis model
+
+* [beosc](opcodes/beosc.md): Band-Enhanced Oscillator 
+* [beadsynt](opcodes/beadsynt.md): Band-Enhanced Oscillator-Bank 
+* [getrowlin](opcodes/getrowlin.md): opy a row from a 2D array or table, with interpolation between rows 
+* [tabrowlin](opcodes/tabrowlin.md): Copy a row from an f-table to another, interpolating between rows 
 
 
 

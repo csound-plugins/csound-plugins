@@ -1,18 +1,27 @@
 site_name: Csound Plugins
 theme: 
-    name: readthedocs
+  name: material
     
 extra_css:
-    - css/syntax-highlighting.css
+  - stylesheets/material-extra.css
     
 markdown_extensions:
-    - codehilite:
-        guess_lang: false
-        use_pygments: true
-    - admonition
+  - admonition
+  - pymdownx.highlight:
+      use_pygments: true
+      pygments_lang_class: true
+      # anchor_linenums: true
+      # line_spans: __span
+#  - pymdownx.inlinehilite
+#  - pymdownx.snippets
+  - pymdownx.superfences
+    
+  #- codehilite:
+  #    guess_lang: false
+  #    use_pygments: true
 
 use_directory_urls: false
 
 plugins:
-    - search
+  - search
    
