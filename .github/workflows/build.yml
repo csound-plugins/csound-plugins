@@ -237,7 +237,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins-csound7-${{ matrix.os }}
+          name: plugins-csound7-${{ env.ARCHIVE }}
           path: artifacts/*.zip
 
   buildjob6:
@@ -358,8 +358,6 @@ jobs:
 
           choco install libsndfile
           # ls "${ENV:PROGRAMFILES}\libsndfile\include"
-
-
           # choco install fluidsynth
 
           git submodule update --init --recursive --remote
@@ -398,7 +396,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins-csound6-${{ matrix.os }}
+          name: plugins-csound6-${{ env.ARCHIVE }}
           path: artifacts/*.zip
 
   publish:
