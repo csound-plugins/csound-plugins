@@ -237,7 +237,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins-csound7
+          name: plugins-csound7-${{ matrix.os }}
           path: artifacts/*.zip
 
   buildjob6:
@@ -398,7 +398,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins-csound6
+          name: plugins-csound6-${{ matrix.os }}
           path: artifacts/*.zip
 
   publish:
