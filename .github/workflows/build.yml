@@ -404,7 +404,7 @@ jobs:
   publish:
     name: Publish artifacts as a Pre-Release
     # if: contains(github.ref, 'tags/v')
-    needs: [buildjob6, buildjob7, buildmacarm, buildmacuniversal]
+    needs: [buildjob6, buildjob7, buildmacuniversal]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
