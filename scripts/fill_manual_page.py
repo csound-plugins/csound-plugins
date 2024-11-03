@@ -8,7 +8,8 @@ parser = argparse.ArgumentParser(description="fill a markdown template file with
 parser.add_argument("templatefile")
 parser.add_argument("--example", default=None,
                     help="Path to example file (defaults to a .csd file with the "
-                    "same name in the same directory)")
+                    "same name in the same directory or in an 'examples' folder parallel to the template files)")
+parser.add_argument("--verbose", action="store_true")
 parser.add_argument("-o", "--outfile", default=None)
 args = parser.parse_args()
 
@@ -47,3 +48,6 @@ examplestr = "\n".join([
 filledstr = templatestr.format(example=examplestr)
 outfile = args.outfile or os.path.splitext(args.templatefile)[0] + '.md'
 open(outfile, "w").write(filledstr)
+if args.verbose:
+    print(f"Filled: {os.path.abspath(args.templatefile)} + {os.path.abspath(examplefile)} -> {os.path.abspath(outfile)}")
+    
