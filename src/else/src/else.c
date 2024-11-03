@@ -5772,6 +5772,7 @@ typedef struct {
     MYFLT r0, r1;
     AUXCH vec;
     int iota;
+    MYFLT freqratio;
 
 } PITCHSHIFT;
 
@@ -5790,6 +5791,7 @@ static int32_t faust_pitchshift_init(CSOUND *csound, PITCHSHIFT *p) {
     p->r0 = 0;
     p->r1 = 0;
     p->iota = 0;
+    p->freqratio = 0;
     return OK;
 }
 
@@ -5798,42 +5800,51 @@ static int32_t faust_pitchshift_init(CSOUND *csound, PITCHSHIFT *p) {
 
 
 static int32_t faust_pitchshift(CSOUND *csound, PITCHSHIFT *p) {
-
+    size_t nsmps = CS_KSMPS;
+    MYFLT nsmpscompl = 1. / nsmps;
     MYFLT *vec = (MYFLT*)p->vec.auxp;
     MYFLT *out = p->out;
     MYFLT *in = p->in;
     MYFLT sr = csound->GetSr(csound);
-    MYFLT shift = pow(2.0, 0.08333333 * (*p->shift));
+    MYFLT freqratio = p->freqratio;
+    MYFLT freqratio1 = pow(2.0, 0.08333333 * (*p->shift));
     MYFLT xfadesamples = floor(*p->xfade);
-    MYFLT windowsize = floor(*p->windowdur * sr);
+    MYFLT winsamples = floor(*p->windowdur * sr);
+
+    // first time
+    if(freqratio == 0.) {
+        freqratio = freqratio1;
+    }
+
+    MYFLT freqratiodelta = (freqratio1 - freqratio) * nsmpscompl;
 
     MYFLT xfadeperiod = 1.0 / xfadesamples;
-    size_t nsmps = CS_KSMPS;
     int iota = p->iota;
     MYFLT r0 = p->r0;
     MYFLT r1 = p->r1;
     // fSlow0: shiftratio, fSlow1: window; fSlow2: xfadeperiod
     for(size_t i=0; i<nsmps; i++) {
-        r0 = fmod(windowsize + (r1 + 1. - shift), windowsize);
-        MYFLT tmp0 = fmin(xfadeperiod * r0, 1.);
-        MYFLT tmp1 = in[i];
-        vec[iota & 131071] = tmp1;
-        MYFLT tmp2 = windowsize + r0;
-        int tmp3 = (int)(tmp2);
-        MYFLT tmp4 = floor(tmp2);
+        r0 = fmod(winsamples + (r1 + 1. - freqratio), winsamples);
+        MYFLT fadefactor = fmin(xfadeperiod * r0, 1.);
+        vec[iota & 131071] = in[i];
+        MYFLT r0end = winsamples + r0;
+        int r0endint = (int)(r0end);
+        MYFLT r0endfloor = floor(r0end);
         MYFLT tmp5 = 1. - r0;
-        int tmp6 = (int)(r0);
-        MYFLT tmp7 = floor(r0);
+        int r0int = (int)(r0);
+        MYFLT r0floor = floor(r0);
         out[i] = (MYFLT)(
-            (vec[(iota - CLAMP(tmp6, 0, 65537)) & 131071] * (tmp7 + tmp5) + (r0 - tmp7) * vec[(iota - CLAMP(tmp6+1, 0, 65537)) & 131071]) * tmp0 +
-            (vec[(iota - CLAMP(tmp3, 0, 65537)) & 131071] * (tmp4 + tmp5 - windowsize) + (windowsize + (r0 - tmp4)) * vec[(iota - CLAMP(tmp3+1, 0, 65537)) & 131071]) * (1.0 - tmp0));
+            (vec[(iota - CLAMP(r0int, 0, 65537)) & 131071] * (r0floor + tmp5) + (r0 - r0floor) * vec[(iota - CLAMP(r0int+1, 0, 65537)) & 131071]) * fadefactor +
+            (vec[(iota - CLAMP(r0endint, 0, 65537)) & 131071] * (r0endfloor + tmp5 - winsamples) + (winsamples + (r0 - r0endfloor)) * vec[(iota - CLAMP(r0endint+1, 0, 65537)) & 131071]) * (1.0 - fadefactor));
 
         r1 = r0;
-        iota = iota + 1;
+        iota++;
+        freqratio += freqratiodelta;
     }
     p->iota = iota;
     p->r0 = r0;
     p->r1 = r1;
+    p->freqratio = freqratio1;
     return OK;
 
 
