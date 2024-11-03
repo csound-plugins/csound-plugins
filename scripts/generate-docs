@@ -9,7 +9,7 @@ import fnmatch
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--action", default="none", choices=["build", "deploy", "none"], 
+parser.add_argument("--action", default="build", choices=["build", "deploy", "none"], 
                     help="mkdocs action to perform after generating documentation")
 parser.add_argument("--overwrite", action="store_true")
 
