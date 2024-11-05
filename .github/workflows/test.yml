@@ -48,7 +48,7 @@ jobs:
 
           bash test/macos-run-tests.sh
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts-macos-universal
           path: artifacts/*
@@ -103,7 +103,7 @@ jobs:
 
           bash test/macos-run-tests.sh
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts-macos-${{ matrix.arch }}
           path: artifacts/*
@@ -168,7 +168,7 @@ jobs:
 
           ls artifacts
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts-windows-csound6
           path: artifacts/*
@@ -213,7 +213,7 @@ jobs:
 
           bash test/linux-run-tests.sh
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts-linux-apt
           path: artifacts/*
@@ -281,7 +281,7 @@ jobs:
           bash test/linux-run-tests.sh
 
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts-linux-git-${{ matrix.os }}
           path: artifacts/*
