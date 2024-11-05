@@ -224,7 +224,8 @@ jobs:
     strategy:
       matrix:
         # os: [windows-2019, ubuntu-latest, macos-latest]
-        os: [ubuntu-22.04, ubuntu-20.04]
+        os: [ubuntu-22.04]
+        branch: ["csound6", "develop"]
 
     steps:
       - name: Checkout
@@ -244,8 +245,9 @@ jobs:
 
           sudo apt-get build-dep csound
           sudo apt-get install cmake
-          git clone -b csound6 https://github.com/csound/csound.git csound
-          cd csound
+          REPODIR=csound-${{ matrix.branch }}
+          git clone -b ${{ matrix.branch }} https://github.com/csound/csound.git $REPODIR
+          cd $REPODIR
           mkdir build && cd build
           cmake ..
           cmake --build . --parallel
@@ -283,6 +285,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: artifacts-linux-git-${{ matrix.os }}
+          name: artifacts-linux-git-${{ matrix.os }}-${{ matrix.branch }}
           path: artifacts/*
 
