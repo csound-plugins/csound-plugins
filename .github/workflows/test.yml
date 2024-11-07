@@ -220,6 +220,8 @@ jobs:
             APIVERSION=7.0
           fi
 
+          echo "APIVERSION: '$APIVERSION'"
+
           # The install path depends on APIVERSION
           cmake -DSKIP_FAST_MATH=True -DAPIVERSION=$APIVERSION ..
           cmake --build . --parallel
