@@ -44,8 +44,9 @@ instr 2
   asigs[0] = oscili:a(1, 1000)
   asigs[1] = oscili:a(1, 1500)
   aout[] poly 2, "testopc", asigs, 0.1
-  asum = sumarray(aout)
-  outch 1, asum
+  ; atest _testopc asig, 0.1
+  ; asum = sumarray(aout)
+  ; outch 1, asum
   ; outch 1, aout[0], 2, aout[1]
 endin    
 

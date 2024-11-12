@@ -33,9 +33,9 @@ ksmps = 64
 0dbfs = 1
 nchnls = 2
 
-opcode myvco,a,ii
+opcode myvco, a, ii
   iamp, ifreq xin
-  a0 vco2, iamp, ifreq
+  a0 vco2 iamp, ifreq
   a0 += vco2(iamp, ifreq+2)
   a0 += vco2(iamp, ifreq / 2)
   xout a0
@@ -97,19 +97,19 @@ instr first
 endin
 
 instr second
-  printf "second!  p4 =%f \n", 1, p4
+  prints ">>> second!  p4 =%f \n", p4
   turnoff
 endin
 
 instr 200
-  printf "200! \n", 1
+  prints ">>>> 200!\n"
   turnoff
 endin
 
 ; test atstop with k args
 instr _printCounter
   icounter = p4
-  prints "counter: %d\n", icounter
+  prints ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> counter: %d\n", icounter
   turnoff
 endin
 

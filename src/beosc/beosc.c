@@ -290,8 +290,10 @@ typedef struct {
 static int
 beosc_init(CSOUND *csound, BEOSC *p) {
     FUNC *ftp;
-    MYFLT sampledur = 1 / csound->GetSr(csound);
-    ftp = csound->FTFind(csound, p->ifn);
+    // MYFLT sampledur = 1 / csound->GetSr(csound);
+    MYFLT sampledur = 1 / LOCAL_SR(p);
+    ftp = FTFind(csound, p->ifn);
+    // ftp = csound->FTFind(csound, p->ifn);
     if (UNLIKELY(ftp == NULL))
       return NOTOK;
     p->ftp = ftp;
@@ -587,7 +589,8 @@ beadsynt_init_common(CSOUND *csound, BEADSYNT *p) {
     int32_t *lphs;
     unsigned int c, count = p->count;
     MYFLT iphs = *p->iphs;
-    MYFLT sr   = csound->GetSr(csound);
+    // MYFLT sr   = csound->GetSr(csound);
+    MYFLT sr = LOCAL_SR(p);
     p->inerr = 0;
     // corresponds to csound->sicvt. FMAXLEN depends on B64BIT being defined
     p->cpstoinc = FMAXLEN / sr;
@@ -611,7 +614,8 @@ beadsynt_init_common(CSOUND *csound, BEADSYNT *p) {
         lphs[c] = ((int32_t)(iphs * FMAXLEN)) & PHMASK;
       }
     } else {  // iphs is the number of a table containing the phases
-      FUNC *phasetp = csound->FTnp2Finde(csound, p->iphs);
+      FUNC *phasetp = FTFind(csound, p->iphs);
+      // FUNC *phasetp = csound->FTnp2Finde(csound, p->iphs);
       if (phasetp == NULL) {
         p->inerr = 1;
         return INITERR(Str("beadsynt: phasetable not found"));
@@ -658,7 +662,7 @@ beadsynt_init(CSOUND *csound, BEADSYNT *p) {
     if (ftp == NULL) {
       return INITERR(Str("beadsynt: wavetable not found"));
     }
-    ftp = csound->FTnp2Find(csound, (MYFLT *)p->iamptbl);
+    ftp = FTFind(csound, p->iamptbl);
     if (ftp == NULL) {
       return INITERR("beadsynt: amptable not found!");
     }
@@ -670,8 +674,8 @@ beadsynt_init(CSOUND *csound, BEADSYNT *p) {
       return INITERR(Str("beadsynt: partial count > amptable size"));
     }
     p->amps = ftp->ftable;
-
-    ftp = csound->FTnp2Find(csound, (MYFLT *)p->ifreqtbl);
+    ftp = FTFind(csound, p->ifreqtbl);
+    // ftp = csound->FTnp2Find(csound, (MYFLT *)p->ifreqtbl);
     if (ftp == NULL) {
       return INITERR(Str("beadsynt: freqtable not found!"));
     }
@@ -680,7 +684,8 @@ beadsynt_init(CSOUND *csound, BEADSYNT *p) {
     }
     p->freqs = ftp->ftable;
 
-    ftp = csound->FTnp2Find(csound, (MYFLT *)p->ibwtbl);
+    // ftp = csound->FTnp2Find(csound, (MYFLT *)p->ibwtbl);
+    ftp = FTFind(csound, (MYFLT *)p->ibwtbl);
     if (ftp == NULL) {
       return INITERR(Str("beadsynt: bandwidth table not found"));
     }
@@ -764,8 +769,8 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
         return PERFERR(Str("beadsynt: not initialised"));
 
     ftp = p->ftp;
-    MYFLT sampledur = 1/csound->GetSr(csound);
-
+    // MYFLT sampledur = 1/csound->GetSr(csound);
+    MYFLT sampledur = 1 / LOCAL_SR(p);
     ftpdata  = ftp->ftable;
     ftpdata1 = ftpdata + 1;
     // lobits   = ftp->lobits + 0;     // +2 added march 2023. Used to be just 0, what happened here??
@@ -1170,12 +1175,14 @@ typedef struct {
 static int32_t
 tabrowcopy_init(CSOUND* csound, TABROWCOPY* p){
     FUNC* ftp;
-    if (UNLIKELY((ftp = csound->FTnp2Find(csound, p->ifnsrc)) == NULL))
+    // if (UNLIKELY((ftp = csound->FTnp2Find(csound, p->ifnsrc)) == NULL))
+    if (UNLIKELY((ftp = FTFind(csound, p->ifnsrc)) == NULL))
       return INITERR(Str("tabrowcopy: incorrect table number"));
     p->tabsource    = ftp->ftable;
     p->tabsourcelen = ftp->flen;
-    if (UNLIKELY((ftp = csound->FTnp2Find(csound, p->ifndest)) == NULL))
-      return INITERR(Str("tabrowcopy: incorrect table number"));
+    // if (UNLIKELY((ftp = csound->FTnp2Find(csound, p->ifndest)) == NULL))
+    if (UNLIKELY((ftp = FTFind(csound, p->ifndest)) == NULL))
+        return INITERR(Str("tabrowcopy: incorrect table number"));
     p->tabdest    = ftp->ftable;
     p->tabdestlen = ftp->flen;
 
@@ -1264,7 +1271,7 @@ typedef struct {
 static int32_t
 tabrowcopyarr_init(CSOUND *csound, TABROWCOPYARR *p) {
     FUNC* ftp;
-    if (UNLIKELY((ftp = csound->FTnp2Find(csound, p->ifnsrc)) == NULL))
+    if (UNLIKELY((ftp = FTFind(csound, p->ifnsrc)) == NULL))
         return INITERR(Str("tabrowlin: incorrect table number"));
     p->tabsource = ftp->ftable;
     p->tabsourcelen = ftp->flen;
@@ -1283,7 +1290,8 @@ tabrowcopyarr_init(CSOUND *csound, TABROWCOPYARR *p) {
     if(numitems <= 0) {
         return INITERR(Str("tabrowlin: no items to copy"));
     }
-    tabinit(csound, p->outarr, numitems);
+
+    tabinit_compat(csound, p->outarr, numitems, &(p->h));
     p->numitems = numitems;
     p->maxrow = (p->tabsourcelen - *p->ioffset) / *p->inumcols - FL(2);
     return OK;
@@ -1363,7 +1371,7 @@ getrowlin_init(CSOUND *csound, GETROWLIN *p) {
     if (end < 1)
       end = p->inarr->sizes[1];
     int numitems = (int) (ceil((end - start) / (MYFLT)step));
-    tabinit(csound, p->outarr, numitems);
+    tabinit_compat(csound, p->outarr, numitems, &(p->h));
     p->numitems = numitems;
     return OK;
 }
@@ -1448,38 +1456,76 @@ Input types:
 #define S(x)    sizeof(x)
 
 static OENTRY localops[] = {
+
+#ifdef CSOUNDAPI6
     // aout beosc xfreq, kbw, ifn=-1, iphase=0, iflags=1
-    {"beosc", S(BEOSC), TR, 3, "a", "kkjop", (SUBR)beosc_init, (SUBR)beosc_kkiii },
-    {"beosc", S(BEOSC), TR, 3, "a", "akjop", (SUBR)beosc_init, (SUBR)beosc_akiii },
+    {"beosc", S(BEOSC), TR, 3, "a", "kkjop", (SUBR)beosc_init, (SUBR)beosc_kkiii, NULL, NULL },
+    {"beosc", S(BEOSC), TR, 3, "a", "akjop", (SUBR)beosc_init, (SUBR)beosc_akiii, NULL, NULL },
 
     // aout beadsynt ifreqft, iampft, ibwft, inumosc,
     //               iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
-    {"beadsynt", S(BEADSYNT), TR, 3, "a", "iiijpPPjj",
-             (SUBR)beadsynt_init, (SUBR)beadsynt_perf },
+    {"beadsynt", S(BEADSYNT), TR, 3, "a", "iiijpPPjj", (SUBR)beadsynt_init, (SUBR)beadsynt_perf, NULL, NULL },
 
     // aout beadsynt kFreq[], kAmp[], kBw[],
     //               inumosc=-1, iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
-    {"beadsynt", S(BEADSYNT), TR, 3, "a", ".[].[].[]jpPPjj",
-     (SUBR)beadsynt_init_array, (SUBR)beadsynt_perf },
+    {"beadsynt", S(BEADSYNT), TR, 3, "a", ".[].[].[]jpPPjj", (SUBR)beadsynt_init_array, (SUBR)beadsynt_perf, NULL, NULL },
 
 
     // tabrowlin krow, ifnsrc, ifndest, inumcols,
     //                 ioffset=0, istart=0, iend=0, istep=1
-    {"tabrowlin", S(TABROWCOPY), 0, 3, "", "kiiiooop",
-     (SUBR)tabrowcopy_init, (SUBR)tabrowcopyk },
+    {"tabrowlin", S(TABROWCOPY), 0, 3, "", "kiiiooop", (SUBR)tabrowcopy_init, (SUBR)tabrowcopyk, NULL, NULL },
 
     // kOut[]  tabrowlin krow, ifnsrc, inumcols,
     //                   ioffset=0, istart=0, iend=0, istep=1
-    {"getrowlin", S(TABROWCOPY), 0, 3, "k[]", "kiiooop",
-     (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k},
+    {"getrowlin", S(TABROWCOPY), 0, 3, "k[]", "kiiooop", (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k, NULL, NULL},
 
     // kOut[] getrowlin kMtrx[], krow, kstart=0, kend=0, kstep=1
-    {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "k[]kOOP",
-     (SUBR)getrowlin_init, (SUBR)getrowlin_k },
+    {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "k[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
 
-    {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "i[]kOOP",
-     (SUBR)getrowlin_init, (SUBR)getrowlin_k },
+    {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "i[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
+#else
+    // csound7
+    //   name          struct      0   outsig insig    init                perf            deinit                 NULL
+    // { "OSCsend_lo", S(OSCSEND), 0,  "",    "kSkSN", (SUBR)osc_send_set, (SUBR)osc_send, (SUBR) oscsend_deinit, NULL },
+    //   typedef struct oentry {
+    // char    *opname;
+    // uint16  dsblksiz;
+    // uint16  flags;
+    // char    *outypes;
+    // char    *intypes;
+    // int32_t  (*init)(CSOUND *, void *p);
+    // int32_t  (*perf)(CSOUND *, void *p);
+    // int32_t  (*deinit)(CSOUND *, void *p);
+    // void    *useropinfo; /* user opcode parameters */
+    // } OENTRY;
 
+    {"beosc", S(BEOSC), 0, "a", "kkjop", (SUBR)beosc_init, (SUBR)beosc_kkiii, NULL, NULL },
+    {"beosc", S(BEOSC), 0, "a", "akjop", (SUBR)beosc_init, (SUBR)beosc_akiii, NULL, NULL },
+
+
+    // aout beadsynt ifreqft, iampft, ibwft, inumosc,
+    //               iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
+    {"beadsynt", S(BEADSYNT), 0, "a", "iiijpPPjj", (SUBR)beadsynt_init, (SUBR)beadsynt_perf, NULL, NULL },
+
+    // aout beadsynt kFreq[], kAmp[], kBw[],
+    //               inumosc=-1, iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
+    {"beadsynt", S(BEADSYNT), 0, "a", ".[].[].[]jpPPjj", (SUBR)beadsynt_init_array, (SUBR)beadsynt_perf, NULL, NULL },
+
+
+    // tabrowlin krow, ifnsrc, ifndest, inumcols,
+    //                 ioffset=0, istart=0, iend=0, istep=1
+    {"tabrowlin", S(TABROWCOPY), 0, "", "kiiiooop", (SUBR)tabrowcopy_init, (SUBR)tabrowcopyk, NULL, NULL },
+
+    // kOut[]  tabrowlin krow, ifnsrc, inumcols,
+    //                   ioffset=0, istart=0, iend=0, istep=1
+    {"getrowlin", S(TABROWCOPY), 0, "k[]", "kiiooop", (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k, NULL, NULL},
+
+    // kOut[] getrowlin kMtrx[], krow, kstart=0, kend=0, kstep=1
+    {"getrowlin", S(GETROWLIN), 0, "k[]", "k[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
+
+    {"getrowlin", S(GETROWLIN), 0, "k[]", "i[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
+
+#endif
 
 };
 

@@ -22,11 +22,18 @@
 
   */
 
+#include "sndfile.h"
+// This define is needed in csound7 to avoid soundfile.h getting included
+// and creating conflicts with the symbols imported in sndfile.h
+#define _SOUNDFILE_H_
+
 #include "csdl.h"
 #include <math.h>
 #include <ctype.h>
 #include "arrays.h"
 #include "cs_strlib.h"
+#include "../../common/_common.h"
+
 
 #if defined WIN32 || defined __MINGW32__ || defined _WIN32 || defined _WIN64
     #define OS_WIN32
@@ -42,47 +49,8 @@
 #endif
 
 
-#include "sndfile.h"
-
 
 #define FORCE_FORWARD_SLASH
-
-
-#define min(x, y) (((x) < (y)) ? (x) : (y))
-#define max(x, y) (((x) > (y)) ? (x) : (y))
-
-#define MSGF(fmt, ...) (csound->Message(csound, fmt, __VA_ARGS__))
-#define MSG(s) (csound->Message(csound, s))
-#define INITERR(m) (csound->InitError(csound, "%s", m))
-#define INITERRF(fmt, ...) (csound->InitError(csound, fmt, __VA_ARGS__))
-#define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
-#define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
-
-
-// #define DEBUG
-
-#ifdef DEBUG
-    #define DBG(fmt, ...) printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);
-    #define DBG_(m) DBG("%s", m)
-#else
-    #define DBG(fmt, ...)
-    #define DBG_(m)
-#endif
-
-
-#define SAMPLE_ACCURATE(out) \
-    uint32_t n, nsmps = CS_KSMPS;                                    \
-    uint32_t offset = p->h.insdshead->ksmps_offset;                  \
-    uint32_t early = p->h.insdshead->ksmps_no_end;                   \
-    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));   \
-    if (UNLIKELY(early)) {                                           \
-        nsmps -= early;                                              \
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));              \
-    }                                                                \
-
-
-#define register_deinit(csound, p, func) \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
 
 
 // Sstr filereadmeta "sndfile.wav", Skey
@@ -163,6 +131,7 @@ typedef struct {
     STRINGDAT *sndfile;
 } SFREADMETA_SS;
 
+
 static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
     SNDFILE *file;
     SF_INFO sfinfo;
@@ -177,8 +146,8 @@ static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
         if(sf_get_string(file, str_type) != NULL)
             numpairs++;
     }
-    tabinit(csound, p->skeys, numpairs);
-    tabinit(csound, p->svalues, numpairs);
+    TABINIT(csound, p->skeys, numpairs);
+    TABINIT(csound, p->svalues, numpairs);
     STRINGDAT *keys = (STRINGDAT *)p->skeys->data;
     STRINGDAT *values = (STRINGDAT *)p->svalues->data;
     size_t i=0;
@@ -202,9 +171,13 @@ static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-
-    { "filereadmeta.i", S(SFREADMETA), 0, 1, "S", "SS", (SUBR)sfreadmeta_i}
-    ,{ "filereadmeta.i", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss}
+#ifdef CSOUNDAPI6
+    { "filereadmeta.i", S(SFREADMETA), 0, 1, "S", "SS", (SUBR)sfreadmeta_i, NULL, NULL, NULL},
+    { "filereadmeta.i", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss, NULL, NULL, NULL},
+#else
+    { "filereadmeta.i", S(SFREADMETA), 0, "S", "SS", (SUBR)sfreadmeta_i, NULL, NULL, NULL},
+    { "filereadmeta.i", S(SFREADMETA_SS), 0, "S[]S[]", "S", (SUBR)sfreadmeta_ss, NULL, NULL, NULL},
+#endif
 };
 
 LINKAGE

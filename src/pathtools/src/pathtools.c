@@ -33,6 +33,8 @@
 #include "arrays.h"
 #include "cs_strlib.h"
 
+#include "../../common/_common.h"
+
 #if defined WIN32 || defined __MINGW32__ || defined _WIN32 || defined _WIN64
     #define OS_WIN32
 #endif
@@ -50,19 +52,6 @@
 #define FORCE_FORWARD_SLASH
 
 
-#define min(x, y) (((x) < (y)) ? (x) : (y))
-#define max(x, y) (((x) > (y)) ? (x) : (y))
-
-#define MSGF(fmt, ...) (csound->Message(csound, fmt, __VA_ARGS__))
-#define MSG(s) (csound->Message(csound, s))
-#define INITERR(m) (csound->InitError(csound, "%s", m))
-#define INITERRF(fmt, ...) (csound->InitError(csound, fmt, __VA_ARGS__))
-#define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
-#define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
-
-
-// #define DEBUG
-
 #ifdef DEBUG
     #define DBG(fmt, ...) printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);
     #define DBG_(m) DBG("%s", m)
@@ -70,22 +59,6 @@
     #define DBG(fmt, ...)
     #define DBG_(m)
 #endif
-
-
-#define SAMPLE_ACCURATE(out) \
-    uint32_t n, nsmps = CS_KSMPS;                                    \
-    uint32_t offset = p->h.insdshead->ksmps_offset;                  \
-    uint32_t early = p->h.insdshead->ksmps_no_end;                   \
-    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));   \
-    if (UNLIKELY(early)) {                                           \
-        nsmps -= early;                                              \
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));              \
-    }                                                                \
-
-
-#define register_deinit(csound, p, func) \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
-
 
 static inline char _get_path_separator() {
 #ifdef FORCE_FORWARD_SLASH
@@ -178,7 +151,7 @@ static int32_t string_split(CSOUND *csound, STRSPLIT *p) {
         }
         ptr += seplen;
     }
-    tabinit(csound, p->parts, numseps+1);
+    TABINIT(csound, p->parts, numseps+1);
     STRINGDAT *parts = (STRINGDAT *)p->parts->data;
     int64_t start = 0;
     int64_t partlen;
@@ -244,7 +217,8 @@ static int32_t strjoin_varargs_i(CSOUND *csound, STRJOIN_VARARGS *p) {
     int32_t sizes[200];
     char *sep = p->sep->data;
     int32_t sepsize = strlen(sep);
-    int32_t numstrs = csound->GetInputArgCnt(p) - 1;
+    // int32_t numstrs = csound->GetInputArgCnt(p) - 1;
+    int32_t numstrs = _GetInputArgCnt(csound, p) - 1;
     if(numstrs > 200) {
         return INITERRF("Too many arguments, max. is 200, got %d", numstrs);
     }
@@ -660,22 +634,42 @@ static int32_t getPlatform(CSOUND *csound, S_ *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-     { "pathSplit", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplit_opcode }
-    ,{ "pathSplitk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplit_opcode }
-    ,{ "pathSplitExt", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplitExt_opcode }
-    ,{ "pathSplitExtk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplitExt_opcode }
-    ,{ "pathIsAbsolute.i", S(K_S), 0, 1, "i", "S", (SUBR)pathIsAbsolute}
-    ,{ "pathIsAbsolute.k", S(K_S), 0, 2, "k", "S", NULL, (SUBR)pathIsAbsolute}
-    ,{ "pathAbsolute", S(S_S), 0, 1, "S", "S", (SUBR)pathAbsolute}
-    ,{ "pathJoin", S(S_SS), 0, 1, "S", "SS", (SUBR)pathJoin}
-    ,{ "findFileInPath", S(S_S), 0, 1, "S", "S", (SUBR)findFile}
-    ,{ "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar }
-    ,{ "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript }
-    ,{ "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative }
-    ,{ "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform}
-    ,{ "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split}
-    ,{ "strjoin.arr_i", S(STRJOIN_ARR), 0, 1, "S", "SS[]", (SUBR)strjoin_arr_i}
-    ,{ "strjoin.i", S(STRJOIN_VARARGS), 0, 1, "S", "S*", (SUBR)strjoin_varargs_i}
+#ifdef CSOUNDAPI6
+    { "pathSplit", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplit_opcode, NULL, NULL, NULL }
+    ,{ "pathSplitk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplit_opcode, NULL, NULL }
+    ,{ "pathSplitExt", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplitExt_opcode, NULL, NULL, NULL }
+    ,{ "pathSplitExtk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplitExt_opcode, NULL, NULL }
+    ,{ "pathIsAbsolute.i", S(K_S), 0, 1, "i", "S", (SUBR)pathIsAbsolute, NULL, NULL, NULL}
+    ,{ "pathIsAbsolute.k", S(K_S), 0, 2, "k", "S", NULL, (SUBR)pathIsAbsolute, NULL, NULL}
+    ,{ "pathAbsolute", S(S_S), 0, 1, "S", "S", (SUBR)pathAbsolute, NULL, NULL, NULL}
+    ,{ "pathJoin", S(S_SS), 0, 1, "S", "SS", (SUBR)pathJoin, NULL, NULL, NULL}
+    ,{ "findFileInPath", S(S_S), 0, 1, "S", "S", (SUBR)findFile, NULL, NULL, NULL}
+    ,{ "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar, NULL, NULL, NULL }
+    ,{ "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript, NULL, NULL, NULL }
+    ,{ "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative, NULL, NULL, NULL }
+    ,{ "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform, NULL, NULL, NULL}
+    ,{ "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split, NULL, NULL, NULL}
+    ,{ "strjoin.arr_i", S(STRJOIN_ARR), 0, 1, "S", "SS[]", (SUBR)strjoin_arr_i, NULL, NULL, NULL}
+    ,{ "strjoin.i", S(STRJOIN_VARARGS), 0, 1, "S", "S*", (SUBR)strjoin_varargs_i, NULL, NULL, NULL}
+#else
+     { "pathSplit", S(SS_S), 0, "SS", "S", (SUBR)pathSplit_opcode, NULL, NULL, NULL }
+    ,{ "pathSplitk", S(SS_S), 0, "SS", "S", NULL, (SUBR)pathSplit_opcode, NULL, NULL }
+    ,{ "pathSplitExt", S(SS_S), 0, "SS", "S", (SUBR)pathSplitExt_opcode, NULL, NULL, NULL }
+    ,{ "pathSplitExtk", S(SS_S), 0, "SS", "S", NULL, (SUBR)pathSplitExt_opcode, NULL, NULL }
+    ,{ "pathIsAbsolute.i", S(K_S), 0, "i", "S", (SUBR)pathIsAbsolute, NULL, NULL, NULL}
+    ,{ "pathIsAbsolute.k", S(K_S), 0, "k", "S", NULL, (SUBR)pathIsAbsolute, NULL, NULL}
+    ,{ "pathAbsolute", S(S_S), 0, "S", "S", (SUBR)pathAbsolute, NULL, NULL, NULL}
+    ,{ "pathJoin", S(S_SS), 0, "S", "SS", (SUBR)pathJoin, NULL, NULL, NULL}
+    ,{ "findFileInPath", S(S_S), 0, "S", "S", (SUBR)findFile, NULL, NULL, NULL}
+    ,{ "getEnvVar", S(S_S), 0, "S", "S", (SUBR)getEnvVar, NULL, NULL, NULL }
+    ,{ "scriptDir", S(S_), 0, "S", "", (SUBR)pathOfScript, NULL, NULL, NULL }
+    ,{ "pathNative", S(S_S), 0, "S", "S", (SUBR)pathNative, NULL, NULL, NULL }
+    ,{ "sysPlatform", S(S_), 0, "S", "", (SUBR)getPlatform, NULL, NULL, NULL}
+    ,{ "strsplit", S(STRSPLIT), 0, "S[]", "SS", (SUBR)string_split, NULL, NULL, NULL}
+    ,{ "strjoin.arr_i", S(STRJOIN_ARR), 0, "S", "SS[]", (SUBR)strjoin_arr_i, NULL, NULL, NULL}
+    ,{ "strjoin.i", S(STRJOIN_VARARGS), 0, "S", "S*", (SUBR)strjoin_varargs_i, NULL, NULL, NULL}
+
+#endif
 };
 
 LINKAGE

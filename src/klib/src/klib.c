@@ -196,6 +196,9 @@
 #include "ukstring.h"
 #include <ctype.h>
 
+#include "../../common/_common.h"
+
+
 typedef int32_t i32;
 typedef uint32_t ui32;
 typedef int64_t i64;
@@ -206,6 +209,7 @@ typedef uint64_t ui64;
 #define DICT_INITIAL_SIZE 8
 #define FLOAT_FMT "%.10g"
 
+/*
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -213,8 +217,10 @@ typedef uint64_t ui64;
 #define INITERRF(fmt, ...) (csound->InitError(csound, fmt, __VA_ARGS__))
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
-#define ARRAYCHECK(arr, size) (tabcheck(csound, arr, size, &(p->h)))
 #define MSGF(fmt, ...) (csound->Message(csound, fmt, __VA_ARGS__))
+*/
+
+#define ARRAYCHECK(arr, size) (tabcheck(csound, arr, size, &(p->h)))
 
 #define UI32MAX 0x7FFFFFFF
 
@@ -262,9 +268,10 @@ typedef uint64_t ui64;
 
 #define get_handle(p) (&((p)->g->handles[(ui32)*(p)->handleidx]))
 
+#ifdef CSOUNDAPI6
 #define register_deinit(csound, p, func) \
     csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
-
+#endif
 
 
 // #define CSOUND_MULTICORE
@@ -400,7 +407,6 @@ typedef struct {
     ui64 counter;
     void *hashtab;
     void *hashtab2;   // used by the "any" type to support both float and string values
-    int isglobal;
     void *mutex_;
     spin_lock_t lock;
 } HANDLE;
@@ -613,15 +619,13 @@ dict_release_slot(HASH_GLOBALS *g, i32 slot) {
  *
  * g: globals as returned by dict_globals
  * khtype: the int signature of this dict
- * isglobal: should this dict be deallocated together with the instrument or should
- *           it outlive the instr
  *
  * a dict of type str:any has two hashtables
  *  hashtab: str:str
  *  hashtab2: str:float
  */
 static i32
-dict_make_strany(CSOUND *csound, HASH_GLOBALS *g, ui32 idx, int isglobal) {
+dict_make_strany(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
     khash_t(khStrFlt) *hsf = kh_init(khStrFlt);
     khash_t(khStrStr) *hss = kh_init(khStrStr);
     HANDLE *handle = &(g->handles[idx]);
@@ -629,14 +633,13 @@ dict_make_strany(CSOUND *csound, HASH_GLOBALS *g, ui32 idx, int isglobal) {
     handle->hashtab2 = hsf;
     handle->khtype = khStrAny;
     handle->counter = 0;
-    handle->isglobal = isglobal;
     handle->mutex_ = csound->Create_Mutex(0);
     return OK;
 }
 
 
 static i32
-dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal, ui32 initialsize) {
+dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, ui32 initialsize) {
     i32 idx = dict_getfreeslot(g);
     DBG("Creating dict with index %d\n", idx);
     if(idx < 0) {
@@ -646,7 +649,7 @@ dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal, ui32 initia
     void *hashtab = NULL;
     if(khtype == khStrAny) {
         // initialsize is not taken into account
-        int res = dict_make_strany(csound, g, idx, isglobal);
+        int res = dict_make_strany(csound, g, idx);
         if(res == NOTOK) {
             MSGF("Error when calling dict_make_strany (idx: %d)\n", idx);
             return NOTOK;
@@ -677,12 +680,12 @@ dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, int isglobal, ui32 initia
     handle->hashtab2 = NULL;
     handle->khtype = khtype;
     handle->counter = 0;
-    handle->isglobal = isglobal;
     handle->mutex_ = csound->Create_Mutex(0);
     return idx;
 }
 
 
+/*
 static i32
 dict_copy(CSOUND *csound, HASH_GLOBALS *g, ui32 index) {
     // TODO!
@@ -690,6 +693,7 @@ dict_copy(CSOUND *csound, HASH_GLOBALS *g, ui32 index) {
     if(newidx < 0) return -1;
     return (ui32)newidx;
 }
+*/
 
 
 /**
@@ -815,7 +819,6 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
     handle->hashtab2 = NULL;
     handle->counter = 0;
     handle->khtype = 0;
-    handle->isglobal = 0;
     dict_release_slot(g, idx);
     return OK;
 }
@@ -824,6 +827,8 @@ _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
  * function called when deiniting a dict (for example, when a local dict
  * was created and the note it belongs to is released)
  */
+
+/*
 static i32
 dict_deinit_callback(CSOUND *csound, DICT_NEW *p) {
     i32 idx = p->idx;
@@ -843,7 +848,7 @@ dict_deinit_callback(CSOUND *csound, DICT_NEW *p) {
     return _dict_free(csound, g, idx);
 
 }
-
+*/
 
 
 /**
@@ -948,7 +953,6 @@ strdef_to_intdef(STRINGDAT *s) {
 static i32
 dict_new(CSOUND *csound, DICT_NEW *p) {
     p->g = dict_globals(csound);
-    p->global = 1;
     // All dicts are global now
     p->global = 1;
     i32 khtype = strdef_to_intdef(p->keyvaltype);
@@ -957,24 +961,16 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
                            " Expected one of 'str:float', 'str:str', 'int:float', "
                            "'int:str', 'str:any'"));
     int capacity = DICT_INITIAL_SIZE;
-    if(csound->GetInputArgCnt(p) == 2) {
+    if(_GetInputArgCnt(csound, p) == 2) {
         // called as idict dict_new "sf", icapacity
         capacity = (int)*(MYFLT*)p->inargs[0];
     }
-    i32 idx = dict_make(csound, p->g, khtype, (i32) p->global, capacity);
+    i32 idx = dict_make(csound, p->g, khtype, capacity);
     if(idx < 0)
         return INITERR(Str("dict_new: failed to create a new dict"));
     p->idx = idx;
     *p->handleidx = (MYFLT)idx;
     p->khtype = khtype;
-    if (p->global == 0) {
-        // we capture a copy of the opcode for deinit. This allows to make multiple
-        // dicts in a init time loop
-        DICT_NEW *p2 = csound->Malloc(csound, sizeof(DICT_NEW));
-        p2->h.insdshead = p->h.insdshead;
-        p2->idx = p->idx;
-        register_deinit(csound, p2, dict_deinit_callback);
-    }
     return OK;
 }
 
@@ -1024,7 +1020,7 @@ static i32
 dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
     i32 numkeys = _strcount(p->str->data, ',');
     HASH_GLOBALS *g = dict_globals(csound);
-    i32 idx = dict_make(csound, g, khStrAny, 1, numkeys);
+    i32 idx = dict_make(csound, g, khStrAny, numkeys);
     if(idx < 0) {
         return INITERRF("Failed to create a dict handle for str %s", p->str->data);
     }
@@ -1124,9 +1120,11 @@ check_multi_signature(CSOUND *csound, void **args, ui32 numargs, int khtype) {
     if(numargs % 2 != 0)
         return INITERRF("number of arguments should be even, got %d", numargs);
     for(ui32 i=0; i<numargs; i+=2) {
-        cstype = csound->GetTypeForArg(args[i]);
+        // cstype = csound->GetTypeForArg(args[i]);
+        cstype = _GetTypeForArg(csound, args[i]);
         char c0 = cstype->varTypeName[0];
-        cstype = csound->GetTypeForArg(args[i+1]);
+        // cstype = csound->GetTypeForArg(args[i+1]);
+        cstype = _GetTypeForArg(csound, args[i+1]);
         char c1 = cstype->varTypeName[0];
         pairtype = type_char_to_int(c0) * 10 + type_char_to_int(c1);
         if(pairtype < 0)
@@ -1242,13 +1240,9 @@ dict_set_if(CSOUND *csound, DICT_SET_if *p) {
         p->lastkey = key;
         if (absent) {
             handle->counter++;
-            if(handle->isglobal) {
-                LOCK(handle);
-                    kh_key(h, k) = key;
-                UNLOCK(handle);
-            } else {
-                kh_key(h, k) = key;
-            }
+            LOCK(handle);
+            kh_key(h, k) = key;
+            UNLOCK(handle);
         }
         p->counter = handle->counter;
     }
@@ -1330,12 +1324,9 @@ dict_set_sf_(CSOUND *csound, DICT_SET_sf *p, HANDLE *handle, khash_t(khStrFlt) *
     p->lastidx = k = kh_put(khStrFlt, h, p->outkey->data, &absent);
     if (absent) {
         key = csound->Strdup(csound, p->outkey->data);
-        if(handle->isglobal) {
-            LOCK(handle);
-                kh_key(h, k) = key;
-            UNLOCK(handle);
-        } else
-            kh_key(h, k) = key;
+        LOCK(handle);
+        kh_key(h, k) = key;
+        UNLOCK(handle);
         handle->counter++;
     }
     kh_value(h, k) = *p->outval;
@@ -1556,13 +1547,13 @@ dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
     return OK;
 }
 
-
+/*
 static i32
 dict_del_s_atstop(CSOUND *csound, DICT_DEL_s *p) {
     register_deinit(csound, p, dict_del_s);
     return OK;
 }
-
+*/
 
 typedef struct {
     OPDS h;
@@ -1608,13 +1599,13 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
     return OK;
 }
 
-
+/*
 static i32
 dict_del_i_atstop(CSOUND *csound, DICT_DEL_s *p) {
     register_deinit(csound, p, dict_del_i);
     return OK;
 }
-
+*/
 
 // ------------------------------------------------------
 //                         GET
@@ -1951,8 +1942,6 @@ hashtab_get_is_i(CSOUND *csound, DICT_GET_is *p) {
  *
  * modelled after ftfree
  *
- * NB: dict_free can only be called with a global dict (isglobal=1)
- *
  */
 
 typedef struct {
@@ -1982,13 +1971,13 @@ dict_free(CSOUND *csound, DICT_FREE *p) {
     HANDLE *handle = &(g->handles[idx]);
     if(handle->hashtab == NULL)
         return PERFERR(Str("dict free: instance does not exist"));
-    if(handle->isglobal == 0)
-        return PERFERR(Str("dict free: only global dicts can be freed"));
     if((i32)*p->iwhen == 0) {
         return _dict_free(csound, g, idx);
     }
+#ifdef CSOUNDAPI6
     // free at the end of the note
     register_deinit(csound, p, dict_free_callback);
+#endif
     return OK;
 }
 
@@ -2343,8 +2332,8 @@ typedef struct {
     MYFLT *handleidx;
     STRINGDAT *cmdstr;
 
-    i32 cmd;
     HASH_GLOBALS *g;
+    i32 cmd;
 } DICT_QUERY_ARR;
 
 
@@ -2468,8 +2457,8 @@ dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     HANDLE *handle = get_handle(p);
     char *vartypename = p->outstr->arrayType->varTypeName;
     ui32 size = handle_get_hashtable_size(handle);
-    tabinit(csound, p->outstr, (i32)size);
-
+    // tabinit(csound, p->outstr, (i32)size);
+    TABINIT(csound, p->outstr, (i32)size);
     if(strcmp(data, "keys")==0) {
         if(handle->khtype == 21 || handle->khtype == 22) {
             // str keys, check output array
@@ -2729,7 +2718,8 @@ set_many_sa(CSOUND *csound, void**inargs, ui32 numargs, HANDLE *handle) {
     STRINGDAT *svalue;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
         STRINGDAT *key = (STRINGDAT *)inargs[argidx];
-        CS_TYPE *cstype = csound->GetTypeForArg(inargs[argidx+1]);
+        // CS_TYPE *cstype = csound->GetTypeForArg(inargs[argidx+1]);
+        CS_TYPE *cstype = _GetTypeForArg(csound, inargs[argidx+1]);
         char argtype = cstype->varTypeName[0];
         switch(argtype) {
         case 'S':
@@ -3079,7 +3069,9 @@ sview_i(CSOUND *csound, CACHEGET *p) {
     if(ks == NULL)
         return INITERRF("string not found in cache (idx: %d)", idx);
     stringdat_view(csound, p->outstr, ks->s, ks->m);
+#ifdef CSOUNDAPI6
     register_deinit(csound, p, sview_deinit);
+#endif
     return OK;
 }
 
@@ -3088,7 +3080,9 @@ sview_init(CSOUND *csound, CACHEGET *p) {
     STRCACHE_GLOBALS *g = cache_globals(csound);
     p->g = g;
     stringdat_view_init(csound, p->outstr);
+#ifdef CSOUNDAPI6
     register_deinit(csound, p, sview_deinit);
+#endif
     return OK;
 }
 
@@ -3122,6 +3116,7 @@ strpeek_deinit(CSOUND *csound, STRPEEK *p) {
     return OK;
 }
 
+#ifdef CSOUNDAPI6
 static i32
 strpeek_i(CSOUND *csound, STRPEEK *p) {
     int idx = (int)*p->idx;
@@ -3136,6 +3131,8 @@ strpeek_i(CSOUND *csound, STRPEEK *p) {
     register_deinit(csound, p, strpeek_deinit);
     return OK;
 }
+#endif
+
 
 static i32
 cachepop_i(CSOUND *csound, CACHEGET *p) {
@@ -3476,6 +3473,7 @@ static i32
 pool_push_init(CSOUND *csound, POOL_PUSH *p) {
     p->g = pool_globals(csound);
     p->handle = pool_get_handle(p->g, (int)*p->handleidx);
+    p->when = 0;
     if(p->handle == NULL)
         return INITERRF("Invalid handle for idx: %d", (int)*p->handleidx);
     return OK;
@@ -3513,13 +3511,21 @@ pool_push_perf(CSOUND *csound, POOL_PUSH *p) {
 }
 
 static i32
+pool_push_deinit(CSOUND *csound, POOL_PUSH *p) {
+    if(*p->when == 1) {
+        pool_push_perf_(csound, p, 2);
+    }
+    return OK;
+}
+
+static i32
 pool_push_i(CSOUND *csound, POOL_PUSH *p) {
     pool_push_init(csound, p);
-    if(*p->when == 1) {
-        register_deinit(csound, p, pool_push_perf);
-        return OK;
+    if(*p->when == 0) {
+        return pool_push_perf_(csound, p, 1);
     }
-    return pool_push_perf_(csound, p, 1);
+    return OK;
+
 }
 
 // this is called when reseting csound.
@@ -3557,119 +3563,179 @@ pool_at_i(CSOUND *csound, POOL_1 *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-    { "dict_new.size", S(DICT_NEW), 0, 1, "i", "Sj", (SUBR)dict_new },
-    { "dict_new.many", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many },
-    { "dict_new.many_k", S(DICT_NEW), 0, 2, "k", "S*", NULL, (SUBR)dict_new_many },
+#ifdef CSOUNDAPI6
+    { "dict_new.size", S(DICT_NEW), 0, 1, "i", "Sj", (SUBR)dict_new, NULL, NULL, NULL },
+    { "dict_new.many", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many, NULL, NULL, NULL },
+    { "dict_new.many_k", S(DICT_NEW), 0, 2, "k", "S*", NULL, (SUBR)dict_new_many, NULL, NULL },
 
-    { "dict_free", S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free},
+    { "dict_free", S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free, NULL, NULL, NULL},
 
-    { "dict_clear.i", S(DICT_CLEAR), 0, 1, "", "i", (SUBR)dict_clear_i},
-    { "dict_clear.k", S(DICT_CLEAR), 0, 3, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf},
+    { "dict_clear.i", S(DICT_CLEAR), 0, 1, "", "i", (SUBR)dict_clear_i, NULL, NULL, NULL},
+    { "dict_clear.k", S(DICT_CLEAR), 0, 3, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf, NULL, NULL},
 
-    { "dict_get.sk_k", S(DICT_GET_sf), 0, 3, "k", "iSO",
-      (SUBR)dict_get_sf_0, (SUBR)dict_get_sf },
-    { "dict_get.ss_k", S(DICT_GET_ss), 0, 3, "S", "iS",
-      (SUBR)dict_get_ss_0, (SUBR)dict_get_ss },
-    { "dict_geti.ss_i", S(DICT_GET_ss), 0, 1, "S", "iS", (SUBR)dict_get_ss_i},
-    { "dict_get.sf_i", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i},
-    { "dict_get.if_k", S(DICT_GET_if), 0, 3, "k", "ikO",
-      (SUBR)dict_get_if_0, (SUBR)dict_get_if },
-    { "dict_get.is_i", S(DICT_GET_is), 0, 1, "S", "ii",
-      (SUBR)hashtab_get_is_i},
+    { "dict_get.sk_k", S(DICT_GET_sf), 0, 3, "k", "iSO", (SUBR)dict_get_sf_0, (SUBR)dict_get_sf, NULL, NULL },
+    { "dict_get.ss_k", S(DICT_GET_ss), 0, 3, "S", "iS", (SUBR)dict_get_ss_0, (SUBR)dict_get_ss, NULL, NULL },
+    { "dict_geti.ss_i", S(DICT_GET_ss), 0, 1, "S", "iS", (SUBR)dict_get_ss_i, NULL, NULL, NULL},
+    { "dict_get.sf_i", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i, NULL, NULL, NULL},
+    { "dict_get.if_k", S(DICT_GET_if), 0, 3, "k", "ikO", (SUBR)dict_get_if_0, (SUBR)dict_get_if, NULL, NULL },
+    { "dict_get.is_i", S(DICT_GET_is), 0, 1, "S", "ii", (SUBR)hashtab_get_is_i, NULL, NULL, NULL},
 
-    { "dict_get.is_k", S(DICT_GET_is), 0, 3, "S", "ik",
-      (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is },
+    { "dict_get.is_k", S(DICT_GET_is), 0, 3, "S", "ik", (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is, NULL, NULL },
 
-    { "dict_get.if_i", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i},
+    { "dict_get.if_i", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i, NULL, NULL, NULL},
 
 
-    { "dict_set.ss_k", S(DICT_SET_ss), 0, 3, "",  "iSS",
-      (SUBR)dict_set_ss_0, (SUBR)dict_set_ss },
-    { "dict_set.sf_i", S(DICT_SET_sf), 0, 1, "",  "iSi",
-      (SUBR)dict_set_sf_i},
-    { "dict_set.sf_k", S(DICT_SET_sf), 0, 3, "",  "iSk",
-      (SUBR)dict_set_sf_0, (SUBR)dict_set_sf },
-    { "dict_set.if_i", S(DICT_SET_if), 0, 1, "",  "iii",
-      (SUBR)dict_set_if_i},
+    { "dict_set.ss_k", S(DICT_SET_ss), 0, 3, "",  "iSS", (SUBR)dict_set_ss_0, (SUBR)dict_set_ss, NULL, NULL },
+    { "dict_set.sf_i", S(DICT_SET_sf), 0, 1, "",  "iSi", (SUBR)dict_set_sf_i, NULL, NULL, NULL},
+    { "dict_set.sf_k", S(DICT_SET_sf), 0, 3, "",  "iSk", (SUBR)dict_set_sf_0, (SUBR)dict_set_sf, NULL, NULL },
+    { "dict_set.if_i", S(DICT_SET_if), 0, 1, "",  "iii", (SUBR)dict_set_if_i, NULL, NULL, NULL},
 
-    { "dict_set.if_k", S(DICT_SET_if), 0, 3, "",  "ikk",
-      (SUBR)dict_set_if_0, (SUBR)dict_set_if },
+    { "dict_set.if_k", S(DICT_SET_if), 0, 3, "",  "ikk", (SUBR)dict_set_if_0, (SUBR)dict_set_if, NULL, NULL },
 
-    { "dict_set.is_i", S(DICT_SET_is), 0, 1, "",  "iiS",
-      (SUBR)dict_set_is_i},
+    { "dict_set.is_i", S(DICT_SET_is), 0, 1, "",  "iiS", (SUBR)dict_set_is_i, NULL, NULL, NULL},
 
-    { "dict_set.is_k", S(DICT_SET_is), 0, 3, "",  "ikS",
-      (SUBR)dict_set_is_0, (SUBR)dict_set_is },
+    { "dict_set.is_k", S(DICT_SET_is), 0, 3, "",  "ikS", (SUBR)dict_set_is_0, (SUBR)dict_set_is, NULL, NULL },
 
-    { "dict_del.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i },
-    { "dict_del.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i },
-    { "dict_del.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s },
+    { "dict_del.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i, NULL, NULL, NULL },
+    { "dict_del.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i, NULL, NULL },
+    { "dict_del.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s, NULL, NULL },
     // { "dict_del", S(DICT_DEL_s), 0, 1, "", "iS", (SUBR)dict_del_s_atstop},
     // { "dict_del", S(DICT_DEL_s), 0, 1, "", "ii", (SUBR)dict_del_i_atstop},
 
-    { "dict_print", S(DICT_PRINT), 0, 1, "", "i",  (SUBR)dict_print_i},
-    { "dict_print", S(DICT_PRINT), 0, 3, "", "ik",
-      (SUBR)dict_print_k_0, (SUBR)dict_print_k},
+    { "dict_print", S(DICT_PRINT), 0, 1, "", "i",  (SUBR)dict_print_i, NULL, NULL, NULL},
+    { "dict_print", S(DICT_PRINT), 0, 3, "", "ik", (SUBR)dict_print_k_0, (SUBR)dict_print_k, NULL, NULL},
 
-    { "dict_query.k", S(DICT_QUERY1), 0, 3, "k", "iS",
-      (SUBR)dict_query_0, (SUBR)dict_query },
-    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, 3, "k[]", "iS",
-      (SUBR)dict_query_arr_0, (SUBR)dict_query_arr},
-    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, 3, "S[]", "iS",
-      (SUBR)dict_query_arr_0, (SUBR)dict_query_arr},
+    { "dict_query.k", S(DICT_QUERY1), 0, 3, "k", "iS", (SUBR)dict_query_0, (SUBR)dict_query, NULL, NULL },
+    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, 3, "k[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
+    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, 3, "S[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
 
-    { "dict_iter", S(DICT_ITER), 0, 3, "SSk", "iP",
-      (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf},
-    { "dict_iter", S(DICT_ITER), 0, 3, "Skk", "iP",
-      (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf},
-    { "dict_iter", S(DICT_ITER), 0, 3, "kSk", "iP",
-      (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf},
-    { "dict_iter", S(DICT_ITER), 0, 3, "kkk", "iP",
-      (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf},
+    { "dict_iter", S(DICT_ITER), 0, 3, "SSk", "iP", (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf, NULL, NULL},
+    { "dict_iter", S(DICT_ITER), 0, 3, "Skk", "iP", (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf, NULL, NULL},
+    { "dict_iter", S(DICT_ITER), 0, 3, "kSk", "iP", (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf, NULL, NULL},
+    { "dict_iter", S(DICT_ITER), 0, 3, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf, NULL, NULL},
 
-    { "dict_size.k", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size},
-    { "dict_size.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_size_0},
+    { "dict_size.k", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size, NULL, NULL},
+    { "dict_size.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_size_0, NULL, NULL, NULL},
 
-    { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists },
+    { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists, NULL, NULL, NULL },
 
-    { "dict_loadstr", S(DICT_LOADSTR), 0, 1, "i", "S", (SUBR)dict_loadstr},
-    { "dict_dump", S(DICT_DUMP), 0, 1, "S", "i", (SUBR)dict_dump},
+    { "dict_loadstr", S(DICT_LOADSTR), 0, 1, "i", "S", (SUBR)dict_loadstr, NULL, NULL, NULL},
+    { "dict_dump", S(DICT_DUMP), 0, 1, "S", "i", (SUBR)dict_dump, NULL, NULL, NULL},
     // { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
     // { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
-    { "sref.i_set", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
-    { "sref.k_set", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
+    { "sref.i_set", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i, NULL, NULL, NULL },
+    { "sref.k_set", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf, NULL, NULL },
 
     // { "strcache.i_get", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
     // { "strcache.k_get", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
 
     // { "strview.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview_i},
-    { "sderef.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview_i},
-    { "sderef.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)sview_init, (SUBR)sview_k},
+    { "sderef.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview_i, NULL, NULL, NULL},
+    { "sderef.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)sview_init, (SUBR)sview_k, NULL, NULL},
 
-    { "strpeek.i", S(STRPEEK), 0, 1, "S", "i", (SUBR)strpeek_i },
+    { "strpeek.i", S(STRPEEK), 0, 1, "S", "i", (SUBR)strpeek_i, NULL, NULL, NULL },
 
-    { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen},
-    { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty},
+    { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
+    { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL},
 
-    { "pool_pop.i", S(POOL_1), 0, 1, "i", "ij", (SUBR)pool_pop_i},
-    { "pool_pop.k", S(POOL_1), 0, 3, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf},
+    { "pool_pop.i", S(POOL_1), 0, 1, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
+    { "pool_pop.k", S(POOL_1), 0, 3, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
 
-    { "pool_push.i", S(POOL_PUSH), 0, 1, "", "iio", (SUBR)pool_push_i},
-    { "pool_push.k", S(POOL_PUSH), 0, 3, "", "ik", (SUBR)pool_push_init, (SUBR)pool_push_perf},
+    { "pool_push.i", S(POOL_PUSH), 0, 1, "", "iio", (SUBR)pool_push_i, NULL, NULL, NULL},
+    { "pool_push.k", S(POOL_PUSH), 0, 3, "", "ik", (SUBR)pool_push_init, (SUBR)pool_push_perf, NULL, NULL},
 
-    { "pool_capacity.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_capacity_i},
-    { "pool_capacity.k", S(POOL_1), 0, 3, "k", "i",
-      (SUBR)pool_1_init, (SUBR)pool_capacity_perf},
+    { "pool_capacity.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_capacity_i, NULL, NULL, NULL},
+    { "pool_capacity.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_capacity_perf, NULL, NULL},
 
-    { "pool_size.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_size_i},
-    { "pool_size.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf},
+    { "pool_size.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_size_i, NULL, NULL, NULL},
+    { "pool_size.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf, NULL, NULL},
 
-    { "pool_isfull.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_isfull_i},
-    { "pool_isfull.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_isfull_perf},
+    { "pool_isfull.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_isfull_i, NULL, NULL, NULL},
+    { "pool_isfull.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_isfull_perf, NULL, NULL},
 
-    { "pool_at.i", S(POOL_1), 0, 1, "i", "ii", (SUBR)pool_at_i},
-    { "pool_at.k", S(POOL_1), 0, 3, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf},
+    { "pool_at.i", S(POOL_1), 0, 1, "i", "ii", (SUBR)pool_at_i, NULL, NULL, NULL},
+    { "pool_at.k", S(POOL_1), 0, 3, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf, NULL, NULL},
+#else
+    // Csound 7
+    { "dict_new.size", S(DICT_NEW), 0, "i", "Sj", (SUBR)dict_new, NULL, NULL, NULL },
+    { "dict_new.many", S(DICT_NEW), 0, "i", "S*", (SUBR)dict_new_many, NULL, NULL, NULL },
+    { "dict_new.many_k", S(DICT_NEW), 0, "k", "S*", NULL, (SUBR)dict_new_many, NULL, NULL },
 
+    { "dict_free", S(DICT_FREE),   0, "", "ip",   (SUBR)dict_free, NULL, (SUBR)dict_free_callback, NULL},
+
+    { "dict_clear.i", S(DICT_CLEAR), 0, "", "i", (SUBR)dict_clear_i, NULL, NULL, NULL},
+    { "dict_clear.k", S(DICT_CLEAR), 0, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf, NULL, NULL},
+
+    { "dict_get.sk_k",  S(DICT_GET_sf), 0, "k", "iSO", (SUBR)dict_get_sf_0, (SUBR)dict_get_sf, NULL, NULL },
+    { "dict_get.ss_k",  S(DICT_GET_ss), 0, "S", "iS", (SUBR)dict_get_ss_0, (SUBR)dict_get_ss, NULL, NULL },
+    { "dict_geti.ss_i", S(DICT_GET_ss), 0, "S", "iS", (SUBR)dict_get_ss_i, NULL, NULL, NULL},
+    { "dict_get.sf_i",  S(DICT_GET_sf), 0, "i", "iSo", (SUBR)dict_get_sf_i, NULL, NULL, NULL},
+    { "dict_get.if_k",  S(DICT_GET_if), 0, "k", "ikO", (SUBR)dict_get_if_0, (SUBR)dict_get_if, NULL, NULL },
+    { "dict_get.is_i",  S(DICT_GET_is), 0, "S", "ii", (SUBR)hashtab_get_is_i, NULL, NULL, NULL},
+    { "dict_get.is_k",  S(DICT_GET_is), 0, "S", "ik", (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is, NULL, NULL },
+    { "dict_get.if_i",  S(DICT_GET_if), 0, "i", "iio", (SUBR)dict_get_if_i, NULL, NULL, NULL},
+
+    { "dict_set.ss_k", S(DICT_SET_ss), 0, "",  "iSS", (SUBR)dict_set_ss_0, (SUBR)dict_set_ss, NULL, NULL },
+    { "dict_set.sf_i", S(DICT_SET_sf), 0, "",  "iSi", (SUBR)dict_set_sf_i, NULL, NULL, NULL},
+    { "dict_set.sf_k", S(DICT_SET_sf), 0, "",  "iSk", (SUBR)dict_set_sf_0, (SUBR)dict_set_sf, NULL, NULL },
+    { "dict_set.if_i", S(DICT_SET_if), 0, "",  "iii", (SUBR)dict_set_if_i, NULL, NULL, NULL},
+    { "dict_set.if_k", S(DICT_SET_if), 0, "",  "ikk", (SUBR)dict_set_if_0, (SUBR)dict_set_if, NULL, NULL },
+    { "dict_set.is_i", S(DICT_SET_is), 0, "",  "iiS", (SUBR)dict_set_is_i, NULL, NULL, NULL},
+    { "dict_set.is_k", S(DICT_SET_is), 0, "",  "ikS", (SUBR)dict_set_is_0, (SUBR)dict_set_is, NULL, NULL },
+
+    { "dict_del.del_i", S(DICT_DEL_i), 0, "", "ii", (SUBR)dict_del_i, NULL, NULL, NULL },
+    { "dict_del.del_k", S(DICT_DEL_i), 0, "", "ik", NULL, (SUBR)dict_del_i, NULL, NULL },
+    { "dict_del.del_S", S(DICT_DEL_s), 0, "", "iS", NULL, (SUBR)dict_del_s, NULL, NULL },
+
+    { "dict_print", S(DICT_PRINT), 0, "", "i",  (SUBR)dict_print_i, NULL, NULL, NULL},
+    { "dict_print", S(DICT_PRINT), 0, "", "ik", (SUBR)dict_print_k_0, (SUBR)dict_print_k, NULL, NULL},
+
+    { "dict_iter", S(DICT_ITER), 0, "SSk", "iP", (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf, NULL, NULL},
+    { "dict_iter", S(DICT_ITER), 0, "Skk", "iP", (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf, NULL, NULL},
+    { "dict_iter", S(DICT_ITER), 0, "kSk", "iP", (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf, NULL, NULL},
+    { "dict_iter", S(DICT_ITER), 0, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf, NULL, NULL},
+
+    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, "S[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
+    { "dict_query.k",   S(DICT_QUERY1),    0, "k",   "iS", (SUBR)dict_query_0, (SUBR)dict_query, NULL, NULL},
+    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, "k[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
+
+    { "dict_size.k", S(DICT_QUERY1), 0, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size, NULL, NULL},
+    { "dict_size.i", S(DICT_QUERY1), 0, "i", "i", (SUBR)dict_size_0, NULL, NULL, NULL},
+
+    { "dict_exists.i", S(DICT_QUERY1), 0, "i", "i", (SUBR)dict_exists, NULL, NULL, NULL },
+
+    { "dict_loadstr", S(DICT_LOADSTR), 0, "i", "S", (SUBR)dict_loadstr, NULL, NULL, NULL},
+    { "dict_dump", S(DICT_DUMP), 0, "S", "i", (SUBR)dict_dump, NULL, NULL, NULL},
+
+    { "sref.i_set", S(CACHEPUT), 0, "i", "S", (SUBR)cacheput_i, NULL, NULL, NULL },
+    { "sref.k_set", S(CACHEPUT), 0, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf, NULL, NULL },
+
+    { "sderef.i", S(CACHEGET), 0, "S", "i", (SUBR)sview_i, NULL, (SUBR)sview_deinit, NULL},
+    { "sderef.k", S(CACHEGET), 0, "S", "k", (SUBR)sview_init, (SUBR)sview_k, (SUBR)sview_deinit, NULL},
+
+    // { "strpeek.i", S(STRPEEK), 0, "S", "i", (SUBR)strpeek_i, NULL, NULL, NULL },
+
+    { "pool_gen", S(POOL_NEW), 0, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
+    { "pool_new", S(POOL_NEW), 0, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL},
+
+    { "pool_pop.i", S(POOL_1), 0, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
+    { "pool_pop.k", S(POOL_1), 0, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
+
+    { "pool_push.i", S(POOL_PUSH), 0, "", "iio", (SUBR)pool_push_i, NULL, (SUBR)pool_push_deinit, NULL},
+    { "pool_push.k", S(POOL_PUSH), 0, "", "ik", (SUBR)pool_push_init, (SUBR)pool_push_perf, NULL, NULL},
+
+    { "pool_capacity.i", S(POOL_1), 0, "i", "i", (SUBR)pool_capacity_i, NULL, NULL, NULL},
+    { "pool_capacity.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_capacity_perf, NULL, NULL},
+
+    { "pool_size.i", S(POOL_1), 0, "i", "i", (SUBR)pool_size_i, NULL, NULL, NULL},
+    { "pool_size.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf, NULL, NULL},
+
+    { "pool_isfull.i", S(POOL_1), 0, "i", "i", (SUBR)pool_isfull_i, NULL, NULL, NULL},
+    { "pool_isfull.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_isfull_perf, NULL, NULL},
+
+    { "pool_at.i", S(POOL_1), 0, "i", "ii", (SUBR)pool_at_i, NULL, NULL, NULL},
+    { "pool_at.k", S(POOL_1), 0, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf, NULL, NULL},
+#endif
 };
 
 LINKAGE

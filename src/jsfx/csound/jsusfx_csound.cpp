@@ -22,18 +22,14 @@
 #include <ctype.h>
 #include <limits>
 
-#include "OpcodeBase.hpp"
+// #include "OpcodeBase.hpp"
 #include "WDL/mutex.h"
 #include "jsusfx.h"
 
-#define REAPER_GET_INTERFACE(opaque) ((opaque) ? ((JsusFxCsound*)opaque) : nullptr)
+#include "../../common/_common.h"
 
-#define PERFERR(p, fmt) (csound->PerfError(csound, &(p->h), fmt))
-#define PERFERRF(p, fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
-#define INITERR(msg) csound->InitError(csound, msg)
-#define INITERRF(fmt, ...) csound->InitError(csound, fmt, __VA_ARGS__)
-#define MSG(msg) (csound->Message(csound, msg))
-#define MSGF(fmt, ...) (csound->Message(csound, fmt, __VA_ARGS__))
+
+#define REAPER_GET_INTERFACE(opaque) ((opaque) ? ((JsusFxCsound*)opaque) : nullptr)
 
 
 using namespace std;
@@ -46,9 +42,10 @@ const int MAX_SLIDERS = 64;
 
 typedef uint32_t jsfxid;
 
+#ifdef CSOUNDAPI6
 #define register_deinit(csound, p, func) \
     csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
-
+#endif
 
 class JsusFxCsoundPath : public JsusFxPathLibrary_Basic {
     CSOUND *csound;
@@ -78,7 +75,8 @@ public:
         if(resolved_name == NULL) {
             return false;
         }
-        csound->strNcpy(result, resolved_name, PATH_MAX_LEN-1);
+        // csound->strNcpy(result, resolved_name, PATH_MAX_LEN-1);
+        _strncpy(result, resolved_name, PATH_MAX_LEN - 1);
         csound->Free(csound, resolved_name);
         resolvedPath = result;
         // resolvedPath += '/';
@@ -358,7 +356,7 @@ void jsfx_dumpvars(JsusFxCsound *fx) {
     // fx->dumpvars();
 }
 
-static int compile_handler(CSOUND *csound, int ksmps, jsfx_handler *x, char *newFile) {
+static int compile_handler(CSOUND *csound, int ksmps, jsfx_handler *x, char *newFile, OPDS *p) {
     x->bypass = true;
     string filename = string(newFile);
     if ( newFile != NULL && newFile[0] != 0) {
@@ -371,7 +369,8 @@ static int compile_handler(CSOUND *csound, int ksmps, jsfx_handler *x, char *new
             if ( ! x->path->resolveDataPath(string(filename), result) )
                 return INITERRF("compile_handler: unable to find script %s", newFile);
         }
-        csound->strNcpy(x->scriptpath, result.c_str(), PATH_MAX_LEN-1);
+        // csound->strNcpy(x->scriptpath, result.c_str(), PATH_MAX_LEN-1);
+        _strncpy(x->scriptpath, result.c_str(), PATH_MAX_LEN - 1);
         // strncpy(x->scriptpath, filename.c_str(), 1023);
     } else {
         if ( x->scriptpath[0] == 0 )
@@ -382,7 +381,8 @@ static int compile_handler(CSOUND *csound, int ksmps, jsfx_handler *x, char *new
         // int srate = static_cast<int>(*(x->fx->srate));
         // int samplesblock = static_cast<int>(*(x->fx->samplesblock));
         // printf("srate: %d, samplesblock: %d, float srate: %f\n", srate, samplesblock, *x->fx->srate);
-        x->fx->prepare((int)csound->GetSr(csound), ksmps);
+        // x->fx->prepare((int)csound->GetSr(csound), ksmps);
+        x->fx->prepare((int)_GetLocalSr(csound,p), ksmps);
         x->bypass = false;
     } else {
         MSG("***** compile failed, bypassing *****\n");
@@ -484,7 +484,8 @@ static int get_signature(CSOUND *csound, void **args, int numargs, char *dest) {
     CS_TYPE *cstype;
     ARRAYDAT *arr;
     for(int i=0; i < numargs; i++) {
-        cstype = csound->GetTypeForArg(args[i]);
+        // cstype = csound->GetTypeForArg(args[i]);
+        cstype = _GetTypeForArg(csound, args[i]);
         char c = cstype->varTypeName[0];
         switch(c) {
         case 'S':
@@ -516,7 +517,7 @@ static int get_signature(CSOUND *csound, void **args, int numargs, char *dest) {
  */
 int _get_num_audio_inputs(CSOUND *csound, t_jsfx *p) {
     char inputsig[1024];
-    int numinargs = static_cast<int>(csound->GetInputArgCnt(p));
+    int numinargs = static_cast<int>(_GetInputArgCnt(csound, p));
     if(NOTOK==get_signature(csound, p->inargs, numinargs, inputsig))
         return -1;
     // now count all the 'a's
@@ -541,7 +542,7 @@ int _get_num_audio_inputs(CSOUND *csound, t_jsfx *p) {
  *
  */
 
-jsfx_handler *make_handler(CSOUND *csound, STRINGDAT *Spath, int ksmps) {
+jsfx_handler *make_handler(CSOUND *csound, STRINGDAT *Spath, int ksmps, OPDS *p) {
     jsfx_handler *x = (jsfx_handler*)(csound->Malloc(csound, sizeof(jsfx_handler)));
     int numins = MAX_SIGNAL_PORT;
     int numouts = MAX_SIGNAL_PORT;
@@ -563,8 +564,9 @@ jsfx_handler *make_handler(CSOUND *csound, STRINGDAT *Spath, int ksmps) {
     x->max_input_channels = numins;
     x->max_output_channels = numouts;
 
-    csound->strNcpy(x->scriptpath, Spath->data, Spath->size);
-    int ret = compile_handler(csound, ksmps, x, x->scriptpath);
+
+    _strncpy(x->scriptpath, Spath->data, Spath->size);
+    int ret = compile_handler(csound, ksmps, x, x->scriptpath, p);
 
     if(ret == NOTOK || x->bypass == true) {
         MSGF("Failed to compile script %s", x->scriptpath);
@@ -672,7 +674,7 @@ static int32_t jsfx_opcode_deinit(CSOUND *csound, t_jsfx *p) {
 }
 
 static int32_t jsfx_opcode_init(CSOUND *csound, t_jsfx *p) {
-    int outchans = p->num_audio_outputs = csound->GetOutputArgCnt(p) - 1;
+    int outchans = p->num_audio_outputs = _GetOutputArgCnt(csound, p) - 1;
     // Example: input args starts at idx 3 (ih does not count)
     // ih, a1, a2, a3 jsfx "path", a1, a2, a3
     p->inargs = &(p->args[outchans]);
@@ -680,14 +682,14 @@ static int32_t jsfx_opcode_init(CSOUND *csound, t_jsfx *p) {
     if(inchans < 0)
         return INITERR("could not get input signature");
     p->num_audio_inputs = inchans;
-    int kparams = csound->GetInputArgCnt(p) - inchans - 1;
+    int kparams = _GetInputArgCnt(csound, p) - inchans - 1;
     if(kparams % 2 != 0)
         return INITERRF("params should be even, got %d", kparams);
     p->num_sliders = kparams / 2;
     p->sliderargs = (MYFLT **)&(p->inargs[1 + inchans]);
     STRINGDAT *Spath = (STRINGDAT *)p->inargs[0];
     int ksmps = p->h.insdshead->ksmps;
-    p->handler = make_handler(csound, Spath, ksmps);
+    p->handler = make_handler(csound, Spath, ksmps, (OPDS*)p);
     if(p->handler == nullptr)
         return INITERRF("jsfx_init: Could not make handler for script %s", Spath->data);
     for(int paramidx=0; paramidx < p->num_sliders; paramidx++) {
@@ -713,7 +715,9 @@ static int32_t jsfx_opcode_init(CSOUND *csound, t_jsfx *p) {
         p->outchans[chan] = (MYFLT *)(p->args[chan]);
     for(int i=0; i < 64; i++)
         p->slidervalues[i] = 0;
+#ifdef CSOUNDAPI6
     register_deinit(csound, p, jsfx_opcode_deinit);
+#endif
     return OK;
 }
 
@@ -814,7 +818,7 @@ static int32_t jsfx_new_deinit(CSOUND *csound, t_jsfx_new *p) {
 static int32_t jsfx_new_init(CSOUND *csound, t_jsfx_new *p) {
     STRINGDAT *Spath = p->Spath;
     int ksmps = p->h.insdshead->ksmps;
-    jsfx_handler *handler = make_handler(csound, Spath, ksmps);
+    jsfx_handler *handler = make_handler(csound, Spath, ksmps, (OPDS*)p);
     if(NOTOK == register_handler(csound, handler))
         return INITERR(Str("Could not register handler"));
     if(handler->id <= 0) {
@@ -822,7 +826,9 @@ static int32_t jsfx_new_init(CSOUND *csound, t_jsfx_new *p) {
     }
     *p->ihandle = handler->id;
     p->handler = handler;
+#ifdef CSOUNDAPI6
     register_deinit(csound, p, jsfx_new_deinit);
+#endif
     return OK;
 }
 
@@ -871,8 +877,8 @@ struct t_jsfx_play{
 
 
 static int32_t jsfx_play_init(CSOUND *csound, t_jsfx_play *p) {
-    p->num_audio_outputs = csound->GetOutputArgCnt(p);
-    p->num_audio_inputs = csound->GetInputArgCnt(p) - 1;
+    p->num_audio_outputs = _GetOutputArgCnt(csound, p); // csound->GetOutputArgCnt(p);
+    p->num_audio_inputs = _GetInputArgCnt(csound, p);   //csound->GetInputArgCnt(p) - 1;
     ACQUIRE_HANDLER(*p->ihandle);
     p->processed_input_channels  = min(p->num_audio_inputs, p->handler->pinIn);
     p->processed_output_channels = min(p->num_audio_outputs, p->handler->pinOut);
@@ -1028,6 +1034,7 @@ struct t_jsfx_setslider {
 
 #define FL_UNSET -99.0
 
+/*
 static int32_t jsfx_setslider_init(CSOUND *csound, t_jsfx_setslider *p) {
     ACQUIRE_HANDLER(*p->ihandler);
     p->last = FL_UNSET;
@@ -1052,6 +1059,7 @@ static int32_t jsfx_setslider_perf(CSOUND *csound, t_jsfx_setslider *p) {
         return slider_set(p->handler->fx, sliderid, value);
     }
 }
+*/
 
 struct t_jsfx_setslider_many {
     OPDS h;
@@ -1066,7 +1074,7 @@ struct t_jsfx_setslider_many {
 
 static int32_t jsfx_setslider_many_init(CSOUND *csound, t_jsfx_setslider_many *p) {
     ACQUIRE_HANDLER(*p->ihandler);
-    int numargs = csound->GetInputArgCnt(p) - 1;
+    int numargs = _GetInputArgCnt(csound, p) - 1; // csound->GetInputArgCnt(p) - 1;
     if(numargs % 2 != 0)
         return INITERRF("slider arguments should be even (got %d)."
                         " Signature: setslider ihandle, id0, kval0, id1, kval1, ...",
@@ -1428,43 +1436,66 @@ static int32_t tubeharmonics_mono_perf(CSOUND *csound, t_tubeharmonics_mono *p) 
 
 extern "C" {
     static OENTRY oentries[] = {
+#ifdef CSOUNDAPI6
         // aout jsfx Spath, ain, kparams...
         // a1 [, a2, ...] jsfx Spath, a1, [a2, ...], [id0, kval0, id1, kval1, ...]
-        { (char*)"jsfx", S(t_jsfx), 0, 3, (char*)"i*", (char*)"S*",
-          (SUBR)jsfx_opcode_init, (SUBR)jsfx_opcode_perf },
+        { (char*)"jsfx", S(t_jsfx), 0, 3, (char*)"i*", (char*)"S*", (SUBR)jsfx_opcode_init, (SUBR)jsfx_opcode_perf, nullptr, nullptr},
 
         // ihandle jsfx_new Spath
-        { (char*)"jsfx_new", S(t_jsfx_new), 0, 1, (char*)"i", (char*)"S",
-          (SUBR)jsfx_new_init, nullptr },
+        { (char*)"jsfx_new", S(t_jsfx_new), 0, 1, (char*)"i", (char*)"S", (SUBR)jsfx_new_init, nullptr, nullptr, nullptr },
 
         // a1, [a2, ...] jsfx_play ihandle, a1, [a2, ...]
-        { (char*)"jsfx_play", S(t_jsfx_play), 0, 3, (char*)"mmmmmmmm", (char*)"iM",
-          (SUBR)jsfx_play_init, (SUBR)jsfx_play_perf },
+        { (char*)"jsfx_play", S(t_jsfx_play), 0, 3, (char*)"mmmmmmmm", (char*)"iM", (SUBR)jsfx_play_init, (SUBR)jsfx_play_perf, nullptr, nullptr },
 
         // jsfx_dump ihandle, ktrig
-        { (char*)"jsfx_dump", S(t_jsfx_dump), 0, 3, (char*)"", (char*)"ik",
-          (SUBR)jsfx_dump_init, (SUBR)jsfx_dump_perf },
+        { (char*)"jsfx_dump", S(t_jsfx_dump), 0, 3, (char*)"", (char*)"ik", (SUBR)jsfx_dump_init, (SUBR)jsfx_dump_perf, nullptr, nullptr },
 
         // kval jsfx_getslider ihandle, ksliderid
-        { (char*)"jsfx_getslider", S(t_jsfx_getslider), 0, 3, (char*)"k", (char*)"ik",
-          (SUBR)jsfx_getslider_init, (SUBR)jsfx_getslider_perf },
+        { (char*)"jsfx_getslider", S(t_jsfx_getslider), 0, 3, (char*)"k", (char*)"ik", (SUBR)jsfx_getslider_init, (SUBR)jsfx_getslider_perf, nullptr, nullptr },
 
         // jsfx_setslider ihandle, kid, kval
         // { (char*)"jsfx_setslider", S(t_jsfx_setslider), 0, 3, (char*)"", (char*)"ikk",
         //  (SUBR)jsfx_setslider_init, (SUBR)jsfx_setslider_perf },
 
         // jsfx_setslider ihandle, id0, kval0 [, id1, kval1, ...]
-        { (char*)"jsfx_setslider.many", S(t_jsfx_setslider_many), 0, 3, (char*)"", (char*)"iM",
-          (SUBR)jsfx_setslider_many_init, (SUBR)jsfx_setslider_many_perf },
+        { (char*)"jsfx_setslider.many", S(t_jsfx_setslider_many), 0, 3, (char*)"", (char*)"iM", (SUBR)jsfx_setslider_many_init, (SUBR)jsfx_setslider_many_perf, nullptr, nullptr },
 
         // a1, a2 tubeharmonics a1, a2, keven, kodd, kfluct, kinputdb, koutputdb, kgain
-        { (char*)"tubeharmonics.2", S(t_tubeharmonics_stereo), 0, 3, (char*)"aa", (char*)"aaJJJOOO",
-          (SUBR)tubeharmonics_stereo_init, (SUBR)tubeharmonics_stereo_perf},
+        { (char*)"tubeharmonics.2", S(t_tubeharmonics_stereo), 0, 3, (char*)"aa", (char*)"aaJJJOOO", (SUBR)tubeharmonics_stereo_init, (SUBR)tubeharmonics_stereo_perf, nullptr, nullptr},
 
-        { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, 3, (char*)"a", (char*)"aJJJOOO",
-          (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf},
+        { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, 3, (char*)"a", (char*)"aJJJOOO", (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf, nullptr, nullptr},
         // this signals end of loop
-        { 0, 0, 0, 0, 0, 0, 0, 0}
+#else
+        // aout jsfx Spath, ain, kparams... \
+        // a1 [, a2, ...] jsfx Spath, a1, [a2, ...], [id0, kval0, id1, kval1, ...]
+        { (char*)"jsfx", S(t_jsfx), 0, (char*)"i*", (char*)"S*", (SUBR)jsfx_opcode_init, (SUBR)jsfx_opcode_perf },
+
+        // ihandle jsfx_new Spath
+        { (char*)"jsfx_new", S(t_jsfx_new), 0, (char*)"i", (char*)"S", (SUBR)jsfx_new_init, nullptr },
+
+        // a1, [a2, ...] jsfx_play ihandle, a1, [a2, ...]
+        { (char*)"jsfx_play", S(t_jsfx_play), 0, (char*)"mmmmmmmm", (char*)"iM", (SUBR)jsfx_play_init, (SUBR)jsfx_play_perf },
+
+        // jsfx_dump ihandle, ktrig
+        { (char*)"jsfx_dump", S(t_jsfx_dump), 0, (char*)"", (char*)"ik", (SUBR)jsfx_dump_init, (SUBR)jsfx_dump_perf },
+
+        // kval jsfx_getslider ihandle, ksliderid
+        { (char*)"jsfx_getslider", S(t_jsfx_getslider), 0, (char*)"k", (char*)"ik", (SUBR)jsfx_getslider_init, (SUBR)jsfx_getslider_perf },
+
+        // jsfx_setslider ihandle, kid, kval
+        // { (char*)"jsfx_setslider", S(t_jsfx_setslider), 0, (char*)"", (char*)"ikk",
+        //  (SUBR)jsfx_setslider_init, (SUBR)jsfx_setslider_perf },
+
+        // jsfx_setslider ihandle, id0, kval0 [, id1, kval1, ...]
+        { (char*)"jsfx_setslider.many", S(t_jsfx_setslider_many), 0, (char*)"", (char*)"iM", (SUBR)jsfx_setslider_many_init, (SUBR)jsfx_setslider_many_perf },
+
+        // a1, a2 tubeharmonics a1, a2, keven, kodd, kfluct, kinputdb, koutputdb, kgain
+        { (char*)"tubeharmonics.2", S(t_tubeharmonics_stereo), 0, (char*)"aa", (char*)"aaJJJOOO", (SUBR)tubeharmonics_stereo_init, (SUBR)tubeharmonics_stereo_perf},
+
+        { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, (char*)"a", (char*)"aJJJOOO", (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf},
+
+#endif
+        { 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
     PUBLIC int csoundModuleCreate(CSOUND *csound) {
@@ -1475,13 +1506,28 @@ extern "C" {
     PUBLIC int csoundModuleInit(CSOUND *csound) {
         int status = 0;
         for(OENTRY *oentry = &oentries[0]; oentry->opname; oentry++) {
-            status |= csound->AppendOpcode(csound, oentry->opname,
-                                           oentry->dsblksiz, oentry->flags,
+#ifdef CSOUNDAPI6
+            status |= csound->AppendOpcode(csound,
+                                           oentry->opname,
+                                           oentry->dsblksiz,
+                                           oentry->flags,
                                            oentry->thread,
-                                           oentry->outypes, oentry->intypes,
+                                           oentry->outypes,
+                                           oentry->intypes,
                                            (int (*)(CSOUND*,void*)) oentry->iopadr,
                                            (int (*)(CSOUND*,void*)) oentry->kopadr,
                                            (int (*)(CSOUND*,void*)) oentry->aopadr);
+#else
+            status |= csound->AppendOpcode(csound,
+                                           oentry->opname,
+                                           oentry->dsblksiz,
+                                           oentry->flags,
+                                           oentry->outypes,
+                                           oentry->intypes,
+                                           (int (*)(CSOUND*,void*)) oentry->init,
+                                           (int (*)(CSOUND*,void*)) oentry->perf,
+                                           (int (*)(CSOUND*,void*)) oentry->deinit);
+#endif
         }
         return status;
     }

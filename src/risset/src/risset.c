@@ -33,6 +33,8 @@
 // #include "arrays.h"
 #include "cs_strlib.h"
 
+#include "../../common/_common.h"
+
 #if defined WIN32 || defined __MINGW32__ || defined _WIN32 || defined _WIN64
     #define OS_WINDOWS
 #endif
@@ -47,41 +49,12 @@
 #endif
 
 
-#define min(x, y) (((x) < (y)) ? (x) : (y))
-#define max(x, y) (((x) > (y)) ? (x) : (y))
-
 #define MSGF(fmt, ...) (csound->Message(csound, fmt, __VA_ARGS__))
 #define MSG(s) (csound->Message(csound, s))
 #define INITERR(m) (csound->InitError(csound, "%s", m))
 #define INITERRF(fmt, ...) (csound->InitError(csound, fmt, __VA_ARGS__))
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
-
-
-// #define DEBUG
-
-#ifdef DEBUG
-    #define DBG(fmt, ...) printf(">>>> "fmt"\n", __VA_ARGS__); fflush(stdout);
-    #define DBG_(m) DBG("%s", m)
-#else
-    #define DBG(fmt, ...)
-    #define DBG_(m)
-#endif
-
-
-#define SAMPLE_ACCURATE(out) \
-    uint32_t n, nsmps = CS_KSMPS;                                    \
-    uint32_t offset = p->h.insdshead->ksmps_offset;                  \
-    uint32_t early = p->h.insdshead->ksmps_no_end;                   \
-    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));   \
-    if (UNLIKELY(early)) {                                           \
-        nsmps -= early;                                              \
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));              \
-    }                                                                \
-
-
-#define register_deinit(csound, p, func) \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
 
 // -------------------------------------------------------------------------------------
 
@@ -121,21 +94,25 @@ static void _getroot(char *dest) {
 #endif
 }
 
+static char *risset_root() {
+    if(strlen(rissetroot) == 0) {
+        _getroot(rissetroot);
+    }
+    return rissetroot;
+}
+
 static int32_t risset1(CSOUND *csound, RISSET1 *p) {
     char *data = p->cmd->data;
-
     if (!strcmp("root", data)) {
-        int l = strlen(rissetroot);
-        if(l == 0) {
-            _getroot(rissetroot);
-            l = strlen(rissetroot);
-        }
-        stringdat_copy_cstr(csound, p->out, rissetroot, l);
+        char *root = risset_root();
+        stringdat_copy_cstr(csound, p->out, root, strlen(root));
     } else if(!strcmp("assets", data)) {
-        string_ensure(csound, p->out, 256);
-        char *outdata = p->out->data;
-        strcpy(outdata, rissetroot);
-        strcat(outdata, "/assets");
+        char *root = risset_root();
+        int rootlen = strlen(root);
+        int totallen = rootlen + 8;
+        string_ensure(csound, p->out, totallen);
+        strncpy0(p->out->data, root, rootlen);
+        strncpy0(p->out->data + rootlen, "/assets", 8);
     } else {
         p->out->data[0] = 0;
         return INITERRF("risset: command %s not understood. Possible commands: root, assets", data);
@@ -149,7 +126,11 @@ static int32_t risset1(CSOUND *csound, RISSET1 *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-     { "risset.1", S(RISSET1), 0, 1, "S", "S", (SUBR)risset1 }
+#ifdef CSOUNDAPI6
+     { "risset.1", S(RISSET1), 0, 1, "S", "S", (SUBR)risset1, NULL, NULL, NULL }
+#else
+    { "risset.1", S(RISSET1), 0, "S", "S", (SUBR)risset1, NULL, NULL, NULL }
+#endif
 };
 
 LINKAGE

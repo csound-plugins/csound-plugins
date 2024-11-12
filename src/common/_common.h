@@ -2,6 +2,8 @@
 #define _COMMON_H
 
 #include "csdl.h"
+#include "arrays.h"
+
 
 
 #define INITERR(m) (csound->InitError(csound, "%s", m))
@@ -12,6 +14,8 @@
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
 
+#define DBG(s)        do{printf("\n>>>  "s"\n"); fflush(stdout);} while(0)
+#define DBGF(fmt,...) do{printf("\n>>>  "fmt"\n", __VA_ARGS__); fflush(stdout);}while(0)
 
 #define CHECKARR1D(arr)           \
     if((arr)->dimensions != 1)    \
@@ -75,5 +79,198 @@ int em_isinfornan(MYFLT d) {
             u.l==0xFFF0000000000000ll);
 }
 
+
+// Functions to deal with both csound6 and csound7 in the same codebase
+
+static inline FUNC * FTFind(CSOUND *csound, MYFLT *num) {
+#ifdef CSOUNDAPI7
+    return csound->FTFind(csound, num);
+#else
+    return csound->FTnp2Find(csound, num);
+#endif
+}
+
+static inline int32_t _GetInputArgCnt(CSOUND *csound, void *p) {
+#ifdef CSOUNDAPI7
+    IGN(csound);
+    return GetInputArgCnt((OPDS *)p);
+#else
+    return csound->GetInputArgCnt((OPDS*)p);
+#endif
+}
+
+static inline int32_t _GetOutputArgCnt(CSOUND *csound, void *p) {
+#ifdef CSOUNDAPI7
+    IGN(csound);
+    return GetOutputArgCnt((OPDS *)p);
+#else
+    return csound->GetOutputArgCnt((OPDS *)p);
+#endif
+}
+
+static inline char* _GetInputArgName(CSOUND *csound, void *p, uint32_t idx) {
+#ifdef CSOUNDAPI7
+    IGN(csound);
+    return GetInputArgName((OPDS *)p, idx);
+#else
+    return csound->GetInputArgName((OPDS *)p, idx);
+#endif
+}
+
+static inline void InsertScoreEventNow(CSOUND *csound, EVTBLK *evt, OPDS *ctx) {
+#ifdef CSOUNDAPI7
+    MYFLT sr = GetLocalSr(ctx);
+    csound->InsertScoreEvent(csound, evt, csound->GetCurrentTimeSamples(csound) / sr);
+#else
+    csound->insert_score_event_at_sample(csound, evt, csound->GetCurrentTimeSamples(csound));
+#endif
+}
+
+static inline int32_t InsertScoreEventAtTime(CSOUND *csound, EVTBLK *evt, MYFLT time) {
+#ifdef CSOUNDAPI7
+    return csound->InsertScoreEvent(csound, evt, time);
+#else
+    uint64_t sample = time * csound->GetSr(csound);
+    return csound->insert_score_event_at_sample(csound, evt, sample);
+#endif
+
+}
+
+
+static inline void tabinit_compat(CSOUND *csound, ARRAYDAT *p, int32_t size, OPDS *ctx) {
+#ifdef CSOUNDAPI7
+    tabinit(csound, p, size, ctx);
+#else
+    tabinit(csound, p, size);
+#endif
+}
+
+static inline int32_t
+_createTable(CSOUND *csound, FUNC **ftp, const EVTBLK * ftevt, int32_t n) {
+#ifdef CSOUNDAPI7
+    return csound->FTCreate(csound, ftp, ftevt, n);
+#else
+    return csound->hfgens(csound, ftp, ftevt, n);
+#endif
+}
+
+static inline MYFLT _GetLocalSr(CSOUND *csound, OPDS *ctx) {
+#ifdef CSOUNDAPI7
+    IGN(csound);
+    return GetLocalSr(ctx);
+#else
+    IGN(ctx);
+    return csound->GetSr(csound);
+#endif
+}
+
+
+#ifdef CSOUNDAPI7
+#define TABINIT(csound, arraydat, size) (tabinit(csound, arraydat, size, &(p->h)))
+#define LOCAL_SR(p) (GetLocalSr(&(p->h)))
+#define LOCAL_KR(p) (GetLocalKr(&(p->h)))
+#define LOCAL_KSMPS(p) (GetLocalKsmps(&(p->h)))
+#define GET_INPUT_ARG_CNT (GetInputArgCnt(&(p->h)))
+#define OPDS_INITFUNC(opds) (opds->init)
+#define OPDS_PERFFUNC(opds) (opds->perf)
+#else
+#define TABINIT(csound, arraydat, size) (tabinit(csound, arraydat, size))
+#define LOCAL_SR(p) (csound->GetSr(csound))
+#define LOCAL_KR(p) (csound->GetKr(csound))
+#define LOCAL_KSMPS(p) (csound->GetKsmps(csound))
+#define GET_INPUT_ARG_CNT (csound->GetInputArgCnt(p))
+#define OPDS_INITFUNC(opds) (opds->iopadr)
+#define OPDS_PERFFUNC(opds) (opds->kopadr)
+#endif
+
+static inline int32_t _StringArg2Insno(CSOUND *csound, char *arg, int32_t isstr) {
+#ifdef CSOUNDAPI7
+    return csound->StringArg2Insno(csound, arg, isstr);
+#else
+    return csound->strarg2insno(csound, arg, isstr);
+#endif
+}
+static inline CS_VARIABLE* arrayCreateVariableSameType(CSOUND *csound, ARRAYDAT *arr, OPDS *ctx) {
+#ifdef CSOUNDAPI7
+    return arr->arrayType->createVariable(csound, NULL, ctx);
+#else
+    IGN(ctx);
+    return arr->arrayType->createVariable(csound, NULL);
+#endif
+}
+
+INSTRTXT *GetInstrumentByName(CSOUND *csound, const char *name) {
+    INSTRTXT **list = csound->GetInstrumentList(csound);
+    INSTRTXT *instr = list[0];
+    while((instr = instr->nxtinstxt) != NULL) {
+        if(strcmp(name, instr->insname) == 0)
+            return instr;
+    }
+    return NULL;
+}
+
+static inline INSTRTXT *GetInstrumentByNumber(CSOUND *csound, int32_t n) {
+    INSTRTXT **list = csound->GetInstrumentList(csound);
+
+    return list[n];
+}
+
+static inline CS_TYPE *_GetTypeForArg(CSOUND *csound, void *argptr) {
+#ifdef CSOUNDAPI7
+    IGN(csound);
+    return GetTypeForArg(argptr);
+#else
+    return csound->GetTypeForArg(argptr);
+#endif
+}
+
+static inline const OENTRY* _FindOpcode(CSOUND *csound, char *name, char *outsig, char *insig) {
+#ifdef CSOUNDAPI7
+    // exact = 0
+    return csound->FindOpcode(csound, 0, name, outsig, insig);
+#else
+    // not exact
+    return csound->find_opcode_new(csound, name, outsig, insig);
+#endif
+}
+
+
+char * _strncpy(char *dst, const char *src, size_t siz) {
+    char *d = dst;
+    const char *s = src;
+    size_t n = siz;
+
+    /* Copy as many bytes as will fit or until NULL */
+    if (n != 0) {
+        while (--n != 0) {
+            if ((*d++ = *s++) == '\0')
+                break;
+        }
+    }
+
+    /* Not enough room in dst, add NUL */
+    if (n == 0) {
+        if (siz != 0)
+            *d = '\0';                /* NUL-terminate dst */
+
+        //while (*s++) ;
+    }
+    return dst;        /* count does not include NUL */
+}
+
+
+// #define LOBITS     10
+// #define LOFACT     1024
+// LOSCAL is 1/LOFACT as MYFLT
+// #define LOSCAL     FL(0.0009765625)
+// #define LOMASK     1023
+
+#ifndef LOBITS
+#define LOBITS  10
+#endif
+
+#ifndef LOFACT
+#define LOFACT 1024
+#endif
 
 #endif

@@ -10,6 +10,17 @@ cmake_minimum_required(VERSION 3.8)
 
 set(APIVERSION "6.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
 
+if(APIVERSION MATCHES "6.0")
+    add_definitions("-DCSOUNDAPI6")
+    add_definitions("-DCS_API_VERSION_MAJOR=6")
+else()
+    add_definitions("-DCSOUNDAPI7")
+    add_definitions("-DCS_API_VERSION_MAJOR=7")
+    
+endif()
+
+# add_definitions("-DCS_APIVERSION=\"${APIVERSION}\"")
+
 message(STATUS "Csound API Version: ${APIVERSION}")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
