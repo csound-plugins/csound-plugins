@@ -175,7 +175,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       
-      - name: linux test against csound6 - git
+      - name: test
         if: runner.os == 'linux'
         run: |
           set -x
@@ -202,10 +202,10 @@ jobs:
           git submodule update --init --recursive --remote
           # git submodule foreach git pull origin master --rebase
           git submodule status --recursive
-          # cd csound
-          # git switch csound6
-          # cd ..
-
+          cd csound
+          git switch ${{ matrix.branch }}
+          cd ..
+          
           # cd csound/include
           # ln -s ../Android/CsoundAndroid/jni/version.h .
           # cd ../..
