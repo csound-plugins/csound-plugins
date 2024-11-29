@@ -501,7 +501,7 @@ handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
 }
 
 // check that the array is 1D and has at least the given size
-#define CHECKARR1D(arr, minsize) do {                                             \
+#define CHECKARR1D_MINSIZE(arr, minsize) do {                                             \
     if((arr)->dimensions != 1)                                                    \
       return INITERRF(Str("array dimensions (%d) should be 1"),                   \
                       (arr)->dimensions);                                         \
@@ -657,7 +657,7 @@ convert_multiplex_sig_to_single_sig(char *dest, char *src) {
 
 
 static i32 poly1_init(CSOUND *csound, POLY1 *p) {
-    OENTRY *opc;
+    const OENTRY *opc;
     i32 ret;
     ui32 i, nsmps = CS_KSMPS;
     char opc_outsig[64];    // in/out signature used to find the opcode
@@ -731,7 +731,7 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
         // here we don't check k-arrays, since at this time a k-array is not populated
         if(c=='I' || c=='A' || c=='S') {
             ARRAYDAT *arr = (ARRAYDAT*) p->inargs[i];
-            CHECKARR1D(arr, p->num_instances);
+            CHECKARR1D_MINSIZE(arr, p->num_instances);
         }
     }
 
@@ -818,7 +818,7 @@ static i32 poly1_perf(CSOUND *csound, POLY1 *p) {
     for(col=p->firstcol; col < numcols; col++) {
         if(in_signature[col] == 'K') {
             arr = (ARRAYDAT*)p->inargs[col];
-            CHECKARR1D(arr, p->num_instances);
+            CHECKARR1D_MINSIZE(arr, p->num_instances);
         }
     }
 
@@ -985,7 +985,7 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
         // be populated and might not have correct size
         if(c=='I' || c=='A' || c=='S') {
             ARRAYDAT *arr = (ARRAYDAT*) p->inargs[i];
-            CHECKARR1D(arr, p->num_instances);
+            CHECKARR1D_MINSIZE(arr, p->num_instances);
         }
     }
 

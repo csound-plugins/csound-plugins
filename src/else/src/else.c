@@ -368,9 +368,6 @@ static inline MYFLT rnd31(CSOUND *csound, int*seed) {
 
 static int32_t crackle_init(CSOUND *csound, CRACKLE* p) {
     MYFLT kp = *p->kp;
-    if (kp < 0) {
-        *p->kp = 1.5;
-    }
     int seed = csound->GetRandomSeedFromTime();
     p->y1 = rnd31(csound, &seed);
     p->y2 = 0;
@@ -385,6 +382,8 @@ static int32_t crackle_perf(CSOUND *csound, CRACKLE* p) {
 
     MYFLT y0;
     MYFLT kp = *p->kp;
+    if(kp < 0)
+        kp = 1.5;
     MYFLT y1 = p->y1;
     MYFLT y2 = p->y2;
 
@@ -1234,10 +1233,6 @@ static int32_t sp_peaklim_init(CSOUND *csound, SP_PEAKLIM *p) {
     p->patk = -100;
     p->prel = -100;
     p->level = 0;
-    if(*p->atk < 0)
-        *p->atk = 0.01;
-    if(*p->rel < 0)
-        *p->rel = 0.1;
     return OK;
 }
 
@@ -1249,8 +1244,8 @@ static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
 
     MYFLT gain = 0;
 
-    MYFLT atk = *p->atk;
-    MYFLT rel = *p->rel;
+    MYFLT atk = *p->atk >= 0 ? *p->atk : 0.01;
+    MYFLT rel = *p->rel >= 0 ? *p->rel : 0.1;
 
     MYFLT patk = p->patk;
     MYFLT prel = p->prel;
@@ -1728,44 +1723,6 @@ int32_t pread_search(CSOUND *csound, PREAD *p) {
     return 1;
 }
 
-/*
-int32_t _pread_search(CSOUND *csound, PREAD *p) {
-    IGN(csound);
-    MYFLT p1 = *p->instrnum;
-    INSDS *instr;
-    p->found = 0;
-    if(!p->instrtxt) {
-        printf("pread_searh: GetInstrument(p1=%d)\n", (int)p1);
-        p->instrtxt = csound->GetInstrument(csound, (int)p1, NULL);
-    }
-    if(!p->instrtxt) {
-        printf("No instances of instr %d\n", (int)p1);
-        return 0;
-    }
-    // found an instrument definition
-    p->maxpfield = p->instrtxt->pmax;
-
-    if(p1 != floor(p1)) {
-        // fractional instrnum
-        printf("Searching exact instance\n");
-        instr = find_instance_exact(p->instrtxt, p1);
-    } else {
-        // find first instance of this instr
-        instr = p->instrtxt->instance;
-        while(instr) {
-            if(instr->actflg)
-                break;
-            instr = instr->nxtinstance;
-        }
-    }
-    if(!instr)
-        return 0;
-    p->found = 1;
-    p->instr = instr;
-    p->pfields = &(instr->p0);
-    return 1;
-}
-*/
 
 static int32_t
 pread_init(CSOUND *csound, PREAD *p) {
@@ -2283,12 +2240,14 @@ typedef struct {
 
 static int32_t
 accum_init(CSOUND *csound, ACCUM *p) {
+    IGN(csound);
     p->value = *p->initial_value;
     return OK;
 }
 
 static int32_t
 accum_perf(CSOUND *csound, ACCUM *p) {
+    IGN(csound);
     if(*p->reset == 1) {
         p->value = *p->initial_value;
     }
@@ -2299,6 +2258,7 @@ accum_perf(CSOUND *csound, ACCUM *p) {
 
 static int32_t
 accum_perf_audio(CSOUND *csound, ACCUM *p) {
+    IGN(csound);
     MYFLT step = *p->step;
     MYFLT value = *p->reset == 0 ? p->value : *p->initial_value;
     MYFLT *out = p->out;
@@ -2695,7 +2655,7 @@ _ref_get_slot(REF_GLOBALS *g) {
 
 typedef struct {
     OPDS h;
-    MYFLT *idx;
+    MYFLT *out;  // index
     ARRAYDAT *arr;
     MYFLT *extrarefs;
     int slot;
@@ -2717,6 +2677,7 @@ void _handle_copy_data_from_array(CSOUND *csound, ARRAYDAT *arr, REF_HANDLE *h) 
 
 void _ref_array_transfer(CSOUND *csound, ARRAYDAT *src, REF_HANDLE *h) {
     // this should NOT be called on global arrays
+    IGN(csound);
     h->active = 1;
     h->refcount = 1;
     h->data = src->data;
@@ -2813,7 +2774,7 @@ ref_new_array(CSOUND *csound, REF_NEW_ARRAY *p) {
         // register_deinit(csound, p, ref_new_deinit);
     }
     p->g = g;
-    *p->idx = slot;
+    *p->out = slot;
     p->slot = slot;
 #ifdef CSOUNDAPI6
     register_deinit(csound, p, ref_new_deinit);
@@ -3168,7 +3129,7 @@ static int32_t setslice_array_k_init_S(CSOUND *csound, _AAk *p) {
 
 // -- perlin3, taken verbatim from supercollider's Perlin3 --
 // Based on java code by Ken Perlin, published at http://mrl.nyu.edu/~perlin/noise/
-static int _p[512], _permutation[256] = {
+static int _perlin_space[512], _perlin_permutation[256] = {
     151,160,137,91,90,15,
     131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
     190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -3204,21 +3165,21 @@ double perlin_noise(double x, double y, double z) {
     double u = fade(x),                                // COMPUTE FADE CURVES
            v = fade(y),                                // FOR EACH OF X,Y,Z.
            w = fade(z);
-    int A  = _p[X  ]+Y,
-        AA = _p[A]+Z,
-        AB = _p[A+1]+Z,      // HASH COORDINATES OF
-        B  = _p[X+1]+Y,
-        BA = _p[B]+Z,
-        BB = _p[B+1]+Z;      // THE 8 CUBE CORNERS,
+    int A  = _perlin_space[X  ]+Y,
+        AA = _perlin_space[A]+Z,
+        AB = _perlin_space[A+1]+Z,      // HASH COORDINATES OF
+        B  = _perlin_space[X+1]+Y,
+        BA = _perlin_space[B]+Z,
+        BB = _perlin_space[B+1]+Z;      // THE 8 CUBE CORNERS,
 
-    return lerp(w, lerp(v, lerp(u, grad(_p[AA  ], x  , y  , z   ),  // AND ADD
-                                grad(_p[BA  ], x-1, y  , z   )), // BLENDED
-                        lerp(u, grad(_p[AB  ], x  , y-1, z   ),  // RESULTS
-                             grad(_p[BB  ], x-1, y-1, z   ))),// FROM  8
-                lerp(v, lerp(u, grad(_p[AA+1], x  , y  , z-1 ),  // CORNERS
-                             grad(_p[BA+1], x-1, y  , z-1 )), // OF CUBE
-                     lerp(u, grad(_p[AB+1], x  , y-1, z-1 ),
-                          grad(_p[BB+1], x-1, y-1, z-1 ))));
+    return lerp(w, lerp(v, lerp(u, grad(_perlin_space[AA  ], x  , y  , z   ),  // AND ADD
+                                grad(_perlin_space[BA  ], x-1, y  , z   )), // BLENDED
+                        lerp(u, grad(_perlin_space[AB  ], x  , y-1, z   ),  // RESULTS
+                             grad(_perlin_space[BB  ], x-1, y-1, z   ))),// FROM  8
+                lerp(v, lerp(u, grad(_perlin_space[AA+1], x  , y  , z-1 ),  // CORNERS
+                             grad(_perlin_space[BA+1], x-1, y  , z-1 )), // OF CUBE
+                     lerp(u, grad(_perlin_space[AB+1], x  , y-1, z-1 ),
+                          grad(_perlin_space[BB+1], x-1, y-1, z-1 ))));
 }
 
 typedef struct {
@@ -3228,15 +3189,17 @@ typedef struct {
 } PERLIN3;
 
 static void perlin_noise_init(CSOUND *csound) {
-    int *loaded = csound->QueryGlobalVariable(csound, "_perlin3_loaded");
-    if(loaded != NULL) return;
-    csound->CreateGlobalVariable(csound, "_perlin3_loaded", sizeof(int));
-    for (int i=0; i < 256 ; i++)
-        _p[256+i] = _p[i] = _permutation[i];
+    if(csound->QueryGlobalVariable(csound, "_perlin3_loaded") == NULL) {
+        // we just create the variable as a flag, no need to set the value
+        csound->CreateGlobalVariable(csound, "_perlin3_loaded", sizeof(int));
+        for (int i=0; i < 256 ; i++)
+            _perlin_space[256+i] = _perlin_space[i] = _perlin_permutation[i];
+    }
 }
 
 
 static int32_t perlin3_init(CSOUND *csound, PERLIN3 *p) {
+    IGN(p);
     perlin_noise_init(csound);
     return OK;
 }
@@ -3723,8 +3686,6 @@ static int32_t interptab_init_kkSkk(CSOUND *csound, INTERPTAB *p) {
     }
     p->ftp = ftp;
     p->lasttab = (int)*p->tabnum;
-    if(*p->step <= 0)
-        *p->step = 1;
     p->numargs = 5;
     p->method = _interp_parse_mode_with_param(p->mode->data, &(p->param));
     return OK;
@@ -3741,6 +3702,8 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
         taboffset = 0;
     } else {
         step = (int32_t)*p->step;
+        if(step <= 0)
+            step = 1;
         taboffset = (int32_t)*p->offset;
     }
 
@@ -4342,8 +4305,6 @@ static int32_t bisecttabarr_init(CSOUND *csound, BISECTTAB_ARR *p) {
     p->ftp = ftp;
     p->lastidx = -1;
     p->lasttab = (int)*p->tabnum;
-    if(*p->step <= 0)
-        *p->step = 1;
     //tabinit(csound, p->out, p->in->sizes[0]);
     tabinit_compat(csound, p->out, p->in->sizes[0], &(p->h));
     return OK;
@@ -4366,6 +4327,8 @@ static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
     MYFLT *in = p->in->data;
     int32_t taboffset = (int32_t)*p->offset;
     int32_t step = (int32_t)*p->step;
+    if(step <= 0)
+        step = 1;
     size_t arrsize = p->in->sizes[0];
     tabcheck(csound, p->out, arrsize, &(p->h));
     if(step < 0) {
@@ -5696,7 +5659,7 @@ static int32_t mtro(CSOUND *csound, MTRO *p) {
     if(phase >= 1.) {
         p->accum = phase - 1.0;
         p->counter = 0;
-        *p->out= 1.;
+        *p->out = 1.;
     } else {
         *p->out = 0.;
     }
@@ -5779,7 +5742,7 @@ static int32_t cuetrig(CSOUND *csound, CUETRIG *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *vel;
+    MYFLT *out;
     MYFLT *gain;
     MYFLT *mingain;
     MYFLT *exp;
@@ -5806,14 +5769,14 @@ static int32_t gaintovel(CSOUND *csound, GAINTOVEL *p) {
     if(vel > 0. && *p->round != 0) {
         vel = max(minvel, round(vel));
     }
-    *p->vel = vel;
+    *p->out = vel;
     return OK;
 }
 
 
 typedef struct {
     OPDS h;
-    MYFLT *y;
+    MYFLT *out;
     MYFLT *x;
     MYFLT *exp;
     MYFLT *x0;
@@ -5829,9 +5792,12 @@ static int32_t linexp(CSOUND *csound, LINEXP *p) {
     if(dx < 0) {
         return NOTOK;
     }
-    *p->y = pow(dx, *p->exp) * (*p->y1 - y0) + y0;
+    *p->out = pow(dx, *p->exp) * (*p->y1 - y0) + y0;
     return OK;
 }
+
+
+// ----------------------------------------------------------
 
 
 typedef struct {
@@ -5849,18 +5815,20 @@ typedef struct {
 } PITCHSHIFT;
 
 
+static void auxinit(CSOUND *csound, AUXCH *ch, size_t numitems) {
+    // do not reallocate if already allocated
+    if(ch->auxp != NULL)
+        return;
+    size_t numbytes = sizeof(MYFLT) * numitems;
+    csound->AuxAlloc(csound, numbytes, ch);
+    memset(ch->auxp, 0, numbytes);
+}
+
+
 static int32_t faust_pitchshift_init(CSOUND *csound, PITCHSHIFT *p) {
-    csound->AuxAlloc(csound, sizeof(MYFLT)*131072, &(p->vec));
-    memset(p->vec.auxp, 0, sizeof(MYFLT)*131072);
-    MYFLT sr = LOCAL_SR(p);
-
-    if(*p->windowdur < 0.) {
-        *p->windowdur = 0.02;
-    }
-    if(*p->xfade < 0.) {
-        *p->xfade = floor(*p->windowdur * sr / 4.);
-    }
-
+    // csound->AuxAlloc(csound, sizeof(MYFLT)*131072, &(p->vec));
+    // memset(p->vec.auxp, 0, sizeof(MYFLT)*131072);
+    auxinit(csound, &(p->vec), 131072);
     p->r0 = 0;
     p->r1 = 0;
     p->iota = 0;
@@ -5874,17 +5842,22 @@ static int32_t faust_pitchshift_init(CSOUND *csound, PITCHSHIFT *p) {
 
 static int32_t faust_pitchshift(CSOUND *csound, PITCHSHIFT *p) {
     IGN(csound);
+    MYFLT sr = LOCAL_SR(p);
+    MYFLT windowdur = *p->windowdur;
+    if(windowdur <= 0)
+        windowdur = 0.02;
+    MYFLT xfade = *p->xfade;
+    if(xfade < 0.)
+        xfade = floor(windowdur * sr / 4.);
     size_t nsmps = CS_KSMPS;
     MYFLT nsmpscompl = 1. / nsmps;
     MYFLT *vec = (MYFLT*)p->vec.auxp;
     MYFLT *out = p->out;
     MYFLT *in = p->in;
-    // MYFLT sr = csound->GetSr(csound);
-    MYFLT sr = LOCAL_SR(p);
     MYFLT freqratio = p->freqratio;
     MYFLT freqratio1 = pow(2.0, 0.08333333 * (*p->shift));
-    MYFLT xfadesamples = floor(*p->xfade);
-    MYFLT winsamples = floor(*p->windowdur * sr);
+    MYFLT xfadesamples = floor(xfade);
+    MYFLT winsamples = floor(windowdur * sr);
 
     // first time
     if(freqratio == 0.) {
@@ -5926,16 +5899,31 @@ static int32_t faust_pitchshift(CSOUND *csound, PITCHSHIFT *p) {
 }
 
 
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *in0;
+    MYFLT *in1;
+    MYFLT *in2;
+} TESTOPCODE;
+
+static int32_t testopcode_init(CSOUND *csound, TESTOPCODE *p) {
+    printf("Adresses in0: %d, in1: %d, in2: %d\n", p->in0, p->in1, p->in2);
+    printf("Values in0: %f, in1: %f, in2: %f\n", *p->in0, *p->in1, *p->in2);
+    return OK;
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 #define S(x) sizeof(x)
 
-static OENTRY localops[] = {
 
 #ifdef CSOUNDAPI6
-    {"crackle", S(CRACKLE), 0, 3, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf, NULL, NULL},
 
+static OENTRY localops[] = {
+
+    {"crackle", S(CRACKLE), 0, 3, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf, NULL, NULL},
     {"ramptrig.k_kk", S(RAMPTRIGK), 0, 3, "k", "kkP", (SUBR)ramptrig_k_kk_init, (SUBR)ramptrig_k_kk, NULL, NULL},
     {"ramptrig.a_kk", S(RAMPTRIGK), 0, 3, "a", "kkP", (SUBR)ramptrig_a_kk_init, (SUBR)ramptrig_a_kk, NULL, NULL},
     {"ramptrig.sync_kk_kk", S(RAMPTRIGSYNC), 0, 3, "kk", "kkPO", (SUBR)ramptrigsync_kk_kk_init, (SUBR)ramptrigsync_kk_kk, NULL, NULL},
@@ -6114,8 +6102,18 @@ static OENTRY localops[] = {
     {"linexp.i", S(LINEXP), 0, 1, "i", "iiiiop", (SUBR)linexp, NULL, NULL, NULL},
     {"linexp.k", S(LINEXP), 0, 2, "k", "kkkkOP", NULL, (SUBR)linexp, NULL, NULL},
 
+
     {"transpose", S(PITCHSHIFT), 0, 3, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL, NULL},
+    // {"zitarev.2", S(ZITAREV),    0, 1, "aa",  "aaOJJJJJOJOJJ", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL }
+
+    {"zitarev.2", S(ZITAREV),    0, 3, "aa",  "aaOOOOOOOOOOO", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL },
+
+    {"_testopcode", S(TESTOPCODE), 0, 1, "a", "aPP", (SUBR)testopcode_init}
+};
+
 #else
+static OENTRY localops[] = {
+
     // Csound 7
     {"crackle", S(CRACKLE), 0, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf, NULL, NULL},
 
@@ -6283,9 +6281,11 @@ static OENTRY localops[] = {
 
     {"transpose", S(PITCHSHIFT), 0, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL, NULL  },
 
-#endif
+    {"zitarev.2", S(ZITAREV),    0, "aa", "aaOJJJJJOJOJJ", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL }
 
 };
+#endif
+
 
 LINKAGE
 

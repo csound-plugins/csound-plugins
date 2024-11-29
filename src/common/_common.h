@@ -14,8 +14,9 @@
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
 
-#define DBG(s)        do{printf("\n>>>  "s"\n"); fflush(stdout);} while(0)
-#define DBGF(fmt,...) do{printf("\n>>>  "fmt"\n", __VA_ARGS__); fflush(stdout);}while(0)
+#define DBG(s)        do{printf("\n>>>  " s "\n"); fflush(stdout);} while(0)
+#define DBGF(fmt,...) do{printf("\n>>>  " fmt "\n", __VA_ARGS__); fflush(stdout);}while(0)
+
 
 #define CHECKARR1D(arr)           \
     if((arr)->dimensions != 1)    \
@@ -116,6 +117,10 @@ static inline char* _GetInputArgName(CSOUND *csound, void *p, uint32_t idx) {
     return csound->GetInputArgName((OPDS *)p, idx);
 #endif
 }
+
+// static inline MYFLT _currentTime(CSOUND *csound, OPDS *ctx) {
+//     size_t numcycles = CS_KCNT;
+// }
 
 static inline void InsertScoreEventNow(CSOUND *csound, EVTBLK *evt, OPDS *ctx) {
 #ifdef CSOUNDAPI7

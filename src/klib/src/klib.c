@@ -462,7 +462,7 @@ static inline HANDLE *get_handle_by_idx(HASH_GLOBALS *g, ui32 idx) {
 typedef struct {
     OPDS h;
     // outputs
-    MYFLT *handleidx;
+    MYFLT *out_handleidx;
     // inputs
     STRINGDAT *keyvaltype;
     void  *inargs[VARGMAX];
@@ -969,7 +969,7 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
     if(idx < 0)
         return INITERR(Str("dict_new: failed to create a new dict"));
     p->idx = idx;
-    *p->handleidx = (MYFLT)idx;
+    *p->out_handleidx = (MYFLT)idx;
     p->khtype = khtype;
     return OK;
 }
@@ -1166,7 +1166,7 @@ dict_new_many(CSOUND *csound, DICT_NEW *p) {
     // So the number of args to be passed to opcode is our num. args - 1
     ui32 numargs = p->INOCOUNT - 1;
 
-    i32 idx = (i32)(*p->handleidx);
+    i32 idx = (i32)(*p->out_handleidx);
 
     HANDLE *handle = &(p->g->handles[idx]);
 
@@ -2519,7 +2519,7 @@ typedef struct {
     // out
     void *outkey;
     void *outval;
-    MYFLT *kidx;
+    MYFLT *outkidx;
     // in
     MYFLT *handleidx;
     MYFLT *kreset;
@@ -2594,7 +2594,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
             kstr = &(kh_val(h, k));
             stringdat_set(csound, (STRINGDAT*)p->outval, kstr->s, kstr->l);
             p->nextk = k + 1;
-            *p->kidx = p->numyields;
+            *p->outkidx = p->numyields;
             p->numyields++;
             return OK;
         }
@@ -2607,7 +2607,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
             stringdat_set(csound, (STRINGDAT*)p->outkey, key, strlen(key));
             *((MYFLT*)p->outval) = kh_val(h, k);
             p->nextk = k+1;
-            *p->kidx = p->numyields;
+            *p->outkidx = p->numyields;
             p->numyields++;
             return OK;
         }
@@ -2620,7 +2620,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
             kstr = &(kh_val(h, k));
             stringdat_set(csound, (STRINGDAT*)p->outval, kstr->s, kstr->l);
             p->nextk = k+1;
-            *p->kidx = p->numyields;
+            *p->outkidx = p->numyields;
             p->numyields++;
             return OK;
         }
@@ -2632,14 +2632,14 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
             *((MYFLT*)p->outkey) = kh_key(h, k);
             *((MYFLT*)p->outval) = kh_val(h, k);
             p->nextk = k+1;
-            *p->kidx = p->numyields;
+            *p->outkidx = p->numyields;
             p->numyields++;
             return OK;
         }
     } else
         return PERFERRF("dict: type %d not supported", khtype);
     // finished iteration! signal stop and reset if autoreset (kreset == -1)
-    *p->kidx = -1;
+    *p->outkidx = -1;
     if (kreset == 2) {  // reset at the end of iteration
         p->nextk = 0;
         p->numyields = 0;

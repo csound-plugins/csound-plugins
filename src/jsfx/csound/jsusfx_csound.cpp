@@ -1141,13 +1141,6 @@ struct t_tubeharmonics_stereo {
 };
 
 static int32_t tubeharmonics_stereo_init(CSOUND *csound, t_tubeharmonics_stereo *p) {
-    if(*p->keven == -1)
-        *p->keven = 0.3;
-    if(*p->kodd == -1)
-        *p->kodd = 0.3;
-    if(*p->kfluct == -1)
-        *p->kfluct = 0.1;
-
     int seed = csound->GetRandomSeedFromTime();
     MYFLT seed0 = rand(csound, 999, &seed);
     MYFLT seed1 = 0;
@@ -1205,15 +1198,25 @@ float fast_sin(float floatx) {
 #endif
 
 static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo *p) {
+    MYFLT keven = *p->keven;
+    if(keven < 0)
+        keven = 0.3;
+    MYFLT kodd = *p->kodd;
+    if(kodd < 0)
+        kodd = 0.3;
+    MYFLT kfluct = *p->kfluct;
+    if(kfluct < 0)
+        kfluct = 0.1;
+
     MYFLT *a1 = p->a1;
     MYFLT *a2 = p->a2;
     MYFLT *out1 = p->out1;
     MYFLT *out2 = p->out2;
 
-    MYFLT tgt_drve = *p->keven * 4;
-    MYFLT drvo = *p->kodd * 9;
-    MYFLT kr = *p->kfluct;
-    MYFLT kabs = *p->kfluct * 10;
+    MYFLT tgt_drve = keven * 4;
+    MYFLT drvo = kodd * 9;
+    MYFLT kr = kfluct;
+    MYFLT kabs = kfluct * 10;
     MYFLT ingain = pow(2, *p->kindb / 6);
     MYFLT hgain = pow(2, *p->koutdb / 6);
     MYFLT trim = pow(2, *p->kgain / 6);
@@ -1249,7 +1252,7 @@ static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo 
     MYFLT ch0 = 1, ch1 = 1;
     MYFLT minflt = std::numeric_limits<MYFLT>::min();
 
-    for(int n=0; n<samplesblock; n++) {
+    for(int n=0; n < samplesblock; n++) {
         ch0 = a1[n] * ingain;
         ch1 = a2[n] * ingain;
 
@@ -1330,12 +1333,6 @@ struct t_tubeharmonics_mono {
 };
 
 static int32_t tubeharmonics_mono_init(CSOUND *csound, t_tubeharmonics_mono *p) {
-    if(*p->keven == -1)
-        *p->keven = 0.3;
-    if(*p->kodd == -1)
-        *p->kodd = 0.3;
-    if(*p->kfluct == -1)
-        *p->kfluct = 0.1;
     int seed = csound->GetRandomSeedFromTime();
     MYFLT seed0 = rand(csound, 999, &seed);
     MYFLT seed1 = 0;
@@ -1357,13 +1354,23 @@ static int32_t tubeharmonics_mono_init(CSOUND *csound, t_tubeharmonics_mono *p) 
 }
 
 static int32_t tubeharmonics_mono_perf(CSOUND *csound, t_tubeharmonics_mono *p) {
+    MYFLT keven = *p->keven;
+    if(keven < 0)
+        keven = 0.3;
+    MYFLT kodd = *p->kodd;
+    if(kodd < 0)
+        kodd = 0.3;
+    MYFLT kfluct = *p->kfluct;
+    if(kfluct < 0)
+        kfluct = 0.1;
+
     MYFLT *a1 = p->a1;
     MYFLT *out1 = p->out1;
 
-    MYFLT tgt_drve = *p->keven * 4;
-    MYFLT drvo = *p->kodd * 9;
-    MYFLT kr = *p->kfluct;
-    MYFLT kabs = *p->kfluct * 10;
+    MYFLT tgt_drve = keven * 4;
+    MYFLT drvo = kodd * 9;
+    MYFLT kr = kfluct;
+    MYFLT kabs = kfluct * 10;
     MYFLT ingain = pow(2, *p->kindb / 6);
     MYFLT hgain = pow(2, *p->koutdb / 6);
     MYFLT trim = pow(2, *p->kgain / 6);
