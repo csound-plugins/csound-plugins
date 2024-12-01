@@ -61,6 +61,7 @@ endif()
 option(USE_LIB64 "Set to on to set installation dir for libs to lib64" OFF)
 option(USE_DOUBLE "Use doubles for audio calculations" ON)
 option(CPP11 "c++11" ON)
+option(USE_FMATH "Use fmath to accelerate exp and log functions" ON)
 
 set(BUILDING_CSOUND_PLUGINS ON)
 
@@ -169,6 +170,10 @@ set(CS_FRAMEWORK_DEST "~/Library/Frameworks")
 # set(CS_FRAMEWORK_DEST "/Library/Frameworks")
 
 
+# -------------------------------------------------------------------
+
+# Handle options
+
 if(USE_LIB64)
   set(LIBRARY_INSTALL_DIR "lib64")
   add_definitions("-DLIB64")
@@ -176,9 +181,11 @@ else()
   set(LIBRARY_INSTALL_DIR "lib")
 endif()
 
-message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
+if(USE_FMATH)
+  add_definitions("-DUSE_FMATH")
+endif()
 
-# -------------------------------------------------------------------
+message(STATUS "LIBRARY INSTALL DIR: ${LIBRARY_INSTALL_DIR}")
 
 
 # plugin install directories (CS_USER_PLUGIN)
@@ -205,32 +212,7 @@ else()
   endif()
 endif()
 
-#[[
-# old definition
 
-if(USE_DOUBLE)
-  message(STATUS ">>> using doubles")
-  add_definitions(-DUSE_DOUBLE)
-  add_definitions(-DB64BIT)
-  if(APPLE)
-    set(CSOUNDLIB "CsoundLib64")
-    set(PLUGIN_INSTALL_DIR "${CS_FRAMEWORK_DEST}/${CSOUNDLIB}.framework/Versions/${APIVERSION}/Resources/Opcodes64")
-  else()
-    set(CSOUNDLIB "csound64")
-    set(PLUGIN_INSTALL_DIR "${LIBRARY_INSTALL_DIR}/csound/plugins64-${APIVERSION}")
-  endif()
-else()
-  message(STATUS ">>> not using doubles !!!!!!!!!!!! ")
-  if(APPLE)
-    set(CSOUNDLIB "CsoundLib")
-    set(PLUGIN_INSTALL_DIR "${CS_FRAMEWORK_DEST}/${CSOUNDLIB}.framework/Versions/${APIVERSION}/Resources/Opcodes")
-  else()
-    set(CSOUNDLIB "csound")
-    set(PLUGIN_INSTALL_DIR "${LIBRARY_INSTALL_DIR}/csound/plugins-${APIVERSION}")
-  endif()
-endif()
-
-]]
 
 # -------------------------------------------------------------------
   

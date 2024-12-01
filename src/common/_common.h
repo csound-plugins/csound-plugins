@@ -127,6 +127,7 @@ static inline void InsertScoreEventNow(CSOUND *csound, EVTBLK *evt, OPDS *ctx) {
     MYFLT sr = GetLocalSr(ctx);
     csound->InsertScoreEvent(csound, evt, csound->GetCurrentTimeSamples(csound) / sr);
 #else
+    IGN(ctx);
     csound->insert_score_event_at_sample(csound, evt, csound->GetCurrentTimeSamples(csound));
 #endif
 }
@@ -146,6 +147,7 @@ static inline void tabinit_compat(CSOUND *csound, ARRAYDAT *p, int32_t size, OPD
 #ifdef CSOUNDAPI7
     tabinit(csound, p, size, ctx);
 #else
+    IGN(ctx);
     tabinit(csound, p, size);
 #endif
 }
@@ -238,6 +240,7 @@ static inline const OENTRY* _FindOpcode(CSOUND *csound, char *name, char *outsig
     return csound->find_opcode_new(csound, name, outsig, insig);
 #endif
 }
+
 
 
 char * _strncpy(char *dst, const char *src, size_t siz) {
