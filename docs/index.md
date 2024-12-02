@@ -60,6 +60,14 @@ A hashtable for csound
 * [pool_isfull](opcodes/pool_isfull.md): Returns 1 if the pool is full 
 
 
+## poodle
+
+Faust plugins ported to csound
+
+* [zitarev](opcodes/zitarev.md): Faust port of zita rev 
+* [fofcyclevoc](opcodes/fofcyclevoc.md): Port of faust's "Sf Formant FOF Cycle" vocal model 
+
+
 ## sndmeta
 
 opcodes using libsndfile

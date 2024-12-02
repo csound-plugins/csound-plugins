@@ -55,8 +55,10 @@ along different platforms without changing the csound script
 
 instr 1
     Sroot risset "root"
+	prints "risset root: %s\n", Sroot
+    
     Sassets risset "assets"
-    prints "risset root: %s, assets: %s\n", Sroot, Sassets
+    prints "risset assets: %s\n", Sassets
     turnoff
 endin
 

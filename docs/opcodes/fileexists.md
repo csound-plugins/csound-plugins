@@ -54,7 +54,7 @@ nchnls = 2
 0dbfs  = 1
 
 instr 1
-	iexists file_exists "file_exists.csd"
+	iexists fileexists "file_exists.csd"
     print iexists
     turnoff
 endin
