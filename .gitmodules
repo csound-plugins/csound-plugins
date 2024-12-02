@@ -5,3 +5,4 @@
 	path = csound
 	url = https://github.com/csound/csound
 	branch = csound6
+	ignore = dirty
