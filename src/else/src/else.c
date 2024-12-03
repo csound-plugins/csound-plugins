@@ -6104,10 +6104,7 @@ static OENTRY localops[] = {
 
 
     {"transpose", S(PITCHSHIFT), 0, 3, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL, NULL},
-    // {"zitarev.2", S(ZITAREV),    0, 1, "aa",  "aaOJJJJJOJOJJ", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL }
-
-    {"zitarev.2", S(ZITAREV),    0, 3, "aa",  "aaOOOOOOOOOOO", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL },
-
+    
     {"_testopcode", S(TESTOPCODE), 0, 1, "a", "aPP", (SUBR)testopcode_init}
 };
 
