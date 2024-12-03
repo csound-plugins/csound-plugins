@@ -16,15 +16,12 @@ jobs:
           # brew install fluidsynth
 
           git submodule update --init --recursive --remote
-          # git submodule foreach git pull origin master
           git submodule status --recursive
+
           cd csound
           git switch csound6
+          ln -s Android/CsoundAndroid/jni/version.h ./include
           cd ..
-
-          cd csound/include
-          ln -s ../Android/CsoundAndroid/jni/version.h .
-          cd ../..
 
           rm -fr build-macos
           mkdir build-macos
@@ -34,6 +31,7 @@ jobs:
 
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION="6.0" ..
           cmake --build . --parallel
+
           ls
           ARCHIVE=csound-plugins--macos-universal.zip
           7z a $ARCHIVE *.dylib
@@ -47,53 +45,6 @@ jobs:
         with:
           name: plugins-csound6-macos-universal
           path: artifacts/*.zip
-
-  # buildmacarm:
-  #   name: Build plugins for csound 6 on mac arm64
-  #   runs-on: macos-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-
-  #     - name: build
-  #       run: |
-  #         set -x
-  #         # brew update
-  #         # brew install libsndfile
-  #         # brew install fluidsynth
-
-  #         git submodule update --init --recursive --remote
-  #         # git submodule foreach git pull origin master
-  #         git submodule status --recursive
-  #         cd csound
-  #         git switch csound6
-  #         cd ..
-
-  #         cd csound/include
-  #         ln -s ../Android/CsoundAndroid/jni/version.h .
-  #         cd ../..
-
-  #         rm -fr build-macos
-  #         mkdir build-macos
-  #         cd build-macos
-
-  #         ls ..
-
-  #         cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION="6.0" ..
-  #         cmake --build . --parallel
-  #         ls
-  #         ARCHIVE=csound-plugins--macos-arm64.zip
-  #         7z a $ARCHIVE *.dylib
-  #         7z a $ARCHIVE ../assets/README.txt
-  #         7z l $ARCHIVE
-  #         mkdir -p ../artifacts
-  #         cp $ARCHIVE ../artifacts
-  #         ls ../artifacts
-
-  #     - uses: actions/upload-artifact@v4
-  #       with:
-  #         name: plugins
-  #         path: artifacts/*.zip
 
   buildjob7:
     name: Build plugins on ${{ matrix.os }} (csound 7)
@@ -111,7 +62,7 @@ jobs:
           cd csound
           git switch develop
 
-      - name: macos build
+      - name: macos build, csound 7
         if: runner.os == 'macOS'
         run: |
           curl -Ls -o nasm-2.14.02.zip 'https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/macosx/nasm-2.14.02-macosx.zip'
@@ -130,16 +81,14 @@ jobs:
           # brew install fluidsynth
 
           git submodule update --init --recursive --remote
-          # git submodule foreach git pull origin master
           git submodule status --recursive
 
-          cd csound/include
-          ln -s ../Android/CsoundAndroid/jni/version.h .
-          cd ../..
+          cd csound
+          git switch develop
+          ln -s Android/CsoundAndroid/jni/version.h ./include
+          cd ..
 
-          rm -fr build-macos
-          mkdir build-macos
-          cd build-macos
+          rm -fr build-macos && mkdir build-macos && cd build-macos
 
           cmake -DSKIP_FAST_MATH=True -DAPIVERSION="7.0" ..
           cmake --build . --parallel
@@ -152,7 +101,7 @@ jobs:
           cp $ARCHIVE ../artifacts
           ls ../artifacts
 
-      - name: windows build
+      - name: windows build - csound 7
         if: runner.os == 'windows'
         run: |
           # where.exe vcpkg
@@ -163,28 +112,21 @@ jobs:
           #vcpkg install libsndfile:x64-windows
 
           choco install libsndfile
-          # ls "${ENV:PROGRAMFILES}\libsndfile\include"
-
-
           # choco install fluidsynth
 
           git submodule update --init --recursive --remote
-          # git submodule foreach git pull origin master
           git submodule status --recursive
-          echo "Finished submodules"
 
-          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
-          ls
+          cd csound
+          git switch develop
+          Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "include"
+          cd ..
 
           Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
-
           mkdir build-windows
           cd build-windows
 
           # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
-
-          echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
-          ls "$VCPKG_ROOT" -recurse
 
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DAPIVERSION="7.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --parallel --config Release
@@ -203,7 +145,7 @@ jobs:
           cp $ARCHIVE ../artifacts
           ls ../artifacts
 
-      - name: linux build
+      - name: linux build, csound 7
         if: runner.os == 'linux'
         run: |
           sudo apt-get install libsndfile1-dev
@@ -211,19 +153,19 @@ jobs:
           # sudo apt-get install libfluidsynth-dev
 
           git submodule update --init --recursive --remote
-          # git submodule foreach git pull origin master --rebase
           git submodule status --recursive
 
-          cd csound/include
-          ln -s ../Android/CsoundAndroid/jni/version.h .
-          cd ../..
+          cd csound
+          git switch develop
+          ln -s Android/CsoundAndroid/jni/version.h ./include
+          cd ..
 
           rm -fr build-linux
           mkdir build-linux
           cd build-linux
 
           # cmake -DSKIP_FAST_MATH=True ..
-          cmake ..
+          cmake -DAPIVERSION=7.0 ..
           cmake --build . --parallel
 
           ls
@@ -312,7 +254,9 @@ jobs:
           # git submodule foreach git pull origin master --rebase
           git submodule status --recursive
 
-          cd csound/include
+          cd csound
+          git switch csound6
+          cd include
           ln -s ../Android/CsoundAndroid/jni/version.h .
           cd ../..
 
@@ -321,8 +265,7 @@ jobs:
           cd build-linux
 
           # cmake -DSKIP_FAST_MATH=True ..
-          cmake ..
-          # make -j4
+          cmake -DAPIVERSION=6.0 ..
           cmake --build . --parallel
 
           ls

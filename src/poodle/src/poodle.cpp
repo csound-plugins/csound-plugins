@@ -1324,7 +1324,8 @@ static int32_t zitarev_perf(CSOUND *csound, ZITAREV *p) {
         int index = p->ctrlindexes[i];
         slots[index] = value;
     }
-    p->DSP->compute(csound->GetKsmps(csound), p->ain, p->aout);
+    
+    p->DSP->compute(_GetLocalKsmps(csound, &(p->h)), p->ain, p->aout);
     return OK;
 }
 
@@ -1768,7 +1769,7 @@ class fofcycle_dsp : public dsp {
 		return fSampleRate;
 	}
 
-	virtual void buildUserInterface(UI* ui_interface) {}
+	virtual void buildUserInterface(UI* ui_interface) { IGN(ui_interface); }
 
 	virtual void compute(int count, FAUSTFLOAT** RESTRICT inputs, FAUSTFLOAT** RESTRICT outputs) {
 		IGN(inputs);
@@ -2213,6 +2214,7 @@ static int32_t fofcycle_init(CSOUND *csound, FOFCYCLE *p) {
 }
 
 static int32_t fofcycle_perf(CSOUND *csound, FOFCYCLE *p) {
+    IGN(csound);
     int numpairs = p->numargs / 2;
     fofcycle_dsp *dsp = p->DSP;
     FAUSTFLOAT *slots = &(dsp->params[0]);
@@ -2224,7 +2226,7 @@ static int32_t fofcycle_perf(CSOUND *csound, FOFCYCLE *p) {
     dsp->param_freq = *p->freq;
     dsp->param_gain = *p->gain;
     dsp->param_gate = *p->gate;
-    p->DSP->compute(csound->GetKsmps(csound), NULL, p->aout);
+    p->DSP->compute(_GetLocalKsmps(csound, &(p->h)), NULL, p->aout);
     return OK;
 
 }
@@ -2246,7 +2248,7 @@ extern "C" {
 #else
 extern "C" {
     static OENTRY localops[] = {
-        {(char*)"zitarev", sizeof(ZITAREV), 0, (char*)"aa", (char*)"aa*", (SUBR)zitarev_init, (SUBR)zitarev_perf }
+        {(char*)"zitarev", sizeof(ZITAREV), 0, (char*)"aa", (char*)"aa*", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL },
         {(char*)"fofcyclevoc", sizeof(FOFCYCLE), 0, (char*)"a", (char*)"kkk*", (SUBR)fofcycle_init, (SUBR)fofcycle_perf, NULL, NULL}
 
     };

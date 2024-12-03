@@ -171,6 +171,16 @@ static inline MYFLT _GetLocalSr(CSOUND *csound, OPDS *ctx) {
 #endif
 }
 
+static inline MYFLT _GetLocalKsmps(CSOUND *csound, OPDS *ctx) {
+#ifdef CSOUNDAPI7
+    IGN(csound);
+    return GetLocalKsmps(ctx);
+#else
+    IGN(ctx);
+    return csound->GetKsmps(csound);
+#endif
+}
+
 
 #ifdef CSOUNDAPI7
 #define TABINIT(csound, arraydat, size) (tabinit(csound, arraydat, size, &(p->h)))

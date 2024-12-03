@@ -6281,11 +6281,8 @@ static OENTRY localops[] = {
 
     {"transpose", S(PITCHSHIFT), 0, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL, NULL  },
 
-    {"zitarev.2", S(ZITAREV),    0, "aa", "aaOJJJJJOJOJJ", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL }
-
 };
 #endif
-
 
 LINKAGE
 
