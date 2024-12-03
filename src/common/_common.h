@@ -5,7 +5,6 @@
 #include "arrays.h"
 
 
-
 #define INITERR(m) (csound->InitError(csound, "%s", m))
 #define INITERRF(fmt, ...) (csound->InitError(csound, fmt, __VA_ARGS__))
 // VL this is needed for -Wformat-security

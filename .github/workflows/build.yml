@@ -2,11 +2,21 @@ name: Build And Publish
 on: push
 jobs:
   buildmacuniversal:
-    name: Build plugins for csound 6 on mac arm64+x86_64
+    name: Build plugins for mac arm64+x86_64
     runs-on: macos-latest
+    strategy:
+      matrix:
+        csound-branch: ["csound6", "develop"]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: setup csound
+        run: |
+          git submodule update --init --recursive
+          cd csound
+          git switch ${{ matrix.csound-branch }}
 
       - name: build
         run: |
@@ -18,10 +28,7 @@ jobs:
           git submodule update --init --recursive --remote
           git submodule status --recursive
 
-          cd csound
-          git switch csound6
-          ln -s Android/CsoundAndroid/jni/version.h ./include
-          cd ..
+          ln -s csound/Android/CsoundAndroid/jni/version.h csound/include
 
           rm -fr build-macos
           mkdir build-macos
@@ -29,7 +36,12 @@ jobs:
 
           ls ..
 
-          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION="6.0" ..
+          if [[ ${{ matrix.csound-branch }} == csound6 ]]; then
+            APIVERSION=6.0
+          else
+            APIVERSION=7.0
+          fi
+          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION=$APIVERSION ..
           cmake --build . --parallel
 
           ls
@@ -42,8 +54,15 @@ jobs:
           ls ../artifacts
 
       - uses: actions/upload-artifact@v4
+        if: matrix.csound-branch == 'csound6'
         with:
           name: plugins-csound6-macos-universal
+          path: artifacts/*.zip
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.csound-branch == 'develop'
+        with:
+          name: plugins-csound7-macos-universal
           path: artifacts/*.zip
 
   buildjob7:

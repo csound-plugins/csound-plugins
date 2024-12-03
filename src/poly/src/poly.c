@@ -58,7 +58,6 @@
 
 #include "../../common/_common.h"
 
-
 #define POLY_MAXINPARAMS  31
 #define POLY_MAXOUTPARAMS 15
 #define POLY_MAXPARAMS    (POLY_MAXINPARAMS + 2 + POLY_MAXOUTPARAMS)
@@ -516,7 +515,7 @@ handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
 
 static i32 poly1_deinit(CSOUND *csound, POLY1 *p);
 
-
+/*
 static void _debug_dump_opc(OENTRY *opc) {
     printf("dsblksiz: %d\n", opc->dsblksiz);
     printf("opcname: %s\n", opc->opname);
@@ -537,7 +536,7 @@ static void _dump_types(CSOUND *csound, void **args, int32_t numargs) {
         DBGF("idx: %d / %d    typename: %s\n", i, numargs, typename);
     }
 }
-
+*/
 
 // check that signatures are valid to be used with poly
 // own sig: outputs must be arrays of k or a type, one arg at least
