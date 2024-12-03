@@ -65,6 +65,10 @@ option(USE_FMATH "Use fmath to accelerate exp and log functions" ON)
 
 set(BUILDING_CSOUND_PLUGINS ON)
 
+if(APPLE)
+  set(USE_FMATH OFF)
+endif()
+
 # ----------------------------------------------
 
 # include(FindCsound)
