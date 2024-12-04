@@ -241,7 +241,7 @@ jobs:
           New-Item artifacts -ItemType Directory -ea 0
           echo "----------- 3"
 
-          Copy-Item -Path u"build/Release/*.dll" -Destination "artifacts"
+          Copy-Item -Path "build/Release/*.dll" -Destination "artifacts"
           Copy-Item "assets/README.txt" -Destination "artifacts"
           echo "----------- 4"
           ls artifacts
