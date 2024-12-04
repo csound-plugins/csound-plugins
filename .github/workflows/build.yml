@@ -109,7 +109,6 @@ jobs:
           mkdir -p artifacts
           cp build/Release/*.dll artifacts
           cp assets/README.txt artifacts
-          ls artifacts
 
       - name: linux build, csound 7
         if: runner.os == 'linux'
@@ -136,7 +135,7 @@ jobs:
 
           cd ..
           mkdir -p artifacts
-          cp build/*.dylib artifacts
+          cp build/*.so artifacts
           cp assets/README.txt artifacts
 
       - uses: actions/upload-artifact@v4
@@ -241,8 +240,6 @@ jobs:
           mkdir -p artifacts
           cp build/Release/*.dll artifacts
           cp assets/README.txt artifacts
-
-          ls artifacts
 
       - uses: actions/upload-artifact@v4
         with:
