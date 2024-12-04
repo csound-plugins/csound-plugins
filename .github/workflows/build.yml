@@ -41,6 +41,9 @@ jobs:
           cmake --build . --parallel
 
           ls
+          mkdir -p ../artifacts
+          cp *.dylib ../artifacts
+          cp ../assets/READ
           ARCHIVE=csound-plugins--macos-universal.zip
           7z a $ARCHIVE *.dylib
           7z a $ARCHIVE ../assets/README.txt
