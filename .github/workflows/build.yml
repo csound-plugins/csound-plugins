@@ -232,20 +232,19 @@ jobs:
 
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --parallel --config Release
-          ls Release
+          cd ..
+          ls build/Release
 
           # rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
 
           echo "----------- 1"
-          cd ..
-          echo "----------- 2"
-
           New-Item artifacts -ItemType Directory -ea 0
           echo "----------- 3"
 
-          Copy-Item "build/Release/*.dll" -Destination "artifacts"
+          Copy-Item -Path u"build/Release/*.dll" -Destination "artifacts"
           Copy-Item "assets/README.txt" -Destination "artifacts"
           echo "----------- 4"
+          ls artifacts
 
       - uses: actions/upload-artifact@v4
         with:
