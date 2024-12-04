@@ -107,7 +107,7 @@ jobs:
 
           cd ..
           mkdir -p artifacts
-          cp build/Release/*.dll artifacts
+          cp build-windows/Release/*.dll artifacts
           cp assets/README.txt artifacts
 
       - name: linux build, csound 7
@@ -237,7 +237,7 @@ jobs:
           rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
 
           cd ..
-          mkdir -p artifacts
+          mkdir artifacts
           cp build/Release/*.dll artifacts
           cp assets/README.txt artifacts
 
