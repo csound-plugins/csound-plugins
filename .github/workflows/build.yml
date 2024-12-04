@@ -40,29 +40,22 @@ jobs:
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION=$APIVERSION ..
           cmake --build . --parallel
 
-          ls
-          mkdir -p ../artifacts
-          cp *.dylib ../artifacts
-          cp ../assets/READ
-          ARCHIVE=csound-plugins--macos-universal.zip
-          7z a $ARCHIVE *.dylib
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
-          mkdir -p ../artifacts
-          cp $ARCHIVE ../artifacts
-          ls ../artifacts
+          cd ..
+          mkdir -p artifacts
+          cp build/*.dylib artifacts
+          cp assets/README.txt artifacts
 
       - uses: actions/upload-artifact@v4
         if: matrix.csound-branch == 'csound6'
         with:
           name: plugins-csound6-macos-universal
-          path: artifacts/*.zip
+          path: artifacts/*
 
       - uses: actions/upload-artifact@v4
         if: matrix.csound-branch == 'develop'
         with:
           name: plugins-csound7-macos-universal
-          path: artifacts/*.zip
+          path: artifacts/*
 
   buildjob7:
     name: Build plugins on ${{ matrix.os }} (csound 7)
