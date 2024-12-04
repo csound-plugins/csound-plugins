@@ -171,27 +171,23 @@ jobs:
           ln -s Android/CsoundAndroid/jni/version.h ./include
           cd ..
 
-          rm -fr build-linux
-          mkdir build-linux
-          cd build-linux
+          rm -fr build && mkdir build && cd build
 
           # cmake -DSKIP_FAST_MATH=True ..
           cmake -DAPIVERSION=7.0 ..
           cmake --build . --parallel
 
           ls
-          ARCHIVE=csound7-plugins--linux.zip
-          7z a $ARCHIVE *.so
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
-          mkdir -p ../artifacts
-          cp $ARCHIVE ../artifacts
-          ls ../artifacts
+
+          cd ..
+          mkdir -p artifacts
+          cp build/*.dylib artifacts
+          cp assets/README.txt artifacts
 
       - uses: actions/upload-artifact@v4
         with:
           name: plugins-csound7-${{ runner.os }}
-          path: artifacts/*.zip
+          path: artifacts/*
 
   buildjob6:
     name: Build plugins on ${{ matrix.os }} (csound 6)
@@ -235,23 +231,15 @@ jobs:
           ln -s ../Android/CsoundAndroid/jni/version.h .
           cd ../..
 
-          rm -fr build-macos
-          mkdir build-macos
-          cd build-macos
+          rm -fr build && mkdir build && cd build
 
           cmake -DSKIP_FAST_MATH=True ..
-          # make -j4
           cmake --build . --parallel
 
-          ls
-          # ARCHIVE=csound-plugins--${{matrix.os}}.zip
-          ARCHIVE=csound-plugins--macos.zip
-          7z a $ARCHIVE *.dylib
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
-          mkdir -p ../artifacts
-          cp $ARCHIVE ../artifacts
-          ls ../artifacts
+          cd ..
+          mkdir -p artifacts
+          cp build/*.dylib artifacts
+          cp assets/README.txt artifacts
 
       - name: linux build
         if: runner.os == 'linux'
@@ -262,7 +250,6 @@ jobs:
           # sudo apt-get install libfluidsynth-dev
 
           git submodule update --init --recursive --remote
-          # git submodule foreach git pull origin master --rebase
           git submodule status --recursive
 
           cd csound
@@ -271,22 +258,16 @@ jobs:
           ln -s ../Android/CsoundAndroid/jni/version.h .
           cd ../..
 
-          rm -fr build-linux
-          mkdir build-linux
-          cd build-linux
+          rm -fr build && mkdir build && cd build
 
           # cmake -DSKIP_FAST_MATH=True ..
           cmake -DAPIVERSION=6.0 ..
           cmake --build . --parallel
 
-          ls
-          ARCHIVE=csound-plugins--linux.zip
-          7z a $ARCHIVE *.so
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
-          mkdir -p ../artifacts
-          cp $ARCHIVE ../artifacts
-          ls ../artifacts
+          cd ..
+          mkdir -p artifacts
+          cp build/*.so artifacts
+          cp assets/README.txt artifacts
 
       # Windows: Restore from cache the previously built ports.
       # If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
@@ -322,9 +303,9 @@ jobs:
           # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
 
           ls
-          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
-          mkdir build-windows
-          cd build-windows
+          Remove-Item -Recurse -Force build -ErrorAction Ignore
+          mkdir build
+          cd build
 
           # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
 
@@ -337,21 +318,17 @@ jobs:
 
           rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
 
-          set-variable -name ARCHIVE -value "csound-plugins--win64.zip"
-          rm $ARCHIVE -ErrorAction Ignore
-          7z a $ARCHIVE ./Release/*.dll
-          7z a $ARCHIVE ../assets/README.txt
-          7z l $ARCHIVE
-          if(!(Test-Path ../artifacts)) {
-            New-Item -ItemType directory -Path ../artifacts
-          }
-          cp $ARCHIVE ../artifacts
-          ls ../artifacts
+          cd ..
+          mkdir -p artifacts
+          cp build/Release/*.dll artifacts
+          cp assets/README.txt artifacts
+
+          ls artifacts
 
       - uses: actions/upload-artifact@v4
         with:
           name: plugins-csound6-${{ runner.os }}
-          path: artifacts/*.zip
+          path: artifacts/*
 
   publish:
     name: Publish artifacts as a Pre-Release
