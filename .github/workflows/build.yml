@@ -236,10 +236,16 @@ jobs:
 
           # rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
 
+          echo "----------- 1"
           cd ..
+          echo "----------- 2"
+
           New-Item artifacts -ItemType Directory -ea 0
+          echo "----------- 3"
+
           Copy-Item "build/Release/*.dll" -Destination "artifacts"
           Copy-Item "assets/README.txt" -Destination "artifacts"
+          echo "----------- 4"
 
       - uses: actions/upload-artifact@v4
         with:
