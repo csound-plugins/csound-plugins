@@ -2,7 +2,7 @@ name: Build And Publish
 on: push
 jobs:
   buildmacuniversal:
-    name: Build plugins for mac arm64+x86_64
+    name: Build plugins for mac, ${{ matrix.csound-branch }}
     runs-on: macos-latest
     strategy:
       matrix:
@@ -25,22 +25,18 @@ jobs:
           # brew install libsndfile
           # brew install fluidsynth
 
-          git submodule update --init --recursive --remote
-          git submodule status --recursive
-
           ln -s csound/Android/CsoundAndroid/jni/version.h csound/include
 
-          rm -fr build-macos
-          mkdir build-macos
-          cd build-macos
-
-          ls ..
+          rm -fr build-macos && mkdir build-macos && cd build-macos
 
           if [[ ${{ matrix.csound-branch }} == csound6 ]]; then
             APIVERSION=6.0
+            APIMAJOR=6
           else
             APIVERSION=7.0
+            APIMAJOR=7
           fi
+          echo "APIVERSIOn = $APIVERSION"
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION=$APIVERSION ..
           cmake --build . --parallel
 
