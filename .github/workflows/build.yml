@@ -27,7 +27,7 @@ jobs:
 
           ln -s csound/Android/CsoundAndroid/jni/version.h csound/include
 
-          rm -fr build-macos && mkdir build-macos && cd build-macos
+          rm -fr build && mkdir build && cd build
 
           if [[ ${{ matrix.csound-branch }} == csound6 ]]; then
             APIVERSION=6.0
