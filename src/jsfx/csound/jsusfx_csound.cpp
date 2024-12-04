@@ -1472,37 +1472,40 @@ extern "C" {
 
         { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, 3, (char*)"a", (char*)"aJJJOOO", (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf, nullptr, nullptr},
         // this signals end of loop
+        { "", 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
 #else
         // aout jsfx Spath, ain, kparams... \
         // a1 [, a2, ...] jsfx Spath, a1, [a2, ...], [id0, kval0, id1, kval1, ...]
-        { (char*)"jsfx", S(t_jsfx), 0, (char*)"i*", (char*)"S*", (SUBR)jsfx_opcode_init, (SUBR)jsfx_opcode_perf },
-
+        
         // ihandle jsfx_new Spath
-        { (char*)"jsfx_new", S(t_jsfx_new), 0, (char*)"i", (char*)"S", (SUBR)jsfx_new_init, nullptr },
+        { "jsfx_new", S(t_jsfx_new), 0, "i", "S", (SUBR)jsfx_new_init, nullptr, nullptr },
 
+        { (char*)"jsfx", S(t_jsfx), 0, (char*)"i*", (char*)"S*", (SUBR)jsfx_opcode_init, (SUBR)jsfx_opcode_perf, (SUBR)jsfx_opcode_deinit},
+        
         // a1, [a2, ...] jsfx_play ihandle, a1, [a2, ...]
-        { (char*)"jsfx_play", S(t_jsfx_play), 0, (char*)"mmmmmmmm", (char*)"iM", (SUBR)jsfx_play_init, (SUBR)jsfx_play_perf },
+        { (char*)"jsfx_play", S(t_jsfx_play), 0, (char*)"mmmmmmmm", (char*)"iM", (SUBR)jsfx_play_init, (SUBR)jsfx_play_perf, nullptr },
 
         // jsfx_dump ihandle, ktrig
-        { (char*)"jsfx_dump", S(t_jsfx_dump), 0, (char*)"", (char*)"ik", (SUBR)jsfx_dump_init, (SUBR)jsfx_dump_perf },
+        { (char*)"jsfx_dump", S(t_jsfx_dump), 0, (char*)"", (char*)"ik", (SUBR)jsfx_dump_init, (SUBR)jsfx_dump_perf, nullptr },
 
         // kval jsfx_getslider ihandle, ksliderid
-        { (char*)"jsfx_getslider", S(t_jsfx_getslider), 0, (char*)"k", (char*)"ik", (SUBR)jsfx_getslider_init, (SUBR)jsfx_getslider_perf },
+        { (char*)"jsfx_getslider", S(t_jsfx_getslider), 0, (char*)"k", (char*)"ik", (SUBR)jsfx_getslider_init, (SUBR)jsfx_getslider_perf, nullptr },
 
         // jsfx_setslider ihandle, kid, kval
         // { (char*)"jsfx_setslider", S(t_jsfx_setslider), 0, (char*)"", (char*)"ikk",
         //  (SUBR)jsfx_setslider_init, (SUBR)jsfx_setslider_perf },
 
         // jsfx_setslider ihandle, id0, kval0 [, id1, kval1, ...]
-        { (char*)"jsfx_setslider.many", S(t_jsfx_setslider_many), 0, (char*)"", (char*)"iM", (SUBR)jsfx_setslider_many_init, (SUBR)jsfx_setslider_many_perf },
+        { (char*)"jsfx_setslider.many", S(t_jsfx_setslider_many), 0, (char*)"", (char*)"iM", (SUBR)jsfx_setslider_many_init, (SUBR)jsfx_setslider_many_perf, nullptr },
 
         // a1, a2 tubeharmonics a1, a2, keven, kodd, kfluct, kinputdb, koutputdb, kgain
-        { (char*)"tubeharmonics.2", S(t_tubeharmonics_stereo), 0, (char*)"aa", (char*)"aaJJJOOO", (SUBR)tubeharmonics_stereo_init, (SUBR)tubeharmonics_stereo_perf},
+        { (char*)"tubeharmonics.2", S(t_tubeharmonics_stereo), 0, (char*)"aa", (char*)"aaJJJOOO", (SUBR)tubeharmonics_stereo_init, (SUBR)tubeharmonics_stereo_perf, nullptr},
 
-        { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, (char*)"a", (char*)"aJJJOOO", (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf},
-
+        { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, (char*)"a", (char*)"aJJJOOO", (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf, nullptr},
+        { "", 0, 0, 0, 0, 0, 0, 0}
 #endif
-        { 0, 0, 0, 0, 0, 0, 0, 0, 0}
+       
     };
 
     PUBLIC int csoundModuleCreate(CSOUND *csound) {
@@ -1512,8 +1515,8 @@ extern "C" {
 
     PUBLIC int csoundModuleInit(CSOUND *csound) {
         int status = 0;
-        for(OENTRY *oentry = &oentries[0]; oentry->opname; oentry++) {
 #ifdef CSOUNDAPI6
+        for(OENTRY *oentry = &oentries[0]; strlen(oentry->opname) > 0; oentry++) {
             status |= csound->AppendOpcode(csound,
                                            oentry->opname,
                                            oentry->dsblksiz,
@@ -1524,18 +1527,22 @@ extern "C" {
                                            (int (*)(CSOUND*,void*)) oentry->iopadr,
                                            (int (*)(CSOUND*,void*)) oentry->kopadr,
                                            (int (*)(CSOUND*,void*)) oentry->aopadr);
+        }
 #else
-            status |= csound->AppendOpcode(csound,
+        int opstatus;
+        for(OENTRY *oentry = &oentries[0]; strlen(oentry->opname) > 0; oentry++) {        
+            opstatus = csound->AppendOpcode(csound,
                                            oentry->opname,
                                            oentry->dsblksiz,
                                            oentry->flags,
                                            oentry->outypes,
                                            oentry->intypes,
-                                           (int (*)(CSOUND*,void*)) oentry->init,
-                                           (int (*)(CSOUND*,void*)) oentry->perf,
-                                           (int (*)(CSOUND*,void*)) oentry->deinit);
-#endif
+                                           (int32_t (*)(CSOUND*,void*)) oentry->init,
+                                           (int32_t (*)(CSOUND*,void*)) oentry->perf,
+                                           (int32_t (*)(CSOUND*,void*)) oentry->deinit);
+            status |= opstatus;
         }
+#endif
         return status;
     }
 

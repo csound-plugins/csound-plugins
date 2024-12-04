@@ -45,13 +45,6 @@
 
  */
 
-// This is needed to be built as built-in opcode :-(
-/*
-#ifndef __BUILDING_LIBCSOUND
-#define __BUILDING_LIBCSOUND
-#endif
-*/
-
 #include "csdl.h"
 #include "arrays.h"
 #include <ctype.h>
@@ -601,18 +594,16 @@ OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
 
     CSOUND 7:
     typedef struct text {
-    uint16_t        linenum;        // Line num in orch file (currently buggy!)
-    uint64_t        locn;           // and location
+     uint16_t        linenum;       // Line num in orch file (currently buggy!)  
+    uint64_t        locn;           // and location 
     OENTRY          *oentry;
-    char            *opcod;         // Pointer to opcode name in global pool
-    ARGLST          *inlist;        // Input args (pointer to item in name list)
+    char            *opcod;         // Pointer to opcode name in global pool 
+    ARGLST          *inlist;        // Input args (pointer to item in name list) 
     ARGLST          *outlist;
-    ARG             *inArgs;        // Input args (index into list of values)
+    ARG             *inArgs;        // Input args (index into list of values) 
     uint32_t        inArgCount;
     ARG             *outArgs;
     uint32_t       outArgCount;
-    //    char            intype;   // Type of first input argument (g,k,a,w etc)
-    char            pftype;         // Type of output argument (k,a etc)
     } TEXT;
 
     */
@@ -624,7 +615,6 @@ OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
     txt->oentry = p->opc;
     txt->inArgCount = p->num_input_args;
     txt->outArgCount = p->num_output_args;
-    txt->pftype = p->out_signature[0];
     txt->opcod = p->opc->opname;
     txt->outlist = (ARGLST *)csound->Malloc(csound, sizeof(ARGLST));
     txt->outlist->count = 0;
@@ -632,6 +622,7 @@ OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
     txt->inlist->count = 0;
 #ifdef CSOUNDAPI6
     optext->t.intype = p->in_signature[0];
+    txt->pftype = p->out_signature[0];
 #else
 #endif
     return optext;
@@ -735,10 +726,8 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     }
 
     p->optext = poly_make_optext(csound, p);
-    OPCODINFO *inm = (OPCODINFO*) p->opc->useropinfo;
-    if(inm != NULL)
-        return INITERRF("UDOs are not supported (instno=%i)", inm->instno);
-
+    if(p->opc->useropinfo != NULL)
+        return INITERRF("UDOs are not supported (name: %s)", p->opc->opname);
     // we allocate all states as an array
     p->states = (OPCSTATE*)csound->Calloc(csound, (p->num_instances)*(opc->dsblksiz));
     CHECKALLOC(p->states, "states for handle");
@@ -989,9 +978,8 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
     }
 
     p->optext = poly_make_optext(csound, p);
-    OPCODINFO *inm = (OPCODINFO*) p->opc->useropinfo;
-    if(inm != NULL)
-        return INITERRF("UDOs are not supported (instno=%i)", inm->instno);
+    if(p->opc->useropinfo != NULL)
+        return INITERRF("UDOs are not supported (name=%s)", p->opc->opname);
 
     // we allocate all states as an array
     p->states = (OPCSTATE*)csound->Calloc(csound, (p->num_instances)*(opc->dsblksiz));
@@ -1144,9 +1132,10 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
             *(MYFLT*)inargs[i] = default_value;
         }
     }
-    OPCODINFO *inm = (OPCODINFO*) opc->useropinfo;
-    if(inm != NULL)
-        return INITERRF("UDOs are not supported (instno=%i)", inm->instno);
+    
+    if(opc->useropinfo != NULL)
+        return INITERRF("UDOs are not supported (name=%s)", opc->opname);
+        
 #ifdef CSOUNDAPI6
     register_deinit(csound, p, defer_deinit);
 #endif
@@ -1252,6 +1241,7 @@ int32_t testopc_perf(CSOUND *csound, TESTOPC_a_a *p) {
         printf("%.6f, ", out[i]);
     }
     return OK;
+    
 }
 
 // --------------------------------------------------------------------------
