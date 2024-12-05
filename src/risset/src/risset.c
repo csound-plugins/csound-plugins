@@ -76,7 +76,7 @@ typedef struct {
 static char rissetroot[256] = "";
 
 static void _getroot(char *dest) {
-    #ifdef __linux__
+#ifdef __linux__
     char *home = getenv("HOME");
     strncpy(dest, home, 100);
     strcat(dest, "/.local/share/risset");
@@ -90,7 +90,7 @@ static void _getroot(char *dest) {
 #ifdef OS_WINDOWS
     char *localappdata = getenv("LocalAppData");
     strncpy(dest, localappdata, 200);
-    strncat(dest, "/risset");
+    strncat(dest, "/risset", 7);
 #endif
 }
 
