@@ -101,14 +101,15 @@ jobs:
 
           cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DAPIVERSION="7.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --parallel --config Release
-          ls Release
+          cd ..
+          ls build/Release
 
           rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
 
-          cd ..
-          mkdir -p artifacts
-          cp build-windows/Release/*.dll artifacts
-          cp assets/README.txt artifacts
+          New-Item artifacts -ItemType Directory -ea 0
+          Copy-Item -Path "build/Release/*.dll" -Destination "artifacts"
+          Copy-Item "assets/README.txt" -Destination "artifacts"
+          ls artifacts
 
       - name: linux build, csound 7
         if: runner.os == 'linux'
@@ -237,13 +238,9 @@ jobs:
 
           # rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
 
-          echo "----------- 1"
           New-Item artifacts -ItemType Directory -ea 0
-          echo "----------- 3"
-
           Copy-Item -Path "build/Release/*.dll" -Destination "artifacts"
           Copy-Item "assets/README.txt" -Destination "artifacts"
-          echo "----------- 4"
           ls artifacts
 
       - uses: actions/upload-artifact@v4
