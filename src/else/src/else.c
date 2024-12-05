@@ -6157,7 +6157,7 @@ static OENTRY localops[] = {
     {"accum.a", S(ACCUM), 0, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio, NULL, NULL},
 
     {"frac2int.i", S(FUNC12), 0, "i", "ii", (SUBR)frac2int, NULL, NULL, NULL},
-    {"frac2int.k", S(FUNC12), 0, "k", "kk", NULL, (SUBR)frac2int, NULL, NULL, NULL},
+    {"frac2int.k", S(FUNC12), 0, "k", "kk", NULL, (SUBR)frac2int, NULL, NULL},
 
     {"memview.i_table", S(TABALIAS),  0, "i[]", "ioo", (SUBR)tabalias_init, NULL, (SUBR)tabalias_deinit, NULL},
     {"memview.k_table", S(TABALIAS),  0, "k[]", "ioo", (SUBR)tabalias_init, NULL, (SUBR)tabalias_deinit, NULL},
@@ -6276,7 +6276,7 @@ static OENTRY localops[] = {
     {"linexp.i", S(LINEXP), 0, "i", "iiiiop", (SUBR)linexp, NULL, NULL, NULL  },
     {"linexp.k", S(LINEXP), 0, "k", "kkkkOP", NULL, (SUBR)linexp, NULL, NULL  },
 
-    {"transpose", S(PITCHSHIFT), 0, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL, NULL  },
+    {"transpose", S(PITCHSHIFT), 0, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL},
 
 };
 #endif
