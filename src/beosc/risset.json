@@ -1,12 +1,7 @@
 {
   "name": "beosc",
   "version": "2.0.0",
-  "opcodes": [
-    "beosc",
-    "beadsynt",
-    "getrowlin",
-    "tabrowlin"
-  ],
+  "opcodes": ["beosc", "beadsynt", "getrowlin", "tabrowlin"],
   "libname": "libbeosc",
   "short_description": "Band-enhanced oscillators implementing the sine+noise synthesis model",
   "long_description": "Band-enhanced oscillators based on the loris partial tracking model",
@@ -17,54 +12,54 @@
   "binaries": [
     {
       "platform": "linux",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-Linux.zip",
       "extractpath": "libbeosc.so",
       "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "linux",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-Linux.zip",
       "extractpath": "libbeosc.so",
       "csound_version": ">=7.0"
     },
     {
       "platform": "windows",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--win64.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-Windows.zip",
       "extractpath": "beosc.dll",
       "build_platform": "Windows 10",
       "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "windows",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--win64.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-Linux.zip",
       "extractpath": "beosc.dll",
       "build_platform": "Windows 10",
       "csound_version": ">=7.0"
     },
     {
       "platform": "macos-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-universal.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-macos-universal.zip",
       "extractpath": "libbeosc.dylib",
       "build_platform": "10.14.0",
       "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "macos-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-universal.zip",
       "extractpath": "libbeosc.dylib",
       "build_platform": "10.14.0",
       "csound_version": ">=7.0"
     },
     {
       "platform": "macos-arm64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound-plugins--macos-universal.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-macos-universal.zip",
       "extractpath": "libbeosc.dylib",
       "build_platform": "10.14.0",
       "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "macos-arm64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/csound7-plugins--macos-arm64.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-universal.zip",
       "extractpath": "libbeosc.dylib",
       "build_platform": "10.14.0",
       "csound_version": ">=7.0"
