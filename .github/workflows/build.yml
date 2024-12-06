@@ -48,6 +48,11 @@ jobs:
             cp scripts/macos-codesign.py artifacts
           fi
 
+          # Make zip for release
+          ARCHIVE=plugins-csound$APIMAJOR--macos-universal.zip
+          7z a $ARCHIVE artifacts/*
+          mv $ARCHIVE artifacts
+
       - uses: actions/upload-artifact@v4
         if: matrix.csound-branch == 'csound6'
         with:
