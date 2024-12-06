@@ -2,7 +2,7 @@ name: Test plugins
 on: push
 jobs:
   macos-test-universal-csound6:
-    name: Test mac universal plugins
+    name: Test mac universal plugins, csound 6
     runs-on: macos-latest
 
     steps:
@@ -26,21 +26,20 @@ jobs:
           which csound
           file $(which csound)
 
-          python3 -m venv .venv
-          source .venv/bin/activate
-          pip install risset
-
-          risset list
-          risset info
-          wget "https://github.com/csound-plugins/csound-plugins/releases/download/latest/csound-plugins--macos-universal.zip"
-
-          unzip -o csound-plugins--macos-universal.zip
+          wget "https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound6-macos-universal.zip"
+          unzip -o plugins-csound6-macos-universal.zip
           ls -l *.dylib
+          
+          PLUGINSDIR="$HOME/Library/csound/6.0/plugins64"
 
-          mkdir -p $HOME/Library/csound/6.0/plugins64
+          mkdir -p "$PLUGINSDIR"
           cp *.dylib $HOME/Library/csound/6.0/plugins64
-          risset dev codesign
-
+          if [ -f macos-codesign.py ]; then
+            echo "Trying to codesign plugins"
+            python macos-codesign.py $PLUGINSDIR/*.dylib
+          else
+            echo "macos-codesign.py not found, plugins will not be codesigned"
+          fi
           csound -z1 2>&1 || echo "\n\n--- finished ---"
 
       - name: Run tests
