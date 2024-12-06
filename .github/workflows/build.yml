@@ -35,15 +35,18 @@ jobs:
             APIVERSION=7.0
             APIMAJOR=7
           fi
-          echo "APIVERSIOn = $APIVERSION"
+          echo "APIVERSIO = $APIVERSION"
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION=$APIVERSION ..
           cmake --build . --parallel
 
           cd ..
           mkdir -p artifacts
           cp build/*.dylib artifacts
-          cp scripts/macos-codesign.py
           cp assets/README.txt artifacts
+
+          if [ -f scripts/macos-codesign.py ]; then
+            cp scripts/macos-codesign.py artifacts
+          fi
 
       - uses: actions/upload-artifact@v4
         if: matrix.csound-branch == 'csound6'
@@ -275,4 +278,4 @@ jobs:
           title: "Development Build"
           prerelease: True
           files: |
-            plugins/plugins*/*.zip
+            plugins/plugins*.zip
