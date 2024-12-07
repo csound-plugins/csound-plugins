@@ -35,7 +35,7 @@ jobs:
             APIVERSION=7.0
             APIMAJOR=7
           fi
-          echo "APIVERSIO = $APIVERSION"
+          echo "APIVERSION = $APIVERSION"
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION=$APIVERSION ..
           cmake --build . --parallel
 
@@ -50,7 +50,7 @@ jobs:
 
           # Make zip for release
           ARCHIVE=plugins-csound$APIMAJOR-macos-universal.zip
-          7z a $ARCHIVE artifacts/*
+          7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
 
       - uses: actions/upload-artifact@v4
@@ -122,7 +122,7 @@ jobs:
 
           set-variable -name ARCHIVE -value "plugins-csound7-windows.zip"
           rm $ARCHIVE -ErrorAction Ignore
-          7z a $ARCHIVE artifacts/*
+          7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
 
       - name: linux build, csound 7
@@ -155,7 +155,7 @@ jobs:
 
           # Make zip for release
           ARCHIVE=plugins-csound7-linux.zip
-          7z a $ARCHIVE artifacts/*
+          7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
 
       - uses: actions/upload-artifact@v4
@@ -208,7 +208,7 @@ jobs:
           cp assets/README.txt artifacts
 
           ARCHIVE=plugins-csound6-linux.zip
-          7z a $ARCHIVE artifacts/*
+          7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
 
       # Windows: Restore from cache the previously built ports.
@@ -268,7 +268,7 @@ jobs:
 
           set-variable -name ARCHIVE -value "plugins-csound6-windows.zip"
           rm $ARCHIVE -ErrorAction Ignore
-          7z a $ARCHIVE artifacts/*
+          7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
 
       - uses: actions/upload-artifact@v4
