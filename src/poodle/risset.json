@@ -12,28 +12,28 @@
   "binaries": [
     {
       "platform": "linux-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-Linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-linux.zip",
       "extractpath": "libpoodle.so",
       "csound_version": ">=6.18<7.0"
     },
     {
       "platform": "linux-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-Linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux.zip",
       "extractpath": "libpoodle.so",
       "csound_version": ">=7.0"
     },
     {
       "platform": "windows-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-Windows.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-windows.zip",
       "extractpath": "poodle.dll",
-      "build_platform": "Windows 10",
+      "build_platform": "windows 10",
       "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "windows-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-Windows.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-windows.zip",
       "extractpath": "poddle.dll",
-      "build_platform": "Windows 10",
+      "build_platform": "windows 10",
       "csound_version": ">=7.0"
     },
     {

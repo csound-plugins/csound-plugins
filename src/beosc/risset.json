@@ -12,26 +12,26 @@
   "binaries": [
     {
       "platform": "linux",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-Linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-linux.zip",
       "extractpath": "libbeosc.so",
       "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "linux",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-Linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux.zip",
       "extractpath": "libbeosc.so",
       "csound_version": ">=7.0"
     },
     {
       "platform": "windows",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-Windows.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-windows.zip",
       "extractpath": "beosc.dll",
       "build_platform": "Windows 10",
       "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "windows",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-Linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-windows.zip",
       "extractpath": "beosc.dll",
       "build_platform": "Windows 10",
       "csound_version": ">=7.0"

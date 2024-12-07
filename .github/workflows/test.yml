@@ -127,10 +127,14 @@ jobs:
           curl -L -o plugins.zip https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound${{ matrix.csound-version }}-windows.zip
           New-Item -Type Directory -Force "%CSIDL_LOCAL_APPDATA%\csound\${{ matrix.csound-version }}.0\plugins64"
           Expand-Archive plugins.zip -DestinationPath "%CSIDL_LOCAL_APPDATA%\csound\${{ matrix.csound-version }}.0\plugins64"
-          csound.exe -z1
 
       - name: Test plugins
         run: |
+          $machinePath = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine')
+          # [System.Environment]::SetEnvironmentVariable("PATH", $machinePath + ";C:/Program Files/csound", [EnvironmentVariableTarget]::Machine)
+          $Env:Path = $Env:Path + ";C:/Program Files/csound"
+
+          csound.exe --version
           New-Item -ItemType directory -Force artifacts
           cd src/beosc/examples
           csound.exe -o beadsynt.flac beadsynt.csd
