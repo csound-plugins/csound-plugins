@@ -27,6 +27,7 @@ def save_entitlements(target: str, appname='adhoc-codesign', force=False) -> Pat
         contents = open(path).read()
         if contents == _entitlements:
             return path
+    path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, 'w') as f:
         f.write(_entitlements)
     plutil = shutil.which('plutil')
