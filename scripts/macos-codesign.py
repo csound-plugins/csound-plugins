@@ -5,6 +5,15 @@ import shutil
 from pathlib import Path
 
 
+DEBUG = False
+
+
+def _debug(*msgs: str):
+    if DEBUG:
+        for s in msgs:
+            print(f"DEBUG:{s}")
+
+
 _entitlements = r"""
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -23,11 +32,15 @@ _entitlements = r"""
 
 def save_entitlements(target: str, appname='adhoc-codesign', force=False) -> Path:
     path = Path(f"~/Library/Application Support/{appname}/{target}.entitlements").expanduser()
+    _debug(f"Entitlements path: {path}")
     if path.exists() and not force:
         contents = open(path).read()
         if contents == _entitlements:
+            _debug("Entitlements already saved, do not need to save again")
             return path
     path.parent.mkdir(parents=True, exist_ok=True)
+    assert path.parent.exists()
+    _debug(f"Opening {path} to write entitlements to")
     with open(path, 'w') as f:
         f.write(_entitlements)
     plutil = shutil.which('plutil')
@@ -56,9 +69,12 @@ def codesign(dylibpaths: list[str], target: str, signature='-') -> Path:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--signature', default='-')
     parser.add_argument('-t', '--target', default='generic', help="Will be the name of the entitlements file")
     parser.add_argument("dylibs", nargs="+")
     args = parser.parse_args()
+    if args.verbose:
+        DEBUG = True
     entitlements_path = codesign(args.dylibs, target=args.target, signature=args.signature)
-    print(f"Saved entitlements file to '{entitlements_path}'")
+    _debug(f"Saved entitlements file to '{entitlements_path}'")
