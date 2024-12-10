@@ -94,6 +94,8 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - uses: lukka/get-cmake@v3.29.0
+
       - name: Install csound from package
         if: matrix.csound-version == '6'
         run: |
@@ -127,18 +129,16 @@ jobs:
 
           choco install -y winflexbison3 innosetup
           .\vcpkg\bootstrap-vcpkg.bat
-          cmake -B build -S . -DBUILD_TESTS=0 -DUSE_VCPKG=1 -DBUILD_RELEASE=ON -DBUILD_INSTALLER=OFF -DBUILD_STATIC_LIBRARY=ON -DBUILD_CSBEATS=OFF -DBUILD_DSSI_OPCODES=OFF -DBUILD_UTILITIES=Off -DUSE_ALSA=0 -DUSE_CURL=0 -DUSE_COREMIDI=0 -DUSE_JACK=0 -DUSE_LIB64=1 -DUSE_PULSEAUDIO=0 -DREQUIRE_PTHREADS=0 -DFAIL_MISSING=OFF # -DCUSTOM_CMAKE="./platform/windows/Custom-vs.cmake"
+          cmake -B build -S . -DBUILD_TESTS=0 -DUSE_VCPKG=1 -DCUSTOM_CMAKE="./platform/windows/Custom-vs.cmake" -DBUILD_JAVA_INTERFACE=OFF -DBUILD_TESTS=OFF
           cmake --build build --config Release
+
+          Get-ChildItem -Path ".\build" -Recurse
           New-Item -Type Directory -Force "C:/Program Files/csound"
-          cp build/Release/*.exe "C:/Program Files/csound"
-          cp build/Release/*.dll "C:/Program Files/csound"
-          cp build/Release/*.lib "C:/Program Files/csound"
+          cp build\Release\* "C:/Program Files/csound"
 
           $machinePath = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine')
           [System.Environment]::SetEnvironmentVariable("PATH", $machinePath + ";C:/Program Files/csound", [EnvironmentVariableTarget]::Machine)
           $Env:Path = $Env:Path + ";C:/Program Files/csound"
-
-          # Write-Output $Env:PATH
           csound.exe --version
 
       - name: Download and install plugins
