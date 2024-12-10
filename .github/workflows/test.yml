@@ -72,10 +72,11 @@ jobs:
           # beosc
           pushd .
           cd src/beosc/examples
-          csound -o "beadsynt-csound${{ matrix.csound-branch }}.wav" beadsynt.csd
+          csound --wave -o "beadsynt-macos-csound${{ matrix.csound-branch }}.wav" beadsynt.csd
           ls *.wav
           cp beadsynt*.wav ../../../artifacts
           popd
+          ls artifacts/*
 
       - uses: actions/upload-artifact@v4
         with:
@@ -139,7 +140,7 @@ jobs:
           New-Item -Type Directory -Force "%CSIDL_LOCAL_APPDATA%\csound\${{ matrix.csound-version }}.0\plugins64"
           Expand-Archive plugins.zip -DestinationPath "%CSIDL_LOCAL_APPDATA%\csound\${{ matrix.csound-version }}.0\plugins64"
 
-      - name: Test plugins
+      - name: Test plugins - Windows - Csound ${{ matrix.csound-version }}
         run: |
           $machinePath = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine')
           # [System.Environment]::SetEnvironmentVariable("PATH", $machinePath + ";C:/Program Files/csound", [EnvironmentVariableTarget]::Machine)
