@@ -137,7 +137,7 @@ jobs:
       - name: Download and install plugins
         run: |
           curl -L -o plugins.zip https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound${{ matrix.csound-version }}-windows.zip
-          $pluginsdir = "$env:CSIDL_LOCAL_APPDATA\csound\${{ matrix.csound-version }}.0\plugins64"
+          $pluginsdir = "$env:LOCALAPPDATA\csound\${{ matrix.csound-version }}.0\plugins64"
           New-Item -Type Directory -Force "$pluginsdir"
           echo "Plugins dir: $pluginsdir"
           Expand-Archive plugins.zip -DestinationPath "$pluginsdir"
