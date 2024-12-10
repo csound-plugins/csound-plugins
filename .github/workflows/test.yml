@@ -108,6 +108,13 @@ jobs:
           Write-Output $Env:PATH
           csound.exe --version
 
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
       - name: Install csound 7 from source
         if: matrix.csound-version == '7'
         env:
