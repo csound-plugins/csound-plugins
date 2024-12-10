@@ -56,7 +56,7 @@ jobs:
           PLUGINSDIR="$HOME/Library/csound/$APIMAJOR.0/plugins64"
 
           mkdir -p "$PLUGINSDIR"
-          cp *.dylib $HOME/Library/csound/6.0/plugins64
+          cp *.dylib "$PLUGINSDIR"
           if [ -f macos-codesign.py ]; then
             echo "Trying to codesign plugins"
             python macos-codesign.py $PLUGINSDIR/*.dylib
