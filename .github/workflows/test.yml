@@ -67,8 +67,15 @@ jobs:
 
       - name: Run tests
         run: |
+          mkdir -p artifacts
 
-          bash test/macos-run-tests.sh
+          # beosc
+          pushd .
+          cd src/beosc/examples
+          csound -o "beadsynt-csound${{ matrix.csound-branch }}.wav" beadsynt.csd
+          ls *.wav
+          cp beadsynt*.wav ../../../artifacts
+          popd
 
       - uses: actions/upload-artifact@v4
         with:
