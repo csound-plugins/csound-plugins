@@ -177,10 +177,7 @@ jobs:
           Expand-Archive csound-binaries.zip -DestinationPath "C:\Program Files\csound-binaries"
           ls -r "C:\Program Files\csound-binaries"
 
-          # [Environment]::SetEnvironmentVariable("PATH", $Env:PATH + ";C:\Program Files\csound-binaries\build\Release", [EnvironmentVariableTarget]::Machine)
-          # $Env:Path = $Env:Path + ";C:\Program Files\csound-binaries\build\Release"
-          # Write-Output $Env:PATH
-          setx /M PATH "$($env:path);C:\Program Files\csound-binaries\build-Release"
+          setx /M PATH "$($env:path);C:\Program Files\csound-binaries\build\Release"
           csound.exe --version
 
       - name: Build and test plugins
