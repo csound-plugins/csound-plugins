@@ -177,7 +177,7 @@ jobs:
           Expand-Archive csound-binaries.zip -DestinationPath "C:\Program Files\csound-binaries"
           ls -r "C:\Program Files\csound-binaries"
 
-          setx /M PATH "$($env:path);C:\Program Files\csound-binaries\build\Release"
+          $Env:Path = $Env:Path + ";C:/Program Files/csound-binaries/build/Release"
           csound.exe --version
 
       - name: Build and test plugins
@@ -194,6 +194,8 @@ jobs:
           cmake -DAPIVERSION="6.0" -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF \DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
           cmake --build . --parallel --config Release
           cmake --install .
+
+          $Env:Path = $Env:Path + ";C:/Program Files/csound-binaries/build/Release"
           csound.exe  -z1
 
           cd ..
