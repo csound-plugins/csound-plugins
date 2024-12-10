@@ -138,7 +138,9 @@ jobs:
         run: |
           curl -L -o plugins.zip https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound${{ matrix.csound-version }}-windows.zip
           New-Item -Type Directory -Force "%CSIDL_LOCAL_APPDATA%\csound\${{ matrix.csound-version }}.0\plugins64"
-          Expand-Archive plugins.zip -DestinationPath "%CSIDL_LOCAL_APPDATA%\csound\${{ matrix.csound-version }}.0\plugins64"
+          $pluginsdir = "$CSIDL_LOCAL_APPDATA\csound\${{ matrix.csound-version }}.0\plugins64"
+          echo "Plugins dir: $pluginsdir"
+          Expand-Archive plugins.zip -DestinationPath "$pluginsdir"
 
       - name: Test plugins - Windows - Csound ${{ matrix.csound-version }}
         run: |
