@@ -4,7 +4,6 @@
   "opcodes": ["zitarev", "fofcyclevoc"],
   "short_description": "Faust plugins ported to csound",
   "long_description": "Collection of miscellaneous faust plugins, ported to csound",
-  "csound_version": "6.18",
   "author": "Eduardo Moguillansky",
   "email": "eduardo.moguillansky@gmail.com",
   "license": "LGPL",

@@ -6,7 +6,6 @@
   ],
   "short_description": "opcodes using libsndfile",
   "long_description": "Opcodes to query a soundfile regarding its metadata",
-  "csound_version": "6.15",
   "author": "Eduardo Moguillansky",
   "email": "eduardo.moguillansky@gmail.com",
   "license": "LGPL",

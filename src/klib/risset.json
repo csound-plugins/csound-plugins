@@ -29,7 +29,6 @@
   "libname": "libklib",
   "short_description": "A hashtable for csound",
   "long_description": "A hashtable for csound",
-  "csound_version": "6.16",
   "author": "Eduardo Moguillansky",
   "email": "eduardo.moguillansky@gmail.com",
   "license": "LGPL",

@@ -51,7 +51,6 @@
   ],
   "short_description": "Miscellaneous plugins",
   "long_description": "Collection of miscellaneous plugins",
-  "csound_version": "6.16",
   "author": "Eduardo Moguillansky",
   "email": "eduardo.moguillansky@gmail.com",
   "license": "LGPL",
