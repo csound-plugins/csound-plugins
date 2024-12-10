@@ -76,7 +76,7 @@ jobs:
           path: artifacts/*
 
   windows-test-release:
-    name: Windows - Test released plugins
+    name: Windows - Test released plugins on csound ${{ matrix.csound-version }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -91,10 +91,14 @@ jobs:
         run: |
           choco install libsndfile
           curl -L -o csound-binaries.zip https://github.com/csound/csound/releases/download/6.18.1/Csound-6.18.1-windows-x64-binaries.zip
-          Expand-Archive csound-binaries.zip -DestinationPath "C:\Program Files\csound-binaries"
-          [Environment]::SetEnvironmentVariable("PATH", $Env:PATH + ";C:\Program Files\csound-binaries\build\Release", [EnvironmentVariableTarget]::Machine)
-          $Env:Path = $Env:Path + ";C:\Program Files\csound-binaries\build\Release"
+          Expand-Archive csound-binaries.zip -DestinationPath ".\csound-binaries"
+          New-Item -Type Directory -Force "C:/Program Files/csound"
+          cp .\csound-binaries\build\Release\* "C:/Program Files/csound"
+
+          [Environment]::SetEnvironmentVariable("PATH", $Env:PATH + ";C:\Program Files\csound", [EnvironmentVariableTarget]::Machine)
+          $Env:Path = $Env:Path + ";C:\Program Files\csound"
           Write-Output $Env:PATH
+          csound.exe --version
 
       - name: Install csound 7 from source
         if: matrix.csound-version == '7'
