@@ -58,6 +58,7 @@ A hashtable for csound
 * [pool_capacity](opcodes/pool_capacity.md): Returns the capacity of a pool 
 * [pool_at](opcodes/pool_at.md): Returns the item of a pool at a given index 
 * [pool_isfull](opcodes/pool_isfull.md): Returns 1 if the pool is full 
+* [pool_free](opcodes/pool_free.md): Deletes a pool, frees its memory 
 
 
 ## poodle
