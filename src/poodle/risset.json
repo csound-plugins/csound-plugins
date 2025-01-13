@@ -1,7 +1,10 @@
 {
   "name": "poodle",
-  "version": "2.0.0",
-  "opcodes": ["zitarev", "fofcyclevoc"],
+  "version": "2.1.0",
+  "opcodes": [
+    "zitarev",
+    "fofcyclevoc"
+  ],
   "short_description": "Faust plugins ported to csound",
   "long_description": "Collection of miscellaneous faust plugins, ported to csound",
   "author": "Eduardo Moguillansky",

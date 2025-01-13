@@ -1,7 +1,12 @@
 {
   "name": "beosc",
-  "version": "2.0.0",
-  "opcodes": ["beosc", "beadsynt", "getrowlin", "tabrowlin"],
+  "version": "2.1.0",
+  "opcodes": [
+    "beosc",
+    "beadsynt",
+    "getrowlin",
+    "tabrowlin"
+  ],
   "libname": "libbeosc",
   "short_description": "Band-enhanced oscillators implementing the sine+noise synthesis model",
   "long_description": "Band-enhanced oscillators based on the loris partial tracking model",

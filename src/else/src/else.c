@@ -2167,7 +2167,6 @@ typedef struct {
 
 static int32_t
 atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
-    printf("----------- atstop deinit\n");
     EVTBLK evt;
     memset(&evt, 0, sizeof(EVTBLK));
     evt.opcod = 'i';

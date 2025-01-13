@@ -1547,14 +1547,6 @@ dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
     return OK;
 }
 
-/*
-static i32
-dict_del_s_atstop(CSOUND *csound, DICT_DEL_s *p) {
-    register_deinit(csound, p, dict_del_s);
-    return OK;
-}
-*/
-
 typedef struct {
     OPDS h;
     MYFLT *handleidx;
@@ -1599,13 +1591,6 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
     return OK;
 }
 
-/*
-static i32
-dict_del_i_atstop(CSOUND *csound, DICT_DEL_s *p) {
-    register_deinit(csound, p, dict_del_i);
-    return OK;
-}
-*/
 
 // ------------------------------------------------------
 //                         GET
@@ -3211,6 +3196,7 @@ typedef struct {
     int allocated;
     int cangrow;
     MYFLT *data;
+    int handlenum;
 } POOL_HANDLE;
 
 typedef struct {
@@ -3227,41 +3213,6 @@ typedef struct {
     MYFLT *arg2;
 } POOL_NEW;
 
-static i32 pool_reset(CSOUND *csound, POOL_GLOBALS *g);
-
-#define POOL_VARNAME "__pool_globals__"
-
-static POOL_GLOBALS * pool_globals(CSOUND *csound) {
-    POOL_GLOBALS *g = csound->QueryGlobalVariable(csound, POOL_VARNAME);
-    if(g != NULL) return g;
-
-    int err = csound->CreateGlobalVariable(csound, POOL_VARNAME, sizeof(POOL_GLOBALS));
-    if(err != 0) {
-        INITERR("failed to create globals for pool");
-        return NULL;
-    }
-    g = csound->QueryGlobalVariable(csound, POOL_VARNAME);
-    g->csound = csound;
-    g->handles = csound->Calloc(csound, sizeof(POOL_HANDLE) * 10);
-    g->numhandles = 10;
-    csound->RegisterResetCallback(csound, (void *)g, (i32(*)(CSOUND*, void*))pool_reset);
-    return g;
-}
-
-static inline i32
-pool_getfreeslot(POOL_GLOBALS *g) {
-    POOL_HANDLE *handles = g->handles;
-    for(int i=0; i<g->numhandles; i++) {
-        if(handles[i].active == 0)
-            return i;
-    }
-    // no free slots, time to grow
-    int idx = g->numhandles;
-    CSOUND *csound = g->csound;
-    g->numhandles *= 2;
-    g->handles = csound->ReAlloc(csound, g->handles, sizeof(POOL_HANDLE)*g->numhandles);
-    return idx;
-}
 
 static i32
 pool_fill(POOL_HANDLE *handle, MYFLT start, MYFLT stop, MYFLT step) {
@@ -3277,12 +3228,22 @@ pool_fill(POOL_HANDLE *handle, MYFLT start, MYFLT stop, MYFLT step) {
     return OK;
 }
 
-static i32
-pool_create(CSOUND *csound, POOL_GLOBALS *g, int allocated, int cangrow) {
-    if(allocated < 0)
-        return INITERR("Allocation size must be positive");
-    int slot = pool_getfreeslot(g);
-    POOL_HANDLE *handle = &(g->handles[slot]);
+static i32* pool_instance_counter(CSOUND *csound) {
+    i32 *poolcounter = csound->QueryGlobalVariable(csound, "_poolcounter");
+    if(poolcounter == NULL) {
+        csound->CreateGlobalVariable(csound, "_poolcounter", sizeof(i32));
+        poolcounter = csound->QueryGlobalVariable(csound, "_poolcounter");
+    }
+    return poolcounter;
+}
+
+static POOL_HANDLE *pool_make(CSOUND *csound, int allocated, int cangrow) {
+    i32 *instancecount = pool_instance_counter(csound);
+    char name[32];
+    sprintf(name, "_pool:%d", *instancecount);
+    csound->CreateGlobalVariable(csound, name, sizeof(POOL_HANDLE));
+    POOL_HANDLE *handle = csound->QueryGlobalVariable(csound, name);
+    *instancecount++;
     handle->active = 1;
     handle->data = csound->Malloc(csound, sizeof(MYFLT) * allocated);
     if(handle->data == NULL)
@@ -3290,8 +3251,32 @@ pool_create(CSOUND *csound, POOL_GLOBALS *g, int allocated, int cangrow) {
     handle->allocated = allocated;
     handle->size = 0;
     handle->cangrow = cangrow;
-    return slot;
+    handle->handlenum = *instancecount;
+    return handle;  
 }
+
+static POOL_HANDLE *_pool_get_handle(CSOUND *csound, int instance) {
+    i32 *instancecount = pool_instance_counter(csound);
+    char name[32];
+    sprintf(name, "_pool:%d", *instancecount);
+    POOL_HANDLE *handle = csound->QueryGlobalVariable(csound, name);
+    return handle;
+}
+
+static i32 _pool_free(CSOUND *csound, int instance) {
+    POOL_HANDLE *handle = _pool_get_handle(csound, instance);
+    if(handle == NULL) {
+        return -1;
+    }
+    csound->Free(csound, handle->data);
+    handle->data = NULL;
+    i32 *instancecount = pool_instance_counter(csound);
+    char name[32];
+    sprintf(name, "_pool:%d", *instancecount);
+    csound->DestroyGlobalVariable(csound, name);
+    return 0;
+}
+
 
 
 /** pool_gen
@@ -3332,13 +3317,14 @@ pool_gen(CSOUND *csound, POOL_NEW *p) {
         return INITERRF("Size must be positive (size=%d)", size);
     int allocated = size;
     int cangrow = 0;
-    POOL_GLOBALS *g = pool_globals(csound);
-    int slot = pool_create(csound, g, allocated, cangrow);
-    POOL_HANDLE *handle = &(g->handles[slot]);
+    // POOL_GLOBALS *g = pool_globals(csound);
+    // int slot = pool_create(csound, g, allocated, cangrow);
+    POOL_HANDLE *handle = pool_make(csound, allocated, cangrow);
+    // POOL_HANDLE *handle = &(g->handles[slot]);
     handle->size = size;
     if(size > 0)
         pool_fill(handle, start, end, step);
-    *p->handleidx = slot;
+    *p->handleidx = handle->handlenum;
     return OK;
 }
 
@@ -3361,9 +3347,8 @@ pool_empty(CSOUND *csound, POOL_NEW *p) {
         allocated = 64;
         cangrow = 1;
     }
-    POOL_GLOBALS *g = pool_globals(csound);
-    int slot = pool_create(csound, g, allocated, cangrow);
-    *p->handleidx = slot;
+    POOL_HANDLE *handle = pool_make(csound, allocated, cangrow);
+    *p->handleidx = handle->handlenum;
     return OK;
 }
 
@@ -3373,20 +3358,41 @@ typedef struct {
     MYFLT *out;
     MYFLT *handleidx, *arg1, *arg2, *arg3, *arg4;
     POOL_HANDLE *handle;
-    POOL_GLOBALS *g;
 } POOL_1;
 
-static inline POOL_HANDLE *pool_get_handle(POOL_GLOBALS *g, int idx) {
-    if(idx >= g->numhandles)
-        return NULL;
-    return &(g->handles[idx]);
+typedef struct {
+    OPDS h;
+    MYFLT *handleidx;
+    MYFLT *arg1, *arg2;
+    POOL_HANDLE *handle;
+} POOL_0;
+
+static i32
+pool_free_deinit(CSOUND *csound, POOL_0 *p) {
+    int when = *p->arg1;
+    if(when == 1) {
+        return _pool_free(csound, *p->handleidx);
+    }
+    return OK;
 }
 
 static i32
+pool_free_init(CSOUND *csound, POOL_0 *p) {
+    int when = *p->arg1;
+    if(when == 0) {
+        return _pool_free(csound, *p->handleidx);
+    }
+#ifdef CSOUNDAPI6)
+    else { register_deinit(csound, p, pool_free_deinit); }
+#endif
+    return OK;
+}
+
+
+static i32
 pool_1_init(CSOUND *csound, POOL_1 *p) {
-    p->g = pool_globals(csound);
     int handleidx = (int)*p->handleidx;
-    p->handle = pool_get_handle(p->g, handleidx);
+    p->handle = _pool_get_handle(csound, handleidx);
     if(p->handle == NULL)
         return INITERRF("Handle with idx %d does not exist", handleidx);
     return OK;
@@ -3463,17 +3469,14 @@ pool_size_i(CSOUND *csound, POOL_1 *p) {
 typedef struct {
     OPDS h;
     MYFLT *handleidx;
-    MYFLT *outstr;
+    MYFLT *item;
     MYFLT *when;
-    POOL_GLOBALS *g;
     POOL_HANDLE *handle;
 } POOL_PUSH;
 
 static i32
 pool_push_init(CSOUND *csound, POOL_PUSH *p) {
-    p->g = pool_globals(csound);
-    p->handle = pool_get_handle(p->g, (int)*p->handleidx);
-    p->when = 0;
+    p->handle = _pool_get_handle(csound, (int)*p->handleidx);
     if(p->handle == NULL)
         return INITERRF("Invalid handle for idx: %d", (int)*p->handleidx);
     return OK;
@@ -3495,12 +3498,12 @@ pool_push_perf_(CSOUND *csound, POOL_PUSH *p, int mode) {
             pool_resize(csound, p->handle, p->handle->allocated*2);
         } else {
             if(mode == 1)
-                return INITERR("Pool is full!");
+                return INITERRF("Pool is full. Trying to push item %f to pool %d (size: %d, max. size: %d)", *p->item, p->handle->handlenum, p->handle->size, p->handle->allocated);
             else
-                return PERFERR("Pool if full!");
+                return PERFERRF("Pool is full. Trying to push item %f to pool %d (size: %d, max. size: %d)", *p->item, p->handle->handlenum, p->handle->size, p->handle->allocated);
         }
     }
-    p->handle->data[p->handle->size] = *p->outstr;
+    p->handle->data[p->handle->size] = *p->item;
     p->handle->size++;
     return OK;
 }
@@ -3527,22 +3530,6 @@ pool_push_i(CSOUND *csound, POOL_PUSH *p) {
     return OK;
 
 }
-
-// this is called when reseting csound.
-static i32
-pool_reset(CSOUND *csound, POOL_GLOBALS *g) {
-    for(int handleidx=0; handleidx < g->numhandles; handleidx++) {
-        POOL_HANDLE *handle = pool_get_handle(g, handleidx);
-        if(handle->active) {
-            csound->Free(csound, handle->data);
-        }
-    }
-    csound->Free(csound, g->handles);
-    csound->DestroyGlobalVariable(csound, POOL_VARNAME);
-    return OK;
-}
-
-
 
 static i32
 pool_at_perf(CSOUND *csound, POOL_1 *p) {
@@ -3637,6 +3624,8 @@ static OENTRY localops[] = {
 
     { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
     { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL},
+    { "pool_free", S(POOL_0), 0, "", "io", (SUBR)pool_free_init, NULL, NULL, NULL },
+
 
     { "pool_pop.i", S(POOL_1), 0, 1, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
     { "pool_pop.k", S(POOL_1), 0, 3, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
@@ -3717,6 +3706,7 @@ static OENTRY localops[] = {
 
     { "pool_gen", S(POOL_NEW), 0, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
     { "pool_new", S(POOL_NEW), 0, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL},
+    { "pool_free", S(POOL_0), 0, "", "io", (SUBR)pool_free_init, NULL, (SUBR)pool_free_deinit },
 
     { "pool_pop.i", S(POOL_1), 0, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
     { "pool_pop.k", S(POOL_1), 0, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
