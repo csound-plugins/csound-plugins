@@ -3395,8 +3395,10 @@ static i32
 pool_1_init(CSOUND *csound, POOL_1 *p) {
     int handleidx = (int)*p->handleidx;
     p->handle = _pool_get_handle(csound, handleidx);
-    if(p->handle == NULL)
-        return INITERRF("Handle with idx %d does not exist", handleidx);
+    if(p->handle == NULL) {
+        csound->InitError(csound, "Handle %d does not exist", handleidx);
+        return NOTOK;
+    }
     return OK;
 }
 
@@ -3461,9 +3463,11 @@ pool_size_perf(CSOUND *csound, POOL_1 *p) {
 
 static i32
 pool_size_i(CSOUND *csound, POOL_1 *p) {
-    pool_1_init(csound, p);
-    pool_size_perf(csound, p);
-    return OK;
+    int ret = pool_1_init(csound, p);
+    if(ret != OK) {
+        return ret;
+    }
+    return pool_size_perf(csound, p);
 }
 
 

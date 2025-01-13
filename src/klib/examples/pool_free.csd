@@ -29,11 +29,11 @@ opcode pool_print, 0, i
 endop
 
 instr test2
-  ipool pool_gen 100
+  ipool pool_gen 20
   pool_print ipool
   pool_free ipool
   ; This should fail
-  isize = pool_size(ipool)
+  isize = pool_size:i(ipool)
 endin
 
 instr test1
@@ -46,8 +46,8 @@ endin
 </CsInstruments>
 
 <CsScore>
-i "test1" 0   0.1
-; i "test2" 0.2 0.1
+; i "test1" 0   0.1
+i "test2" 0.2 0.1
 
 </CsScore>
 </CsoundSynthesizer>
