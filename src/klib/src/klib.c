@@ -3623,10 +3623,9 @@ static OENTRY localops[] = {
     { "strpeek.i", S(STRPEEK), 0, 1, "S", "i", (SUBR)strpeek_i, NULL, NULL, NULL },
 
     { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
-    { "pool_new", S(POOL_NEW), 0, 1, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL},
-    { "pool_free", S(POOL_0), 0, "", "io", (SUBR)pool_free_init, NULL, NULL, NULL },
-
-
+    { "pool_new", S(POOL_NEW), 0, 1, "i", "o",  (SUBR)pool_empty, NULL, NULL, NULL},
+    { "pool_free", S(POOL_0),  0, 1, "",  "io", (SUBR)pool_free_init, NULL, NULL, NULL },
+    
     { "pool_pop.i", S(POOL_1), 0, 1, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
     { "pool_pop.k", S(POOL_1), 0, 3, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
 
