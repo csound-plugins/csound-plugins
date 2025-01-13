@@ -3246,8 +3246,10 @@ static POOL_HANDLE *pool_make(CSOUND *csound, int allocated, int cangrow) {
     *instancecount++;
     handle->active = 1;
     handle->data = csound->Malloc(csound, sizeof(MYFLT) * allocated);
-    if(handle->data == NULL)
-        return INITERR("Allocation error when creating pool");
+    if(handle->data == NULL) {
+        MSG("Allocation error when creating pool");
+        return NULL;
+    }
     handle->allocated = allocated;
     handle->size = 0;
     handle->cangrow = cangrow;
@@ -3317,10 +3319,10 @@ pool_gen(CSOUND *csound, POOL_NEW *p) {
         return INITERRF("Size must be positive (size=%d)", size);
     int allocated = size;
     int cangrow = 0;
-    // POOL_GLOBALS *g = pool_globals(csound);
-    // int slot = pool_create(csound, g, allocated, cangrow);
     POOL_HANDLE *handle = pool_make(csound, allocated, cangrow);
-    // POOL_HANDLE *handle = &(g->handles[slot]);
+    if(handle == NULL) {
+        return INITERRF("Could not create pool (max. size: %d)", allocated);
+    }
     handle->size = size;
     if(size > 0)
         pool_fill(handle, start, end, step);
