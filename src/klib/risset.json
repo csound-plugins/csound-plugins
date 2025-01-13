@@ -24,7 +24,8 @@
     "pool_size",
     "pool_capacity",
     "pool_at",
-    "pool_isfull"
+    "pool_isfull",
+    "pool_free"
   ],
   "libname": "libklib",
   "short_description": "A hashtable for csound",
