@@ -1,0 +1,41 @@
+# pool_free
+
+## Abstract
+
+Deletes a pool, frees its memory
+
+## Description
+
+A pool is actually a stack of numbers, based on an array.
+
+The pool_ opcodes implement a stack of numbers. This is useful when assigning
+ids to resources, like assigning fractional numbers to instrument instances to
+access them individually. `pool_free` deletes a pool created via [pool_new](pool_new.md) or [pool_gen](pool_gen.md)
+
+## Syntax
+
+	pool_free ipool, iwhen=0
+
+### Arguments
+
+* `ipool`: the pool to free
+* `iwhen`: when to free it. 0=at init time, 1=at the end of the event
+
+### Execution Time
+
+* Init
+* Deinit
+
+## Examples
+
+{example}
+
+## See also
+
+* [pool_new](pool_new.md)
+* [pool_gen](pool_gen.md)
+
+
+## Credits
+
+Eduardo Moguillansky, 2025
