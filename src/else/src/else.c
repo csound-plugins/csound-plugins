@@ -465,7 +465,7 @@ static int32_t ramptrig_a_kk(CSOUND *csound, RAMPTRIGK *p) {
 
     SAMPLE_ACCURATE(out)
 
-        MYFLT ktrig = *p->ktrig;
+    MYFLT ktrig = *p->ktrig;
     MYFLT now = p->now;
     MYFLT delta = 1 / (*p->kdur * p->sr);
     if(ktrig > 0 && ktrig > p->lasttrig) {
@@ -3999,9 +3999,9 @@ static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t la
     if(x >= xs[xslen-1]) {
         return -2;
     }
-    
+
     int64_t imin;
-    
+
     if(lastidx >= 0 && xs[lastidx] <= x) {
         if(x < xs[lastidx+1]) {
             return lastidx;
@@ -4009,10 +4009,10 @@ static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t la
         if (lastidx < xslen-2 && x < xs[lastidx+2]) {
             return lastidx + 1;
         }
-        imin = lastidx;      
+        imin = lastidx;
     }
     else {
-        imin = 0;       
+        imin = 0;
     }
     int64_t imax = xslen;
 
@@ -5235,7 +5235,7 @@ static int32_t balance2_ak(CSOUND *csound, BALANCE2 *p) {
  zerocrossing
 
  afreq zerocrossing ain
- 
+
 
 void ZeroCrossing_Ctor(ZeroCrossing* unit) {
     SETCALC(ZeroCrossing_next_a);
@@ -5898,6 +5898,31 @@ static int32_t faust_pitchshift(CSOUND *csound, PITCHSHIFT *p) {
 }
 
 
+// ----------------------------------
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    MYFLT *kwhich;
+    MYFLT *sources[128];
+} PICKSOURCE;
+
+
+static int32_t picksource_k_perf(CSOUND *csound, PICKSOURCE *p) {
+    MYFLT *out = p->out;
+    SAMPLE_ACCURATE(out);
+    int32_t numsources = ((int32_t) p->INOCOUNT) - 1;                                             \
+    int32_t which = (int32_t)*p->kwhich;
+    if(which < 0 || which >= numsources) {
+        return PERFERRF("Invalid source index %d, must be between 0 and %d", which, numsources - 1);
+    }
+    MYFLT *in = p->sources[which];
+    memcpy(p->out + offset, in + offset, (nsmps - offset)*sizeof(MYFLT));
+    return OK;
+}
+
+// -------------------------
+
 typedef struct {
     OPDS h;
     MYFLT *out;
@@ -5906,14 +5931,336 @@ typedef struct {
     MYFLT *in2;
 } TESTOPCODE;
 
+
 static int32_t testopcode_init(CSOUND *csound, TESTOPCODE *p) {
-    printf("Adresses in0: %d, in1: %d, in2: %d\n", p->in0, p->in1, p->in2);
+    IGN(csound);
+    printf("Addresses in0: %p, in1: %p, in2: %p\n", (void*)p->in0, (void*)p->in1, (void*)p->in2);
     printf("Values in0: %f, in1: %f, in2: %f\n", *p->in0, *p->in1, *p->in2);
     return OK;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+#include "pstream.h"
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    PVSDAT *fin;
+    MYFLT old;
+    uint32_t lastframe;
+} PVSFLATNESS;
+
+static int32_t pvsflatness_init(CSOUND *csound, PVSFLATNESS *p) {
+    p->old = 0;
+    p->lastframe = 0;
+    if (UNLIKELY(!((p->fin->format==PVS_AMP_FREQ) ||
+                   (p->fin->format==PVS_AMP_PHASE))))
+      return csound->InitError(csound,
+                               "%s", Str("pvscent: format must be amp-phase"
+                                   " or amp-freq.\n"));
+    return OK;
+}
+
+static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
+    if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
+        *p->out = p->old;
+        return OK;
+    }
+    float *fin = (float *)p->fin->frame.auxp;
+    int32 i, N = p->fin->N;
+    MYFLT geommean = 0.;
+    MYFLT mean = 0.;
+    for(i = 0; i < N; i += 2) {
+        float amp = fin[i];
+        if (amp != 0.f) { // zeroes lead to NaNs
+            geommean += log(amp);
+            mean += amp;
+        }
+    }
+    MYFLT oneovern = 2.0 / N;
+    geommean = exp(geommean * oneovern);
+    mean *= oneovern;
+    MYFLT flatness = (mean == 0. ? 0.8 : (geommean / mean));
+    p->old = flatness;
+    *p->out = flatness;
+    p->lastframe = p->fin->framecount;
+    return OK;
+}
+
+/*
+opcode flatness, k, k[]
+	kmags[] xin
+	kprod = 0.
+	klen = lenarray(kmags)
+	kavg = sumarray(kmags) / klen
+	ki = 0
+	while ki < klen do
+	  kprod += log(kmags[ki] + 0.0000001)
+	  ki += 1
+	od
+	kgmean = exp(kprod/klen)
+	kout = kavg > 0. ? kgmean / kavg : 0.8
+	xout kout
+endop
+*/
+
+
+/*
+void SpecFlatness_next(SpecFlatness* unit, int inNumSamples) {
+    FFTAnalyser_GET_BUF if (unit->m_oneovern == 0.) unit->m_oneovern = 1. / (numbins + 2);
+
+    SCComplexBuf* p = ToComplexApx(buf);
+
+    // Spectral Flatness Measure is geometric mean divided by arithmetic mean.
+    //
+    // In order to calculate geom mean without hitting the precision limit,
+    //  we use the trick of converting to log, taking the average, then converting back from log.
+    double geommean = std::log(sc_abs(p->dc)) + std::log(sc_abs(p->nyq));
+    double mean = sc_abs(p->dc) + sc_abs(p->nyq);
+
+    for (int i = 0; i < numbins; ++i) {
+        float rabs = (p->bin[i].real);
+        float iabs = (p->bin[i].imag);
+        float amp = std::sqrt((rabs * rabs) + (iabs * iabs));
+        if (amp != 0.f) { // zeroes lead to NaNs
+            geommean += std::log(amp);
+            mean += amp;
+        }
+    }
+
+    double oneovern = unit->m_oneovern;
+    geommean = exp(geommean * oneovern); // Average and then convert back to linear
+    mean *= oneovern;
+
+    // Store the val for output in future calls
+    unit->outval = (mean == 0.f ? 0.8f : (geommean / mean));
+    // Note: for silence the value is undefined.
+    // Here, for silence we instead output an empirical value based on very quiet white noise.
+
+    ZOUT0(0) = unit->outval;
+}
+
+*/
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    PVSDAT *fin;
+    MYFLT *minfreq;
+    MYFLT *maxfreq;
+    MYFLT old;
+    uint32_t lastframe;
+} PVSCREST;
+
+static int32_t pvscrest_init(CSOUND *csound, PVSCREST *p) {
+    p->old = 0;
+    p->lastframe = 0;
+    if (UNLIKELY(!((p->fin->format==PVS_AMP_FREQ) ||
+                   (p->fin->format==PVS_AMP_PHASE))))
+      return csound->InitError(csound,
+                               "%s", Str("pvscent: format must be amp-phase"
+                                   " or amp-freq.\n"));
+    return OK;
+}
+
+static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
+    if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
+        *p->out = p->old;
+        return OK;
+    }
+    float *fin = (float *)p->fin->frame.auxp;
+    int32 i, N = p->fin->N;
+    MYFLT minfreq = *p->minfreq;
+    MYFLT maxfreq = *p->maxfreq;
+    if(maxfreq <= 0) {
+        maxfreq = 50000.;
+    }
+    if(minfreq <= 0) {
+        minfreq = 10.;
+    }
+    MYFLT peak = 0.;
+    uint32_t numbins = 0;
+    MYFLT total = 0.;
+        
+    for(i = 2; i < N - 2; i += 2) {
+        float freq = fin[i+1];
+        if(freq < minfreq)
+            continue;
+        if(freq > maxfreq)
+            break;
+        float amp = fin[i];
+        MYFLT sqramp = amp*amp;
+        if(sqramp >= peak) {
+            peak = sqramp;
+        }
+        total += sqramp;
+        numbins++;
+    }
+    MYFLT scf = total == 0. ? 1. : peak * (numbins - 1) / total;
+    p->old = scf;
+    *p->out = scf;
+    p->lastframe = p->fin->framecount;
+    return OK;
+}
+
+
+/*
+   
+   void FFTCrest_next(FFTCrest *unit, int inNumSamples)
+{
+	float freqlo = IN0(1);
+	float freqhi = IN0(2);
+
+	FFTAnalyser_GET_BUF
+
+	//SCPolarBuf *p = ToPolarApx(buf); // Seems buggy...?
+	SCComplexBuf *p = ToComplexApx(buf);
+
+	GET_FREQTOBIN
+
+	if(unit->m_cutoffneedsinit){
+		// Get desired range, convert to bin index
+		unit->m_frombin = (int)(freqtobin * freqlo);
+		unit->m_tobinp1 = (int)(freqtobin * freqhi);
+		if(unit->m_frombin < 0)
+			unit->m_frombin = 0;
+		if(unit->m_tobinp1 > numbins)
+			unit->m_tobinp1 = numbins;
+
+		unit->m_cutoffneedsinit = false;
+	}
+	int frombin = unit->m_frombin;
+	int tobinp1 = unit->m_tobinp1;
+
+	float total = 0.f, scf, sqrmag, peak=0.f;
+	for (int i=frombin; i<tobinp1; ++i) {
+		//sqrmag = p->bin[i].mag * p->bin[i].mag;
+		sqrmag = (p->bin[i].real * p->bin[i].real) + (p->bin[i].imag * p->bin[i].imag);
+		// (1) Check if it's the peak
+		if(sqrmag >= peak){
+			peak = sqrmag;
+		}
+		// (2) Add to subtotal
+		total = total + sqrmag;
+	}
+
+	// SCF defined as peak val divided by mean val; in other words, peak * count / total
+	if(total == 0.f)
+		scf = 1.f; // If total==0, peak==0, so algo output is indeterminate; but 1 indicates a perfectly flat spectrum, so we use that
+	else
+		scf = peak * ((float)(tobinp1 - frombin - 1)) / total;
+
+	// Store the val for output in future calls
+	unit->outval = scf;
+
+	ZOUT0(0) = unit->outval;
+}
+
+*/
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    PVSDAT *fin;
+    MYFLT *minfreq;
+    MYFLT *maxfreq;
+    MYFLT old;
+    uint32_t lastframe;
+} PVSMAGSUM;
+
+static int32_t pvsmagsum_init(CSOUND *csound, PVSMAGSUM *p) {
+    p->old = 0;
+    p->lastframe = 0;
+    if (UNLIKELY(!((p->fin->format==PVS_AMP_FREQ) ||
+                   (p->fin->format==PVS_AMP_PHASE))))
+      return csound->InitError(csound,
+                               "%s", Str("pvscent: format must be amp-phase"
+                                   " or amp-freq.\n"));
+    return OK;
+}
+
+static int32_t pvsmagsum_perf(CSOUND *csound, PVSMAGSUM *p) {
+    if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
+        *p->out = p->old;
+        return OK;
+    }
+    float *fin = (float *)p->fin->frame.auxp;
+    int32 i, N = p->fin->N;
+    MYFLT minfreq = *p->minfreq;
+    MYFLT maxfreq = *p->maxfreq;
+    if(maxfreq <= 0) {
+        maxfreq = 50000.;
+    }
+    if(minfreq <= 0) {
+        minfreq = 10.;
+    }
+    MYFLT total = 0.;    
+    for(i = 2; i < N - 2; i += 2) {
+        float freq = fin[i+1];
+        if(freq < minfreq)
+            continue;
+        if(freq > maxfreq)
+            break;
+        total += fin[i];
+    }
+    p->old = total;
+    *p->out = total;
+    p->lastframe = p->fin->framecount;
+    return OK;
+}
+
+
+typedef struct {
+    OPDS h;
+    STRINGDAT *outstr;
+    STRINGDAT *instr;
+    MYFLT *num;
+    MYFLT *imaxlen;
+    int32 maxlen;
+} STRMUL;
+
+// Sout strmul Sin, knum, imax=1024
+
+static int32_t strmul_init(CSOUND *csound, STRMUL *p) {
+    p->maxlen = *p->imaxlen > 0 ? *p->imaxlen : 1024;
+    if(p->outstr->size < p->maxlen) {
+        p->outstr->data = csound->ReAlloc(csound, p->outstr->data, p->maxlen);
+    }
+    return OK;
+}
+
+static int32_t strmul_perf(CSOUND *csound, STRMUL *p) {
+    int32 sourcelen = strlen(p->instr->data);
+    char *dest = p->outstr->data;
+    char *src = p->instr->data;
+    int n = (int)*p->num;
+    if(n <= 0) {
+        dest[0] = 0;
+        return OK;
+    }
+    uint32_t pos = 0;
+    while(n > 0 && pos < p->maxlen - sourcelen) {
+        for(uint32_t i=0; i < sourcelen; i++) {
+            dest[pos] = src[i];
+            pos++;
+        }
+        n--;
+    }
+    dest[pos] = 0;
+    return OK;
+}
+
+static int32_t strmul_i(CSOUND *csound, STRMUL *p) {
+    strmul_init(csound, p);
+    return strmul_perf(csound, p);
+}
+
+
+// ----------------------------------------------------------------------------------
 
 #define S(x) sizeof(x)
 
@@ -6100,10 +6447,13 @@ static OENTRY localops[] = {
 
     {"linexp.i", S(LINEXP), 0, 1, "i", "iiiiop", (SUBR)linexp, NULL, NULL, NULL},
     {"linexp.k", S(LINEXP), 0, 2, "k", "kkkkOP", NULL, (SUBR)linexp, NULL, NULL},
-
+    {"pvsflatness", S(PVSFLATNESS), 0, 3, "k", "f", (SUBR)pvsflatness_init, (SUBR)pvsflatness_perf, NULL, NULL},
+    {"pvscrest", S(PVSCREST), 0, 3, "k", "fOO", (SUBR)pvscrest_init, (SUBR)pvscrest_perf, NULL, NULL},
 
     {"transpose", S(PITCHSHIFT), 0, 3, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL, NULL},
-    
+    {"picksource.k", S(PICKSOURCE), 0, 2, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
+
+
     {"_testopcode", S(TESTOPCODE), 0, 1, "a", "aPP", (SUBR)testopcode_init}
 };
 
@@ -6276,10 +6626,15 @@ static OENTRY localops[] = {
     {"linexp.k", S(LINEXP), 0, "k", "kkkkOP", NULL, (SUBR)linexp, NULL, NULL  },
 
     {"transpose", S(PITCHSHIFT), 0, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL},
-
+    {"pvsflatness", S(PVSFLATNESS), 0, "k", "f", (SUBR)pvsflatness_init, (SUBR)pvsflatness_perf, NULL, NULL},
+    {"pvscrest", S(PVSCREST), 0, "k", "fOO", (SUBR)pvscrest_init, (SUBR)pvscrest_perf, NULL, NULL},
+    {"pvsmagsum", S(PVSMAGSUM), 0, "k", "fOO", (SUBR)pvsmagsum_init, (SUBR)pvsmagsum_perf, NULL, NULL},
+    {"picksource.k", S(PICKSOURCE), 0, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
+    
+    {"strmul.k", S(STRMUL), 0, "S", "Sko", (SUBR)strmul_init, (SUBR)strmul_perf, NULL, NULL},
+    {"strmul.i", S(STRMUL), 0, "S", "Sio", (SUBR)strmul_i, NULL, NULL},
+    
 };
 #endif
 
 LINKAGE
-
-

@@ -116,9 +116,12 @@ Miscellaneous plugins
 * [panstereo](opcodes/panstereo.md): Stereo signal balancer 
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
+* [presetinterp](opcodes/presetinterp.md): Interpolates between presets placed in a 2D plane 
+* [pvscrest](opcodes/pvscrest.md): Compute the spectral crest value of a spectral signal. 
+* [pvsflatness](opcodes/pvsflatness.md): Compute the flatness of a spectral signal. 
+* [pvsmagsum](opcodes/pvsmagsum.md): Sum all magnitudes of the bins in a pv signal 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
 * [pwriten](opcodes/pwriten.md): Modify pfield values of an active instrument instance created via nstance 
-* [presetinterp](opcodes/presetinterp.md): Interpolates between presets placed in a 2D plane 
 * [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
 * [ref](opcodes/ref.md): Get a reference to a variable 
 * [refvalid](opcodes/refvalid.md): Queries if a reference is valid 
@@ -126,6 +129,7 @@ Miscellaneous plugins
 * [setslice](opcodes/setslice.md): Set a slice of an array to a given value 
 * [sigmdrive](opcodes/sigmdrive.md): Analog "soft clipping" distortion by applying non-linear transfer functions. 
 * [standardchaos](opcodes/standardchaos.md): Standard map chaotic generator 
+* [strmul](opcodes/strmul.md): Produce multiple copies of a string 
 * [throwerror](opcodes/throwerror.md): Throws an error message at performance or init 
 * [transpose](opcodes/transpose.md): Simple delay based pitch shifter inspired on faust's transpose 
 * [uniqinstance](opcodes/uniqinstance.md): Return an fractional instrument number which is not in use 
