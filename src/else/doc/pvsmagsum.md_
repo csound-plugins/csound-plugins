@@ -1,0 +1,58 @@
+# pvsmagsum
+
+## Abstract
+
+Sum all magnitudes of the bins in a pv signal
+
+## Description
+
+Given an pv chain, sum all magnitudes of the bins between minfreq
+and maxfreq.
+
+Used together with pvstrace it can be determine how concentrated
+the energy of a signal is, giving an idea of how "voiced" or "pitched"
+it is. A noisy signal will tend to have energy spread more evenly across
+the spectrum, while a musical or speech signal will tend to concentrate
+that signal along a limited range of beans. By selecting the loudest
+bins via pvstrace and comparing the energy of the selected pv signal
+to the original signal this renders a quite relyable measurement of
+the "peakyness" of the signal.
+
+## Syntax
+
+
+```csound
+ktotalmag pvsmagsum fsig, kminfreq=0, kmaxfreq=sr/2
+```
+
+## Arguments
+
+* **fsig**: Input pv stream.
+* **kminfreq**: min. freq to considere
+* **kmaxfreq**: max. freq to considere
+
+## Output
+
+* **ktotalmag**: The sum of the magnitude (amp) of the bins between minfreq and maxfreq
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [pvsflatnesscent](pvsflatness.md)
+* [pvscrest](pvscrest.md)
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2025
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c

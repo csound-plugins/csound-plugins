@@ -1,0 +1,51 @@
+# picksource
+
+## Abstract
+
+Select one of multiple signals basen
+
+## Description
+
+Given a set of signals, this opcode picks one basen on a given index
+At the moment no mixing is performed, only the selected signal is output
+
+## Syntax
+
+
+```csound
+
+asig picksource kindex, asig1, asig2, ...
+
+```
+
+## Arguments
+
+* **asig1**: The first audio signal.
+* **asig2**: The second audio signal.
+* **...**: Additional audio signals.
+
+## Output
+
+* **asig**: The selected audio signal.
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [panstereo](panstereo.md)
+
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2025
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c
