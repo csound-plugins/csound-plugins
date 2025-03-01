@@ -1,6 +1,6 @@
 {
   "name": "else",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "opcodes": [
     "accum",
     "atstop",
@@ -31,8 +31,8 @@
     "panstereo",
     "perlin3",
     "pread",
-	"presetinterp",
-	"pvscrest",
+    "presetinterp",
+    "pvscrest",
     "pvsflatness",
     "pvsmagsum",
     "pwrite",
