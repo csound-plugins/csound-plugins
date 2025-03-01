@@ -1,0 +1,68 @@
+# pvscrest
+
+## Abstract
+
+
+Compute the spectral crest value of a spectral signal.
+
+## Description
+
+Given an pv chain, this produces the spectral crest measure, which is an 
+indicator of the "peakiness" of the spectral energy distribution. For 
+example, white noise should produce a flat (non-peaky) spectrum, and 
+therefore a low value for the spectral crest.
+
+Optionally, kminfreq and kmaxfreq indicate the lower and upper frequency 
+limits of the band to look at; by default, the whole FFT range (excluding 
+DC and nyquist) is analysed.
+
+In pseudo-equation form, the measure is calculated as follows:
+
+Crest = S.maxItem / S.mean
+
+where "S" is a list of the squared magnitudes in the spectral band. Note that 
+this limits the value to being greater than or equal to 1. (Some research uses 
+a logarithmic scale - you can apply the logarithm yourself if required.)
+
+pvscrest is a port of supercollider's FFTCrest ugen
+
+## Syntax
+
+
+```csound
+kcrest pvscrest fsig, kminfreq=0, kmaxfreq=sr/2
+```
+
+## Arguments
+
+* **fsig**: Input pv stream.
+
+## Output
+
+* **kflatness**: spectral flatness of the signal
+* **kminfreq**: min. frequency bin used for calculation
+* **kmaxfreq**: max. frequency bin used for calculation
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [pvscent](http://www.csound.com/docs/manual/pvscent.html)
+* [pvsflatnesst](pvsflatness.md)
+* [pvsmagsum](pvsmagsum.md)
+
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2025
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c

@@ -1,0 +1,52 @@
+# pvsflatness
+
+## Abstract
+
+Compute the flatness of a spectral signal.
+
+## Description
+
+Given a pvs chain this calculates the Spectral Flatness measure, defined as a
+power spectrum's geometric mean divided by its arithmetic mean. This gives a
+measure which ranges from approx 0 for a pure sinusoid, to approx 1 for white noise.
+
+The measure is calculated linearly. For some applications you may wish to convert
+the value to a decibel scale
+
+pvsflatness is a port of supercollider's SpecFlatness ugen
+
+## Syntax
+
+
+```csound
+kflatness pvsflatness fsig
+```
+
+## Arguments
+
+* **fsig**: Input pv stream.
+
+## Output
+
+* **kflatness**: spectral flatness of the signal
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [pvscent](http://www.csound.com/docs/manual/pvscent.html)
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2025
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c
