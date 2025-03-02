@@ -1,0 +1,62 @@
+# pvsmagsumn
+
+## Abstract
+
+Sum all magnitudes of the bins in a pv signal
+
+## Description
+
+Sum the magnitudes of the loudest bins between given frequencies
+
+Can be used to calculate how much energy is concentrated on the
+loudest `inumbins` bins. The ratio between this value and the
+sum of all magnitudes is a good indicator of how spread out
+the energy of the signal is across the frequency spectrum, thus
+serving as a good measure for the noisyness of the signal.
+A noisy signal will tend to have energy spread more evenly across
+the spectrum, while a musical or speech signal will concentrate
+that signal along a limited range of bins.
+This opcode combines in one the use of pvstrace and pvsmagsum
+making it more efficient for the use cases where the spectrum
+of the selected bins is not actually needed.
+
+## Syntax
+
+
+```csound
+ktotalmag pvsmagsum fsig, inumbins, kminfreq=0, kmaxfreq=sr/2
+```
+
+## Arguments
+
+* **fsig**: Input pv stream.
+* **inumbins**: Number of bins to select
+* **kminfreq**: min. freq to considere
+* **kmaxfreq**: max. freq to considere
+
+## Output
+
+* **ktotalmag**: Sum of the loudest `inumbins` magnitudes (amps) of the bins between `minfreq` and `maxfreq`
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [pvsmagsum](pvsmagsum.md)
+* [pvsflatnesscent](pvsflatness.md)
+* [pvscrest](pvscrest.md)
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2025
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c

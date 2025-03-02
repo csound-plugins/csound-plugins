@@ -6161,6 +6161,86 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
 
 */
 
+#include "../../common/minheap.h"
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    PVSDAT *fin;
+    MYFLT *inumbins;
+    MYFLT *minfreq;
+    MYFLT *maxfreq;
+    MYFLT old;
+    uint32_t lastframe;
+    int32 numbins;    
+    MinHeap *heap;
+} PVSMAGSUMN;
+
+static int32_t pvsmagsumn_init(CSOUND *csound, PVSMAGSUMN *p) {
+    p->old = 0;
+    p->lastframe = 0;
+    if (UNLIKELY(!((p->fin->format==PVS_AMP_FREQ) ||
+                   (p->fin->format==PVS_AMP_PHASE))))
+      return csound->InitError(csound,
+                               "%s", Str("pvscent: format must be amp-phase"
+                                   " or amp-freq.\n"));
+    p->numbins = (int)*p->inumbins;
+    p->heap = mh_new(p->numbins);
+    return OK;
+}
+
+static int32_t pvsmagsumn_dealloc(CSOUND *csound, PVSMAGSUMN *p) {
+    mh_free(p->heap);
+    return OK;
+}
+
+static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
+    if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
+        *p->out = p->old;
+        return OK;
+    }
+    MinHeap *heap = p->heap;
+    heap->size = 0;
+    float *fin = (float *)p->fin->frame.auxp;
+    int32 i, N = p->fin->N;
+    MYFLT minfreq = *p->minfreq;
+    MYFLT maxfreq = *p->maxfreq;
+    if(maxfreq <= 0) {
+        maxfreq = 50000.;
+    }
+    if(minfreq <= 0) {
+        minfreq = 10.;
+    }
+    MYFLT *heaparr = heap->arr;
+    for(i = 2; i < N - 2; i += 2) {
+        float freq = fin[i+1];
+        float amp = fin[i];
+        
+        if(freq < minfreq || amp == 0.)  {
+            continue;
+        }
+        if(freq > maxfreq)
+            break;
+        
+        if(heap->size < heap->capacity) {
+            mh_insert(heap, amp);
+        } else if(heaparr[0] < amp) {
+            mh_delete_minimum_and_insert(heap, amp);
+            // mh_delete_minimum(heap);
+            // mh_insert(heap, amp);
+        }
+    }
+    MYFLT total = 0.;
+    for(i = 0; i < heap->size; i++) {
+        total += heap->arr[i];
+    }
+    p->old = total;
+    *p->out = total;
+    p->lastframe = p->fin->framecount;
+    return OK;
+}
+
 
 typedef struct {
     OPDS h;
@@ -6212,6 +6292,8 @@ static int32_t pvsmagsum_perf(CSOUND *csound, PVSMAGSUM *p) {
     p->lastframe = p->fin->framecount;
     return OK;
 }
+
+
 
 
 typedef struct {
@@ -6629,6 +6711,8 @@ static OENTRY localops[] = {
     {"pvsflatness", S(PVSFLATNESS), 0, "k", "f", (SUBR)pvsflatness_init, (SUBR)pvsflatness_perf, NULL, NULL},
     {"pvscrest", S(PVSCREST), 0, "k", "fOO", (SUBR)pvscrest_init, (SUBR)pvscrest_perf, NULL, NULL},
     {"pvsmagsum", S(PVSMAGSUM), 0, "k", "fOO", (SUBR)pvsmagsum_init, (SUBR)pvsmagsum_perf, NULL, NULL},
+    {"pvsmagsumn", S(PVSMAGSUMN), 0, "k", "fiOO", (SUBR)pvsmagsumn_init, (SUBR)pvsmagsumn_perf, (SUBR)pvsmagsumn_dealloc, NULL},
+
     {"picksource.k", S(PICKSOURCE), 0, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
     
     {"strmul.k", S(STRMUL), 0, "S", "Sko", (SUBR)strmul_init, (SUBR)strmul_perf, NULL, NULL},
