@@ -9,7 +9,7 @@ Sum all magnitudes of the bins in a pv signal
 Given an pv chain, sum all magnitudes of the bins between minfreq
 and maxfreq.
 
-Used together with pvstrace it can be determine how concentrated
+Used together with pvstrace it can determine how concentrated
 the energy of a signal is, giving an idea of how "voiced" or "pitched"
 it is. A noisy signal will tend to have energy spread more evenly across
 the spectrum, while a musical or speech signal will tend to concentrate
@@ -17,6 +17,11 @@ that signal along a limited range of beans. By selecting the loudest
 bins via pvstrace and comparing the energy of the selected pv signal
 to the original signal this renders a quite relyable measurement of
 the "peakyness" of the signal.
+
+!!! note
+
+    See [pvsmagsumn](pvsmagsumn.md) for a more efficient implementation,
+    combining pvsmagsum and pvstrace.
 
 ## Syntax
 
@@ -93,7 +98,7 @@ instr 1
   kmagsum = pvsmagsum(fsig2, 50)
   kpeakyness = kmagsum0 == 0 ? 0 : kmagsum / kmagsum0
   kpeakyness = lag(kpeakyness, 0.2)
-  if metro(40) == 1 then
+  if metro(30) == 1 then
     Speak strmul ":", int(kpeakyness*40)
     printsk "Source: %d, %s, peakyness: %.3f %s\n", ksource, Snames[ksource], kpeakyness, Speak
   endif
@@ -115,6 +120,7 @@ i1 0 20
 
 ## See also
 
+* [pvsmagsumn](pvsmagsumn.md)
 * [pvsflatnesscent](pvsflatness.md)
 * [pvscrest](pvscrest.md)
 

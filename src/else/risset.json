@@ -35,6 +35,7 @@
     "pvscrest",
     "pvsflatness",
     "pvsmagsum",
+    "pvsmagsumn",
     "pwrite",
     "pwriten",
     "ramptrig",
