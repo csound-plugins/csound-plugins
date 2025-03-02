@@ -2442,8 +2442,7 @@ dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     HANDLE *handle = get_handle(p);
     char *vartypename = p->outstr->arrayType->varTypeName;
     ui32 size = handle_get_hashtable_size(handle);
-    // tabinit(csound, p->outstr, (i32)size);
-    TABINIT(csound, p->outstr, (i32)size);
+    tabinit_compat(csound, p->outstr, (i32)size, &(p->h));
     if(strcmp(data, "keys")==0) {
         if(handle->khtype == 21 || handle->khtype == 22) {
             // str keys, check output array
@@ -3384,7 +3383,7 @@ pool_free_init(CSOUND *csound, POOL_0 *p) {
     if(when == 0) {
         return _pool_free(csound, *p->handleidx);
     }
-#ifdef CSOUNDAPI6)
+#ifdef CSOUNDAPI6
     else { register_deinit(csound, p, pool_free_deinit); }
 #endif
     return OK;

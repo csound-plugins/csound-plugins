@@ -151,7 +151,7 @@ static int32_t string_split(CSOUND *csound, STRSPLIT *p) {
         }
         ptr += seplen;
     }
-    TABINIT(csound, p->parts, numseps+1);
+    tabinit_compat(csound, p->parts, numseps+1, &(p->h));
     STRINGDAT *parts = (STRINGDAT *)p->parts->data;
     int64_t start = 0;
     int64_t partlen;

@@ -710,7 +710,7 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
 
     // initialize output arrays
     for(i=0; i < p->num_output_args; ++i)
-        TABINIT(csound, (ARRAYDAT*)p->args[i], (int) p->num_instances);
+        tabinit_compat(csound, (ARRAYDAT*)p->args[i], (int) p->num_instances, &(p->h));
 
     // create handles for each instance. we allocate all handles at once.
     p->handles = (OPCHANDLE*)csound->Calloc(csound, p->num_instances*sizeof(OPCHANDLE));
