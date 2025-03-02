@@ -146,8 +146,8 @@ static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
         if(sf_get_string(file, str_type) != NULL)
             numpairs++;
     }
-    TABINIT(csound, p->skeys, numpairs);
-    TABINIT(csound, p->svalues, numpairs);
+    tabinit_compat(csound, p->skeys, numpairs, &(p->h));
+    tabinit_compat(csound, p->svalues, numpairs, &(p->h));
     STRINGDAT *keys = (STRINGDAT *)p->skeys->data;
     STRINGDAT *values = (STRINGDAT *)p->svalues->data;
     size_t i=0;

@@ -1758,7 +1758,6 @@ preadarr_init(CSOUND *csound, PREADARR *p) {
         return INITERRF("Expected a 1D array, got %d", p->pindexes->dimensions);
     }
     int numpfields = p->pindexes->sizes[0];
-    // tabinit(csound, p->outvals, numpfields);
     tabinit_compat(csound, p->outvals, numpfields, &(p->h));
     // a negative instr. number indicates NOT to search again after failed to
     // find the given instance
@@ -3049,7 +3048,6 @@ static int32_t extendArray_init(CSOUND *csound, _AA *p) {
     p->sizeA = p->A->sizes[0];
     if(p->A->dimensions == 1 && p->B->dimensions == 1) {
         int size = p->A->sizes[0] + p->B->sizes[0];
-        // tabinit(csound, p->A, size);
         tabinit_compat(csound, p->A, size, &(p->h));
         p->varTypeName = p->A->arrayType->varTypeName[0];
         return OK;
@@ -3559,7 +3557,6 @@ static int32_t interparr_K_KK_init(CSOUND *csound, INTERPARR_K_KK *p) {
         return INITERR("idx array should be 1D");
     if(p->arr->dimensions > 1)
         return INITERR("data array should be 1D");
-    // tabinit(csound, p->out, p->idx->sizes[0]);
     tabinit_compat(csound, p->out, p->idx->sizes[0], &(p->h));
     return OK;
 }
@@ -3570,7 +3567,6 @@ static int32_t interparr_K_KK_init_simple(CSOUND *csound, INTERPARR_K_KK *p) {
         return INITERR("idx array should be 1D");
     if(p->arr->dimensions > 1)
         return INITERR("data array should be 1D");
-    // tabinit(csound, p->out, p->idx->sizes[0]);
     tabinit_compat(csound, p->out, p->idx->sizes[0], &(p->h));
     return OK;
 }
@@ -4113,8 +4109,7 @@ typedef struct {
 static int32_t bisectarr_init(CSOUND *csound, BISECTARR *p) {
     IGN(csound);
     p->lastidx = -1;
-    // tabinit(csound, p->out, p->xs->sizes[0]);
-    TABINIT(csound, p->out, p->xs->sizes[0]);
+    tabinit_compat(csound, p->out, p->xs->sizes[0], &(p->h));
     return OK;
 }
 
@@ -4304,7 +4299,6 @@ static int32_t bisecttabarr_init(CSOUND *csound, BISECTTAB_ARR *p) {
     p->ftp = ftp;
     p->lastidx = -1;
     p->lasttab = (int)*p->tabnum;
-    //tabinit(csound, p->out, p->in->sizes[0]);
     tabinit_compat(csound, p->out, p->in->sizes[0], &(p->h));
     return OK;
 }
@@ -4717,7 +4711,6 @@ static int32_t load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr, OPDS *ctx)
     for(int i=0; i<header.numdimensions; i++)
         numitems = numitems*header.sizes[i];
     tabinit_compat(csound, arr, numitems, ctx);
-    // tabinit(csound, arr, numitems);
     size_t numbytes = header.word_size * numitems;
     size_t nread = 0;
     if(header.type == 'f') {
@@ -4826,7 +4819,7 @@ static int32_t rowsweightedsum_init(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
                         numrows, numweights, min(numrows, numweights));
     }
     int rowsize = p->rows->sizes[1];
-    TABINIT(csound, p->outrow, rowsize);
+    tabinit_compat(csound, p->outrow, rowsize, &(p->h));
     return OK;
 }
 
@@ -5004,7 +4997,7 @@ static int32_t presetinterp_init(CSOUND *csound, PRESETINTERP *p) {
     } else if(p->numpoints > PRESETINTERP_MAXPOINTS) {
         return INITERRF("Too many points, max=%d", PRESETINTERP_MAXPOINTS);
     }
-    TABINIT(csound, p->weights, p->numpoints);
+    tabinit_compat(csound, p->weights, p->numpoints, &(p->h));
     p->pointsize = 2;
     return OK;
 }
@@ -5029,7 +5022,7 @@ static int32_t presetinterpw_init(CSOUND *csound, PRESETINTERP *p) {
     } else if(p->numpoints > PRESETINTERP_MAXPOINTS) {
         return INITERRF("Too many points, max=%d", PRESETINTERP_MAXPOINTS);
     }
-    TABINIT(csound, p->weights, p->numpoints);
+    tabinit_compat(csound, p->weights, p->numpoints, &(p->h));
     p->pointsize = 3;
     return OK;
 }

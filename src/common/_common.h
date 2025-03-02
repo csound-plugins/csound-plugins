@@ -144,7 +144,7 @@ static inline int32_t InsertScoreEventAtTime(CSOUND *csound, EVTBLK *evt, MYFLT 
 
 static inline void tabinit_compat(CSOUND *csound, ARRAYDAT *p, int32_t size, OPDS *ctx) {
 #ifdef CSOUNDAPI7
-    tabinit(csound, p, size, ctx);
+    tabinit(csound, p, size, ctx->insdshead);
 #else
     IGN(ctx);
     tabinit(csound, p, size);
@@ -182,7 +182,6 @@ static inline MYFLT _GetLocalKsmps(CSOUND *csound, OPDS *ctx) {
 
 
 #ifdef CSOUNDAPI7
-#define TABINIT(csound, arraydat, size) (tabinit(csound, arraydat, size, &(p->h)))
 #define LOCAL_SR(p) (GetLocalSr(&(p->h)))
 #define LOCAL_KR(p) (GetLocalKr(&(p->h)))
 #define LOCAL_KSMPS(p) (GetLocalKsmps(&(p->h)))
@@ -190,7 +189,6 @@ static inline MYFLT _GetLocalKsmps(CSOUND *csound, OPDS *ctx) {
 #define OPDS_INITFUNC(opds) (opds->init)
 #define OPDS_PERFFUNC(opds) (opds->perf)
 #else
-#define TABINIT(csound, arraydat, size) (tabinit(csound, arraydat, size))
 #define LOCAL_SR(p) (csound->GetSr(csound))
 #define LOCAL_KR(p) (csound->GetKr(csound))
 #define LOCAL_KSMPS(p) (csound->GetKsmps(csound))
@@ -208,7 +206,7 @@ static inline int32_t _StringArg2Insno(CSOUND *csound, char *arg, int32_t isstr)
 }
 static inline CS_VARIABLE* arrayCreateVariableSameType(CSOUND *csound, ARRAYDAT *arr, OPDS *ctx) {
 #ifdef CSOUNDAPI7
-    return arr->arrayType->createVariable(csound, NULL, ctx);
+    return arr->arrayType->createVariable(csound, NULL, ctx->insdshead);
 #else
     IGN(ctx);
     return arr->arrayType->createVariable(csound, NULL);
