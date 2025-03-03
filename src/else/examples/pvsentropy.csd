@@ -30,7 +30,7 @@ ktotalmag pvsmagsum fsig, kminfreq=0, kmaxfreq=sr/2
 instr 1
   asig1 = oscili:a(0.5, 500)
   asig2 = buzz(0.1, 300, 7, -1)
-  asig3 = pinker() * 0.3
+  asig3 = pinker() * 0.1
   asig4 = unirand:a(2) - 1.0
   asig5 = diskin2("finnegan01.flac", 1, 0, 1)[0]
   Snames[] fillarray "sine ", "buzz ", "pink ", "white", "finn "
@@ -42,9 +42,9 @@ instr 1
   asig = picksource(ksource, asig1, asig2, asig3, asig4, asig5)
   fsig = pvsanal(asig, ifftsize, 256, ifftsize, 0)
   kentr = pvsentropy(fsig, 50)
-  kentrnorm = kentr / log2(kentr)
+  kentrnorm = bpf(kentr, 0, 0, 0.55, 0, 6, .15, 20, .5, 60, .9, 180, 1.) 
   if metro(30) == 1 then
-    printsk "Source: %d, %s, entropy: %.3f (%f)\n", ksource, Snames[ksource], kentr, kentrnorm
+    printsk "Source: %d, %s, entropy: %.3f (%d %%)\n", ksource, Snames[ksource], kentr, kentrnorm*100
   endif
   outch 1, asig
 endin
