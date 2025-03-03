@@ -5942,6 +5942,8 @@ typedef struct {
     OPDS h;
     MYFLT *out;
     PVSDAT *fin;
+    MYFLT *minfreq;
+    MYFLT *maxfreq;
     MYFLT old;
     uint32_t lastframe;
 } PVSFLATNESS;
@@ -5962,20 +5964,35 @@ static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
         *p->out = p->old;
         return OK;
     }
+    MYFLT minfreq = *p->minfreq;
+    MYFLT maxfreq = *p->maxfreq;
+    if(maxfreq <= 0) {
+        maxfreq = LOCAL_SR(p) / 2;;
+    }
+    if(minfreq <= 0) {
+        minfreq = 10.;
+    }
+    
     float *fin = (float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     MYFLT geommean = 0.;
     MYFLT mean = 0.;
-    for(i = 0; i < N; i += 2) {
+    uint32_t numbins = 0;
+    for(i = 2; i < N - 2; i += 2) {
+        float freq = fin[i+1];
+        if(freq < minfreq)
+            continue;
+        if(freq > maxfreq)
+            break;
         float amp = fin[i];
         if (amp != 0.f) { // zeroes lead to NaNs
             geommean += log(amp);
             mean += amp;
         }
+        numbins++;
     }
-    MYFLT oneovern = 2.0 / N;
-    geommean = exp(geommean * oneovern);
-    mean *= oneovern;
+    geommean = exp(geommean / numbins);
+    mean /= numbins;
     MYFLT flatness = (mean == 0. ? 0.8 : (geommean / mean));
     p->old = flatness;
     *p->out = flatness;
@@ -6069,7 +6086,7 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
     MYFLT minfreq = *p->minfreq;
     MYFLT maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
-        maxfreq = 50000.;
+        maxfreq = LOCAL_SR(p) / 2;
     }
     if(minfreq <= 0) {
         minfreq = 10.;
@@ -6200,7 +6217,7 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     MYFLT minfreq = *p->minfreq;
     MYFLT maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
-        maxfreq = 50000.;
+        maxfreq = LOCAL_SR(p) / 2;
     }
     if(minfreq <= 0) {
         minfreq = 10.;
@@ -6230,6 +6247,79 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     }
     p->old = total;
     *p->out = total;
+    p->lastframe = p->fin->framecount;
+    return OK;
+}
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    PVSDAT *fin;
+    MYFLT *minfreq;
+    MYFLT *maxfreq;
+    MYFLT old;
+    uint32_t lastframe;
+} PVSENTROPY;
+
+static int32_t pvsentropy_init(CSOUND *csound, PVSENTROPY *p) {
+    p->old = 0;
+    p->lastframe = 0;
+    if (UNLIKELY(!((p->fin->format==PVS_AMP_FREQ) ||
+                   (p->fin->format==PVS_AMP_PHASE))))
+      return csound->InitError(csound,
+                               "%s", Str("pvscent: format must be amp-phase"
+                                   " or amp-freq.\n"));
+    return OK;
+}
+
+static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
+    if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
+        *p->out = p->old;
+        return OK;
+    }
+    float *fin = (float *)p->fin->frame.auxp;
+    int32 i, N = p->fin->N;
+    MYFLT minfreq = *p->minfreq;
+    MYFLT maxfreq = *p->maxfreq;
+    if(maxfreq <= 0) {
+        maxfreq = LOCAL_SR(p) / 2;;
+    ;
+    }
+    if(minfreq <= 0) {
+        minfreq = 10.;
+    }
+    MYFLT maxmag = 0.;
+    int minbin = -1, maxbin = N;  
+    for(i = 2; i < N - 2; i += 2) {
+        float freq = fin[i+1];
+        if(freq < minfreq)
+            continue;
+        
+        if(minbin < 0)
+            minbin = i;
+        
+        if(freq > maxfreq) {
+            maxbin = i;
+            break;
+        }
+        MYFLT mag = fin[i];
+        if(mag > maxmag)
+            maxmag = mag;
+    }
+    if(maxmag == 0.) {
+        *p->out = p->old;
+        return OK;
+    }
+    MYFLT oneover_maxmagsqr = 1 / (maxmag*maxmag);
+    MYFLT entropysum = 0.;
+    for(i = minbin; i < maxbin; i+=2) {
+        MYFLT mag = fin[i];
+        MYFLT prob = mag * mag * oneover_maxmagsqr;
+        if(prob > 0.)
+            entropysum -= prob * log2(prob);
+    }
+    p->old = entropysum;
+    *p->out = entropysum;
     p->lastframe = p->fin->framecount;
     return OK;
 }
@@ -6266,7 +6356,8 @@ static int32_t pvsmagsum_perf(CSOUND *csound, PVSMAGSUM *p) {
     MYFLT minfreq = *p->minfreq;
     MYFLT maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
-        maxfreq = 50000.;
+        maxfreq = LOCAL_SR(p) / 2;;
+    ;
     }
     if(minfreq <= 0) {
         minfreq = 10.;
@@ -6701,10 +6792,12 @@ static OENTRY localops[] = {
     {"linexp.k", S(LINEXP), 0, "k", "kkkkOP", NULL, (SUBR)linexp, NULL, NULL  },
 
     {"transpose", S(PITCHSHIFT), 0, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL},
-    {"pvsflatness", S(PVSFLATNESS), 0, "k", "f", (SUBR)pvsflatness_init, (SUBR)pvsflatness_perf, NULL, NULL},
+    {"pvsflatness", S(PVSFLATNESS), 0, "k", "fOO", (SUBR)pvsflatness_init, (SUBR)pvsflatness_perf, NULL, NULL},
     {"pvscrest", S(PVSCREST), 0, "k", "fOO", (SUBR)pvscrest_init, (SUBR)pvscrest_perf, NULL, NULL},
     {"pvsmagsum", S(PVSMAGSUM), 0, "k", "fOO", (SUBR)pvsmagsum_init, (SUBR)pvsmagsum_perf, NULL, NULL},
     {"pvsmagsumn", S(PVSMAGSUMN), 0, "k", "fiOO", (SUBR)pvsmagsumn_init, (SUBR)pvsmagsumn_perf, (SUBR)pvsmagsumn_dealloc, NULL},
+    {"pvsentropy", S(PVSMAGSUMN), 0, "k", "fOO", (SUBR)pvsentropy_init, (SUBR)pvsentropy_perf, NULL, NULL},
+
 
     {"picksource.k", S(PICKSOURCE), 0, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
     
