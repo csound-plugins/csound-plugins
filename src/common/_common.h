@@ -261,6 +261,16 @@ static inline float fastlog2 (float x) {
 }
 
 
+static inline float fastlogf (float x) {
+    return 0.69314718f * fastlog2 (x);
+}
+
+static inline MYFLT fastlog(MYFLT x) {
+    return FL(0.6931471805599453) * fastlog2(x);
+}
+
+
+
 char * _strncpy(char *dst, const char *src, size_t siz) {
     char *d = dst;
     const char *s = src;

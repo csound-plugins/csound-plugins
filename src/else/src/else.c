@@ -6225,21 +6225,19 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     MYFLT *heaparr = heap->arr;
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
-        float amp = fin[i];
-        
-        if(freq < minfreq || amp == 0.)  {
+        if(freq < minfreq)
             continue;
-        }
         if(freq > maxfreq)
             break;
         
-        if(heap->size < heap->capacity) {
-            mh_insert(heap, amp);
-        } else if(heaparr[0] < amp) {
-            mh_delete_minimum_and_insert(heap, amp);
-            // mh_delete_minimum(heap);
-            // mh_insert(heap, amp);
-        }
+        float amp = fin[i];
+        if(amp > 0) {
+            if(heap->size < heap->capacity) {
+                mh_insert(heap, amp);
+            } else if(heaparr[0] < amp) {
+                mh_delete_minimum_and_insert(heap, amp);
+            }
+        }        
     }
     MYFLT total = 0.;
     for(i = 0; i < heap->size; i++) {
@@ -6282,27 +6280,27 @@ static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
     MYFLT minfreq = *p->minfreq;
     MYFLT maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
-        maxfreq = LOCAL_SR(p) / 2;;
-    ;
+        maxfreq = LOCAL_SR(p) / 2;
     }
     if(minfreq <= 0) {
         minfreq = 10.;
     }
-    MYFLT maxmag = 0.;
-    int minbin = -1, maxbin = N;  
+    float maxmag = 0.;
+    int minbin = 2, maxbin = N;
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
-        if(freq < minfreq)
-            continue;
-        
-        if(minbin < 0)
+        if(freq > minfreq) {
             minbin = i;
-        
+            break;
+        }
+    }
+    for(i = minbin; i < N - 2; i += 2) {
+        float freq = fin[i+1];
         if(freq > maxfreq) {
             maxbin = i;
             break;
         }
-        MYFLT mag = fin[i];
+        float mag = fin[i];
         if(mag > maxmag)
             maxmag = mag;
     }
@@ -6310,13 +6308,14 @@ static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
         *p->out = p->old;
         return OK;
     }
-    MYFLT oneover_maxmagsqr = 1 / (maxmag*maxmag);
-    MYFLT entropysum = 0.;
+    float oneover_maxmagsqr = 1 / (maxmag*maxmag);
+    float entropysum = 0.;
+    float prob, mag;
     for(i = minbin; i < maxbin; i+=2) {
-        MYFLT mag = fin[i];
-        MYFLT prob = mag * mag * oneover_maxmagsqr;
+        mag = fin[i];
+        prob = mag * mag * oneover_maxmagsqr;
         if(prob > 0.)
-            entropysum -= prob * log2(prob);
+            entropysum -= prob * fastlog2(prob);   // <-- ~10% faster        
     }
     p->old = entropysum;
     *p->out = entropysum;
