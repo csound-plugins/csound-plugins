@@ -68,11 +68,11 @@ int mh_insert(MinHeap* heap, MYFLT element) {
     // parent of the last element is greater than it
     MYFLT temp;
     MYFLT *arr = heap->arr;
-    while (curr > 0 && heap->arr[mh_parent(curr)] > heap->arr[curr]) {
+    while (curr > 0 && arr[mh_parent(curr)] > arr[curr]) {
         // Swap
         int parentidx = mh_parent(curr);
         temp = arr[parentidx];
-        arr[parentidx] = heap->arr[curr];
+        arr[parentidx] = arr[curr];
         arr[curr] = temp;
         // Update the current index of element
         curr = mh_parent(curr);

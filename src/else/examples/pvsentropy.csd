@@ -42,8 +42,9 @@ instr 1
   asig = picksource(ksource, asig1, asig2, asig3, asig4, asig5)
   fsig = pvsanal(asig, ifftsize, 256, ifftsize, 0)
   kentr = pvsentropy(fsig, 50)
+  kentrnorm = kentr / log2(kentr)
   if metro(30) == 1 then
-    printsk "Source: %d, %s, entropy: %.3f\n", ksource, Snames[ksource], kentr
+    printsk "Source: %d, %s, entropy: %.3f (%f)\n", ksource, Snames[ksource], kentr, kentrnorm
   endif
   outch 1, asig
 endin
