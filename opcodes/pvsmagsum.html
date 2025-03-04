@@ -12,7 +12,7 @@
         <link rel="prev" href="pvsflatness.html">
       
       
-        <link rel="next" href="pwrite.html">
+        <link rel="next" href="pvsmagsumn.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -2154,6 +2154,28 @@
   
   
     <li class="md-nav__item">
+      <a href="pvsmagsumn.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    pvsmagsumn
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="pwrite.html" class="md-nav__link">
         
   
@@ -2877,7 +2899,7 @@
 <h2 id="description">Description</h2>
 <p>Given an pv chain, sum all magnitudes of the bins between minfreq
 and maxfreq.</p>
-<p>Used together with pvstrace it can be determine how concentrated
+<p>Used together with pvstrace it can determine how concentrated
 the energy of a signal is, giving an idea of how "voiced" or "pitched"
 it is. A noisy signal will tend to have energy spread more evenly across
 the spectrum, while a musical or speech signal will tend to concentrate
@@ -2885,6 +2907,11 @@ that signal along a limited range of beans. By selecting the loudest
 bins via pvstrace and comparing the energy of the selected pv signal
 to the original signal this renders a quite relyable measurement of
 the "peakyness" of the signal.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See <a href="pvsmagsumn.html">pvsmagsumn</a> for a more efficient implementation,
+combining pvsmagsum and pvstrace.</p>
+</div>
 <h2 id="syntax">Syntax</h2>
 <div class="language-csound highlight"><pre><span></span><code><span class="kt">k</span><span class="n">totalmag</span><span class="w"> </span><span class="n">pvsmagsum</span><span class="w"> </span><span class="kt">f</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">minfreq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">maxfreq</span><span class="o">=</span><span class="vg">sr</span><span class="o">/</span><span class="mi">2</span>
 </code></pre></div>
@@ -2951,7 +2978,7 @@ the "peakyness" of the signal.</p>
 <span class="w">  </span><span class="kt">k</span><span class="n">magsum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pvsmagsum</span><span class="p">(</span><span class="kt">f</span><span class="n">sig2</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">peakyness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">k</span><span class="n">magsum0</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">k</span><span class="n">magsum</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="kt">k</span><span class="n">magsum0</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">peakyness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">lag</span><span class="p">(</span><span class="kt">k</span><span class="n">peakyness</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">)</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">40</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
 <span class="w">    </span><span class="kt">S</span><span class="n">peak</span><span class="w"> </span><span class="n">strmul</span><span class="w"> </span><span class="s">&quot;:&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="kt">k</span><span class="n">peakyness</span><span class="o">*</span><span class="mi">40</span><span class="p">)</span>
 <span class="w">    </span><span class="nb">printsk</span><span class="w"> </span><span class="s">&quot;Source: </span><span class="si">%d</span><span class="s">, </span><span class="si">%s</span><span class="s">, peakyness: </span><span class="si">%.3f</span><span class="s"> </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">names</span><span class="p">[</span><span class="kt">k</span><span class="n">source</span><span class="p">],</span><span class="w"> </span><span class="kt">k</span><span class="n">peakyness</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">peak</span>
 <span class="w">  </span><span class="k">endif</span>
@@ -2968,6 +2995,7 @@ the "peakyness" of the signal.</p>
 </code></pre></div>
 <h2 id="see-also">See also</h2>
 <ul>
+<li><a href="pvsmagsumn.html">pvsmagsumn</a></li>
 <li><a href="pvsflatness.html">pvsflatnesscent</a></li>
 <li><a href="pvscrest.html">pvscrest</a></li>
 </ul>
