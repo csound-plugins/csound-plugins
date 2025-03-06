@@ -2153,12 +2153,13 @@ typedef struct {
 
     // inputs
     void *instr;
-    MYFLT *pargs [ATSTOP_MAXPARGS];
+    MYFLT *p2;
+    MYFLT *p3;
+    void *pargs [ATSTOP_MAXPARGS];
 
     // internal
     MYFLT instrnum;   // cached instrnum
-
-    MYFLT pargscopy[ATSTOP_MAXPARGS];
+    
     size_t numargs;
 
 } SCHED_DEINIT;
@@ -2172,29 +2173,56 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     evt.strarg = NULL;
     evt.scnt = 0;
     evt.pinstance = NULL;
-    evt.p2orig = p->pargscopy[0]; // *p->pargs[0];
-    evt.p3orig = p->pargscopy[1]; // *p->pargs[1];
-    size_t pcnt = p->numargs;
+    evt.p2orig = p->h.insdshead->p2.value;
+    evt.p3orig = p->h.insdshead->p3.value;
     evt.p[1] = p->instrnum;
-    for(size_t i=0; i < pcnt-1; i++) {
-        // evt.p[2+i] = p->pargscopy[i];
-        evt.p[2+i] = p->pargs[i] != NULL ? *p->pargs[i] : p->pargscopy[i];
+    evt.p[2] = *p->p2;
+    evt.p[3] = *p->p3;
+    for(size_t i=0; i < p->numargs; i++) {
+        evt.p[4+i] = *(MYFLT *)p->pargs[i];
     }
-    evt.pcnt = (int16_t) pcnt;
-    // csound->insert_score_event_at_sample(csound, &evt, csound->GetCurrentTimeSamples(csound));
-    // InsertScoreEvent(csound, &evt, csound->GetCurrentTimeSamples(csound));
+    evt.pcnt = (int16_t)(p->numargs + 3);
     InsertScoreEventNow(csound, &evt, &(p->h));
     return OK;
 }
 
 
+static void add_string_arg(char *s, const char *arg) {
+  int32_t offs = (int32_t) strlen(s) ;
+  s += offs;
+  *s++ = ' ';
+  *s++ ='\"';
+  while(*arg != '\0') {
+    if(*arg == '\"')
+      *s++ = '\\';
+    *s++ = *arg++;
+  }
+
+  *s++ = '\"';
+  *s = '\0';
+}
+
 static int32_t
-atstop_(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
-    p->instrnum = instrnum;
-    p->numargs = max(3, p->INOCOUNT);
-    for(size_t i=0; i < p->numargs - 1;i++) {
-        p->pargscopy[i] = *p->pargs[i];
+atstop_deinit_N(CSOUND *csound, SCHED_DEINIT *p) {
+    char s[16384], sf[64];
+    snprintf(s, 16384, "i %f %f %f", p->instrnum, *p->p2, *p->p3);
+    for(size_t i=0; i < p->numargs; i++) {
+        if(_GetTypeForArg(csound, p->pargs[i])->varTypeName[0] == 'S') {
+            add_string_arg(s, ((STRINGDAT *)p->pargs[i])->data);
+        } else {
+            snprintf(sf, 64, " %f", *(MYFLT*)p->pargs[i]);
+            strncat(s, sf, 16384 - strlen(s));
+        }
     }
+    csound->InputMessage(csound, s);
+    return OK;
+}
+
+static int32_t
+atstop_init(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
+    p->instrnum = instrnum;
+    p->numargs = _GetInputArgCnt(csound, p) - 3;
+    
 #ifdef CSOUNDAPI6
     register_deinit(csound, p, atstop_deinit);
 #endif
@@ -2204,16 +2232,17 @@ atstop_(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
 static int32_t
 atstop_i(CSOUND *csound, SCHED_DEINIT *p) {
     MYFLT instrnum = *((MYFLT*)p->instr);
-    return atstop_(csound, p, instrnum);
+    return atstop_init(csound, p, instrnum);
 }
 
 static int32_t
 atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
     STRINGDAT *instrname = (STRINGDAT*) p->instr;
-    // int32_t instrnum = csound->StringArg2Insno(csound, instrname->data, 1);
     int32_t instrnum = _StringArg2Insno(csound, instrname->data, 1);
     if (UNLIKELY(instrnum == NOT_AN_INSTRUMENT)) return NOTOK;
-    return atstop_(csound, p, (MYFLT) instrnum);
+    p->instrnum = instrnum;
+    p->numargs = _GetInputArgCnt(csound, p) - 3;
+    return atstop_init(csound, p, (MYFLT) instrnum);
 }
 
 /*
@@ -6663,9 +6692,13 @@ static OENTRY localops[] = {
     {"atstop.s",  S(SCHED_DEINIT), 0, "", "Siim", (SUBR)atstop_s, NULL, (SUBR)atstop_deinit, NULL},
     {"atstop.i1", S(SCHED_DEINIT), 0, "", "ioj",  (SUBR)atstop_i, NULL, (SUBR)atstop_deinit, NULL},
     {"atstop.i",  S(SCHED_DEINIT), 0, "", "iiim", (SUBR)atstop_i, NULL, (SUBR)atstop_deinit, NULL},
-
-    {"atstop.k",  S(SCHED_DEINIT), 0, "", "iii*", (SUBR)atstop_i, NULL, (SUBR)atstop_deinit, NULL},
-    {"atstop.Sk", S(SCHED_DEINIT), 0, "", "Sii*", (SUBR)atstop_s, NULL, (SUBR)atstop_deinit, NULL},
+    
+    {"atstop.N", S(SCHED_DEINIT), 0, "", "iiiN", (SUBR)atstop_i, NULL, (SUBR)atstop_deinit_N, NULL},
+    {"atstop.SN", S(SCHED_DEINIT), 0, "", "SiiN", (SUBR)atstop_s, NULL, (SUBR)atstop_deinit_N, NULL},
+    
+    {"atstop.k",  S(SCHED_DEINIT), 0, "", "iiiM", (SUBR)atstop_i, NULL, (SUBR)atstop_deinit, NULL},
+    {"atstop.Sk",  S(SCHED_DEINIT), 0, "", "SiiM", (SUBR)atstop_s, NULL, (SUBR)atstop_deinit, NULL},
+    
 
     {"accum.k", S(ACCUM), 0, "k", "koO", (SUBR)accum_init, (SUBR)accum_perf, NULL, NULL},
     {"accum.a", S(ACCUM), 0, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio, NULL, NULL},
