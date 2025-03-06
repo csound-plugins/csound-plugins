@@ -119,6 +119,17 @@ instr kargs
   atstop "_printCounter", 0, -1, kcounter
 endin
 
+instr strarg
+  atstop "printmsg", 0, 0, "mymessage"
+  turnoff
+endin
+
+instr printmsg
+  Smsg = p4
+  prints "message from printmsg: '%s'\n", Smsg
+  turnoff
+endin
+
 instr StopPerformance
   exitnow
 endin
@@ -133,7 +144,8 @@ endin
 ; i 10 0 1
 ; i "StopPerformance" 10 1
 ; i "first" 1 0.5
-i "kargs" 0 1
+; i "kargs" 0 1
+i "strarg" 0 1
 f 0 5
 </CsScore>
 </CsoundSynthesizer>

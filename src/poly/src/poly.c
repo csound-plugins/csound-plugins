@@ -1149,13 +1149,6 @@ defer_deinit(CSOUND *csound, DEFER *p) {
             return PERFERRF("Error in deferred opcode %s init func",
                             p->opcode_name->data);
     }
-    /*
-    if(p->opc->kopadr != NULL) {
-        if (p->opc->kopadr(csound, p->opc_state) == NOTOK)
-            return PERFERRF("Error in deferred opcode %s perf func",
-                            p->opcode_name->data);
-    }
-    */
     csound->Free(csound, p->opc_state);
     csound->Free(csound, p->optext);
     return OK;
