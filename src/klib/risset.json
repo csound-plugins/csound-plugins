@@ -15,6 +15,7 @@
     "dict_print",
     "dict_iter",
     "dict_del",
+    "dict_delk",
     "sref",
     "sderef",
     "pool_new",
