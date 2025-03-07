@@ -2187,9 +2187,9 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
 }
 
 
-static void add_string_arg(char *s, const char *arg) {
-  int32_t offs = (int32_t) strlen(s) ;
-  s += offs;
+static int32_t add_string_arg(char *s, const char *arg, int32_t lens) {
+  const char *s0 = s;
+  s += lens;
   *s++ = ' ';
   *s++ ='\"';
   while(*arg != '\0') {
@@ -2200,18 +2200,23 @@ static void add_string_arg(char *s, const char *arg) {
 
   *s++ = '\"';
   *s = '\0';
+  return (s - s0) + lens; 
 }
+
 
 static int32_t
 atstop_deinit_N(CSOUND *csound, SCHED_DEINIT *p) {
     char s[16384], sf[64];
     snprintf(s, 16384, "i %f %f %f", p->instrnum, *p->p2, *p->p3);
+    int32_t lens = strlen(s);
+    int32_t lenarg;
     for(size_t i=0; i < p->numargs; i++) {
         if(_GetTypeForArg(csound, p->pargs[i])->varTypeName[0] == 'S') {
-            add_string_arg(s, ((STRINGDAT *)p->pargs[i])->data);
+            lenarg = add_string_arg(s, ((STRINGDAT *)p->pargs[i])->data, lens);
+            lens += lenarg;
         } else {
-            snprintf(sf, 64, " %f", *(MYFLT*)p->pargs[i]);
-            strncat(s, sf, 16384 - strlen(s));
+            lens += snprintf(sf, 64, " %f", *(MYFLT*)p->pargs[i]);
+            strncat(s, sf, 16384 - lens);
         }
     }
     csound->InputMessage(csound, s);
