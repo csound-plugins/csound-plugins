@@ -1078,9 +1078,14 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
     p->num_input_args = num_input_args;
     // OENTRY *opc = csound->find_opcode_new(csound, p->opcode_name->data, opc_outsig, opc_insig);
     OENTRY *opc = _FindOpcode(csound, p->opcode_name->data, opc_outsig, opc_insig);
-    if(opc == NULL)
-        return INITERRF(Str("Opcode '%s' with signature '%s' not found"),
+    if(opc == NULL) {
+        return INITERRF("Opcode '%s' with signature '%s' not found",
                         p->opcode_name->data, opc_insig);
+    }
+    if(OPDS_INITFUNC(opc) == NULL) {
+        return INITERRF("No init func found for opcode '%s' with signature '%s' -> '%s'",
+                        opc->opname, opc->intypes, opc->outypes);
+    }
     p->opc = opc;
     p->opc_numins = get_numargs(opc->intypes);
     i32 opc_numouts = get_numargs(opc->outypes);
