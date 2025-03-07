@@ -144,8 +144,8 @@ endin
 ; i 10 0 1
 ; i "StopPerformance" 10 1
 ; i "first" 1 0.5
-; i "kargs" 0 1
-i "strarg" 0 1
+i "kargs" 0 1
+; i "strarg" 0 1
 f 0 5
 </CsScore>
 </CsoundSynthesizer>
