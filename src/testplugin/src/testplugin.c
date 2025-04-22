@@ -24,8 +24,13 @@ static int32_t testopcode_init(CSOUND *csound, TESTOPCODE *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
+#ifdef CSOUNDAPI6
+    {"testopcode.i", S(TESTOPCODE), 0, 1, "i", "iii", (SUBR)testopcode_init, NULL, NULL, NULL}
+
+#else
     {"testopcode.i", S(TESTOPCODE), 0, "i", "iii", (SUBR)testopcode_init, NULL, NULL, NULL}
     //     ,{ "strjoin.i", S(STRJOIN_VARARGS), 0, "S", "S*", (SUBR)strjoin_varargs_i, NULL, NULL, NULL}
+#endif
 };
 
 LINKAGE
