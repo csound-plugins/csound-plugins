@@ -40,8 +40,8 @@ inline void swap(MYFLT *arr, int index1, int index2) {
 }
 
 MinHeap* mh_new(int capacity) {
-    MinHeap* minheap = (MinHeap*) calloc (1, sizeof(MinHeap));
-    minheap->arr = (int*) calloc (capacity, sizeof(MYFLT));
+    MinHeap* minheap = (MinHeap*) calloc(1, sizeof(MinHeap));
+    minheap->arr = calloc(capacity, sizeof(MYFLT));
     minheap->capacity = capacity;
     minheap->size = 0;
     return minheap;

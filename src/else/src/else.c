@@ -6209,6 +6209,17 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
 
 
 typedef struct {
+	OPDS h;
+    MYFLT *framecount;
+	PVSDAT *fin;
+} PVSFRAMECOUNT;
+
+static int32_t pvsframecount_perf(CSOUND *csound, PVSFRAMECOUNT *p) {
+    *p->framecount = p->fin->framecount;
+    return OK;
+}
+
+typedef struct {
     OPDS h;
     MYFLT *out;
     PVSDAT *fin;
@@ -6834,6 +6845,7 @@ static OENTRY localops[] = {
     {"pvsmagsum", S(PVSMAGSUM), 0, "k", "fOO", (SUBR)pvsmagsum_init, (SUBR)pvsmagsum_perf, NULL, NULL},
     {"pvsmagsumn", S(PVSMAGSUMN), 0, "k", "fiOO", (SUBR)pvsmagsumn_init, (SUBR)pvsmagsumn_perf, (SUBR)pvsmagsumn_dealloc, NULL},
     {"pvsentropy", S(PVSMAGSUMN), 0, "k", "fOO", (SUBR)pvsentropy_init, (SUBR)pvsentropy_perf, NULL, NULL},
+    {"pvsframecount", S(PVSFRAMECOUNT), 0, "k", "f", NULL, (SUBR)pvsframecount_perf, NULL, NULL},
 
 
     {"picksource.k", S(PICKSOURCE), 0, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
