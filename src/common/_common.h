@@ -124,21 +124,12 @@ static inline char* _GetInputArgName(CSOUND *csound, void *p, uint32_t idx) {
 static inline void InsertScoreEventNow(CSOUND *csound, EVTBLK *evt, OPDS *ctx) {
 #ifdef CSOUNDAPI7
     MYFLT sr = GetLocalSr(ctx);
-    csound->InsertScoreEvent(csound, evt, csound->GetCurrentTimeSamples(csound) / sr);
+    // csound->InsertScoreEvent(csound, evt, csound->GetCurrentTimeSamples(csound) / sr);
+    csound->Event(csound, 0, evt->p, evt->pcnt);
 #else
     IGN(ctx);
     csound->insert_score_event_at_sample(csound, evt, csound->GetCurrentTimeSamples(csound));
 #endif
-}
-
-static inline int32_t InsertScoreEventAtTime(CSOUND *csound, EVTBLK *evt, MYFLT time) {
-#ifdef CSOUNDAPI7
-    return csound->InsertScoreEvent(csound, evt, time);
-#else
-    uint64_t sample = time * csound->GetSr(csound);
-    return csound->insert_score_event_at_sample(csound, evt, sample);
-#endif
-
 }
 
 

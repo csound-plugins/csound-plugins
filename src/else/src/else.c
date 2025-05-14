@@ -2167,6 +2167,17 @@ typedef struct {
 
 static int32_t
 atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
+#ifdef CSOUNDAPI7
+    MYFLT pfields[VARGMAX];
+    pfields[0] = p->instrnum;
+    pfields[1] = *p->p2;
+    pfields[2] = *p->p3;
+    for(int i=0; i<p->numargs; i++) {
+        pfields[3+i] = *(MYFLT *)p->pargs[i];
+    }
+    csound->Event(csound, 'i', (const MYFLT *)(&pfields), p->numargs + 3);
+    return OK;
+#else 
     EVTBLK evt;
     memset(&evt, 0, sizeof(EVTBLK));
     evt.opcod = 'i';
@@ -2184,6 +2195,7 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     evt.pcnt = (int16_t)(p->numargs + 3);
     InsertScoreEventNow(csound, &evt, &(p->h));
     return OK;
+#endif
 }
 
 
@@ -4414,18 +4426,16 @@ static int32_t filltab(CSOUND *csound, FILLTAB *p) {
     ftevt =(EVTBLK*) csound->Malloc(csound, sizeof(EVTBLK));
     ftevt->opcod = 'f';
     ftevt->strarg = NULL;
+    int32_t n = _GetInputArgCnt(csound, p); // csound->GetInputArgCnt(p);
+    int32_t tabsize = n;
+    MYFLT pfields[] = {0., 0., 0., -(MYFLT)tabsize, 2., 0.};
+    ftevt->p = &pfields[0];
     fp = &ftevt->p[0];
-    size_t n = _GetInputArgCnt(csound, p); // csound->GetInputArgCnt(p);
-    size_t tabsize = n;
-    fp[0] = FL(0.0);
-    fp[1] = 0; // *p->tabnum;                                 /* copy p1 - p5 */
-    fp[2] = ftevt->p2orig = FL(0.0);                    /* force time 0 */
-    fp[3] = ftevt->p3orig = tabsize;
-    fp[4] = 2;
-    fp[5] = 0;
+    ftevt->p2orig = 0.;
+    ftevt->p3orig = -tabsize;
     ftevt->pcnt = (int16) 6;
-    // n = csound->hfgens(csound, &ftp, ftevt, 1);         /* call the fgen */
     n = _createTable(csound, &ftp, ftevt, 1);
+    ftevt->p = NULL;
     csound->Free(csound, ftevt);
     if (UNLIKELY(n != 0) || ftp == NULL)
         return INITERR("ftgen error");
@@ -4453,17 +4463,16 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
     ftevt =(EVTBLK*) csound->Malloc(csound, sizeof(EVTBLK));
     ftevt->opcod = 'f';
     ftevt->strarg = NULL;
-    fp = &ftevt->p[0];
-    size_t tabsize = (size_t)*p->size;
-    fp[0] = FL(0.0);
-    fp[1] = FL(0.0);  // *p->tabnum;
-    fp[2] = ftevt->p2orig = FL(0.0);                    /* force time 0 */
-    fp[3] = ftevt->p3orig = tabsize;
-    fp[4] = 2;
-    fp[5] = 0;
+    int32_t tabsize = (int32_t)*p->size;
+    ftevt->scnt = 0;
+    ftevt->p2orig = 0.;
+    ftevt->p3orig = -tabsize;
+    MYFLT pfields[] = {0., 0., 0., -(MYFLT)tabsize, 2., 0.};
+    ftevt->p = &pfields[0];
     ftevt->pcnt = (int16) 6;
     // int n = csound->hfgens(csound, &ftp, ftevt, 1);         /* call the fgen */
     int n = _createTable(csound, &ftp, ftevt, 1);
+    ftevt->p = NULL;
     csound->Free(csound, ftevt);
     if (UNLIKELY(n != 0) || ftp == NULL)
         return INITERR("ftgen error");
