@@ -940,13 +940,13 @@ strdef_to_intdef(STRINGDAT *s) {
  *
  * idict  dict_new Stype, [key, value, key, value, ...]
  * idict  dict_new Stype, icapacity=0
- * 
+ *
  * Stype: the type of the dict
  *   sf or str:float   str -> float
  *   ss or str:str     str -> str
  *   if or int:float   int -> float
  *   is or int:str     int -> str
- * 
+ *
  */
 
 
@@ -1913,6 +1913,56 @@ hashtab_get_is_i(CSOUND *csound, DICT_GET_is *p) {
     if(err==NOTOK)
         return err;
     return hashtab_get_is(csound, p);
+}
+
+// ------------------------------
+//          dict_update
+// ------------------------------
+
+typedef struct {
+    OPDS h;
+    MYFLT *ibasedict;
+    MYFLT *iupdatedict;
+} DICT_UPDATE;
+
+// dict_update ibase, iupdates
+// updates ibase with iupdates
+static i32
+dict_update_sf(CSOUND *csound, DICT_UPDATE *p) {
+    HASH_GLOBALS *g = dict_globals(csound);
+    ui32 baseidx = (ui32)*p->ibasedict;
+    CHECK_INDEX(baseidx, g);
+    HANDLE *basehandle = &(g->handles[baseidx]);
+    ui32 updateidx = (ui32)*p->iupdatedict;
+    CHECK_INDEX(updateidx, g);
+    HANDLE *updatehandle = &(g->handles[updateidx]);
+    int absent;
+    if(basehandle->khtype != updatehandle->khtype) {
+        return INITERRF("Incomptabile dict types: %d %d", basehandle->khtype, updatehandle->khtype);
+    }
+    if(basehandle->khtype == khStrFlt) {
+        khash_t(khStrFlt) *h0 = basehandle->hashtab;
+        khash_t(khStrFlt) *h1 = updatehandle->hashtab;
+        for(khint_t k1 = 0; k1 != kh_end(h1); ++k1) {
+            if(!kh_exist(h1, k1)) continue;
+            // if the key is present in h0, update the value
+            const char* key = kh_key(h1, k1);
+            khiter_t k0 = kh_get(khStrFlt, h0, key);
+            if(k0 != kh_end(h0)) {
+                // key found, update
+                kh_val(h0, k0) = kh_val(h1, k1);
+            } else {
+                // add key to h0
+                k0 = kh_put(khStrFlt, h0, key, &absent);
+                kh_key(h0, k0) = csound->Strdup(csound, key);
+                basehandle->counter++;
+                kh_val(h0, k0) = kh_val(h1, k1);
+            }
+        }
+    } else {
+        return INITERRF("Unsupported dict type: %d", basehandle->khtype);
+    }
+    return OK;
 }
 
 
@@ -3253,7 +3303,7 @@ static POOL_HANDLE *pool_make(CSOUND *csound, int allocated, int cangrow) {
     handle->size = 0;
     handle->cangrow = cangrow;
     handle->handlenum = *instancecount;
-    return handle;  
+    return handle;
 }
 
 static POOL_HANDLE *_pool_get_handle(CSOUND *csound, int instance) {
@@ -3588,6 +3638,8 @@ static OENTRY localops[] = {
 
     { "dict_set.is_k", S(DICT_SET_is), 0, 3, "",  "ikS", (SUBR)dict_set_is_0, (SUBR)dict_set_is, NULL, NULL },
 
+    { "dict_update.sf", S(DICT_UPDATE), 0, 1, "", "ii", (SUBR)dict_update_sf, NULL, NULL, NULL},
+
     { "dict_del.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i, NULL, NULL, NULL },
     { "dict_del.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i, NULL, NULL },
     { "dict_del.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s, NULL, NULL },
@@ -3630,7 +3682,7 @@ static OENTRY localops[] = {
     { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
     { "pool_new", S(POOL_NEW), 0, 1, "i", "o",  (SUBR)pool_empty, NULL, NULL, NULL},
     { "pool_free", S(POOL_0),  0, 1, "",  "io", (SUBR)pool_free_init, NULL, NULL, NULL },
-    
+
     { "pool_pop.i", S(POOL_1), 0, 1, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
     { "pool_pop.k", S(POOL_1), 0, 3, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
 
@@ -3680,7 +3732,7 @@ static OENTRY localops[] = {
     { "dict_del.del_k", S(DICT_DEL_i), 0, "", "ik", NULL, (SUBR)dict_del_i, NULL, NULL },
     { "dict_delk.del_S", S(DICT_DEL_s), 0, "", "iS", NULL, (SUBR)dict_del_s, NULL, NULL },
     { "dict_del.S", S(DICT_DEL_s), 0, "", "iS", (SUBR)dict_del_s, NULL, NULL, NULL},
-    
+
     { "dict_print", S(DICT_PRINT), 0, "", "i",  (SUBR)dict_print_i, NULL, NULL, NULL},
     { "dict_print", S(DICT_PRINT), 0, "", "ik", (SUBR)dict_print_k_0, (SUBR)dict_print_k, NULL, NULL},
 
@@ -3689,6 +3741,7 @@ static OENTRY localops[] = {
     { "dict_iter", S(DICT_ITER), 0, "kSk", "iP", (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf, NULL, NULL},
     { "dict_iter", S(DICT_ITER), 0, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf, NULL, NULL},
 
+    { "dict_update.sf", S(DICT_UPDATE), 0, "", "ii", (SUBR)dict_update_sf, NULL, NULL, NULL},
     { "dict_query.S[]", S(DICT_QUERY_ARR), 0, "S[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
     { "dict_query.k",   S(DICT_QUERY1),    0, "k",   "iS", (SUBR)dict_query_0, (SUBR)dict_query, NULL, NULL},
     { "dict_query.k[]", S(DICT_QUERY_ARR), 0, "k[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},

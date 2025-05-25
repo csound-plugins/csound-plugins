@@ -2159,7 +2159,7 @@ typedef struct {
 
     // internal
     MYFLT instrnum;   // cached instrnum
-    
+
     size_t numargs;
 
 } SCHED_DEINIT;
@@ -2177,7 +2177,7 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     }
     csound->Event(csound, 'i', (const MYFLT *)(&pfields), p->numargs + 3);
     return OK;
-#else 
+#else
     EVTBLK evt;
     memset(&evt, 0, sizeof(EVTBLK));
     evt.opcod = 'i';
@@ -2212,7 +2212,7 @@ static int32_t add_string_arg(char *s, const char *arg, int32_t lens) {
 
   *s++ = '\"';
   *s = '\0';
-  return (s - s0) + lens; 
+  return (s - s0) + lens;
 }
 
 
@@ -2239,7 +2239,7 @@ static int32_t
 atstop_init(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
     p->instrnum = instrnum;
     p->numargs = _GetInputArgCnt(csound, p) - 3;
-    
+
 #ifdef CSOUNDAPI6
     register_deinit(csound, p, atstop_deinit);
 #endif
@@ -4015,8 +4015,9 @@ static inline int64_t array_bisect_multidim(MYFLT x, MYFLT *xs, int64_t len,
             xs[lastidx*step+offset] <= x && x < xs[(lastidx+1)*step+offset]) {
         return lastidx;
     }
-
-    int64_t numframes = (int64_t)ceil((len-offset)/step);
+    // ceil(x/y) = (x+y-1) // y;
+    int64_t numframes = (len-offset+step-1) / step;
+    // int64_t numframes = (int64_t)ceil((len-offset)/step);
     int64_t imin = 0;
     int64_t imax = numframes;
     int64_t imid;
@@ -4460,8 +4461,7 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
     FUNC    *ftp;
     EVTBLK  *ftevt;
 
-    ftevt =(EVTBLK*) csound->Malloc(csound, sizeof(EVTBLK));
-    ftevt->opcod = 'f';
+    ftevt =(EVTBLK*) csound->Malloc(csound, sizeof(EVTBLK)); ftevt->opcod = 'f';
     ftevt->strarg = NULL;
     int32_t tabsize = (int32_t)*p->size;
     ftevt->scnt = 0;
@@ -6015,7 +6015,7 @@ static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
     if(minfreq <= 0) {
         minfreq = 10.;
     }
-    
+
     float *fin = (float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     MYFLT geommean = 0.;
@@ -6137,7 +6137,7 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
     MYFLT peak = 0.;
     uint32_t numbins = 0;
     MYFLT total = 0.;
-        
+
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
         if(freq < minfreq)
@@ -6161,7 +6161,7 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
 
 
 /*
-   
+
    void FFTCrest_next(FFTCrest *unit, int inNumSamples)
 {
 	float freqlo = IN0(1);
@@ -6237,7 +6237,7 @@ typedef struct {
     MYFLT *maxfreq;
     MYFLT old;
     uint32_t lastframe;
-    int32 numbins;    
+    int32 numbins;
     MinHeap *heap;
 } PVSMAGSUMN;
 
@@ -6283,7 +6283,7 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
             continue;
         if(freq > maxfreq)
             break;
-        
+
         float amp = fin[i];
         if(amp > 0) {
             if(heap->size < heap->capacity) {
@@ -6291,7 +6291,7 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
             } else if(heaparr[0] < amp) {
                 mh_delete_minimum_and_insert(heap, amp);
             }
-        }        
+        }
     }
     MYFLT total = 0.;
     for(i = 0; i < heap->size; i++) {
@@ -6369,7 +6369,7 @@ static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
         mag = fin[i];
         prob = mag * mag * oneover_maxmagsqr;
         if(prob > 0.)
-            entropysum -= prob * fastlog2(prob);   // <-- ~10% faster        
+            entropysum -= prob * fastlog2(prob);   // <-- ~10% faster
     }
     p->old = entropysum;
     *p->out = entropysum;
@@ -6415,7 +6415,7 @@ static int32_t pvsmagsum_perf(CSOUND *csound, PVSMAGSUM *p) {
     if(minfreq <= 0) {
         minfreq = 10.;
     }
-    MYFLT total = 0.;    
+    MYFLT total = 0.;
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
         if(freq < minfreq)
@@ -6717,13 +6717,13 @@ static OENTRY localops[] = {
     {"atstop.s",  S(SCHED_DEINIT), 0, "", "Siim", (SUBR)atstop_s, NULL, (SUBR)atstop_deinit, NULL},
     {"atstop.i1", S(SCHED_DEINIT), 0, "", "ioj",  (SUBR)atstop_i, NULL, (SUBR)atstop_deinit, NULL},
     {"atstop.i",  S(SCHED_DEINIT), 0, "", "iiim", (SUBR)atstop_i, NULL, (SUBR)atstop_deinit, NULL},
-    
+
     {"atstop.N", S(SCHED_DEINIT), 0, "", "iiiN", (SUBR)atstop_i, NULL, (SUBR)atstop_deinit_N, NULL},
     {"atstop.SN", S(SCHED_DEINIT), 0, "", "SiiN", (SUBR)atstop_s, NULL, (SUBR)atstop_deinit_N, NULL},
-    
+
     {"atstop.k",  S(SCHED_DEINIT), 0, "", "iiiM", (SUBR)atstop_i, NULL, (SUBR)atstop_deinit, NULL},
     {"atstop.Sk",  S(SCHED_DEINIT), 0, "", "SiiM", (SUBR)atstop_s, NULL, (SUBR)atstop_deinit, NULL},
-    
+
 
     {"accum.k", S(ACCUM), 0, "k", "koO", (SUBR)accum_init, (SUBR)accum_perf, NULL, NULL},
     {"accum.a", S(ACCUM), 0, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio, NULL, NULL},
@@ -6858,10 +6858,10 @@ static OENTRY localops[] = {
 
 
     {"picksource.k", S(PICKSOURCE), 0, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
-    
+
     {"strmul.k", S(STRMUL), 0, "S", "Sko", (SUBR)strmul_init, (SUBR)strmul_perf, NULL, NULL},
     {"strmul.i", S(STRMUL), 0, "S", "Sio", (SUBR)strmul_i, NULL, NULL},
-    
+
 };
 #endif
 
