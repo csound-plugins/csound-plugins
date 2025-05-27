@@ -117,12 +117,13 @@ Miscellaneous plugins
 * [nametoinstrnum](opcodes/nametoinstrnum.md): Returns the number of a named instrument 
 * [panstereo](opcodes/panstereo.md): Stereo signal balancer 
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
+* [picksource](opcodes/picksource.md): Select one of multiple signals basen 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [presetinterp](opcodes/presetinterp.md): Interpolates between presets placed in a 2D plane 
 * [pvscrest](opcodes/pvscrest.md): Compute the spectral crest value of a spectral signal. 
 * [pvsflatness](opcodes/pvsflatness.md): Compute the flatness of a spectral signal. 
 * [pvsmagsum](opcodes/pvsmagsum.md): Sum all magnitudes of the bins in a pv signal 
-* [pvsmagsumn](opcodes/pvsmagsumn.md): Sum all magnitudes of the bins in a pv signal 
+* [pvsmagsumn](opcodes/pvsmagsumn.md): Sum the magnitudes of the n loudest bins 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
 * [pwriten](opcodes/pwriten.md): Modify pfield values of an active instrument instance created via nstance 
 * [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 

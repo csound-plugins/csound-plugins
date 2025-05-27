@@ -2,7 +2,7 @@
 
 ## Abstract
 
-Sum all magnitudes of the bins in a pv signal
+Sum the magnitudes of the n loudest bins
 
 ## Description
 
@@ -24,7 +24,8 @@ of the selected bins is not actually needed.
 
 
 ```csound
-ktotalmag pvsmagsum fsig, inumbins, kminfreq=0, kmaxfreq=sr/2
+ktotalmag pvsmagsumn fsig, inumbins, kminfreq=0, kmaxfreq=sr/2
+
 ```
 
 ## Arguments
