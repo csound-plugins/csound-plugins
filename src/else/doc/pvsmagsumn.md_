@@ -2,7 +2,7 @@
 
 ## Abstract
 
-Sum all magnitudes of the bins in a pv signal
+Sum the magnitudes of the n loudest bins
 
 ## Description
 

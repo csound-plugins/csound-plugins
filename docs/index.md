@@ -41,6 +41,7 @@ A hashtable for csound
 * [dict_get](opcodes/dict_get.md): Get a value from a hashtable 
 * [dict_geti](opcodes/dict_geti.md): Get a string value from a hashtable at init time 
 * [dict_loadstr](opcodes/dict_loadstr.md): Creates and fills a new dict from a string definition 
+* [dict_update](opcodes/dict_update.md): Update a dict with another dict 
 * [dict_set](opcodes/dict_set.md): Set a value from a hashtable 
 * [dict_size](opcodes/dict_size.md): Returns the number of key:value pairs in a dict 
 * [dict_query](opcodes/dict_query.md): Query different properties of a dict 
@@ -48,6 +49,7 @@ A hashtable for csound
 * [dict_print](opcodes/dict_print.md): Prints the contents of a dict 
 * [dict_iter](opcodes/dict_iter.md): Iterate over the key-value pairs of a dict 
 * [dict_del](opcodes/dict_del.md): Remove a key:value pair from a hashtable 
+* [dict_delk](opcodes/dict_delk.md): Remove a key:value pair from a hashtable at perf time 
 * [sref](opcodes/sref.md): Insert a string into a global registry and return a reference to it 
 * [sderef](opcodes/sderef.md): Retrieves a read-only string from the cache 
 * [pool_new](opcodes/pool_new.md): Create an empty  pool 

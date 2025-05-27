@@ -1,13 +1,15 @@
-# Dependencies
+# Documentation
+
+## Dependencies
 
 * python3
 * mkdocs
 
-We assume that python3 is present in any modern system
+We assume that python is present (python >= 3.9)
 
-    pip3 install mkdocs --user
+    pip install mkdocs --user
 
-# Usage
+## Usage
 
 To generate all documentation, at the root of the project, do:
 

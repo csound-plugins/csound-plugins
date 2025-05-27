@@ -147,6 +147,7 @@ instr foo
   ifreq = p4
   a0 oscili 0.1, ifreq
   outs a0, a0
+  atstop 10, 0, 1
 endin
 
 ; test simple case with optional pargs
@@ -179,6 +180,17 @@ instr kargs
   atstop "_printCounter", 0, -1, kcounter
 endin
 
+instr strarg
+  atstop "printmsg", 0, 0, "mymessage"
+  turnoff
+endin
+
+instr printmsg
+  Smsg = p4
+  prints "message from printmsg: '%s'\n", Smsg
+  turnoff
+endin
+
 instr StopPerformance
   exitnow
 endin
@@ -190,11 +202,12 @@ endin
 
 ; i 2 0 0.25 48
 
-; i 10 0 1
+i 10 0 1
 ; i "StopPerformance" 10 1
 ; i "first" 1 0.5
-i "kargs" 0 1
-f 0 5
+; i "kargs" 0 1
+; i "strarg" 0 1
+f 0 10
 </CsScore>
 </CsoundSynthesizer>
 
