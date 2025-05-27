@@ -4420,7 +4420,6 @@ typedef struct {
 // creates a table with given number (0=let csound make the number) and fill
 // it with the pargs following. This is the same as ftgen 0, 0, 0, -2, ...
 static int32_t filltab(CSOUND *csound, FILLTAB *p) {
-    MYFLT   *fp;
     FUNC    *ftp;
     EVTBLK  *ftevt;
 
@@ -4429,20 +4428,29 @@ static int32_t filltab(CSOUND *csound, FILLTAB *p) {
     ftevt->strarg = NULL;
     int32_t n = _GetInputArgCnt(csound, p); // csound->GetInputArgCnt(p);
     int32_t tabsize = n;
+#ifdef CSOUNDAPI6
+    MYFLT *fp = &ftevt->p[0];
+    fp[0] = 0.;
+    fp[1] = 0.;
+    fp[2] = 0.;
+    fp[3] = -(MYFLT)tabsize;
+    fp[4] = 2.;
+    fp[5] = 0.;
+#else
     MYFLT pfields[] = {0., 0., 0., -(MYFLT)tabsize, 2., 0.};
     ftevt->p = &pfields[0];
-    fp = &ftevt->p[0];
+#endif
     ftevt->p2orig = 0.;
     ftevt->p3orig = -tabsize;
-    ftevt->pcnt = (int16) 6;
+    ftevt->pcnt = 6;
     n = _createTable(csound, &ftp, ftevt, 1);
-    ftevt->p = NULL;
+    // ftevt->p = NULL;
     csound->Free(csound, ftevt);
     if (UNLIKELY(n != 0) || ftp == NULL)
         return INITERR("ftgen error");
     MYFLT **pargs = p->pargs;
     MYFLT *ftable = ftp->ftable;
-    for(size_t i=0; i<tabsize; i++) {
+    for(size_t i=0; i < (size_t)tabsize; i++) {
         ftable[i] = *pargs[i];
     }
     *p->out = (MYFLT) ftp->fno;                      /* record the fno */
@@ -4457,7 +4465,6 @@ typedef struct {
 } FTNEW;
 
 static int32_t ftnew(CSOUND *csound, FTNEW *p) {
-    MYFLT   *fp;
     FUNC    *ftp;
     EVTBLK  *ftevt;
 
@@ -4467,19 +4474,30 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
     ftevt->scnt = 0;
     ftevt->p2orig = 0.;
     ftevt->p3orig = -tabsize;
-    MYFLT pfields[] = {0., 0., 0., -(MYFLT)tabsize, 2., 0.};
-    ftevt->p = &pfields[0];
     ftevt->pcnt = (int16) 6;
     // int n = csound->hfgens(csound, &ftp, ftevt, 1);         /* call the fgen */
+#ifdef CSOUNDAPI6
+    MYFLT *fp = &ftevt->p[0];;
+    fp[0] = 0.;
+    fp[1] = 0.;
+    fp[2] = 0.;
+    fp[3] = -(MYFLT)tabsize;
+    fp[4] = 2.;
+    fp[5] = 0.;
+#else
+    MYFLT pfields[] = {0., 0., 0., -(MYFLT)tabsize, 2., 0.};
+    ftevt->p = &pfields[0];
+#endif
     int n = _createTable(csound, &ftp, ftevt, 1);
-    ftevt->p = NULL;
+
+    // ftevt->p = NULL;
     csound->Free(csound, ftevt);
     if (UNLIKELY(n != 0) || ftp == NULL)
         return INITERR("ftgen error");
     if(*p->defaultvalue != 0) {
         MYFLT v = *p->defaultvalue;
         MYFLT *ftable = ftp->ftable;
-        for(size_t i=0; i<tabsize; i++) {
+        for(size_t i=0; i < (size_t)tabsize; i++) {
             ftable[i] = v;
         }
     }

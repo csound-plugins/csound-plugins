@@ -112,3 +112,9 @@ cmake ..
 cmake --build . --parallel
 cmake --install .
 ```
+
+----------------
+
+# Build documentation
+
+TODO
