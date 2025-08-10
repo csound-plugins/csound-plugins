@@ -2633,7 +2633,6 @@ static inline void _ref_handle_init(REF_HANDLE *h, REF_GLOBALS *g, int slot) {
     h->g = g;
 }
 
-
 static void _init_array_clone(CSOUND *csound, ARRAYDAT *outarr, REF_HANDLE *h, OPDS *ctx) {
     if(outarr->data != NULL) {
         printf("$$$ freeing original data (size=%d, allocated=%ld) \n",
@@ -2885,6 +2884,58 @@ deref_array_deinit(CSOUND *csound, DEREF_ARRAY *p) {
     p->arr->sizes = NULL;
     p->arr->allocated = 0;
     ref_handle_decref(csound, &(p->g->handles[p->slot]));
+    return OK;
+}
+
+static int32_t
+deref_array_k_init(CSOUND *csound, DEREF_ARRAY *p) {
+    REF_GLOBALS *g = ref_globals(csound);
+    p->g = g;
+    p->slot = -1;
+    ARRAYDAT *outarr = p->arr;
+    if(outarr->data != NULL) {
+        printf("$$$ freeing original data (size=%d, allocated=%ld) \n",
+               outarr->sizes[0], outarr->allocated);
+        csound->Free(csound, outarr->data);
+    } else {
+        // CS_VARIABLE* var = outarr->arrayType->createVariable(csound, NULL);
+        CS_VARIABLE* var = arrayCreateVariableSameType(csound, outarr, &(p->h));
+        outarr->arrayMemberSize = var->memBlockSize;
+    }
+    if(outarr->sizes != NULL) {
+        csound->Free(csound, outarr->sizes);
+    }
+    return OK;
+}
+
+static int32_t
+deref_array_perf(CSOUND *csound, DEREF_ARRAY *p) {
+    int slot = (int)*p->idx;
+    REF_GLOBALS *g = p->g;
+    if(ref_handle_valid(g, slot) == 0) {
+        return INITERRF("Ref handle (%d) is not valid", slot);
+    }
+    if(p->slot >= 0) {
+        REF_HANDLE *oldhandle = &(g->handles[p->slot]);
+        if(oldhandle->data != NULL) {
+            // handle is active
+            oldhandle->refcount--;
+        }
+    }
+    REF_HANDLE *handle = &(g->handles[slot]);
+    if(handle->data == NULL)
+        return PERFERRF("Handle %d not active", slot);
+    if(handle->allocated == 0)
+        return PERFERRF("Array (handle=%d) has no elements allocated", slot);
+
+    handle->refcount++;
+    p->slot = slot;
+
+    ARRAYDAT *outarr = p->arr;
+    outarr->allocated = handle->allocated;
+    outarr->sizes = handle->sizes;
+    outarr->dimensions = 1;
+    outarr->data = handle->data;
     return OK;
 }
 
@@ -6755,8 +6806,10 @@ static OENTRY localops[] = {
     {"memview.k", S(ARRAYVIEW), 0, "k[]", ".[]oo", (SUBR)arrayview_init, NULL, (SUBR)arrayview_deinit, NULL},
 
     {"ref.arr", S(REF_NEW_ARRAY), 0, "i", ".[]o", (SUBR)ref_new_array, NULL, (SUBR)ref_new_deinit, NULL},
+    {"deref.arr_kk", S(DEREF_ARRAY), 0, "k[]", "k", (SUBR)deref_array_k_init, (SUBR)deref_array_perf, (SUBR)deref_array_deinit, NULL},
     {"deref.arr_i", S(DEREF_ARRAY), 0, "i[]", "io", (SUBR)deref_array, NULL, (SUBR)deref_array_deinit, NULL},
-    {"deref.arr_k", S(DEREF_ARRAY), 0, "k[]", "io", (SUBR)deref_array, NULL, (SUBR)deref_array_deinit, NULL},
+    {"deref.arr_ki", S(DEREF_ARRAY), 0, "k[]", "io", (SUBR)deref_array, NULL, (SUBR)deref_array_deinit, NULL},
+
 
     {"refvalid.i", S(REF1), 0, "i", "i", (SUBR)ref_valid_i, NULL, NULL, NULL},
     {"refvalid.k", S(REF1), 0, "k", "k", (SUBR)ref1_init, (SUBR)ref_valid_perf, NULL, NULL},

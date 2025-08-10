@@ -42,6 +42,22 @@ instr 3
   turnoff
 endin
 
+instr 4
+  iA[] fillarray 0, 1, 2, 3, 4, 5
+  iB[] fillarray 10, 20, 30
+  irefs[] fillarray ref(iA), ref(iB)
+  kidx init 0
+  if metro(20) == 1 then
+    kidx = (kidx + 1) % 2
+  endif
+  karr[] deref irefs[kidx]
+  if changed(kidx) == 1 then
+    println "kidx: %d", kidx
+    printarray karr
+  endif
+
+endin
+
 
 </CsInstruments>
 
@@ -49,7 +65,7 @@ endin
 
 ; i1 0 0.1
 
-i2 0 0.1
+i4 0 0.5
 f0 100
 ; f0 3600
 
