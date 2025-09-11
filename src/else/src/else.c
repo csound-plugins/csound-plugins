@@ -2614,7 +2614,7 @@ static REF_GLOBALS *ref_globals(CSOUND *csound) {
     g = csound->QueryGlobalVariable(csound, REF_GLOBALS_VARNAME);
     g->csound = csound;
     // initial size for handles, will double when full
-    g->numhandles = 64;
+    g->numhandles = 512;
     g->handles = csound->Calloc(csound, sizeof(REF_HANDLE) * g->numhandles);
     intpool_init(csound, &(g->slots), g->numhandles);
     csound->RegisterResetCallback(csound, (void *)g, (int32_t(*)(CSOUND*, void*))ref_reset);
@@ -2905,6 +2905,9 @@ deref_array_k_init(CSOUND *csound, DEREF_ARRAY *p) {
     if(outarr->sizes != NULL) {
         csound->Free(csound, outarr->sizes);
     }
+#ifdef CSOUNDAPI6
+    register_deinit(csound, p, deref_array_deinit);
+#endif
     return OK;
 }
 
@@ -6616,6 +6619,8 @@ static OENTRY localops[] = {
 
     // {"derefview.arr_i", S(DEREF_ARRAY), 0, 1, "i[]", "io", (SUBR)deref_array},
     // {"derefview.arr_k", S(DEREF_ARRAY), 0, 1, "k[]", "io", (SUBR)deref_array},
+    {"deref.arr_kk", S(DEREF_ARRAY), 0, 3, "k[]", "k", (SUBR)deref_array_k_init, (SUBR)deref_array_perf, NULL, NULL},
+    
     {"deref.arr_i", S(DEREF_ARRAY), 0, 1, "i[]", "io", (SUBR)deref_array, NULL, NULL, NULL},
     {"deref.arr_k", S(DEREF_ARRAY), 0, 1, "k[]", "io", (SUBR)deref_array, NULL, NULL, NULL},
 
