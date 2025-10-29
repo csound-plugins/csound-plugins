@@ -3292,7 +3292,10 @@ static POOL_HANDLE *pool_make(CSOUND *csound, int allocated, int cangrow) {
     sprintf(name, "_pool:%d", *instancecount);
     csound->CreateGlobalVariable(csound, name, sizeof(POOL_HANDLE));
     POOL_HANDLE *handle = csound->QueryGlobalVariable(csound, name);
-    *instancecount++;
+    if(handle == NULL) {
+        MSGF("Could not create pool handle with name %s, instance number %d", name, *instancecount);
+        return NULL;
+    }
     handle->active = 1;
     handle->data = csound->Malloc(csound, sizeof(MYFLT) * allocated);
     if(handle->data == NULL) {
@@ -3303,14 +3306,17 @@ static POOL_HANDLE *pool_make(CSOUND *csound, int allocated, int cangrow) {
     handle->size = 0;
     handle->cangrow = cangrow;
     handle->handlenum = *instancecount;
+    *instancecount += 1;
     return handle;
 }
 
 static POOL_HANDLE *_pool_get_handle(CSOUND *csound, int instance) {
-    i32 *instancecount = pool_instance_counter(csound);
     char name[32];
-    sprintf(name, "_pool:%d", *instancecount);
+    sprintf(name, "_pool:%d", instance);
     POOL_HANDLE *handle = csound->QueryGlobalVariable(csound, name);
+    if(handle == NULL) {
+        MSGF("Could not find pool with name %s, instance number %d", name, instance);
+    }
     return handle;
 }
 
