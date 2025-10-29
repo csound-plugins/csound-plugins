@@ -1,6 +1,6 @@
 {
   "name": "poly",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "opcodes": [
     "poly",
     "polyseq",
