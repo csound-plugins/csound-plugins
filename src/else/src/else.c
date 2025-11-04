@@ -6310,6 +6310,7 @@ typedef struct {
     MYFLT old;
     uint32_t lastframe;
     int32 numbins;
+    int32 relative;
     MinHeap *heap;
 } PVSMAGSUMN;
 
@@ -6321,7 +6322,9 @@ static int32_t pvsmagsumn_init(CSOUND *csound, PVSMAGSUMN *p) {
       return csound->InitError(csound,
                                "%s", Str("pvscent: format must be amp-phase"
                                    " or amp-freq.\n"));
-    p->numbins = (int)*p->inumbins;
+    int numbins =(int)*p->inumbins;
+    p->relative = numbins < 0 ? 1 : 0;
+    p->numbins = abs((int)*p->inumbins);
     p->heap = mh_new(p->numbins);
     return OK;
 }
@@ -6332,6 +6335,7 @@ static int32_t pvsmagsumn_dealloc(CSOUND *csound, PVSMAGSUMN *p) {
 }
 
 static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
+    IGN(csound);
     if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
         *p->out = p->old;
         return OK;
@@ -6349,6 +6353,7 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
         minfreq = 10.;
     }
     MYFLT *heaparr = heap->arr;
+    MYFLT totalamp = 0.;
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
         if(freq < minfreq)
@@ -6358,6 +6363,7 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
 
         float amp = fin[i];
         if(amp > 0) {
+            totalamp += amp;
             if(heap->size < heap->capacity) {
                 mh_insert(heap, amp);
             } else if(heaparr[0] < amp) {
@@ -6368,6 +6374,9 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     MYFLT total = 0.;
     for(i = 0; i < heap->size; i++) {
         total += heap->arr[i];
+    }
+    if(p->relative && totalamp > 0) {
+        total /= totalamp;
     }
     p->old = total;
     *p->out = total;
@@ -6620,7 +6629,7 @@ static OENTRY localops[] = {
     // {"derefview.arr_i", S(DEREF_ARRAY), 0, 1, "i[]", "io", (SUBR)deref_array},
     // {"derefview.arr_k", S(DEREF_ARRAY), 0, 1, "k[]", "io", (SUBR)deref_array},
     {"deref.arr_kk", S(DEREF_ARRAY), 0, 3, "k[]", "k", (SUBR)deref_array_k_init, (SUBR)deref_array_perf, NULL, NULL},
-    
+
     {"deref.arr_i", S(DEREF_ARRAY), 0, 1, "i[]", "io", (SUBR)deref_array, NULL, NULL, NULL},
     {"deref.arr_k", S(DEREF_ARRAY), 0, 1, "k[]", "io", (SUBR)deref_array, NULL, NULL, NULL},
 

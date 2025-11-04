@@ -1,6 +1,6 @@
 {
   "name": "else",
-  "version": "2.2.7",
+  "version": "2.2.8",
   "opcodes": [
     "accum",
     "atstop",
@@ -34,6 +34,7 @@
     "pread",
     "presetinterp",
     "pvscrest",
+    "pvsentropy",
     "pvsflatness",
     "pvsmagsum",
     "pvsmagsumn",
