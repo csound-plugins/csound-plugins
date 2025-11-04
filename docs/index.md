@@ -121,6 +121,7 @@ Miscellaneous plugins
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [presetinterp](opcodes/presetinterp.md): Interpolates between presets placed in a 2D plane 
 * [pvscrest](opcodes/pvscrest.md): Compute the spectral crest value of a spectral signal. 
+* [pvsentropy](opcodes/pvsentropy.md): Compute the entropy of a spectral signal. 
 * [pvsflatness](opcodes/pvsflatness.md): Compute the flatness of a spectral signal. 
 * [pvsmagsum](opcodes/pvsmagsum.md): Sum all magnitudes of the bins in a pv signal 
 * [pvsmagsumn](opcodes/pvsmagsumn.md): Sum the magnitudes of the n loudest bins 

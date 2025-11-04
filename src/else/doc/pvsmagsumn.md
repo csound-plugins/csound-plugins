@@ -20,18 +20,23 @@ This opcode combines in one the use of pvstrace and pvsmagsum
 making it more efficient for the use cases where the spectrum
 of the selected bins is not actually needed.
 
+When used with a negative *inumbins*, it calculates the relative
+weight of the loudest *inumbins* bins (where a 1 would indicate
+that all the weight of the spectrum is concentrated on these bins)
+
 ## Syntax
 
 
 ```csound
-ktotalmag pvsmagsumn fsig, inumbins, kminfreq=0, kmaxfreq=sr/2
-
+ktotalmag pvsmagsum fsig, inumbins, kminfreq=0, kmaxfreq=sr/2
 ```
 
 ## Arguments
 
 * **fsig**: Input pv stream.
-* **inumbins**: Number of bins to select
+* **inumbins**: Number of bins to select. If this number is negative,
+  the output is divided by the total magnitude, making it a measure of
+  the relative weight of the loudest bins relative to the total.
 * **kminfreq**: min. freq to considere
 * **kmaxfreq**: max. freq to considere
 

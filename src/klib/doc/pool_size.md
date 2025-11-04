@@ -68,7 +68,7 @@ opcode print_pool, 0, i
   isize = pool_size(ipool)
   while i0 < isize do
     item = pool_at(ipool, i0)
-    print item
+    prints "item idx: %d, value: %d\n", i0, item
     i0 += 1
   od
 endop
@@ -83,14 +83,23 @@ instr 1
   turnoff
 endin
 
+
+instr 2
+  ipool1 pool_gen 10
+  ipool2 pool_gen 20
+  prints "pool1: %d, pool2: %d\n", pool_size:i(ipool1), pool_size:i(ipool2)
+  turnoff
+endin
+
 </CsInstruments>
 
 <CsScore>
 
 i1 0 1
-
+i2 0 1
 </CsScore>
 </CsoundSynthesizer>
+
 
 
 ```
