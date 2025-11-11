@@ -16,7 +16,7 @@ Go to [Documentation](https://csound-plugins.github.io/csound-plugins/)
 
 ### klib
 
-very efficient hashtables (dictionaries) and other data structures for csound
+very efficient hashtables (dict) and other data structures (pool)
 
 
 ### poly
@@ -41,10 +41,18 @@ generators (low freq. noise, chaos attractors, etc), envelope generators, etc.
 jsfx support in csound, allows any REAPER's jsfx plugin to be loaded and
 controlled inside csound
 
+### poodle
+
+plugins ported from faust or based on faust effects (zitarev, fofcyclevoc, ...)
+
 
 ## pathtools
 
 opcodes to handle paths and filenames in a cross-platform manner
+
+## sndmeta
+
+opcodes to read soundfile metadata
 
 
 ----------------

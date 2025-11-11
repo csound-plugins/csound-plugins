@@ -63,6 +63,7 @@ option(USE_DOUBLE "Use doubles for audio calculations" ON)
 option(CPP11 "c++11" ON)
 option(USE_FMATH "Use fmath to accelerate exp and log functions" ON)
 
+
 set(BUILDING_CSOUND_PLUGINS ON)
 
 if(APPLE)
@@ -141,7 +142,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 
   addflag(-msse HAS_SSE)
   addflag(-msse2 HAS_SSE2)
+  addflag(-mxCORE-AVX512 HAS_AVX512)
   addflag(-mfgpath=sse HAS_FPMATH_SSE)
+  addflag(-mxCORE-AVX512 HAS_AVX512)
   set(CMAKE_C_FLAGS_RELEASE "-O3")  
 endif()
 
