@@ -1,6 +1,6 @@
 {
   "name": "pathtools",
-  "version": "2.2.8",
+  "version": "2.2.9",
   "opcodes": [
     "findFileInPath",
     "getEnvVar",
