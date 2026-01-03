@@ -3607,7 +3607,6 @@ pool_at_i(CSOUND *csound, POOL_1 *p) {
     return pool_at_perf(csound, p);
 }
 
-
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
@@ -3708,87 +3707,87 @@ static OENTRY localops[] = {
     { "pool_at.k", S(POOL_1), 0, 3, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf, NULL, NULL},
 #else
     // Csound 7
-    { "dict_new.size", S(DICT_NEW), 0, "i", "Sj", (SUBR)dict_new, NULL, NULL, NULL },
-    { "dict_new.many", S(DICT_NEW), 0, "i", "S*", (SUBR)dict_new_many, NULL, NULL, NULL },
-    { "dict_new.many_k", S(DICT_NEW), 0, "k", "S*", NULL, (SUBR)dict_new_many, NULL, NULL },
+    { "dict_new.size", S(DICT_NEW), 0, "i", "Sj", (SUBR)dict_new, NULL, NULL, NULL, 0 },
+    { "dict_new.many", S(DICT_NEW), 0, "i", "S*", (SUBR)dict_new_many, NULL, NULL, NULL, 0 },
+    { "dict_new.many_k", S(DICT_NEW), 0, "k", "S*", NULL, (SUBR)dict_new_many, NULL, NULL, 0 },
 
-    { "dict_free", S(DICT_FREE),   0, "", "ip",   (SUBR)dict_free, NULL, (SUBR)dict_free_callback, NULL},
+    { "dict_free", S(DICT_FREE),   0, "", "ip",   (SUBR)dict_free, NULL, (SUBR)dict_free_callback, NULL, 0},
 
-    { "dict_clear.i", S(DICT_CLEAR), 0, "", "i", (SUBR)dict_clear_i, NULL, NULL, NULL},
-    { "dict_clear.k", S(DICT_CLEAR), 0, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf, NULL, NULL},
+    { "dict_clear.i", S(DICT_CLEAR), 0, "", "i", (SUBR)dict_clear_i, NULL, NULL, NULL, 0},
+    { "dict_clear.k", S(DICT_CLEAR), 0, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf, NULL, NULL, 0},
 
-    { "dict_get.sk_k",  S(DICT_GET_sf), 0, "k", "iSO", (SUBR)dict_get_sf_0, (SUBR)dict_get_sf, NULL, NULL },
-    { "dict_get.ss_k",  S(DICT_GET_ss), 0, "S", "iS", (SUBR)dict_get_ss_0, (SUBR)dict_get_ss, NULL, NULL },
-    { "dict_geti.ss_i", S(DICT_GET_ss), 0, "S", "iS", (SUBR)dict_get_ss_i, NULL, NULL, NULL},
-    { "dict_get.sf_i",  S(DICT_GET_sf), 0, "i", "iSo", (SUBR)dict_get_sf_i, NULL, NULL, NULL},
-    { "dict_get.if_k",  S(DICT_GET_if), 0, "k", "ikO", (SUBR)dict_get_if_0, (SUBR)dict_get_if, NULL, NULL },
-    { "dict_get.is_i",  S(DICT_GET_is), 0, "S", "ii", (SUBR)hashtab_get_is_i, NULL, NULL, NULL},
-    { "dict_get.is_k",  S(DICT_GET_is), 0, "S", "ik", (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is, NULL, NULL },
-    { "dict_get.if_i",  S(DICT_GET_if), 0, "i", "iio", (SUBR)dict_get_if_i, NULL, NULL, NULL},
+    { "dict_get.sk_k",  S(DICT_GET_sf), 0, "k", "iSO", (SUBR)dict_get_sf_0, (SUBR)dict_get_sf, NULL, NULL, 0},
+    { "dict_get.ss_k",  S(DICT_GET_ss), 0, "S", "iS", (SUBR)dict_get_ss_0, (SUBR)dict_get_ss, NULL, NULL, 0},
+    { "dict_geti.ss_i", S(DICT_GET_ss), 0, "S", "iS", (SUBR)dict_get_ss_i, NULL, NULL, NULL, 0},
+    { "dict_get.sf_i",  S(DICT_GET_sf), 0, "i", "iSo", (SUBR)dict_get_sf_i, NULL, NULL, NULL, 0},
+    { "dict_get.if_k",  S(DICT_GET_if), 0, "k", "ikO", (SUBR)dict_get_if_0, (SUBR)dict_get_if, NULL, NULL, 0},
+    { "dict_get.is_i",  S(DICT_GET_is), 0, "S", "ii", (SUBR)hashtab_get_is_i, NULL, NULL, NULL, 0},
+    { "dict_get.is_k",  S(DICT_GET_is), 0, "S", "ik", (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is, NULL, NULL, 0},
+    { "dict_get.if_i",  S(DICT_GET_if), 0, "i", "iio", (SUBR)dict_get_if_i, NULL, NULL, NULL, 0},
 
-    { "dict_set.ss_k", S(DICT_SET_ss), 0, "",  "iSS", (SUBR)dict_set_ss_0, (SUBR)dict_set_ss, NULL, NULL },
-    { "dict_set.sf_i", S(DICT_SET_sf), 0, "",  "iSi", (SUBR)dict_set_sf_i, NULL, NULL, NULL},
-    { "dict_set.sf_k", S(DICT_SET_sf), 0, "",  "iSk", (SUBR)dict_set_sf_0, (SUBR)dict_set_sf, NULL, NULL },
-    { "dict_set.if_i", S(DICT_SET_if), 0, "",  "iii", (SUBR)dict_set_if_i, NULL, NULL, NULL},
-    { "dict_set.if_k", S(DICT_SET_if), 0, "",  "ikk", (SUBR)dict_set_if_0, (SUBR)dict_set_if, NULL, NULL },
-    { "dict_set.is_i", S(DICT_SET_is), 0, "",  "iiS", (SUBR)dict_set_is_i, NULL, NULL, NULL},
-    { "dict_set.is_k", S(DICT_SET_is), 0, "",  "ikS", (SUBR)dict_set_is_0, (SUBR)dict_set_is, NULL, NULL },
+    { "dict_set.ss_k", S(DICT_SET_ss), 0, "",  "iSS", (SUBR)dict_set_ss_0, (SUBR)dict_set_ss, NULL, NULL, 0},
+    { "dict_set.sf_i", S(DICT_SET_sf), 0, "",  "iSi", (SUBR)dict_set_sf_i, NULL, NULL, NULL, 0},
+    { "dict_set.sf_k", S(DICT_SET_sf), 0, "",  "iSk", (SUBR)dict_set_sf_0, (SUBR)dict_set_sf, NULL, NULL, 0},
+    { "dict_set.if_i", S(DICT_SET_if), 0, "",  "iii", (SUBR)dict_set_if_i, NULL, NULL, NULL, 0},
+    { "dict_set.if_k", S(DICT_SET_if), 0, "",  "ikk", (SUBR)dict_set_if_0, (SUBR)dict_set_if, NULL, NULL, 0},
+    { "dict_set.is_i", S(DICT_SET_is), 0, "",  "iiS", (SUBR)dict_set_is_i, NULL, NULL, NULL, 0},
+    { "dict_set.is_k", S(DICT_SET_is), 0, "",  "ikS", (SUBR)dict_set_is_0, (SUBR)dict_set_is, NULL, NULL, 0},
 
-    { "dict_del.del_i", S(DICT_DEL_i), 0, "", "ii", (SUBR)dict_del_i, NULL, NULL, NULL },
-    { "dict_del.del_k", S(DICT_DEL_i), 0, "", "ik", NULL, (SUBR)dict_del_i, NULL, NULL },
-    { "dict_delk.del_S", S(DICT_DEL_s), 0, "", "iS", NULL, (SUBR)dict_del_s, NULL, NULL },
-    { "dict_del.S", S(DICT_DEL_s), 0, "", "iS", (SUBR)dict_del_s, NULL, NULL, NULL},
+    { "dict_del.del_i", S(DICT_DEL_i), 0, "", "ii", (SUBR)dict_del_i, NULL, NULL, NULL, 0},
+    { "dict_del.del_k", S(DICT_DEL_i), 0, "", "ik", NULL, (SUBR)dict_del_i, NULL, NULL, 0},
+    { "dict_delk.del_S", S(DICT_DEL_s), 0, "", "iS", NULL, (SUBR)dict_del_s, NULL, NULL, 0},
+    { "dict_del.S", S(DICT_DEL_s), 0, "", "iS", (SUBR)dict_del_s, NULL, NULL, NULL, 0},
 
-    { "dict_print", S(DICT_PRINT), 0, "", "i",  (SUBR)dict_print_i, NULL, NULL, NULL},
-    { "dict_print", S(DICT_PRINT), 0, "", "ik", (SUBR)dict_print_k_0, (SUBR)dict_print_k, NULL, NULL},
+    { "dict_print", S(DICT_PRINT), 0, "", "i",  (SUBR)dict_print_i, NULL, NULL, NULL, 0},
+    { "dict_print", S(DICT_PRINT), 0, "", "ik", (SUBR)dict_print_k_0, (SUBR)dict_print_k, NULL, NULL, 0},
 
-    { "dict_iter", S(DICT_ITER), 0, "SSk", "iP", (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf, NULL, NULL},
-    { "dict_iter", S(DICT_ITER), 0, "Skk", "iP", (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf, NULL, NULL},
-    { "dict_iter", S(DICT_ITER), 0, "kSk", "iP", (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf, NULL, NULL},
-    { "dict_iter", S(DICT_ITER), 0, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf, NULL, NULL},
+    { "dict_iter", S(DICT_ITER), 0, "SSk", "iP", (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf, NULL, NULL, 0},
+    { "dict_iter", S(DICT_ITER), 0, "Skk", "iP", (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf, NULL, NULL, 0},
+    { "dict_iter", S(DICT_ITER), 0, "kSk", "iP", (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf, NULL, NULL, 0},
+    { "dict_iter", S(DICT_ITER), 0, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf, NULL, NULL, 0},
 
-    { "dict_update.sf", S(DICT_UPDATE), 0, "", "ii", (SUBR)dict_update_sf, NULL, NULL, NULL},
-    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, "S[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
-    { "dict_query.k",   S(DICT_QUERY1),    0, "k",   "iS", (SUBR)dict_query_0, (SUBR)dict_query, NULL, NULL},
-    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, "k[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
+    { "dict_update.sf", S(DICT_UPDATE), 0, "", "ii", (SUBR)dict_update_sf, NULL, NULL, NULL, 0},
+    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, "S[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL, 0},
+    { "dict_query.k",   S(DICT_QUERY1),    0, "k",   "iS", (SUBR)dict_query_0, (SUBR)dict_query, NULL, NULL, 0},
+    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, "k[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL, 0},
 
-    { "dict_size.k", S(DICT_QUERY1), 0, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size, NULL, NULL},
-    { "dict_size.i", S(DICT_QUERY1), 0, "i", "i", (SUBR)dict_size_0, NULL, NULL, NULL},
+    { "dict_size.k", S(DICT_QUERY1), 0, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size, NULL, NULL, 0},
+    { "dict_size.i", S(DICT_QUERY1), 0, "i", "i", (SUBR)dict_size_0, NULL, NULL, NULL, 0},
 
-    { "dict_exists.i", S(DICT_QUERY1), 0, "i", "i", (SUBR)dict_exists, NULL, NULL, NULL },
+    { "dict_exists.i", S(DICT_QUERY1), 0, "i", "i", (SUBR)dict_exists, NULL, NULL, NULL, 0},
 
-    { "dict_loadstr", S(DICT_LOADSTR), 0, "i", "S", (SUBR)dict_loadstr, NULL, NULL, NULL},
-    { "dict_dump", S(DICT_DUMP), 0, "S", "i", (SUBR)dict_dump, NULL, NULL, NULL},
+    { "dict_loadstr", S(DICT_LOADSTR), 0, "i", "S", (SUBR)dict_loadstr, NULL, NULL, NULL, 0},
+    { "dict_dump", S(DICT_DUMP), 0, "S", "i", (SUBR)dict_dump, NULL, NULL, NULL, 0},
 
-    { "sref.i_set", S(CACHEPUT), 0, "i", "S", (SUBR)cacheput_i, NULL, NULL, NULL },
-    { "sref.k_set", S(CACHEPUT), 0, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf, NULL, NULL },
+    { "sref.i_set", S(CACHEPUT), 0, "i", "S", (SUBR)cacheput_i, NULL, NULL, NULL, 0},
+    { "sref.k_set", S(CACHEPUT), 0, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf, NULL, NULL, 0},
 
-    { "sderef.i", S(CACHEGET), 0, "S", "i", (SUBR)sview_i, NULL, (SUBR)sview_deinit, NULL},
-    { "sderef.k", S(CACHEGET), 0, "S", "k", (SUBR)sview_init, (SUBR)sview_k, (SUBR)sview_deinit, NULL},
+    { "sderef.i", S(CACHEGET), 0, "S", "i", (SUBR)sview_i, NULL, (SUBR)sview_deinit, NULL, 0},
+    { "sderef.k", S(CACHEGET), 0, "S", "k", (SUBR)sview_init, (SUBR)sview_k, (SUBR)sview_deinit, NULL, 0},
 
     // { "strpeek.i", S(STRPEEK), 0, "S", "i", (SUBR)strpeek_i, NULL, NULL, NULL },
 
-    { "pool_gen", S(POOL_NEW), 0, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
-    { "pool_new", S(POOL_NEW), 0, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL},
-    { "pool_free", S(POOL_0), 0, "", "io", (SUBR)pool_free_init, NULL, (SUBR)pool_free_deinit },
+    { "pool_gen", S(POOL_NEW), 0, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL, 0},
+    { "pool_new", S(POOL_NEW), 0, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL, 0},
+    { "pool_free", S(POOL_0), 0, "", "io", (SUBR)pool_free_init, NULL, (SUBR)pool_free_deinit, NULL, 0},
 
-    { "pool_pop.i", S(POOL_1), 0, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
-    { "pool_pop.k", S(POOL_1), 0, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
+    { "pool_pop.i", S(POOL_1), 0, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL, 0},
+    { "pool_pop.k", S(POOL_1), 0, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL, 0},
 
-    { "pool_push.i", S(POOL_PUSH), 0, "", "iio", (SUBR)pool_push_i, NULL, (SUBR)pool_push_deinit, NULL},
-    { "pool_push.k", S(POOL_PUSH), 0, "", "ik", (SUBR)pool_push_init, (SUBR)pool_push_perf, NULL, NULL},
+    { "pool_push.i", S(POOL_PUSH), 0, "", "iio", (SUBR)pool_push_i, NULL, (SUBR)pool_push_deinit, NULL, 0},
+    { "pool_push.k", S(POOL_PUSH), 0, "", "ik", (SUBR)pool_push_init, (SUBR)pool_push_perf, NULL, NULL, 0},
 
-    { "pool_capacity.i", S(POOL_1), 0, "i", "i", (SUBR)pool_capacity_i, NULL, NULL, NULL},
-    { "pool_capacity.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_capacity_perf, NULL, NULL},
+    { "pool_capacity.i", S(POOL_1), 0, "i", "i", (SUBR)pool_capacity_i, NULL, NULL, NULL, 0},
+    { "pool_capacity.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_capacity_perf, NULL, NULL, 0},
 
-    { "pool_size.i", S(POOL_1), 0, "i", "i", (SUBR)pool_size_i, NULL, NULL, NULL},
-    { "pool_size.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf, NULL, NULL},
+    { "pool_size.i", S(POOL_1), 0, "i", "i", (SUBR)pool_size_i, NULL, NULL, NULL, 0},
+    { "pool_size.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf, NULL, NULL, 0},
 
-    { "pool_isfull.i", S(POOL_1), 0, "i", "i", (SUBR)pool_isfull_i, NULL, NULL, NULL},
-    { "pool_isfull.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_isfull_perf, NULL, NULL},
+    { "pool_isfull.i", S(POOL_1), 0, "i", "i", (SUBR)pool_isfull_i, NULL, NULL, NULL, 0},
+    { "pool_isfull.k", S(POOL_1), 0, "k", "i", (SUBR)pool_1_init, (SUBR)pool_isfull_perf, NULL, NULL, 0},
 
-    { "pool_at.i", S(POOL_1), 0, "i", "ii", (SUBR)pool_at_i, NULL, NULL, NULL},
-    { "pool_at.k", S(POOL_1), 0, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf, NULL, NULL},
+    { "pool_at.i", S(POOL_1), 0, "i", "ii", (SUBR)pool_at_i, NULL, NULL, NULL, 0},
+    { "pool_at.k", S(POOL_1), 0, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf, NULL, NULL, 0},
 #endif
 };
 

@@ -161,6 +161,11 @@ jobs:
           cd src/beosc/examples
           csound.exe -o beadsynt.flac beadsynt.csd
           cp *.flac ../../../artifacts
+          cd ../../klib/examples
+          csound.exe --nosound dict_get.csd
+          cd ../../else/examples
+          csound.exe -o perlin3.flac perlin3-test.csd
+          cp *.flac ../../..artifacts
 
   windows-csound6:
     name: Test windows against csound package (csound6)
