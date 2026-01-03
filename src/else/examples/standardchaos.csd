@@ -20,8 +20,8 @@ nchnls = 2
 
 */
 
-chn_k "rate", "r"
-chn_k "kval", "r"
+chnk "rate", "r"
+chnk "kval", "r"
 
 instr 1
 	ix = 0.1
@@ -44,6 +44,8 @@ i1 0 100
 </CsoundSynthesizer>
 
 
+
+
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>
@@ -58,7 +60,7 @@ i1 0 100
   <g>255</g>
   <b>255</b>
  </bgcolor>
- <bsbObject version="2" type="BSBKnob">
+ <bsbObject type="BSBKnob" version="2">
   <objectName>rate</objectName>
   <x>20</x>
   <y>25</y>
@@ -71,7 +73,7 @@ i1 0 100
   <description/>
   <minimum>0.00000000</minimum>
   <maximum>20000.00000000</maximum>
-  <value>9656.00000000</value>
+  <value>3822.00000000</value>
   <mode>lin</mode>
   <mouseControl act="">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -88,7 +90,7 @@ i1 0 100
   <flatstyle>true</flatstyle>
   <integerMode>true</integerMode>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>45</x>
   <y>145</y>
@@ -119,7 +121,7 @@ i1 0 100
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBKnob">
+ <bsbObject type="BSBKnob" version="2">
   <objectName>kval</objectName>
   <x>154</x>
   <y>25</y>
@@ -132,7 +134,7 @@ i1 0 100
   <description/>
   <minimum>0.00000000</minimum>
   <maximum>20.00000000</maximum>
-  <value>5.83000000</value>
+  <value>1.83000000</value>
   <mode>lin</mode>
   <mouseControl act="">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -149,7 +151,7 @@ i1 0 100
   <flatstyle>true</flatstyle>
   <integerMode>false</integerMode>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>179</x>
   <y>145</y>
@@ -180,7 +182,7 @@ i1 0 100
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBScope">
+ <bsbObject type="BSBScope" version="2">
   <objectName>1</objectName>
   <x>18</x>
   <y>239</y>

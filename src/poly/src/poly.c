@@ -594,13 +594,13 @@ OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
 
     CSOUND 7:
     typedef struct text {
-     uint16_t        linenum;       // Line num in orch file (currently buggy!)  
-    uint64_t        locn;           // and location 
+     uint16_t        linenum;       // Line num in orch file (currently buggy!)
+    uint64_t        locn;           // and location
     OENTRY          *oentry;
-    char            *opcod;         // Pointer to opcode name in global pool 
-    ARGLST          *inlist;        // Input args (pointer to item in name list) 
+    char            *opcod;         // Pointer to opcode name in global pool
+    ARGLST          *inlist;        // Input args (pointer to item in name list)
     ARGLST          *outlist;
-    ARG             *inArgs;        // Input args (index into list of values) 
+    ARG             *inArgs;        // Input args (index into list of values)
     uint32_t        inArgCount;
     ARG             *outArgs;
     uint32_t       outArgCount;
@@ -695,6 +695,7 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     if(opc == NULL)
         return INITERRF(Str("Opcode '%s' with signature '%s'/'%s' not found"),
                         p->opcode_name->data, opc_outsig, opc_insig);
+
     p->opc = opc;
     p->opc_numins = get_numargs(opc->intypes);
     p->opc_numouts = get_numargs(opc->outypes);
@@ -1112,7 +1113,7 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
     state->h.opadr = opc->kopadr;
 
 #endif
-    p->optext = optext;    
+    p->optext = optext;
     p->opc_state = state;
 
     // copy args
@@ -1137,10 +1138,10 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
             *(MYFLT*)inargs[i] = default_value;
         }
     }
-    
+
     if(opc->useropinfo != NULL)
         return INITERRF("UDOs are not supported (name=%s)", opc->opname);
-        
+
 #ifdef CSOUNDAPI6
     register_deinit(csound, p, defer_deinit);
 #endif
@@ -1239,7 +1240,7 @@ int32_t testopc_perf(CSOUND *csound, TESTOPC_a_a *p) {
         printf("%.6f, ", out[i]);
     }
     return OK;
-    
+
 }
 
 // --------------------------------------------------------------------------

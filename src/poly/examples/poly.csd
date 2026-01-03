@@ -40,7 +40,8 @@ instr 1
   kexp line 1, p3, 1.32
 
   ; the freq. of each oscillator
-  kFreqs[] = (kRatios ^ kexp) * kf0
+  kFreqs[] = (kRatios ^ kexp) 
+  kFreqs *= kf0
 
   ; array of random phases, to avoid synchronous start
   iPhs[] rndarr inum 
@@ -71,7 +72,8 @@ instr 2
   kp linsegb 1, p3*0.8, 1.68
 
   ; calculate actual freqs.
-  kFreqs[] = (kRatios ^ kp) * kf0
+  kFreqs[] = kRatios ^ kp
+  kFreqs *= kf0
 
   ; lfo freqs. used for AM and panning
   kf linsegb 0.1, p3*0.62, 0.8, p3*0.8, 0.8, p3*0.96, 12, p3, 60

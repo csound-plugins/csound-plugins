@@ -117,10 +117,10 @@ perf:
   ; the same but with goto
 loop:
   Skey, kvalue, kidx dict_iter idict
-  if kidx == -1 goto break
+  if kidx == -1 goto _exit
   printf "loop) %s -> %f \n", kidx+kt*1000, Skey, kvalue
   kgoto loop
-break:
+_exit:
 endin
 
 instr 4
@@ -136,8 +136,7 @@ instr 4
   Sfoo dict_get idict, "foo"
   printf "key: foo  value: %s \n", 1, Sfoo
 
-  ; dict_set without value deletes the key:value pair
-  dict_set idict, "foo"
+  dict_del idict, "foo"
 
   ; now check that the pair is gone
   Sfoo dict_get idict, "foo"

@@ -40,7 +40,16 @@ endin
 instr 30
 	; test masked zeroying
 	kfreqs[] fillarray 200, 300, 400, 500, 600, 700, 800, 900
-	asigs[] poly 8, "oscili", 0.1, kfreqs
+	asigs[] init 8
+	asigs[0] = oscili:a(0.1, 200)
+	asigs[1] = oscili:a(0.1, 300)
+	asigs[2] = oscili:a(0.1, 400)
+	asigs[3] = oscili:a(0.1, 500)
+	asigs[4] = oscili:a(0.1, 600)
+	asigs[5] = oscili:a(0.1, 700)
+	asigs[6] = oscili:a(0.1, 800)
+	asigs[7] = oscili:a(0.1, 900)
+		
 	; imask[] fillarray 0, 0, 1, 0, 1, 0, 0, 0
 	imask ftfill 0, 0, 1, 0, 1, 0, 0, 0
 	zeroarray asigs, imask

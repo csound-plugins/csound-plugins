@@ -47,6 +47,8 @@ i1 0 100
 </CsoundSynthesizer>
 
 
+
+
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>
@@ -61,7 +63,7 @@ i1 0 100
   <g>22</g>
   <b>22</b>
  </bgcolor>
- <bsbObject version="2" type="BSBController">
+ <bsbObject type="BSBController" version="2">
   <objectName>high</objectName>
   <x>122</x>
   <y>39</y>
@@ -90,7 +92,7 @@ i1 0 100
    <g>234</g>
    <b>0</b>
   </color>
-  <randomizable mode="both" group="0">false</randomizable>
+  <randomizable group="0" mode="both">false</randomizable>
   <bgcolor>
    <r>0</r>
    <g>61</g>
@@ -98,7 +100,7 @@ i1 0 100
   </bgcolor>
   <bgcolormode>true</bgcolormode>
  </bsbObject>
- <bsbObject version="2" type="BSBController">
+ <bsbObject type="BSBController" version="2">
   <objectName>low</objectName>
   <x>122</x>
   <y>100</y>
@@ -127,7 +129,7 @@ i1 0 100
    <g>85</g>
    <b>0</b>
   </color>
-  <randomizable mode="both" group="0">false</randomizable>
+  <randomizable group="0" mode="both">false</randomizable>
   <bgcolor>
    <r>65</r>
    <g>22</g>
@@ -135,7 +137,7 @@ i1 0 100
   </bgcolor>
   <bgcolormode>true</bgcolormode>
  </bsbObject>
- <bsbObject version="2" type="BSBController">
+ <bsbObject type="BSBController" version="2">
   <objectName>signal</objectName>
   <x>122</x>
   <y>162</y>
@@ -164,7 +166,7 @@ i1 0 100
    <g>170</g>
    <b>255</b>
   </color>
-  <randomizable mode="both" group="0">false</randomizable>
+  <randomizable group="0" mode="both">false</randomizable>
   <bgcolor>
    <r>0</r>
    <g>43</g>
@@ -172,7 +174,7 @@ i1 0 100
   </bgcolor>
   <bgcolormode>true</bgcolormode>
  </bsbObject>
- <bsbObject version="2" type="BSBController">
+ <bsbObject type="BSBController" version="2">
   <objectName>out</objectName>
   <x>122</x>
   <y>224</y>
@@ -201,7 +203,7 @@ i1 0 100
    <g>0</g>
    <b>127</b>
   </color>
-  <randomizable mode="both" group="0">false</randomizable>
+  <randomizable group="0" mode="both">false</randomizable>
   <bgcolor>
    <r>76</r>
    <g>0</g>
@@ -209,7 +211,7 @@ i1 0 100
   </bgcolor>
   <bgcolormode>true</bgcolormode>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>30</x>
   <y>44</y>
@@ -240,7 +242,7 @@ i1 0 100
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>30</x>
   <y>103</y>
@@ -271,7 +273,7 @@ i1 0 100
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>30</x>
   <y>166</y>
@@ -302,7 +304,7 @@ i1 0 100
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>28</x>
   <y>228</y>

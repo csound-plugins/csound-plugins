@@ -28,7 +28,8 @@ instr 1
   kexp line 1, p3, 1.32
 
   ; the freq. of each oscillator
-  kFreqs[] = (kRatios ^ kexp) * kf0
+  kFreqs[] = kRatios ^ kexp
+  kFreqs *= kf0
 
   ; generate the oscillators. 
   aOscils[] poly inum, "oscili", 1/inum, kFreqs
