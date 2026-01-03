@@ -1,6 +1,6 @@
 {
   "name": "jsfx",
-  "version": "2.2.9",
+  "version": "2.2.10",
   "opcodes": [
     "jsfx",
     "jsfx_new",
