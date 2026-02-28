@@ -1,0 +1,56 @@
+# pvsrolloff
+
+## Abstract
+
+Spectral rolloff point
+
+## Description
+
+Spectral rolloff represents the frequency below which a specific percentage (usually 85% or 95%) of an 
+audio signal's total spectral energy resides. It measures the "brightness" or skewness of a sound, 
+with higher values indicating more high-frequency content.
+
+## Syntax
+
+
+```csound
+krolloff pvsrolloff fsig, kfactor, kminfreq=0, kmaxfreq=sr/2, ksilenceamp=0.000001
+```
+
+## Arguments
+
+* **fsig**: Input pv stream.
+* **kfactor**: the rolloff factor, a value between 0-1. A rolloff of 85% would be indicated as 0.85
+* **kminfreq**: the min. frequency to calculate the rolloff over (defaults to 0)
+* **kmaxfreq**: the max. frequency to calculate the rolloff over (defaults to sr/2)
+* **silenceamp**: any frame of audio with a total energy of less than this is considered silence,
+  and will return a rolloff frequency of 0.
+
+## Output
+
+* **krolloff**: spectral rolloff frequency
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [pvsmagsumn](pvsmagsumn.md)
+* [pvsflatness](pvsflatness.md)
+* [pvscrest](pvscrest.md)
+* [pvsentropy](pvsentropy.md)
+
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2026
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c

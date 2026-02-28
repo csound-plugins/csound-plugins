@@ -4087,7 +4087,41 @@ static inline int64_t array_bisect_multidim(MYFLT x, MYFLT *xs, int64_t len,
     return imin - 1;
 }
 
+
 static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t lastidx) {
+    // Boundary checks
+    if(x <= xs[0]) return -1;
+    if(x >= xs[xslen-1]) return -2;
+
+    int64_t imin;
+
+    // Exploit locality: check if value is near last index
+    if(lastidx >= 0 && lastidx < xslen-1 && xs[lastidx] <= x) {
+        if(x < xs[lastidx+1]) return lastidx;
+        if(lastidx < xslen-2 && x < xs[lastidx+2]) return lastidx + 1;
+        imin = lastidx + 2;  // Start search from lastidx+2 instead of lastidx
+    }
+    else {
+        imin = 0;
+    }
+
+    int64_t imax = xslen - 1;  // Adjusted bounds
+
+    // Binary search with branchless midpoint calculation
+    while (imin < imax) {
+        int64_t imid = imin + ((imax - imin) >> 1);  // Avoid overflow, use bit shift
+
+        // Standard bisection
+        if(xs[imid] < x)
+            imin = imid + 1;
+        else
+            imax = imid;
+    }
+
+    return imin - 1;
+}
+
+static inline int64_t array_bisect_old(MYFLT x, MYFLT *xs, int64_t xslen, int64_t lastidx) {
     // -1: lower bound, -2: upper bound
     if(x <= xs[0]) {
         return -1;
@@ -5195,6 +5229,31 @@ static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
     return OK;
 }
 
+static int32_t detectSilence2_a_a(CSOUND *csound, DETECT_SILENCE *p) {
+    int cnt = p->counter;
+    MYFLT *in = p->ain;
+    MYFLT *out = p->out;
+    int endCounter = (int32_t)(LOCAL_SR(p) * *p->ktime);
+    MYFLT thresh = *p->kthresh;
+
+    AUDIO_OPCODE(csound, p);
+    AUDIO_OUTPUT(out);
+
+    for(n = offset; n < nsmps; n++) {
+        float val = fabs(in[n]);
+        int above_thresh = (val > thresh);
+
+        // Reset counter if above threshold
+        cnt = above_thresh ? 0 : (cnt >= 0 ? cnt + 1 : cnt);
+
+        // Output 1 only if counter reached endCounter
+        out[n] = (cnt >= endCounter) ? 1.f : 0.f;
+    }
+
+    p->counter = cnt;
+    return OK;
+}
+
 static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
     MYFLT thresh = *p->kthresh;
     MYFLT ktime = *p->ktime;
@@ -5223,6 +5282,7 @@ static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
     }
     return OK;
 }
+
 
 /*
 typedef struct {
@@ -6099,21 +6159,108 @@ static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
             continue;
         if(freq > maxfreq)
             break;
-        float amp = fin[i];
-        if (amp != 0.f) { // zeroes lead to NaNs
+        MYFLT amp = fin[i];
+        if (amp != 0.f) {  // skip zeroes
+            amp *= amp;    // power spectrum is just amp**2
             geommean += log(amp);
             mean += amp;
         }
         numbins++;
     }
-    geommean = exp(geommean / numbins);
+    geommean = exp(geommean/numbins);
     mean /= numbins;
-    MYFLT flatness = (mean == 0. ? 0.8 : (geommean / mean));
+    MYFLT flatness = (mean == 0. ? 1. : (geommean / mean));
     p->old = flatness;
     *p->out = flatness;
     p->lastframe = p->fin->framecount;
     return OK;
 }
+
+
+typedef struct {
+    OPDS h;
+    MYFLT *out;
+    PVSDAT *fin;
+    MYFLT *rolloff_factor;
+    MYFLT *minfreq;
+    MYFLT *maxfreq;
+    MYFLT *silence;
+    MYFLT old;
+    uint32_t lastframe;
+} PVSROLLOFF;
+
+static int32_t pvsrolloff_init(CSOUND *csound, PVSROLLOFF *p) {
+    p->old = 0;
+    p->lastframe = 0;
+    if (UNLIKELY(!((p->fin->format==PVS_AMP_FREQ) ||
+                   (p->fin->format==PVS_AMP_PHASE))))
+      return csound->InitError(csound,
+                               "%s", Str("pvscent: format must be amp-phase"
+                                   " or amp-freq.\n"));
+    return OK;
+}
+
+
+static int32_t pvsrolloff_perf(CSOUND *csound, PVSROLLOFF *p) {
+    if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
+        *p->out = p->old;
+        return OK;
+    }
+    MYFLT minfreq = *p->minfreq;
+    MYFLT maxfreq = *p->maxfreq;
+    MYFLT silenceamp = *p->silence;
+    silenceamp = silenceamp < 0.000001 ? 0.000001 : silenceamp;  // -120 dB
+    if(maxfreq <= 0) {
+        maxfreq = LOCAL_SR(p) / 2;;
+    }
+    if(minfreq <= 0) {
+        minfreq = 20.;
+    }
+
+    /*
+        assert 0 <= rolloff <= 1
+        cumenergy = np.cumsum(spectrum)
+        total = cumenergy[-1]
+        threshold = rolloff * total
+        return int(np.argmax(cumenergy > threshold))
+     */
+
+    float *fin = (float *)p->fin->frame.auxp;
+    int32 i, N = p->fin->N;
+    MYFLT total_energy = 0.;
+    int32_t minbin = 0, maxbin = N - 2;
+    for(i = 2; i < N-2; i+=2) {
+        float freq = fin[i+1];
+        if(freq < minfreq) {
+            minbin = i;
+            continue;
+        }
+        if(freq > maxfreq) {
+            maxbin = i;
+            break;
+        }
+        MYFLT amp = fin[i];
+        total_energy += amp*amp;  // we use the power spectrum
+    }
+    MYFLT rolloff_freq = 0.;
+    if(total_energy > silenceamp) {
+        MYFLT threshold = total_energy * *(p->rolloff_factor);
+        MYFLT accum = 0.;
+        for(i = minbin + 2; i < maxbin; i+= 2) {
+            MYFLT amp = fin[i];
+            accum += amp * amp;
+            if(accum >= threshold) {
+                rolloff_freq = fin[i+1];
+                break;
+            }
+        }
+    }
+    p->old = rolloff_freq;
+    *p->out = rolloff_freq;
+    p->lastframe = p->fin->framecount;
+    return OK;
+}
+
 
 /*
 opcode flatness, k, k[]
@@ -6936,11 +7083,11 @@ static OENTRY localops[] = {
     {"transpose", S(PITCHSHIFT), 0, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL},
     {"pvsflatness", S(PVSFLATNESS), 0, "k", "fOO", (SUBR)pvsflatness_init, (SUBR)pvsflatness_perf, NULL, NULL},
     {"pvscrest", S(PVSCREST), 0, "k", "fOO", (SUBR)pvscrest_init, (SUBR)pvscrest_perf, NULL, NULL},
+    {"pvsrolloff", S(PVSROLLOFF), 0, "k", "fkOOO", (SUBR)pvsrolloff_init, (SUBR)pvsrolloff_perf, NULL, NULL},
     {"pvsmagsum", S(PVSMAGSUM), 0, "k", "fOO", (SUBR)pvsmagsum_init, (SUBR)pvsmagsum_perf, NULL, NULL},
     {"pvsmagsumn", S(PVSMAGSUMN), 0, "k", "fiOO", (SUBR)pvsmagsumn_init, (SUBR)pvsmagsumn_perf, (SUBR)pvsmagsumn_dealloc, NULL},
     {"pvsentropy", S(PVSMAGSUMN), 0, "k", "fOO", (SUBR)pvsentropy_init, (SUBR)pvsentropy_perf, NULL, NULL},
     {"pvsframecount", S(PVSFRAMECOUNT), 0, "k", "f", NULL, (SUBR)pvsframecount_perf, NULL, NULL},
-
 
     {"picksource.k", S(PICKSOURCE), 0, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
 
