@@ -125,6 +125,7 @@ Miscellaneous plugins
 * [pvsflatness](opcodes/pvsflatness.md): Compute the flatness of a spectral signal. 
 * [pvsmagsum](opcodes/pvsmagsum.md): Sum all magnitudes of the bins in a pv signal 
 * [pvsmagsumn](opcodes/pvsmagsumn.md): Sum the magnitudes of the n loudest bins 
+* [pvsrolloff](opcodes/pvsrolloff.md): Spectral rolloff point 
 * [pwrite](opcodes/pwrite.md): Modify pfield values of an active instrument instance 
 * [pwriten](opcodes/pwriten.md): Modify pfield values of an active instrument instance created via nstance 
 * [ramptrig](opcodes/ramptrig.md): A triggerable ramp between 0 and 1 
