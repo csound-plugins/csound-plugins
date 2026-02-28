@@ -1,6 +1,6 @@
 {
   "name": "else",
-  "version": "2.2.10",
+  "version": "2.2.11",
   "opcodes": [
     "accum",
     "atstop",
@@ -38,6 +38,7 @@
     "pvsflatness",
     "pvsmagsum",
     "pvsmagsumn",
+    "pvsrolloff",
     "pwrite",
     "pwriten",
     "ramptrig",

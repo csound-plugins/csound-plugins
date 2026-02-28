@@ -124,6 +124,10 @@ i 100 0 3600
 </CsoundSynthesizer>
 
 
+
+
+
+
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>
@@ -138,7 +142,7 @@ i 100 0 3600
   <g>255</g>
   <b>255</b>
  </bgcolor>
- <bsbObject version="2" type="BSBKnob">
+ <bsbObject type="BSBKnob" version="2">
   <objectName>modmidi</objectName>
   <x>19</x>
   <y>19</y>
@@ -151,7 +155,7 @@ i 100 0 3600
   <description/>
   <minimum>24.00000000</minimum>
   <maximum>100.00000000</maximum>
-  <value>69.18960000</value>
+  <value>66.14960000</value>
   <mode>lin</mode>
   <mouseControl act="">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -168,7 +172,7 @@ i 100 0 3600
   <flatstyle>true</flatstyle>
   <integerMode>false</integerMode>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>24</x>
   <y>119</y>
@@ -199,7 +203,7 @@ i 100 0 3600
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBKnob">
+ <bsbObject type="BSBKnob" version="2">
   <objectName>feedback</objectName>
   <x>134</x>
   <y>19</y>
@@ -212,7 +216,7 @@ i 100 0 3600
   <description/>
   <minimum>0.00000000</minimum>
   <maximum>1.00000000</maximum>
-  <value>0.55000000</value>
+  <value>0.49000000</value>
   <mode>lin</mode>
   <mouseControl act="">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -229,7 +233,7 @@ i 100 0 3600
   <flatstyle>true</flatstyle>
   <integerMode>false</integerMode>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>139</x>
   <y>119</y>
@@ -260,7 +264,7 @@ i 100 0 3600
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBCheckBox">
+ <bsbObject type="BSBCheckBox" version="2">
   <objectName>diode</objectName>
   <x>359</x>
   <y>19</y>
@@ -276,7 +280,7 @@ i 100 0 3600
   <pressedValue>1</pressedValue>
   <randomizable group="0">false</randomizable>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>399</x>
   <y>24</y>
@@ -307,7 +311,7 @@ i 100 0 3600
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBCheckBox">
+ <bsbObject type="BSBCheckBox" version="2">
   <objectName>oversample</objectName>
   <x>359</x>
   <y>64</y>
@@ -323,7 +327,7 @@ i 100 0 3600
   <pressedValue>1</pressedValue>
   <randomizable group="0">false</randomizable>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>399</x>
   <y>69</y>
@@ -354,7 +358,7 @@ i 100 0 3600
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBKnob">
+ <bsbObject type="BSBKnob" version="2">
   <objectName>nonlinear</objectName>
   <x>249</x>
   <y>19</y>
@@ -367,7 +371,7 @@ i 100 0 3600
   <description/>
   <minimum>0.00000000</minimum>
   <maximum>1.00000000</maximum>
-  <value>0.35000000</value>
+  <value>0.63000000</value>
   <mode>lin</mode>
   <mouseControl act="">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -384,7 +388,7 @@ i 100 0 3600
   <flatstyle>true</flatstyle>
   <integerMode>false</integerMode>
  </bsbObject>
- <bsbObject version="2" type="BSBLabel">
+ <bsbObject type="BSBLabel" version="2">
   <objectName/>
   <x>254</x>
   <y>119</y>
@@ -415,7 +419,7 @@ i 100 0 3600
   <borderradius>1</borderradius>
   <borderwidth>0</borderwidth>
  </bsbObject>
- <bsbObject version="2" type="BSBDisplay">
+ <bsbObject type="BSBDisplay" version="2">
   <objectName>note</objectName>
   <x>34</x>
   <y>177</y>
@@ -426,7 +430,7 @@ i 100 0 3600
   <midichan>0</midichan>
   <midicc>-3</midicc>
   <description/>
-  <label>4A</label>
+  <label>4F#</label>
   <alignment>center</alignment>
   <valignment>center</valignment>
   <font>Liberation Sans</font>

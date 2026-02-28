@@ -66,21 +66,23 @@ kflatness pvsflatness fsig
 */
 
 instr 1
-  asig1 = oscili:a(0.1, 500)
+  asig1 = oscili:a(0.5, 500)
   asig2 = buzz(0.1, 300, 7, -1)
   asig3 = pinker() * 0.1
   asig4 = unirand:a(2) - 1.0
-  Snames[] fillarray "sine ", "buzz ", "pink ", "white"
+  asig5 = diskin2("finnegan01.flac", 1, 0, 1)[0]
+  Snames[] fillarray "sine ", "buzz ", "pink ", "white", "finn "
   ksource init 0
   if metro(0.5) == 1 then
-    ksource = (ksource + 1) % 4
+    ksource = (ksource + 1) % 5
   endif
-  asig = picksource(ksource, asig1, asig2, asig3, asig4)
-  fsig = pvsanal(asig, 1024, 512, 1024, 0)
+  ifftsize = 2048
+  asig = picksource(ksource, asig1, asig2, asig3, asig4, asig5)
+  fsig = pvsanal(asig, ifftsize, 512, ifftsize, 0)
   kflatness = pvsflatness(fsig)
   kflatness = lag(kflatness, 0.3)
-  if metro(12) == 1 then
-    printsk "Source index: %d, signal: %s, Flatness: %f, (%05.1f dB)           \n", ksource, Snames[ksource], kflatness, dbamp(kflatness)
+  if metro(24) == 1 then
+    printsk "Source index: %d, signal: %s, Flatness: %.4f, (%d dB)           \n", ksource, Snames[ksource], kflatness, dbamp(kflatness)
   endif
   outch 1, asig
 endin
