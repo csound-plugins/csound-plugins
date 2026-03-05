@@ -6706,6 +6706,557 @@ static int32_t strmul_i(CSOUND *csound, STRMUL *p) {
     return strmul_perf(csound, p);
 }
 
+// -------------------- pyin
+
+#define PYIN_MAX_CANDIDATES   16    /* pYIN threshold candidates per frame    */
+#define PYIN_N_THRESHOLDS     100   /* number of threshold values to try      */
+#define PYIN_THRESHOLD_MIN    0.01
+#define PYIN_THRESHOLD_MAX    0.15
+#define PYIN_DRIFT_SEMITONES  5
+#define PYIN_BETA_A           2.0   /* Beta distribution shape parameter a    */
+#define PYIN_BETA_B           18.0  /* Beta distribution shape parameter b    */
+// #define PYIN_HMM_STATES       480   /* pitch states: MIDI 0-127 × 3 sub-bins  */  // TODO: make this configurable
+#define PYIN_MAX_HMM_STATES   720   // max hmm states
+#define PYIN_MIDI_MIN  0
+#define PYIN_MIDI_MAX  119
+
+#define PYIN_VOICED_PROB      0.9   /* prior probability of voicing           */
+#define PYIN_MAX_BUF          16384 /* maximum supported buffer size          */
+#define PYIN_MINTAU           0.001
+
+typedef struct {
+    /* Csound opcode header — must be first */
+    OPDS h;
+
+    /* Output k-rate variables */
+    MYFLT *kpitch;
+    MYFLT *kconf;
+    MYFLT *kvoiced;
+
+    /* Input arguments */
+    MYFLT *asig;
+    MYFLT *iminfreq;
+    MYFLT *imaxfreq;
+    MYFLT *ibufsize;
+    MYFLT *ioverlap;
+    MYFLT *trans_self;    // HMM self-transition probability
+    MYFLT *ihmmstates;
+    MYFLT *drift;         // Drift in semitones, defaults to 5
+
+    /* Internal state */
+    int    bufsize;        /* analysis window size (samples)                  */
+    int    hopsize;        /* hop size (samples)                              */
+    int    taumin;         /* minimum lag (samples) for min frequency         */
+    int    taumax;         /* maximum lag (samples) for max frequency         */
+    int    buf_pos;        /* current write position in input ring buffer     */
+    int    samples_since_hop; /* samples accumulated since last hop           */
+    int    initialized;
+    int    hmmstates;
+
+    MYFLT *input_buf;      /* ring buffer for incoming audio                  */
+    MYFLT *work_buf;       /* linear analysis window extracted from ring buf  */
+    MYFLT *diff;           /* YIN difference function (size = bufsize/2)      */
+    MYFLT *cmnd;           /* cumulative mean normalized difference function  */
+
+    MYFLT *thresholds;
+    MYFLT *beta_weights;
+    // MYFLT thresholds[PYIN_N_THRESHOLDS];
+    // MYFLT beta_weights[PYIN_N_THRESHOLDS];
+
+    /* HMM state */
+    MYFLT *hmm_fwd;        /* forward variable (current frame)                */
+    MYFLT *hmm_fwd_prev;   /* forward variable (previous frame)               */
+
+    /* Transition matrix is implicit (see transition weight function) */
+
+    /* Per-frame pitch candidate storage */
+    MYFLT cand_freq[PYIN_MAX_CANDIDATES];
+    MYFLT cand_prob[PYIN_MAX_CANDIDATES];
+    int   n_cands;
+
+} PYIN_OPCODE;
+
+/* -------------------------------------------------------------------------
+ * Helper: Beta distribution PDF  B(x; a, b)  (unnormalized is fine here)
+ *
+ * We use the threshold t as x and compute proportional weights.
+ * ------------------------------------------------------------------------- */
+static inline MYFLT beta_pdf(MYFLT x, MYFLT a, MYFLT b)
+{
+    if (x <= 0.0 || x >= 1.0) return 0.0;
+    return pow(x, a - 1.0) * pow(1.0 - x, b - 1.0);
+}
+
+/* -------------------------------------------------------------------------
+ * Helper: parabolic interpolation to refine the lag estimate.
+ * Returns sub-sample lag at the minimum around index tau.
+ * ------------------------------------------------------------------------- */
+static inline MYFLT parabolic_interpolation(MYFLT *d, int tau, int len)
+{
+    if (tau <= 0 || tau >= len - 1)
+        return (MYFLT)tau;
+    MYFLT s0 = d[tau - 1];
+    MYFLT s1 = d[tau];
+    MYFLT s2 = d[tau + 1];
+    MYFLT denom = 2.0 * (s0 - 2.0 * s1 + s2);
+    if (fabs(denom) < 1e-10)
+        return (MYFLT)tau;
+    return (MYFLT)tau + (s0 - s2) / denom;
+}
+
+/* -------------------------------------------------------------------------
+ * Step 1 & 2: YIN difference function then CMND.
+ *
+ * d(tau) = sum_{j=0}^{W-tau-1} (x[j] - x[j+tau])^2
+ *
+ * We use the naive O(W^2) approach for clarity and correctness.
+ * For a production opcode you would replace this with the FFT-based
+ * autocorrelation trick (r[0] + r[tau] - 2*r[tau] via IFFT of |X|^2),
+ * which reduces it to O(W log W).
+ * ------------------------------------------------------------------------- */
+static void compute_yin_cmnd(MYFLT *x, MYFLT *diff, MYFLT *cmnd,
+                              int W, int taumax)
+{
+    int tau, j;
+    MYFLT running_sum = 0.0;
+
+    diff[0] = 0.0;
+    cmnd[0] = 1.0;
+
+    for (tau = 1; tau <= taumax; tau++) {
+        MYFLT s = 0.0;
+        int limit = W - tau;
+        for (j = 0; j < limit; j++) {
+            MYFLT delta = x[j] - x[j + tau];
+            s += delta * delta;
+        }
+        diff[tau] = s;
+        running_sum += s;
+        if (running_sum < 1e-20)
+            cmnd[tau] = 1.0;
+        else
+            cmnd[tau] = s * (MYFLT)tau / running_sum;
+    }
+}
+
+
+static void precalculate_thresholds(MYFLT *beta_weights, MYFLT *thresholds) {
+    MYFLT delta_threshold = PYIN_THRESHOLD_MAX - PYIN_THRESHOLD_MIN;
+    MYFLT weight_sum = 0.;
+    for (int t = 0; t < PYIN_N_THRESHOLDS; t++) {
+        MYFLT thresh = PYIN_THRESHOLD_MIN + (MYFLT)t * delta_threshold / (MYFLT)(PYIN_N_THRESHOLDS - 1);
+        thresholds[t] = thresh;
+        MYFLT weight = beta_pdf(thresh, PYIN_BETA_A, PYIN_BETA_B);
+        beta_weights[t] = weight;
+        weight_sum += weight;
+    }
+    /* Normalise */
+    if (weight_sum > 0.0) {
+        for (int t = 0; t < PYIN_N_THRESHOLDS; t++)
+            beta_weights[t] /= weight_sum;
+    }
+}
+
+/* -------------------------------------------------------------------------
+ * Step 3 & 4 (pYIN extension): instead of picking the single best lag
+ * below a global threshold (as in plain YIN), pYIN considers N_THRESHOLDS
+ * threshold values and weights each resulting pitch candidate by:
+ *
+ *   p(threshold) ~ Beta(threshold; a, b)          [prior on threshold]
+ *   p(candidate | threshold) = 1 - threshold      [probability it is pitched]
+ *
+ * Returns the number of candidates found.
+ * ------------------------------------------------------------------------- */
+static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
+                                 MYFLT sr,
+                                 MYFLT *out_freq, MYFLT *out_prob,
+                                 int maxcands, MYFLT *beta_weights, MYFLT *thresholds)
+{
+    int n_cands = 0;
+    taumax = taumax < 4095 ? taumax : 4095;
+    MYFLT tau_prob[4096] = {0};
+
+    /*
+     * For each threshold, find the first lag in [taumin, taumax] where
+     * cmnd drops below threshold (the YIN "absolute threshold" rule).
+     * Accumulate probability weight for that lag.
+     */
+
+    /* Temporary accumulator indexed by tau */
+    int tau_len = taumax + 1;
+    int t;
+    for (t = 0; t < PYIN_N_THRESHOLDS; t++) {
+        MYFLT thr = thresholds[t];
+        MYFLT w = beta_weights[t];
+        int tau;
+        for (tau = taumin; tau <= taumax; tau++) {
+            if (cmnd[tau] < thr) {
+                /* Found first minimum below threshold — walk to local min */
+                while (tau + 1 <= taumax && cmnd[tau + 1] < cmnd[tau])
+                    tau++;
+                /* Weight = Beta(thr) * (1 - thr) meaning "pitched at thr" */
+                tau_prob[tau] += w * (1.0 - thr);
+                break;  /* one candidate per threshold */
+            }
+        }
+        /* If no tau found below threshold, probability mass goes to unvoiced */
+    }
+
+    /*
+     * Collapse adjacent tau bins into candidates by finding local maxima
+     * in tau_prob. Each peak becomes one candidate with parabolic refinement.
+     */
+    int tau;
+    for (tau = taumin + 1; tau < taumax && n_cands < maxcands; tau++) {
+        MYFLT prob = tau_prob[tau];
+        // if (tau_prob[tau] > 0.0 &&
+        //     tau_prob[tau] >= tau_prob[tau - 1] &&
+        //     tau_prob[tau] >= tau_prob[tau + 1])
+        if(prob > 0.0 && prob >= tau_prob[tau - 1] && prob >= tau_prob[tau + 1])
+        {
+            /* Parabolic interpolation on cmnd for the lag */
+            MYFLT refined_tau = parabolic_interpolation(cmnd, tau, tau_len);
+            MYFLT freq = (refined_tau > 0.0) ? sr / refined_tau : 0.0;
+
+            /* Accumulate neighbouring probability */
+            // MYFLT prob = tau_prob[tau];
+            if (tau > 0)         prob += tau_prob[tau - 1] * 0.5;
+            if (tau < taumax)    prob += tau_prob[tau + 1] * 0.5;
+            if (prob > 1.0)      prob = 1.0;
+
+            out_freq[n_cands] = freq;
+            out_prob[n_cands] = prob;
+            n_cands++;
+        }
+    }
+
+    /* If nothing found but some tau_prob exists, take the highest */
+    if (n_cands == 0) {
+        MYFLT best = 0.0;
+        int   best_tau = -1;
+        for (tau = taumin; tau <= taumax; tau++) {
+            if (tau_prob[tau] > best) {
+                best = tau_prob[tau];
+                best_tau = tau;
+            }
+        }
+        if (best_tau > 0 && best > PYIN_MINTAU) {
+            MYFLT refined_tau = parabolic_interpolation(cmnd, best_tau, tau_len);
+            out_freq[0] = (refined_tau > 0.0) ? sr / refined_tau : 0.0;
+            out_prob[0] = best;
+            n_cands = 1;
+        }
+    }
+
+    // free(tau_prob);
+    return n_cands;
+}
+
+/* -------------------------------------------------------------------------
+ * HMM: map Hz to a state index (0..PYIN_HMM_STATES-1).
+ * We use a chromatic pitch grid in MIDI note space, with PYIN_SUBBINS sub-bins per
+ * semitone
+ * ------------------------------------------------------------------------- */
+
+static inline int freq_to_state(MYFLT freq, MYFLT a4, int hmmstates)
+{
+    if (freq <= 0.0) return -1;
+    int subbins = hmmstates / 120;
+    MYFLT midi = 12.0 * log2(freq / a4) + 69.0;
+    int state = (int)round((midi - PYIN_MIDI_MIN) * subbins);
+    if (state < 0) state = 0;
+    if (state >= hmmstates) state = hmmstates - 1;
+    return state;
+}
+
+static inline MYFLT state_to_freq(int state, MYFLT a4, int subbins)
+{
+    MYFLT midi = PYIN_MIDI_MIN + (MYFLT)state / (MYFLT)subbins;
+    return a4 * pow(2.0, (midi - 69.0) / 12.0);
+}
+
+/* -------------------------------------------------------------------------
+ * HMM transition weight between states i and j.
+ *
+ * We use a simple Gaussian in pitch distance (in semitones).
+ * Self-transitions get extra weight via PYIN_TRANS_SELF.
+ * ------------------------------------------------------------------------- */
+static MYFLT transition_weight(int i, int j, MYFLT trans_self, int subbins)
+{
+    if (i == j) return trans_self;
+    MYFLT dist_semitones = fabs((MYFLT)(i - j)) / (MYFLT)subbins;
+    /* Gaussian with sigma=1 semitone */
+    MYFLT w = (1.0 - trans_self) * exp(-0.5 * dist_semitones * dist_semitones);
+    return w;
+}
+
+/* -------------------------------------------------------------------------
+ * HMM forward step (causal, no lookahead — suitable for real-time).
+ *
+ * fwd[s] represents p(pitch_state=s | observations_up_to_now)
+ *
+ * Observation model:
+ *   If any candidate maps to state s, obs[s] = that candidate's probability.
+ *   States with no candidate: small floor value (unvoiced mass spread evenly).
+ *
+ * We keep one unvoiced "super-state" by treating p_unvoiced as a scalar.
+ * ------------------------------------------------------------------------- */
+static void hmm_forward_step(
+    MYFLT *fwd_prev,
+    MYFLT *fwd_cur,
+    MYFLT *cand_freq,
+    MYFLT *cand_prob,
+    int n_cands,
+    MYFLT a4,
+    MYFLT transprob,
+    int drift_semitones,
+    int hmm_states)
+{
+    int s, c, j;
+
+    int subbins = hmm_states / 120;
+
+    /* Build observation likelihoods */
+    MYFLT obs[PYIN_MAX_HMM_STATES] = {0};
+    // memset(obs, 0, sizeof(obs));
+
+    MYFLT voiced_obs_total = 0.0;
+    MYFLT cand_prob_w = 0.;
+    for (c = 0; c < n_cands; c++) {
+        int st = freq_to_state(cand_freq[c], a4, hmm_states);
+        if (st >= 0) {
+            /* Spread over ±1 sub-bin with Gaussian weights */
+            for (int delta = -1; delta <= 1; delta++) {
+                int idx = st + delta;
+                if (idx < 0 || idx >= hmm_states) continue;
+                MYFLT w = exp(-0.5 * (MYFLT)(delta * delta));
+                cand_prob_w = cand_prob[c] * w;
+                obs[idx] += cand_prob_w; // cand_prob[c] * w;
+                voiced_obs_total += cand_prob_w; // cand_prob[c] * w;
+            }
+        }
+    }
+
+    /* Unvoiced observation probability = 1 - sum of voiced candidate probs */
+    MYFLT total_voiced_prob = 0.0;
+    for (c = 0; c < n_cands; c++)
+        total_voiced_prob += cand_prob[c];
+    if (total_voiced_prob > 1.0) total_voiced_prob = 1.0;
+    MYFLT p_unvoiced_obs = 1.0 - total_voiced_prob;
+
+    /* Forward update: marginalise over previous states via transition */
+    MYFLT norm = 0.0;
+    int drift_bins = drift_semitones * subbins;
+    for (s = 0; s < hmm_states; s++) {
+        MYFLT trans_sum = 0.0;
+        /* Only consider a band of nearby states for efficiency (±5 semitones) */
+        int lo = s - drift_bins;
+        int hi = s + drift_bins;
+        if (lo < 0) lo = 0;
+        if (hi >= hmm_states) hi = hmm_states - 1;
+        for (j = lo; j <= hi; j++) {
+            trans_sum += fwd_prev[j] * transition_weight(j, s, transprob, subbins);
+        }
+
+        /* Voiced prior blended with unvoiced */
+        MYFLT voiced_prior = PYIN_VOICED_PROB;
+        MYFLT emission = voiced_prior * obs[s]
+                       + (1.0 - voiced_prior) * (p_unvoiced_obs / (MYFLT)hmm_states);
+
+        fwd_cur[s] = trans_sum * emission;
+        norm += fwd_cur[s];
+    }
+
+    /* Normalise */
+    if (norm > 1e-30) {
+        for (s = 0; s < hmm_states; s++)
+            fwd_cur[s] /= norm;
+    } else {
+        /* No information: flat prior */
+        MYFLT flat = 1.0 / (MYFLT)hmm_states;
+        for (s = 0; s < hmm_states; s++)
+            fwd_cur[s] = flat;
+    }
+}
+
+/* -------------------------------------------------------------------------
+ * Extract pitch estimate from forward variable.
+ * Returns best state index, sets confidence and voicing flag.
+ * ------------------------------------------------------------------------- */
+static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates)
+{
+    int best = 0;
+    MYFLT best_val = fwd[0];
+    int s;
+    for (s = 1; s < hmmstates; s++) {
+        if (fwd[s] > best_val) {
+            best_val = fwd[s];
+            best = s;
+        }
+    }
+
+    /* Confidence = posterior of best state + neighbours */
+    MYFLT c = best_val;
+    if (best > 0)                   c += fwd[best - 1];
+    if (best < hmmstates - 1) c += fwd[best + 1];
+    *conf = c;
+
+    /* Voiced if confidence exceeds a threshold */
+    *voiced = (c > 0.05) ? 1 : 0;
+
+    return best;
+}
+
+/* =========================================================================
+ * Csound opcode lifecycle functions
+ * ========================================================================= */
+
+static int pyin_dealloc(CSOUND *csound, PYIN_OPCODE *p) {
+    csound->Free(csound, p->input_buf);
+    csound->Free(csound, p->work_buf);
+    csound->Free(csound, p->diff);
+    csound->Free(csound, p->cmnd);
+    csound->Free(csound, p->hmm_fwd);
+    csound->Free(csound, p->hmm_fwd_prev);
+    csound->Free(csound, p->beta_weights);
+    csound->Free(csound, p->thresholds);
+    return OK;
+}
+
+
+static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
+{
+    // MYFLT sr = csound->GetSr(csound);
+    MYFLT sr = LOCAL_SR(p);
+
+    /* Parse init arguments */
+    p->bufsize = (p->ibufsize && *p->ibufsize > 0)
+                 ? (int)*p->ibufsize : 2048;
+    int overlap = (p->ioverlap && *p->ioverlap > 0)
+                  ? (int)*p->ioverlap : 4;
+    p->hopsize = p->bufsize / overlap;
+    if (p->hopsize < 1) p->hopsize = 1;
+
+    MYFLT minfreq = *p->iminfreq;
+    MYFLT maxfreq = *p->imaxfreq;
+    if (minfreq <= 0.0) minfreq = 60.0;
+    if (maxfreq <= 0.0) maxfreq = 1000.0;
+
+    p->taumin = (int)(sr / maxfreq);
+    p->taumax = (int)(sr / minfreq);
+    if (p->taumin < 1) p->taumin = 1;
+    if (p->taumax >= p->bufsize / 2) p->taumax = p->bufsize / 2 - 1;
+
+    /* Allocate buffers */
+    p->input_buf = (MYFLT*)csound->Calloc(csound, p->bufsize * sizeof(MYFLT));
+    p->work_buf  = (MYFLT*)csound->Calloc(csound, p->bufsize * sizeof(MYFLT));
+    p->diff      = (MYFLT*)csound->Calloc(csound, (p->bufsize / 2 + 1) * sizeof(MYFLT));
+    p->cmnd      = (MYFLT*)csound->Calloc(csound, (p->bufsize / 2 + 1) * sizeof(MYFLT));
+    p->hmm_fwd   = (MYFLT*)csound->Calloc(csound, PYIN_MAX_HMM_STATES * sizeof(MYFLT));
+    p->hmm_fwd_prev = (MYFLT*)csound->Calloc(csound, PYIN_MAX_HMM_STATES * sizeof(MYFLT));
+    p->thresholds   = (MYFLT*)csound->Calloc(csound, PYIN_N_THRESHOLDS * sizeof(MYFLT));
+    p->beta_weights = (MYFLT*)csound->Calloc(csound, PYIN_N_THRESHOLDS * sizeof(MYFLT));
+
+
+    p->buf_pos = 0;
+    p->samples_since_hop = 0;
+    p->n_cands = 0;
+    p->initialized = 1;
+    p->hmmstates = (int)*p->ihmmstates;
+    if(p->hmmstates <= 0)
+        p->hmmstates = 360;
+    else if(p->hmmstates > PYIN_MAX_HMM_STATES)
+        p->hmmstates = PYIN_MAX_HMM_STATES;
+
+    /* Initialise HMM prior: flat */
+    MYFLT flat = 1.0 / (MYFLT)p->hmmstates;
+    for (int s = 0; s < p->hmmstates; s++)
+        p->hmm_fwd_prev[s] = flat;
+
+    /* Initialise outputs */
+    *p->kpitch = 0.0;
+    *p->kconf = 0.0;
+    *p->kvoiced = 0.0;
+
+    precalculate_thresholds(p->beta_weights, p->thresholds);
+
+    return OK;
+}
+
+static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
+{
+    if (!p->initialized) return NOTOK;
+
+    int ksmps = LOCAL_KSMPS(p);
+    MYFLT *in = p->asig;
+    MYFLT *input_buf = p->input_buf;
+    int subbins = p->hmmstates / 120;
+
+    int i;
+    int buf_pos = p->buf_pos;
+    for (i=0; i < ksmps; i++) {
+        input_buf[buf_pos] = in[i];
+        buf_pos = (buf_pos + 1) % p->bufsize;
+    }
+    p->samples_since_hop += ksmps;
+    p->buf_pos = buf_pos;
+    if(p->samples_since_hop < p->hopsize) {
+        return OK;
+    }
+
+    MYFLT a4 = csound->GetA4(csound);
+    int drift_semitones = *p->drift;
+    if(drift_semitones <= 0)
+        drift_semitones = PYIN_DRIFT_SEMITONES;
+
+    // MYFLT sr = csound->GetSr(csound);
+    MYFLT sr = LOCAL_SR(p);
+    // int ksmps = csound->GetKsmps(csound);
+    MYFLT trans_self = *p->trans_self;
+    if(trans_self == 0.)
+        trans_self = 0.99;
+
+    /* Process when we've accumulated a full hop */
+    p->samples_since_hop -= p->hopsize;
+
+    /* Extract analysis window (linearise ring buffer) */
+    int start = p->buf_pos;   /* oldest sample */
+    int j;
+    for (j = 0; j < p->bufsize; j++)
+        p->work_buf[j] = p->input_buf[(start + j) % p->bufsize];
+
+    /* Compute YIN CMND */
+    compute_yin_cmnd(p->work_buf, p->diff, p->cmnd,
+                        p->bufsize, p->taumax);
+
+    /* Get pYIN pitch candidates */
+    p->n_cands = pyin_pitch_candidates(
+        p->cmnd, p->taumin, p->taumax, sr,
+        p->cand_freq, p->cand_prob, PYIN_MAX_CANDIDATES, p->beta_weights, p->thresholds);
+
+    /* HMM forward step */
+    hmm_forward_step(p->hmm_fwd_prev, p->hmm_fwd,
+                        p->cand_freq, p->cand_prob, p->n_cands, a4, trans_self, drift_semitones, p->hmmstates);
+
+    /* Decode */
+    MYFLT conf;
+    int voiced;
+    int best_state = hmm_decode(p->hmm_fwd, &conf, &voiced, p->hmmstates);
+
+    *p->kpitch = voiced ? state_to_freq(best_state, a4, subbins) : 0.0;
+    *p->kconf = conf;
+    *p->kvoiced = (MYFLT)voiced;
+
+    /* Swap forward buffers */
+    MYFLT *tmp     = p->hmm_fwd_prev;
+    p->hmm_fwd_prev = p->hmm_fwd;
+    p->hmm_fwd      = tmp;
+
+    return OK;
+}
+
+
+
 
 // ----------------------------------------------------------------------------------
 
@@ -7093,6 +7644,8 @@ static OENTRY localops[] = {
 
     {"strmul.k", S(STRMUL), 0, "S", "Sko", (SUBR)strmul_init, (SUBR)strmul_perf, NULL, NULL},
     {"strmul.i", S(STRMUL), 0, "S", "Sio", (SUBR)strmul_i, NULL, NULL},
+
+    {"pyin", S(PYIN_OPCODE), 0, "kkk", "aiiooOOoo", (SUBR)pyin_init, (SUBR)pyin_perf, (SUBR)pyin_dealloc, NULL}
 
 };
 #endif
