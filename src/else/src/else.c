@@ -6715,7 +6715,7 @@ static int32_t strmul_i(CSOUND *csound, STRMUL *p) {
 #define PYIN_DRIFT_SEMITONES  5
 #define PYIN_BETA_A           2.0   /* Beta distribution shape parameter a    */
 #define PYIN_BETA_B           18.0  /* Beta distribution shape parameter b    */
-#define PYIN_MAX_HMM_STATES   720   // max hmm states
+#define PYIN_MAX_HMM_STATES   960   // max hmm states, 8 bins per semitone
 #define PYIN_MIDI_MIN  0
 #define PYIN_MIDI_MAX  119
 
@@ -6885,8 +6885,7 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
 
     /* Temporary accumulator indexed by tau */
     int tau_len = taumax + 1;
-    int t;
-    for (t = 0; t < PYIN_N_THRESHOLDS; t++) {
+    for (int t = 0; t < PYIN_N_THRESHOLDS; t++) {
         MYFLT thr = thresholds[t];
         MYFLT w = beta_weights[t];
         int tau;
@@ -6900,15 +6899,13 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
                 break;  /* one candidate per threshold */
             }
         }
-        /* If no tau found below threshold, probability mass goes to unvoiced */
+        // If no tau found below threshold, probability mass goes to unvoiced
     }
 
-    /*
-     * Collapse adjacent tau bins into candidates by finding local maxima
-     * in tau_prob. Each peak becomes one candidate with parabolic refinement.
+    /* Collapse adjacent tau bins into candidates by finding local maxima
+     * in tau_prob. Each peak becomes one candidate
      */
-    int tau;
-    for (tau = taumin + 1; tau < taumax && n_cands < maxcands; tau++) {
+    for (int tau = taumin + 1; tau < taumax && n_cands < maxcands; tau++) {
         MYFLT prob = tau_prob[tau];
         // if (tau_prob[tau] > 0.0 &&
         //     tau_prob[tau] >= tau_prob[tau - 1] &&
@@ -6931,11 +6928,11 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
         }
     }
 
-    /* If nothing found but some tau_prob exists, take the highest */
+    // If nothing found but some tau_prob exists, take the highest
     if (n_cands == 0) {
         MYFLT best = 0.0;
         int best_tau = -1;
-        for (tau = taumin; tau <= taumax; tau++) {
+        for (int tau = taumin; tau <= taumax; tau++) {
             if (tau_prob[tau] > best) {
                 best = tau_prob[tau];
                 best_tau = tau;
@@ -6990,13 +6987,12 @@ static MYFLT transition_weight(int i, int j, MYFLT trans_self, int subbins)
 }
 
 /* -------------------------------------------------------------------------
- * HMM forward step (causal, no lookahead — suitable for real-time).
+ * HMM forward step (no lookahead for real-time).
  *
  * fwd[s] represents p(pitch_state=s | observations_up_to_now)
  *
- * Observation model:
- *   If any candidate maps to state s, obs[s] = that candidate's probability.
- *   States with no candidate: small floor value (unvoiced mass spread evenly).
+ * If any candidate maps to state s, obs[s] = that candidate's probability.
+ * States with no candidate: small floor value (unvoiced mass spread evenly).
  *
  * We keep one unvoiced "super-state" by treating p_unvoiced as a scalar.
  * ------------------------------------------------------------------------- */
@@ -7014,9 +7010,8 @@ static void hmm_forward_step(
 {
     int s, c, j;
 
-    /* Build observation likelihoods */
+    // observation likelihoods
     MYFLT obs[PYIN_MAX_HMM_STATES] = {0};
-    // memset(obs, 0, sizeof(obs));
 
     MYFLT voiced_obs_total = 0.0;
     MYFLT cand_prob_w = 0.;
@@ -7081,7 +7076,7 @@ static void hmm_forward_step(
  * Extract pitch estimate from forward variable.
  * Returns best state index, sets confidence and voicing flag.
  * ------------------------------------------------------------------------- */
-static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates)
+static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates, MYFLT minconf)
 {
     int best = 0;
     MYFLT best_val = fwd[0];
@@ -7102,7 +7097,7 @@ static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates)
     *conf = c;
 
     /* Voiced if confidence exceeds a threshold */
-    *voiced = (c > 0.05) ? 1 : 0;
+    *voiced = (c > minconf) ? 1 : 0;
 
     return best;
 }
@@ -7196,13 +7191,17 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
     int ksmps = LOCAL_KSMPS(p);
     MYFLT *in = p->asig;
     MYFLT *input_buf = p->input_buf;
+    int bufsize = p->bufsize;
     int subbins = p->subbins;
+    MYFLT minconf = 0.1;  // original: 0.05
+    // TODO: make it configurable. But since we return the confidence anyway, leave the parameter
+    // kvoiced for future use, maybe we can come up with something more clever than just applying
+    // a threshold
 
-    int i;
     int buf_pos = p->buf_pos;
-    for (i=0; i < ksmps; i++) {
+    for (int i=0; i < ksmps; i++) {
         input_buf[buf_pos] = in[i];
-        buf_pos = (buf_pos + 1) % p->bufsize;
+        buf_pos = (buf_pos + 1) % bufsize;
     }
     p->samples_since_hop += ksmps;
     p->buf_pos = buf_pos;
@@ -7215,9 +7214,7 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
     if(drift_semitones <= 0)
         drift_semitones = PYIN_DRIFT_SEMITONES;
 
-    // MYFLT sr = csound->GetSr(csound);
     MYFLT sr = LOCAL_SR(p);
-    // int ksmps = csound->GetKsmps(csound);
     MYFLT trans_self = *p->trans_self;
     if(trans_self == 0.)
         trans_self = 0.99;
@@ -7227,41 +7224,41 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
 
     /* Extract analysis window (linearise ring buffer) */
     int start = p->buf_pos;   /* oldest sample */
-    int j;
-    for (j = 0; j < p->bufsize; j++)
-        p->work_buf[j] = p->input_buf[(start + j) % p->bufsize];
+    MYFLT *work_buf = p->work_buf;
+    for (int j = 0; j < bufsize; j++) {
+        work_buf[j] = input_buf[(start + j) % bufsize];
+    }
 
     /* Compute YIN CMND */
-    compute_yin_cmnd(p->work_buf, p->diff, p->cmnd,
-                        p->bufsize, p->taumax);
+    compute_yin_cmnd(p->work_buf, p->diff, p->cmnd, p->bufsize, p->taumax);
 
     /* Get pYIN pitch candidates */
-    p->n_cands = pyin_pitch_candidates(
-        p->cmnd, p->taumin, p->taumax, sr,
-        p->cand_freq, p->cand_prob, PYIN_MAX_CANDIDATES, p->beta_weights, p->thresholds);
+    p->n_cands = pyin_pitch_candidates(p->cmnd, p->taumin, p->taumax, sr,
+                                       p->cand_freq, p->cand_prob, PYIN_MAX_CANDIDATES,
+                                       p->beta_weights, p->thresholds);
 
     /* HMM forward step */
     hmm_forward_step(p->hmm_fwd_prev, p->hmm_fwd,
-                        p->cand_freq, p->cand_prob, p->n_cands, a4, trans_self, drift_semitones, p->hmmstates, p->subbins);
+                     p->cand_freq, p->cand_prob, p->n_cands,
+                     a4, trans_self, drift_semitones,
+                     p->hmmstates, p->subbins);
 
     /* Decode */
     MYFLT conf;
     int voiced;
-    int best_state = hmm_decode(p->hmm_fwd, &conf, &voiced, p->hmmstates);
+    int best_state = hmm_decode(p->hmm_fwd, &conf, &voiced, p->hmmstates, minconf);
 
     *p->kpitch = voiced ? state_to_freq(best_state, a4, subbins) : 0.0;
     *p->kconf = conf;
     *p->kvoiced = (MYFLT)voiced;
 
     /* Swap forward buffers */
-    MYFLT *tmp     = p->hmm_fwd_prev;
+    MYFLT *tmp = p->hmm_fwd_prev;
     p->hmm_fwd_prev = p->hmm_fwd;
-    p->hmm_fwd      = tmp;
+    p->hmm_fwd = tmp;
 
     return OK;
 }
-
-
 
 
 // ----------------------------------------------------------------------------------
