@@ -6715,7 +6715,6 @@ static int32_t strmul_i(CSOUND *csound, STRMUL *p) {
 #define PYIN_DRIFT_SEMITONES  5
 #define PYIN_BETA_A           2.0   /* Beta distribution shape parameter a    */
 #define PYIN_BETA_B           18.0  /* Beta distribution shape parameter b    */
-// #define PYIN_HMM_STATES       480   /* pitch states: MIDI 0-127 × 3 sub-bins  */  // TODO: make this configurable
 #define PYIN_MAX_HMM_STATES   720   // max hmm states
 #define PYIN_MIDI_MIN  0
 #define PYIN_MIDI_MAX  119
@@ -6740,7 +6739,7 @@ typedef struct {
     MYFLT *ibufsize;
     MYFLT *ioverlap;
     MYFLT *trans_self;    // HMM self-transition probability
-    MYFLT *ihmmstates;
+    MYFLT *inumbins;         // bins per semitone
     MYFLT *drift;         // Drift in semitones, defaults to 5
 
     /* Internal state */
@@ -6752,6 +6751,7 @@ typedef struct {
     int    samples_since_hop; /* samples accumulated since last hop           */
     int    initialized;
     int    hmmstates;
+    int subbins;
 
     MYFLT *input_buf;      /* ring buffer for incoming audio                  */
     MYFLT *work_buf;       /* linear analysis window extracted from ring buf  */
@@ -6843,8 +6843,9 @@ static void compute_yin_cmnd(MYFLT *x, MYFLT *diff, MYFLT *cmnd,
 static void precalculate_thresholds(MYFLT *beta_weights, MYFLT *thresholds) {
     MYFLT delta_threshold = PYIN_THRESHOLD_MAX - PYIN_THRESHOLD_MIN;
     MYFLT weight_sum = 0.;
+    MYFLT denom = (MYFLT)(PYIN_N_THRESHOLDS - 1);
     for (int t = 0; t < PYIN_N_THRESHOLDS; t++) {
-        MYFLT thresh = PYIN_THRESHOLD_MIN + (MYFLT)t * delta_threshold / (MYFLT)(PYIN_N_THRESHOLDS - 1);
+        MYFLT thresh = PYIN_THRESHOLD_MIN + (MYFLT)t * delta_threshold / denom;
         thresholds[t] = thresh;
         MYFLT weight = beta_pdf(thresh, PYIN_BETA_A, PYIN_BETA_B);
         beta_weights[t] = weight;
@@ -6933,7 +6934,7 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
     /* If nothing found but some tau_prob exists, take the highest */
     if (n_cands == 0) {
         MYFLT best = 0.0;
-        int   best_tau = -1;
+        int best_tau = -1;
         for (tau = taumin; tau <= taumax; tau++) {
             if (tau_prob[tau] > best) {
                 best = tau_prob[tau];
@@ -6948,7 +6949,6 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
         }
     }
 
-    // free(tau_prob);
     return n_cands;
 }
 
@@ -6958,10 +6958,9 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
  * semitone
  * ------------------------------------------------------------------------- */
 
-static inline int freq_to_state(MYFLT freq, MYFLT a4, int hmmstates)
+static inline int freq_to_state(MYFLT freq, MYFLT a4, int hmmstates, int subbins)
 {
     if (freq <= 0.0) return -1;
-    int subbins = hmmstates / 120;
     MYFLT midi = 12.0 * log2(freq / a4) + 69.0;
     int state = (int)round((midi - PYIN_MIDI_MIN) * subbins);
     if (state < 0) state = 0;
@@ -7010,11 +7009,10 @@ static void hmm_forward_step(
     MYFLT a4,
     MYFLT transprob,
     int drift_semitones,
-    int hmm_states)
+    int hmm_states,
+    int subbins)
 {
     int s, c, j;
-
-    int subbins = hmm_states / 120;
 
     /* Build observation likelihoods */
     MYFLT obs[PYIN_MAX_HMM_STATES] = {0};
@@ -7023,7 +7021,7 @@ static void hmm_forward_step(
     MYFLT voiced_obs_total = 0.0;
     MYFLT cand_prob_w = 0.;
     for (c = 0; c < n_cands; c++) {
-        int st = freq_to_state(cand_freq[c], a4, hmm_states);
+        int st = freq_to_state(cand_freq[c], a4, hmm_states, subbins);
         if (st >= 0) {
             /* Spread over ±1 sub-bin with Gaussian weights */
             for (int delta = -1; delta <= 1; delta++) {
@@ -7097,8 +7095,10 @@ static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates)
 
     /* Confidence = posterior of best state + neighbours */
     MYFLT c = best_val;
-    if (best > 0)                   c += fwd[best - 1];
-    if (best < hmmstates - 1) c += fwd[best + 1];
+    if (best > 0)
+        c += fwd[best - 1];
+    if (best < hmmstates - 1)
+        c += fwd[best + 1];
     *conf = c;
 
     /* Voiced if confidence exceeds a threshold */
@@ -7162,11 +7162,17 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
     p->samples_since_hop = 0;
     p->n_cands = 0;
     p->initialized = 1;
-    p->hmmstates = (int)*p->ihmmstates;
-    if(p->hmmstates <= 0)
-        p->hmmstates = 360;
-    else if(p->hmmstates > PYIN_MAX_HMM_STATES)
-        p->hmmstates = PYIN_MAX_HMM_STATES;
+    int midirange = PYIN_MIDI_MAX - PYIN_MIDI_MIN + 1;
+    int numbins = (int)(*p->inumbins);
+    if(numbins == 0)
+        numbins = 4;
+    int hmmstates = midirange * numbins;
+    if(hmmstates > PYIN_MAX_HMM_STATES) {
+        numbins = PYIN_MAX_HMM_STATES / midirange;
+        hmmstates = numbins * midirange;
+    }
+    p->hmmstates = hmmstates;
+    p->subbins = numbins;
 
     /* Initialise HMM prior: flat */
     MYFLT flat = 1.0 / (MYFLT)p->hmmstates;
@@ -7190,7 +7196,7 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
     int ksmps = LOCAL_KSMPS(p);
     MYFLT *in = p->asig;
     MYFLT *input_buf = p->input_buf;
-    int subbins = p->hmmstates / 120;
+    int subbins = p->subbins;
 
     int i;
     int buf_pos = p->buf_pos;
@@ -7236,7 +7242,7 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
 
     /* HMM forward step */
     hmm_forward_step(p->hmm_fwd_prev, p->hmm_fwd,
-                        p->cand_freq, p->cand_prob, p->n_cands, a4, trans_self, drift_semitones, p->hmmstates);
+                        p->cand_freq, p->cand_prob, p->n_cands, a4, trans_self, drift_semitones, p->hmmstates, p->subbins);
 
     /* Decode */
     MYFLT conf;

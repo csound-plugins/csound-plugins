@@ -39,6 +39,7 @@
     "pvsmagsum",
     "pvsmagsumn",
     "pvsrolloff",
+    "pyin",
     "pwrite",
     "pwriten",
     "ramptrig",

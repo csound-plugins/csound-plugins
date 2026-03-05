@@ -1,0 +1,71 @@
+# pyin
+
+## Abstract
+
+fundamental (pitch) tracking using the probabilistic YIN method
+
+## Description
+
+The pYIN algorithm is an advanced, two-stage pitch (fundamental frequency or F0) 
+tracking method that improves upon the conventional YIN algorithm by incorporating 
+probabilistic analysis and a Hidden Markov Model (HMM) to produce a smoother, 
+more accurate pitch track. The pYIN algorithm functions in two main stages. 
+
+1. Pitch Candidate Generation: Unlike the original YIN algorithm, 
+  which outputs a single pitch estimate per frame, pYIN generates 
+  multiple potential pitch candidates along with associated probabilities. 
+  These probabilities are derived from a prior distribution on the YIN's internal 
+  threshold parameter, allowing for more robust post-processing.
+2. HMM-based Pitch Tracking: The probabilities and candidates are used 
+  as observations in a Hidden Markov Model (HMM). A Viterbi decoding process is then 
+  applied to determine the most likely sequence of pitches, which results in the 
+  improved pitch track. 
+  
+## Syntax
+
+
+```csound
+kfreq, kconfidence, kvoiced pyin asig, iminfreq=60, imaxfreq=1000, ibufsize=2048, ioverlap=4, ktransprob=0.99, ibins=4, kdrift=5
+```
+
+## Arguments
+
+* **asig**: audio signal
+* **iminfreq**: min. frequency for f0 (default=60)
+* **imaxfreq**: max. frequency for f0 (default=1000)
+* **ibufsize**: size of the analysis frame (default=2048)
+* **ioverlap**: overlapping frames. hopsize=bufsize/overlap (default=4)
+* **ktransprob**: hmm transition probability (default=0.99)
+* **ibins**: number of bins per semitone (default=4)
+* **kdrift**: pitch drift between frames, in semitones (default=5)
+
+
+## Output
+
+* **kfreq**: detected frequency. Only valid if confidence is > ~0.4
+* **kconfidence**: detection confidence
+* **kvoiced**: is the sound voiced
+
+## Execution Time
+
+* Performance
+
+## Examples
+
+
+{example}
+
+
+## See also
+
+* [ptrack](https://csound.com/docs/manual/ptrack.html)
+* [plltrack](https://csound.com/docs/manual/plltrack.html)
+* [pvsmagsum](pvsmagsum.md)
+* [pvsflatness](pvsflatness.md)
+
+## Metadata
+
+* Author: Eduardo Moguillansky
+* Year: 2026
+* Plugin: else
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c
