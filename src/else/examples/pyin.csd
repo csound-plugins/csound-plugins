@@ -44,10 +44,10 @@ instr 1
     ksource = (ksource + 1) % 4
   endif
   asig = picksource(ksource, asig1, asig2, asig3, asig4)
-  kpitch, kconf, kvoiced pyin asig, 60, 1000, 2048, 4, 0.992, 5
+  kpitch, kconf, kvoiced pyin asig, 60, 1000, 2048, 8, 0.992, 5
   ksound = schmitt(dbamp(rms(asig)),  -45, -55);
   kenv = schmitt:k(kconf, 0.5, 0.3) * ksound;
-  if metro(24) == 1 then
+  if metro(12) == 1 then
     printsk "Source: %d, %s, pitch: %f, conf: %f, voiced: %f, sound: %d\n", ksource, Snames[ksource], kpitch, kconf, kvoiced, ksound
   endif
   outch 1, asig

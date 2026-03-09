@@ -5993,8 +5993,6 @@ static void auxinit(CSOUND *csound, AUXCH *ch, size_t numitems) {
 
 
 static int32_t faust_pitchshift_init(CSOUND *csound, PITCHSHIFT *p) {
-    // csound->AuxAlloc(csound, sizeof(MYFLT)*131072, &(p->vec));
-    // memset(p->vec.auxp, 0, sizeof(MYFLT)*131072);
     auxinit(csound, &(p->vec), 131072);
     p->r0 = 0;
     p->r1 = 0;
@@ -6723,59 +6721,6 @@ static int32_t strmul_i(CSOUND *csound, STRMUL *p) {
 #define PYIN_MAX_BUF          16384 /* maximum supported buffer size          */
 #define PYIN_MINTAU           0.001
 
-typedef struct {
-    /* Csound opcode header — must be first */
-    OPDS h;
-
-    /* Output k-rate variables */
-    MYFLT *kpitch;
-    MYFLT *kconf;
-    MYFLT *kvoiced;
-
-    /* Input arguments */
-    MYFLT *asig;
-    MYFLT *iminfreq;
-    MYFLT *imaxfreq;
-    MYFLT *ibufsize;
-    MYFLT *ioverlap;
-    MYFLT *trans_self;    // HMM self-transition probability
-    MYFLT *inumbins;         // bins per semitone
-    MYFLT *drift;         // Drift in semitones, defaults to 5
-
-    /* Internal state */
-    int    bufsize;        /* analysis window size (samples)                  */
-    int    hopsize;        /* hop size (samples)                              */
-    int    taumin;         /* minimum lag (samples) for min frequency         */
-    int    taumax;         /* maximum lag (samples) for max frequency         */
-    int    buf_pos;        /* current write position in input ring buffer     */
-    int    samples_since_hop; /* samples accumulated since last hop           */
-    int    initialized;
-    int    hmmstates;
-    int subbins;
-
-    MYFLT *input_buf;      /* ring buffer for incoming audio                  */
-    MYFLT *work_buf;       /* linear analysis window extracted from ring buf  */
-    MYFLT *diff;           /* YIN difference function (size = bufsize/2)      */
-    MYFLT *cmnd;           /* cumulative mean normalized difference function  */
-
-    MYFLT *thresholds;
-    MYFLT *beta_weights;
-    // MYFLT thresholds[PYIN_N_THRESHOLDS];
-    // MYFLT beta_weights[PYIN_N_THRESHOLDS];
-
-    /* HMM state */
-    MYFLT *hmm_fwd;        /* forward variable (current frame)                */
-    MYFLT *hmm_fwd_prev;   /* forward variable (previous frame)               */
-
-    /* Transition matrix is implicit (see transition weight function) */
-
-    /* Per-frame pitch candidate storage */
-    MYFLT cand_freq[PYIN_MAX_CANDIDATES];
-    MYFLT cand_prob[PYIN_MAX_CANDIDATES];
-    int   n_cands;
-
-} PYIN_OPCODE;
-
 /* -------------------------------------------------------------------------
  * Helper: Beta distribution PDF  B(x; a, b)  (unnormalized is fine here)
  *
@@ -6962,7 +6907,7 @@ static inline int freq_to_state(MYFLT freq, MYFLT a4, int hmmstates, int subbins
     int state = (int)round((midi - PYIN_MIDI_MIN) * subbins);
     if (state < 0) state = 0;
     if (state >= hmmstates) state = hmmstates - 1;
-    return state;
+    return state;  // 0 <= state < hmmstates
 }
 
 static inline MYFLT state_to_freq(int state, MYFLT a4, int subbins)
@@ -6977,7 +6922,7 @@ static inline MYFLT state_to_freq(int state, MYFLT a4, int subbins)
  * We use a simple Gaussian in pitch distance (in semitones).
  * Self-transitions get extra weight via PYIN_TRANS_SELF.
  * ------------------------------------------------------------------------- */
-static MYFLT transition_weight(int i, int j, MYFLT trans_self, int subbins)
+static inline MYFLT transition_weight(int i, int j, MYFLT trans_self, int subbins)
 {
     if (i == j) return trans_self;
     MYFLT dist_semitones = fabs((MYFLT)(i - j)) / (MYFLT)subbins;
@@ -6996,6 +6941,10 @@ static MYFLT transition_weight(int i, int j, MYFLT trans_self, int subbins)
  *
  * We keep one unvoiced "super-state" by treating p_unvoiced as a scalar.
  * ------------------------------------------------------------------------- */
+
+
+#define GAUSS_1 0.60653065971263342  /* exp(-0.5) */
+
 static void hmm_forward_step(
     MYFLT *fwd_prev,
     MYFLT *fwd_cur,
@@ -7006,56 +6955,72 @@ static void hmm_forward_step(
     MYFLT transprob,
     int drift_semitones,
     int hmm_states,
-    int subbins)
+    int subbins,
+    MYFLT *transition_matrix)
 {
     int s, c, j;
 
     // observation likelihoods
     MYFLT obs[PYIN_MAX_HMM_STATES] = {0};
-
     MYFLT voiced_obs_total = 0.0;
     MYFLT cand_prob_w = 0.;
+    if(transprob == 0.)
+        transprob = 0.99;
     for (c = 0; c < n_cands; c++) {
         int st = freq_to_state(cand_freq[c], a4, hmm_states, subbins);
-        if (st >= 0) {
-            /* Spread over ±1 sub-bin with Gaussian weights */
-            for (int delta = -1; delta <= 1; delta++) {
-                int idx = st + delta;
-                if (idx < 0 || idx >= hmm_states) continue;
-                MYFLT w = exp(-0.5 * (MYFLT)(delta * delta));
-                cand_prob_w = cand_prob[c] * w;
-                obs[idx] += cand_prob_w; // cand_prob[c] * w;
-                voiced_obs_total += cand_prob_w; // cand_prob[c] * w;
-            }
+        // Spread over ±1 sub-bin with Gaussian weights
+        // delta = 0, weight = 1.0
+        obs[st] += cand_prob[c];
+        // voiced_obs_total += cand_prob[c];
+
+        // delta = -1 and +1, weight = exp(-0.5)
+        if (st - 1 >= 0) {
+            MYFLT w = cand_prob[c] * GAUSS_1;
+            obs[st - 1] += w;
+            // voiced_obs_total += w;
+        }
+        if (st + 1 < hmm_states) {
+            MYFLT w = cand_prob[c] * GAUSS_1;
+            obs[st + 1] += w;
+            // voiced_obs_total += w;
         }
     }
 
-    /* Unvoiced observation probability = 1 - sum of voiced candidate probs */
+    // Unvoiced observation probability = 1 - sum of voiced candidate probs
     MYFLT total_voiced_prob = 0.0;
     for (c = 0; c < n_cands; c++)
         total_voiced_prob += cand_prob[c];
     if (total_voiced_prob > 1.0) total_voiced_prob = 1.0;
     MYFLT p_unvoiced_obs = 1.0 - total_voiced_prob;
 
-    /* Forward update: marginalise over previous states via transition */
+    // Forward update: marginalise over previous states via transition
     MYFLT norm = 0.0;
     int drift_bins = drift_semitones * subbins;
+
     for (s = 0; s < hmm_states; s++) {
         MYFLT trans_sum = 0.0;
-        /* Only consider a band of nearby states for efficiency (±5 semitones) */
+        // Only consider a band of nearby states for efficiency +/- drift_bins
         int lo = s - drift_bins;
         int hi = s + drift_bins;
         if (lo < 0) lo = 0;
         if (hi >= hmm_states) hi = hmm_states - 1;
-        for (j = lo; j <= hi; j++) {
-            trans_sum += fwd_prev[j] * transition_weight(j, s, transprob, subbins);
+        if(transition_matrix != NULL) {
+            // use precalculated matrix
+            for (j = lo; j <= hi; j++) {
+                trans_sum += fwd_prev[j] * transition_matrix[j * hmm_states + s];
+            }
+        } else {
+            for (j = lo; j <= hi; j++) {
+                trans_sum += fwd_prev[j] * transition_weight(j, s, transprob, subbins);
+            }
         }
 
-        /* Voiced prior blended with unvoiced */
-        MYFLT voiced_prior = PYIN_VOICED_PROB;
-        MYFLT emission = voiced_prior * obs[s]
-                       + (1.0 - voiced_prior) * (p_unvoiced_obs / (MYFLT)hmm_states);
-
+        // Voiced prior blended with unvoiced
+        // MYFLT voiced_prior = PYIN_VOICED_PROB;
+        // MYFLT emission = voiced_prior * obs[s]
+        //                + (1.0 - voiced_prior) * (p_unvoiced_obs / (MYFLT)hmm_states);
+        MYFLT emission = p_unvoiced_obs * (1.0f / hmm_states)   // unvoiced floor
+                           + (1.0 - p_unvoiced_obs) * obs[s];       // voiced component
         fwd_cur[s] = trans_sum * emission;
         norm += fwd_cur[s];
     }
@@ -7102,29 +7067,72 @@ static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates, MYFLT
     return best;
 }
 
-/* =========================================================================
- * Csound opcode lifecycle functions
- * ========================================================================= */
+typedef struct {
+    OPDS h;
 
-static int pyin_dealloc(CSOUND *csound, PYIN_OPCODE *p) {
-    csound->Free(csound, p->input_buf);
-    csound->Free(csound, p->work_buf);
-    csound->Free(csound, p->diff);
-    csound->Free(csound, p->cmnd);
-    csound->Free(csound, p->hmm_fwd);
-    csound->Free(csound, p->hmm_fwd_prev);
-    csound->Free(csound, p->beta_weights);
-    csound->Free(csound, p->thresholds);
-    return OK;
-}
+    /* Output k-rate variables */
+    MYFLT *kpitch;
+    MYFLT *kconf;
+    MYFLT *kvoiced;
+
+    /* Input arguments */
+    MYFLT *asig;
+    MYFLT *iminfreq;
+    MYFLT *imaxfreq;
+    MYFLT *ibufsize;
+    MYFLT *ioverlap;
+    MYFLT *trans_self;    // HMM self-transition probability
+    MYFLT *inumbins;         // bins per semitone
+    MYFLT *drift;         // Drift in semitones, defaults to 5
+
+    /* Internal state */
+    int bufsize;           // analysis window size (samples)
+    int hopsize;           // hop size (samples)
+    int taumin;            // minimum lag (samples) for min frequency
+    int taumax;            // maximum lag (samples) for max frequency
+    int bufpos;            // current write position in input ring buffer
+    int samples_since_hop; // samples since last hop
+    int hmmstates;
+    int subbins;
+    MYFLT transprob;        // fixed hmm transition probability
+
+    AUXCH aux_inputbuf;    // ring buffer for incoming audio
+    AUXCH aux_workbuf;     // linear analysis window extracted from ring buf
+    AUXCH aux_diff;        // YIN difference function (size = bufsize/2)
+    AUXCH aux_cmnd;        // cumulative mean normalized difference function
+    AUXCH aux_transition_matrix;
+
+    // MYFLT *input_buf;      /* ring buffer for incoming audio                  */
+    // MYFLT *work_buf;       /* linear analysis window extracted from ring buf  */
+    // MYFLT *diff;           /* YIN difference function (size = bufsize/2)      */
+    // MYFLT *cmnd;           /* cumulative mean normalized difference function  */
+
+    MYFLT thresholds[PYIN_N_THRESHOLDS];
+    MYFLT beta_weights[PYIN_N_THRESHOLDS];
+
+    /* HMM state */
+    MYFLT *hmm_fwd;
+    MYFLT *hmm_fwd_prev;
+
+    MYFLT hmm_buf1[PYIN_MAX_HMM_STATES];
+    MYFLT hmm_buf2[PYIN_MAX_HMM_STATES];
+
+
+
+    /* Transition matrix is implicit (see transition weight function) */
+
+    /* Per-frame pitch candidate storage */
+    MYFLT cand_freq[PYIN_MAX_CANDIDATES];
+    MYFLT cand_prob[PYIN_MAX_CANDIDATES];
+    int   n_cands;
+
+} PYIN_OPCODE;
 
 
 static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
 {
-    // MYFLT sr = csound->GetSr(csound);
     MYFLT sr = LOCAL_SR(p);
 
-    /* Parse init arguments */
     p->bufsize = (p->ibufsize && *p->ibufsize > 0)
                  ? (int)*p->ibufsize : 2048;
     int overlap = (p->ioverlap && *p->ioverlap > 0)
@@ -7142,21 +7150,23 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
     if (p->taumin < 1) p->taumin = 1;
     if (p->taumax >= p->bufsize / 2) p->taumax = p->bufsize / 2 - 1;
 
-    /* Allocate buffers */
-    p->input_buf = (MYFLT*)csound->Calloc(csound, p->bufsize * sizeof(MYFLT));
-    p->work_buf  = (MYFLT*)csound->Calloc(csound, p->bufsize * sizeof(MYFLT));
-    p->diff      = (MYFLT*)csound->Calloc(csound, (p->bufsize / 2 + 1) * sizeof(MYFLT));
-    p->cmnd      = (MYFLT*)csound->Calloc(csound, (p->bufsize / 2 + 1) * sizeof(MYFLT));
-    p->hmm_fwd   = (MYFLT*)csound->Calloc(csound, PYIN_MAX_HMM_STATES * sizeof(MYFLT));
-    p->hmm_fwd_prev = (MYFLT*)csound->Calloc(csound, PYIN_MAX_HMM_STATES * sizeof(MYFLT));
-    p->thresholds   = (MYFLT*)csound->Calloc(csound, PYIN_N_THRESHOLDS * sizeof(MYFLT));
-    p->beta_weights = (MYFLT*)csound->Calloc(csound, PYIN_N_THRESHOLDS * sizeof(MYFLT));
+    // Initialize Auxch
+    auxinit(csound, &(p->aux_inputbuf), p->bufsize);
+    auxinit(csound, &(p->aux_workbuf), p->bufsize);
+    auxinit(csound, &(p->aux_diff), p->bufsize / 2 + 1);
+    auxinit(csound, &(p->aux_cmnd), p->bufsize / 2 + 1);
 
+    p->hmm_fwd = p->hmm_buf1;
+    p->hmm_fwd_prev = p->hmm_buf2;
 
-    p->buf_pos = 0;
+    p->bufpos = 0;
     p->samples_since_hop = 0;
     p->n_cands = 0;
-    p->initialized = 1;
+    MYFLT transprob = *p->trans_self;
+    if(transprob == 0)
+        transprob = 0.99;
+    p->transprob = transprob;
+
     int midirange = PYIN_MIDI_MAX - PYIN_MIDI_MIN + 1;
     int numbins = (int)(*p->inumbins);
     if(numbins == 0)
@@ -7168,43 +7178,53 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
     }
     p->hmmstates = hmmstates;
     p->subbins = numbins;
+    auxinit(csound, &(p->aux_transition_matrix), hmmstates*hmmstates);
 
-    /* Initialise HMM prior: flat */
+    // Initialise HMM prior: flat
     MYFLT flat = 1.0 / (MYFLT)p->hmmstates;
     for (int s = 0; s < p->hmmstates; s++)
         p->hmm_fwd_prev[s] = flat;
 
-    /* Initialise outputs */
     *p->kpitch = 0.0;
     *p->kconf = 0.0;
     *p->kvoiced = 0.0;
 
     precalculate_thresholds(p->beta_weights, p->thresholds);
 
+    // We precalculate the transition matrix. We still allow trans_self to change, which
+    // is incurs in a performance hit since we need to call transition_weight within
+    // an inner loop
+    MYFLT *trans_matrix = (MYFLT*)p->aux_transition_matrix.auxp;
+    for (int i = 0; i < hmmstates; i++) {
+        for (int j = 0; j < hmmstates; j++) {
+            trans_matrix[i * hmmstates + j] = transition_weight(i, j, transprob, numbins);
+        }
+    }
+
     return OK;
 }
 
 static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
 {
-    if (!p->initialized) return NOTOK;
-
     int ksmps = LOCAL_KSMPS(p);
     MYFLT *in = p->asig;
-    MYFLT *input_buf = p->input_buf;
+    MYFLT *input_buf = (MYFLT*)p->aux_inputbuf.auxp;
     int bufsize = p->bufsize;
-    int subbins = p->subbins;
-    MYFLT minconf = 0.1;  // original: 0.05
-    // TODO: make it configurable. But since we return the confidence anyway, leave the parameter
-    // kvoiced for future use, maybe we can come up with something more clever than just applying
-    // a threshold
+    int bufpos = p->bufpos;
+    int samples_to_end = bufsize - bufpos;
 
-    int buf_pos = p->buf_pos;
-    for (int i=0; i < ksmps; i++) {
-        input_buf[buf_pos] = in[i];
-        buf_pos = (buf_pos + 1) % bufsize;
+    if (ksmps <= samples_to_end) {
+        memcpy(input_buf + bufpos, in, ksmps * sizeof(MYFLT));
+        bufpos += ksmps;
+        if (bufpos == bufsize) bufpos = 0;
+    } else {
+        // split across wrap boundary
+        memcpy(input_buf + bufpos, in, samples_to_end * sizeof(MYFLT));
+        memcpy(input_buf, in + samples_to_end, (ksmps - samples_to_end) * sizeof(MYFLT));
+        bufpos = ksmps - samples_to_end;
     }
+    p->bufpos = bufpos;
     p->samples_since_hop += ksmps;
-    p->buf_pos = buf_pos;
     if(p->samples_since_hop < p->hopsize) {
         return OK;
     }
@@ -7216,43 +7236,45 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
 
     MYFLT sr = LOCAL_SR(p);
     MYFLT trans_self = *p->trans_self;
-    if(trans_self == 0.)
-        trans_self = 0.99;
-
-    /* Process when we've accumulated a full hop */
-    p->samples_since_hop -= p->hopsize;
-
-    /* Extract analysis window (linearise ring buffer) */
-    int start = p->buf_pos;   /* oldest sample */
-    MYFLT *work_buf = p->work_buf;
-    for (int j = 0; j < bufsize; j++) {
-        work_buf[j] = input_buf[(start + j) % bufsize];
+    MYFLT *transition_matrix = NULL;
+    if((trans_self == 0.) || (trans_self == p->transprob)) {
+        transition_matrix = p->aux_transition_matrix.auxp;
     }
 
-    /* Compute YIN CMND */
-    compute_yin_cmnd(p->work_buf, p->diff, p->cmnd, p->bufsize, p->taumax);
+    p->samples_since_hop -= p->hopsize;
 
-    /* Get pYIN pitch candidates */
-    p->n_cands = pyin_pitch_candidates(p->cmnd, p->taumin, p->taumax, sr,
+    // linearise ring buffer
+    MYFLT *work_buf = (MYFLT*)p->aux_workbuf.auxp;
+    samples_to_end = bufsize - bufpos;
+    memcpy(work_buf, input_buf + bufpos, samples_to_end * sizeof(MYFLT));
+    memcpy(work_buf + samples_to_end, input_buf, bufpos * sizeof(MYFLT));
+
+    MYFLT *cmnd = (MYFLT*)p->aux_cmnd.auxp;
+    compute_yin_cmnd(work_buf, (MYFLT*)p->aux_diff.auxp, cmnd, p->bufsize, p->taumax);
+
+    // get pitch canidates
+    p->n_cands = pyin_pitch_candidates(cmnd, p->taumin, p->taumax, sr,
                                        p->cand_freq, p->cand_prob, PYIN_MAX_CANDIDATES,
                                        p->beta_weights, p->thresholds);
 
-    /* HMM forward step */
     hmm_forward_step(p->hmm_fwd_prev, p->hmm_fwd,
                      p->cand_freq, p->cand_prob, p->n_cands,
                      a4, trans_self, drift_semitones,
-                     p->hmmstates, p->subbins);
+                     p->hmmstates, p->subbins, transition_matrix);
 
-    /* Decode */
     MYFLT conf;
     int voiced;
+    MYFLT minconf = 0.1;  // original: 0.05
+    // TODO: make it configurable. But since we return the confidence anyway, leave the parameter
+    // kvoiced for future use, maybe we can come up with something more clever than just applying
+    // a threshold
     int best_state = hmm_decode(p->hmm_fwd, &conf, &voiced, p->hmmstates, minconf);
 
-    *p->kpitch = voiced ? state_to_freq(best_state, a4, subbins) : 0.0;
+    *p->kpitch = voiced ? state_to_freq(best_state, a4, p->subbins) : 0.0;
     *p->kconf = conf;
     *p->kvoiced = (MYFLT)voiced;
 
-    /* Swap forward buffers */
+    // swap buffers
     MYFLT *tmp = p->hmm_fwd_prev;
     p->hmm_fwd_prev = p->hmm_fwd;
     p->hmm_fwd = tmp;
@@ -7648,7 +7670,7 @@ static OENTRY localops[] = {
     {"strmul.k", S(STRMUL), 0, "S", "Sko", (SUBR)strmul_init, (SUBR)strmul_perf, NULL, NULL},
     {"strmul.i", S(STRMUL), 0, "S", "Sio", (SUBR)strmul_i, NULL, NULL},
 
-    {"pyin", S(PYIN_OPCODE), 0, "kkk", "aiiooOOoo", (SUBR)pyin_init, (SUBR)pyin_perf, (SUBR)pyin_dealloc, NULL}
+    {"pyin", S(PYIN_OPCODE), 0, "kkk", "aiiooOOoo", (SUBR)pyin_init, (SUBR)pyin_perf, NULL, NULL}
 
 };
 #endif
