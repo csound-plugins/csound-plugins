@@ -32,33 +32,49 @@ Output:
 	
 */
 
+gilen = int(30 * sr/ksmps) + 1
+gitimes      ftgen 0, 0, gilen, -2, 0
+gifreqs      ftgen 0, 0, gilen, -2, 0
+giconfidence ftgen 0, 0, gilen, -2, 0
+gienv        ftgen 0, 0, gilen, -2, 0
 
 instr 1
-  asig1 = oscili:a(0.5, 500)
-  asig2 = buzz(0.1, 300, 7, -1)
-  asig3 = pinker() * 0.1
-  asig4 = diskin2("finnegan01.flac", 1, 0, 1)[0]
-  Snames[] fillarray "sine ", "buzz ", "pink ", "finn "
+  asig1 = buzz(0.1, 300, 7, -1)
+  ; asig2 = diskin2("../../beosc/examples/colours-german-male-mono.flac", 1, 0, 1)[0]
+  asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]
+     
+  Snames[] fillarray "sine", "speech", "speech", "speech"
   ksource init 0
-  if metro(1/3) == 1 then
-    ksource = (ksource + 1) % 4
+  if metro(1/4) == 1 then
+    ksource = (ksource + 1) % lenarray(Snames)
   endif
-  asig = picksource(ksource, asig1, asig2, asig3, asig4)
-  asig = diskin2("../../beosc/examples/colours-german-male-mono.flac", 1, 0, 1)[0]
-  kpitch, kconf, kvoiced pyin asig, 60, 1000, 2048, 8, 0.993, 5
+  asig = picksource(ksource, asig1, asig2, asig2, asig2)
+  iframelen = 2048
+  kpitch, kconf, kvoiced pyin asig, 60, 1000, iframelen, 8, 0.993, 8
   ksound = schmitt(dbamp(rms(asig)),  -45, -55);
-  kenv = schmitt:k(kconf, 0.5, 0.3) * ksound;
-  if metro(12) == 1 then
-    printsk "Source: %d, %s, pitch: %f, conf: %f, voiced: %f, sound: %d\n", ksource, Snames[ksource], kpitch, kconf, kvoiced, ksound
-  endif
-  outch 1, asig
+  kenv = schmitt:k(kconf, 0.5, 0.3) * ksound
+  kicounter = eventcycles()
+  tabw eventtime(), kicounter, gitimes
+  tabw kpitch, kicounter, gifreqs
+  tabw kconf, kicounter, giconfidence
+  tabw kenv, kicounter, gienv
+  outch 1, delay(asig, iframelen/sr)
   outch 2, vco2(0.1, kpitch) * a(kenv)
+endin
+
+instr 2
+  savenpy "pyin-times.npy", gitimes
+  savenpy "pyin-freq.npy", gifreqs
+  savenpy "pyin-confidence.npy", giconfidence
+  savenpy "pyin-env.npy", gienv
+  turnoff
 endin
 
 </CsInstruments>
 
 <CsScore>
-i1 1 20
+i 1 0 12
+i 2 12.1 0.1
 
 </CsScore>
 </CsoundSynthesizer>

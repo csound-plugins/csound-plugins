@@ -56,6 +56,9 @@ kfreq, kconfidence, kvoiced pyin asig, iminfreq=60, imaxfreq=1000, ibufsize=2048
 {example}
 
 
+![](assets/pyin-spectrogram.png)
+[LISTEN](assets/pyin-test.mp3)
+
 ## See also
 
 * [ptrack](https://csound.com/docs/manual/ptrack.html)

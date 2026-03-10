@@ -9,7 +9,7 @@ import fnmatch
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--action", default="build", choices=["build", "deploy", "none"], 
+parser.add_argument("--action", default="build", choices=["build", "deploy", "none"],
                     help="mkdocs action to perform after generating documentation")
 parser.add_argument("--overwrite", action="store_true")
 
@@ -42,24 +42,24 @@ def make_indices(destdir, mode="wiki"):
     subprocess.call([root/"scripts"/"_generate_index.py",
                      "--mode", mode,
                      "--outfile", outfile])
-    
+
 def fill_manual_pages():
-    """ this fills template manual pages (ending in .md_) into 
+    """ this fills template manual pages (ending in .md_) into
     normal markdown files"""
     subprocess.call([rootfolder / "scripts" / "fill-manual-pages"])
 
-    
+
 def find_manual_pages(opcodes):
     """ for each opcode find a file opcode.md inside rootfolder (recursively) """
     mdopcodes = {opcode + ".md" for opcode in opcodes}
-    return [md for md in Path(rootfolder/"src").glob("**/*.md") 
+    return [md for md in Path(rootfolder/"src").glob("**/*.md")
             if md.name in mdopcodes]
 
 def collect_assets(main_assets_folder):
-    for asset_folder in Path(rootfolder/"src").glob("**/docs/assets"):
+    for asset_folder in Path(rootfolder/"src").glob("**/doc/assets"):
         copyall(asset_folder.glob("*"), main_assets_folder)
-        
-    
+
+
 def find_opcodes():
     """ find opcodes based on the manifest"""
     manifests = get_manifests()
@@ -75,10 +75,10 @@ def find_opcodes():
         if opcodes_in_manifest:
             opcodes.update(opcodes_in_manifest)
     return opcodes
- 
+
 def copyall(files, dest):
     if files is None:
-        return 
+        return
     for f in files:
         print(f"copying {f} to {dest}")
         shutil.copy(f, dest)
@@ -87,23 +87,23 @@ def copyrec(srcdir, destdir):
     if os.path.exists(destdir):
         shutil.rmtree(destdir)
     shutil.copytree(srcdir, destdir)
-    
+
 def build_mkdocs(manpages):
     # we first build everything in a build dir, to be
     # able to check a build
 
-    # where to build the mkdocs structure 
+    # where to build the mkdocs structure
     build_dir = rootfolder/".docs-build"
-    
+
     # where to put the generated site, as expected my mkdocs
     dest_dir = rootfolder/"docs"
-    
+
     # where are the .md original files
     mkdocs_dir = rootfolder/"mkdocs"
 
     copyrec(mkdocs_dir, build_dir)
     make_indices(destdir=build_dir, mode="mkdocs")
-    
+
     opcodes_dir = build_dir/"opcodes"
     opcodes_dir.mkdir(parents=True, exist_ok=True)
     copyall(manpages, opcodes_dir)
@@ -123,7 +123,7 @@ def build_mkdocs(manpages):
         return
 
     copyrec(build_dir, dest_dir)
-    
+
     print()
     print("To put decumentation online:")
     print("    mkdocs gh-deploy")
@@ -141,11 +141,10 @@ if __name__ == "__main__":
     print("Opcodes: ", opcodes)
     manpages = find_manual_pages(opcodes)
     print(manpages)
-    # build_wiki(rootfolder, manpages, wikirepo=args.wikirepo)  
+    # build_wiki(rootfolder, manpages, wikirepo=args.wikirepo)
     build_mkdocs(manpages)
     os.chdir(rootfolder)
     if args.action == "build":
         os.system("mkdocs build")
     elif args.action == "deploy":
         os.system("mkdocs gh-deploy")
-
