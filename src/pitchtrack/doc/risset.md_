@@ -1,0 +1,43 @@
+# risset
+
+## Abstract
+
+Get information from risset's package manager
+
+## Description
+
+Provides information to interact with the risset package manager, allowing to, for example,
+to query the directory where risset places downloaded assets. This allows to use these assets
+along different platforms without changing the csound script
+
+## Syntax
+
+    Sout risset Scommand
+
+## Arguments
+
+* **Scommand**: possible commands are:
+	* `"root"`: Returns risset's root folder, where assets, documentation and repository clones are
+		placed. For linux this is `~/.local/share/risset`, for macOS, `~/Library/Application Support/risset`
+		and for windows `%LocalAppData%/risset` (`C:/Users/<User>/AppData/Local/risset`)
+	* `"assets"`: The assets folder (a subfolder of risset's root)
+
+## Output
+
+* **Sout**: the result of the query
+
+## Execution Time
+
+* Init
+
+## Examples
+
+{example}
+
+## See also
+
+* [sysPlatform](sysPlatform.md)
+
+## Credits
+
+Eduardo Moguillansky, 2021
