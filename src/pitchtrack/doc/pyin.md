@@ -24,23 +24,23 @@ kfreq, kconfidence, kvoiced pyin asig, Sarg1, ivalue1, [Sarg2, ivalue2, ...]
 * **Sarg1**: argument name, see below
 * **ivalue1**: argument value
 
-<!-- multiline -->
-Parameter         | Range / Default    | Description                           
-------------------|--------------------|---------------------------------------
-framesize         | 1024-8192 (2048)   | Analysis frame size in samples
-hop               | 64- (1/4 framesize)| Hop size in samples
-fmin              | 20 -               | Min. frequency
-fmax              | 20 -               | Max. frequency
-bins              | 2 - 50             | Subdivisions per semitone
-transition_weight | 0-1 (0.1)          | Prob. of switching voiced↔unvoiced
-minrms            | 0-1                | Mark sound with rms below this as silent
-beta_a            | 1 - 3              | param a for beta distr. prior over thresholds.
-beta_b            | 1 - 20             | param b for beta distr. Lower=smoother track
-drift             | 10- (100)          | Pitch variation between frames, in cents
-voiced_obs_floor  | 0-1                | Floor for voiced observations
-octave_cost       | 0-0.5 (0.)         | Cost of jumping an octave between frames. Use if the algorithm falsely predicts the 2nd overtone as the fundamental 
-subharmonic_tresh | 4                  | Used together with octave_cost, controls the threshold of a downward octave jump 
+### Named arguments:
 
+* **framesize**: 1024–8192 (2048). Analysis frame size in samples
+* **hop**: 64– (1/4 framesize). Hop size in samples
+* **fmin**: 20– (60). Min. frequency
+* **fmax**: 20- (1000). Max. frequency
+* **bins**: 2–50 (10). Subdivisions per semitone
+* **transition_weight**: 0–1 (0.1). Prob. of switching voiced↔unvoiced
+* **minrms**: 0–1. Mark sound with rms below this as silent
+* **beta_a**: 1–3. Param a for beta distr. prior over thresholds
+* **beta_b**: 1–20. Param b for beta distr. Lower = smoother track
+* **drift**: 10– (100). Pitch variation between frames, in cents
+* **voiced_obs_floor**: 0–1. Floor for voiced observations
+* **octave_cost**: 0–0.5 (0). Cost of jumping an octave between frames. 
+  Use if the algorithm falsely predicts the 2nd overtone as the fundamental
+* **subharmonic_tresh**: 4. Used together with octave_cost, controls the 
+  threshold of a downward octave jump
 
 
 ## Output
@@ -48,27 +48,6 @@ subharmonic_tresh | 4                  | Used together with octave_cost, control
 * **kfreq**: detected frequency. Only valid if confidence is > ~0.4
 * **kconfidence**: detection confidence
 * **kvoiced**: is the sound voiced
-
-
-
-## Syntax
-
-
-```csound
-kfreq, kconfidence, kvoiced pyinf0 asig, iminfreq=60, imaxfreq=1000, ibufsize=2048, ioverlap=4, ktransprob=0.99, ibins=4, kdrift=5
-```
-
-## Arguments
-
-* **asig**: audio signal
-* **iminfreq**: min. frequency for f0 (default=60)
-* **imaxfreq**: max. frequency for f0 (default=1000)
-* **ibufsize**: size of the analysis frame (default=2048)
-* **ioverlap**: overlapping frames. hopsize=bufsize/overlap (default=4)
-* **ktransprob**: hmm transition probability (default=0.99)
-* **ibins**: number of bins per semitone (default=4)
-* **kdrift**: pitch drift between frames, in semitones (default=5)
-
 
 
 ## Execution Time
@@ -170,12 +149,9 @@ i1 1 20
 ```
 
 
-![](assets/pyin-spectrogram.png)
-[LISTEN](assets/pyin-test.mp3)
-
 ## See also
 
-* [pyin](pyin.md)
+* [pyinf0](pyin.md)
 * [ptrack](https://csound.com/docs/manual/ptrack.html)
 * [plltrack](https://csound.com/docs/manual/plltrack.html)
 * [pvsmagsum](pvsmagsum.md)
@@ -185,5 +161,5 @@ i1 1 20
 
 * Author: Eduardo Moguillansky
 * Year: 2026
-* Plugin: else
-* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c
+* Plugin: pitchtrack
+* Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/pitchtrack/src/pyin.c
