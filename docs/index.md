@@ -182,7 +182,7 @@ Band-enhanced oscillators implementing the sine+noise synthesis model
 
 Fundamental pitch tracking
 
-* [pyin](opcodes/pyin.md): ? 
+* [pyin](opcodes/pyin.md): Fundamental tracking implementing the pYIN algorithm 
 
 
 
