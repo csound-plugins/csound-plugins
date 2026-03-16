@@ -42,7 +42,7 @@ instr 1
   asig1 = buzz(0.1, 300, 7, -1)
   ; asig2 = diskin2("../../beosc/examples/colours-german-male-mono.flac", 1, 0, 1)[0]
   asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]
-     
+  ; asig2 = diskin2("../../else/examples/voiceover-fragment-48k.flac", 1, 0, 1)[0] 
   Snames[] fillarray "sine", "speech", "speech", "speech"
   ksource init 0
   if metro(1/4) == 1 then
@@ -50,9 +50,9 @@ instr 1
   endif
   asig = picksource(ksource, asig1, asig2, asig2, asig2)
   iframelen = 2048
-  kpitch, kconf, kvoiced pyin asig, 60, 1000, iframelen, 8, 0.993, 8
-  ksound = schmitt(dbamp(rms(asig)),  -45, -55);
-  kenv = schmitt:k(kconf, 0.5, 0.3) * ksound
+  kpitch, kconf, kvoiced pyin asig, 60, 800, iframelen, 4, 0.992, 5
+  ksound = schmitt(dbamp(rms(asig)),  -55, -65);
+  kenv = schmitt:k(kconf, 0.2, 0.05) * ksound
   kicounter = eventcycles()
   tabw eventtime(), kicounter, gitimes
   tabw kpitch, kicounter, gifreqs

@@ -35,18 +35,18 @@ Output:
 
 instr 1
   asig1 = oscili:a(0.5, 500)
-  asig2 = buzz(0.1, 300, 7, -1)
-  asig3 = pinker() * 0.1
-  asig4 = diskin2("finnegan01.flac", 1, 0, 1)[0]
-  Snames[] fillarray "sine ", "buzz ", "pink ", "finn "
+  asig2 = diskin2("finnegan01.flac", 1, 0, 1)[0]
+  asig3 = buzz(0.1, 300, 7, -1)
+  asig4 = pinker() * 0.1
+  Snames[] fillarray "sine", "speech", "buzz", "pink"
   ksource init 0
   if metro(1/3) == 1 then
     ksource = (ksource + 1) % 4
   endif
   asig = picksource(ksource, asig1, asig2, asig3, asig4)
-  kpitch, kconf, kvoiced pyin asig, 60, 1000, 2048, 8, 0.992, 5
+  kpitch, kconf, kvoiced pyin asig, 60, 1000, 2048, 8, 0.9, 5
   ksound = schmitt(dbamp(rms(asig)),  -45, -55);
-  kenv = schmitt:k(kconf, 0.5, 0.3) * ksound;
+  kenv = schmitt:k(kconf, 0.03, 0.01) * ksound;
   if metro(12) == 1 then
     printsk "Source: %d, %s, pitch: %f, conf: %f, voiced: %f, sound: %d\n", ksource, Snames[ksource], kpitch, kconf, kvoiced, ksound
   endif

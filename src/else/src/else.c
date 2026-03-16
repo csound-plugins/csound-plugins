@@ -185,11 +185,10 @@
 #include <unistd.h>
 #endif
 
-#include <ctype.h>
+// #include <ctype.h>
 
 #include "../../common/_common.h"
-
-// #include <fluidsynth.h>
+// #include "../../common/window.h"
 
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
@@ -368,7 +367,7 @@ static inline MYFLT rnd31(CSOUND *csound, int*seed) {
 }
 
 static int32_t crackle_init(CSOUND *csound, CRACKLE* p) {
-    MYFLT kp = *p->kp;
+    // MYFLT kp = *p->kp;
     int seed = csound->GetRandomSeedFromTime();
     p->y1 = rnd31(csound, &seed);
     p->y2 = 0;
@@ -419,6 +418,7 @@ typedef struct {
 
 
 static int32_t ramptrig_k_kk_init(CSOUND *csound, RAMPTRIGK *p) {
+    IGN(csound);
     p->lasttrig = 0;
     // p->sr = csound->GetKr(csound);
     p->sr = LOCAL_SR(p);
@@ -450,6 +450,7 @@ static int32_t ramptrig_k_kk(CSOUND *csound, RAMPTRIGK *p) {
 }
 
 static int32_t ramptrig_a_kk_init(CSOUND *csound, RAMPTRIGK *p) {
+    IGN(csound);
     p->lasttrig = 0;
     // p->sr = csound->GetSr(csound);
     p->sr = LOCAL_SR(p);
@@ -511,6 +512,7 @@ typedef struct {
 
 
 static int32_t ramptrigsync_kk_kk_init(CSOUND *csound, RAMPTRIGSYNC *p) {
+    IGN(csound);
     p->lasttrig = 0;
     p->now = 0;
     // p->sr = csound->GetKr(csound);
@@ -792,6 +794,7 @@ typedef struct {
 
 
 static int32_t standardchaos_init(CSOUND *csound, STANDARDCHAOS *p) {
+    IGN(csound);
     // p->x_sr = csound->GetSr(csound);
     p->x_sr = LOCAL_SR(p);
     MYFLT hz = p->x_sr * 0.5; // default parameters
@@ -1238,6 +1241,7 @@ static int32_t sp_peaklim_init(CSOUND *csound, SP_PEAKLIM *p) {
 }
 
 static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
+    IGN(csound);
 
     MYFLT *out = p->out;
     SAMPLE_ACCURATE(out);
@@ -1399,12 +1403,12 @@ static inline MYFLT randflt(uint32_t *seedptr) {
 }
 
 
-static inline float
-PhaseFrac(uint32_t inPhase) {
-    union { uint32_t itemp; float ftemp; } u;
-    u.itemp = 0x3F800000 | (0x007FFF80 & ((inPhase)<<7));
-    return u.ftemp - 1.f;
-}
+// static inline float
+// PhaseFrac(uint32_t inPhase) {
+//     union { uint32_t itemp; float ftemp; } u;
+//     u.itemp = 0x3F800000 | (0x007FFF80 & ((inPhase)<<7));
+//     return u.ftemp - 1.f;
+// }
 
 #define M_PI 3.14159265358979323846
 #define pi2 2*M_PI
@@ -1413,19 +1417,21 @@ PhaseFrac(uint32_t inPhase) {
 #define xlobits1 13
 
 
-static inline MYFLT
-lookupi1(const MYFLT* table0, const MYFLT* table1,
-         int32_t pphase, int32_t lomask) {
-    MYFLT pfrac    = PhaseFrac(pphase);
-    uint32_t index = ((pphase >> xlobits1) & lomask);
-    MYFLT val1 = *(const MYFLT*)((const char*)table0 + index);
-    MYFLT val2 = *(const MYFLT*)((const char*)table1 + index);
-    MYFLT out  = val1 + (val2 - val1) * pfrac;
-    return out;
-}
+// static inline MYFLT
+// lookupi1(const MYFLT* table0, const MYFLT* table1,
+//          int32_t pphase, int32_t lomask) {
+//     MYFLT pfrac    = PhaseFrac(pphase);
+//     uint32_t index = ((pphase >> xlobits1) & lomask);
+//     MYFLT val1 = *(const MYFLT*)((const char*)table0 + index);
+//     MYFLT val2 = *(const MYFLT*)((const char*)table1 + index);
+//     MYFLT out  = val1 + (val2 - val1) * pfrac;
+//     return out;
+// }
 
 
 static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
+    IGN(csound);
+
     int os = (int)*p->koversample;
     MYFLT tgt_f = *p->kmodfreq;
 
@@ -2173,7 +2179,7 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     pfields[0] = p->instrnum;
     pfields[1] = *p->p2;
     pfields[2] = *p->p3;
-    for(int i=0; i<p->numargs; i++) {
+    for(uint32_t i=0; i<p->numargs; i++) {
         pfields[3+i] = *(MYFLT *)p->pargs[i];
     }
     csound->Event(csound, 'i', (const MYFLT *)(&pfields), p->numargs + 3);
@@ -3430,15 +3436,15 @@ static inline MYFLT _exp_interpol(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT expon) {
     return y0 + (y1 - y0) * POWER(frac, expon);
 }
 
-static inline MYFLT _smooth_interpol2(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT param) {
-    MYFLT frac2 = frac*frac*(3 - 2*frac);
-    if(param > 0) {
-        for(int i=0; i<(int)param; i++) {
-            frac2 = frac2*frac2*(3 - 2*frac2);
-        }
-    }
-    return y0 + (y1 - y0) * frac2;
-}
+// static inline MYFLT _smooth_interpol2(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT param) {
+//     MYFLT frac2 = frac*frac*(3 - 2*frac);
+//     if(param > 0) {
+//         for(int i=0; i<(int)param; i++) {
+//             frac2 = frac2*frac2*(3 - 2*frac2);
+//         }
+//     }
+//     return y0 + (y1 - y0) * frac2;
+// }
 
 static inline MYFLT _smooth_interpol(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT param) {
     if(param==0) {
@@ -4122,44 +4128,44 @@ static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t la
     return imin - 1;
 }
 
-static inline int64_t array_bisect_old(MYFLT x, MYFLT *xs, int64_t xslen, int64_t lastidx) {
-    // -1: lower bound, -2: upper bound
-    if(x <= xs[0]) {
-        return -1;
-    }
+// static inline int64_t array_bisect_old(MYFLT x, MYFLT *xs, int64_t xslen, int64_t lastidx) {
+//     // -1: lower bound, -2: upper bound
+//     if(x <= xs[0]) {
+//         return -1;
+//     }
 
-    if(x >= xs[xslen-1]) {
-        return -2;
-    }
+//     if(x >= xs[xslen-1]) {
+//         return -2;
+//     }
 
-    int64_t imin;
+//     int64_t imin;
 
-    if(lastidx >= 0 && xs[lastidx] <= x) {
-        if(x < xs[lastidx+1]) {
-            return lastidx;
-        }
-        if (lastidx < xslen-2 && x < xs[lastidx+2]) {
-            return lastidx + 1;
-        }
-        imin = lastidx;
-    }
-    else {
-        imin = 0;
-    }
-    int64_t imax = xslen;
+//     if(lastidx >= 0 && xs[lastidx] <= x) {
+//         if(x < xs[lastidx+1]) {
+//             return lastidx;
+//         }
+//         if (lastidx < xslen-2 && x < xs[lastidx+2]) {
+//             return lastidx + 1;
+//         }
+//         imin = lastidx;
+//     }
+//     else {
+//         imin = 0;
+//     }
+//     int64_t imax = xslen;
 
-    int64_t imid;
-    while (imin < imax) {
-        imid = (imax + imin) / 2;
-        if (xs[imid] < x)
-            imin = imid + 1;
-        else
-            imax = imid;
-    }
+//     int64_t imid;
+//     while (imin < imax) {
+//         imid = (imax + imin) / 2;
+//         if (xs[imid] < x)
+//             imin = imid + 1;
+//         else
+//             imax = imid;
+//     }
 
-    // now the right pair is in pairmin
-    return imin - 1;
-}
+//     // now the right pair is in pairmin
+//     return imin - 1;
+// }
 
 
 static int32_t bisect_init(CSOUND *csound, BISECT *p) {
@@ -5348,30 +5354,31 @@ static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
     return OK;
 }
 
-static int32_t detectSilence2_a_a(CSOUND *csound, DETECT_SILENCE *p) {
-    int cnt = p->counter;
-    MYFLT *in = p->ain;
-    MYFLT *out = p->out;
-    int endCounter = (int32_t)(LOCAL_SR(p) * *p->ktime);
-    MYFLT thresh = *p->kthresh;
+// static int32_t detectSilence2_a_a(CSOUND *csound, DETECT_SILENCE *p) {
+//     int cnt = p->counter;
+//     MYFLT *in = p->ain;
+//     MYFLT *out = p->out;
+//     int endCounter = (int32_t)(LOCAL_SR(p) * *p->ktime);
+//     MYFLT thresh = *p->kthresh;
 
-    AUDIO_OPCODE(csound, p);
-    AUDIO_OUTPUT(out);
+//     AUDIO_OPCODE(csound, p);
+//     AUDIO_OUTPUT(out);
 
-    for(n = offset; n < nsmps; n++) {
-        float val = fabs(in[n]);
-        int above_thresh = (val > thresh);
+//     for(n = offset; n < nsmps; n++) {
+//         float val = fabs(in[n]);
+//         int above_thresh = (val > thresh);
 
-        // Reset counter if above threshold
-        cnt = above_thresh ? 0 : (cnt >= 0 ? cnt + 1 : cnt);
+//         // Reset counter if above threshold
+//         cnt = above_thresh ? 0 : (cnt >= 0 ? cnt + 1 : cnt);
 
-        // Output 1 only if counter reached endCounter
-        out[n] = (cnt >= endCounter) ? 1.f : 0.f;
-    }
+//         // Output 1 only if counter reached endCounter
+//         out[n] = (cnt >= endCounter) ? 1.f : 0.f;
+//     }
 
-    p->counter = cnt;
-    return OK;
-}
+//     p->counter = cnt;
+//     return OK;
+// }
+//
 
 static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
     MYFLT thresh = *p->kthresh;
@@ -7081,9 +7088,6 @@ static void hmm_forward_step(
 
     // observation likelihoods
     MYFLT obs[PYIN_MAX_HMM_STATES] = {0};
-    MYFLT voiced_obs_total = 0.0;
-    MYFLT cand_prob_w = 0.;
-    // size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
 
     if(transprob == 0.)
         transprob = 0.99;
@@ -7095,18 +7099,15 @@ static void hmm_forward_step(
         // Spread over ±1 sub-bin with Gaussian weights
         // delta = 0, weight = 1.0
         obs[st] += cand_prob[c];
-        // voiced_obs_total += cand_prob[c];
 
         // delta = -1 and +1, weight = exp(-0.5)
         if (st >= 1) {
             MYFLT w = cand_prob[c] * GAUSS_1;
             obs[st - 1] += w;
-            // voiced_obs_total += w;
         }
         if (st + 1 < hmm_states) {
             MYFLT w = cand_prob[c] * GAUSS_1;
             obs[st + 1] += w;
-            // voiced_obs_total += w;
         }
     }
 
@@ -7226,24 +7227,14 @@ typedef struct {
     AUXCH aux_cmnd;        // cumulative mean normalized difference function
     AUXCH aux_transition_matrix;
 
-    // MYFLT *input_buf;      /* ring buffer for incoming audio                  */
-    // MYFLT *work_buf;       /* linear analysis window extracted from ring buf  */
-    // MYFLT *diff;           /* YIN difference function (size = bufsize/2)      */
-    // MYFLT *cmnd;           /* cumulative mean normalized difference function  */
-
     MYFLT thresholds[PYIN_N_THRESHOLDS];
     MYFLT beta_weights[PYIN_N_THRESHOLDS];
 
-    /* HMM state */
     MYFLT *hmm_fwd;
     MYFLT *hmm_fwd_prev;
 
     MYFLT hmm_buf1[PYIN_MAX_HMM_STATES];
     MYFLT hmm_buf2[PYIN_MAX_HMM_STATES];
-
-
-
-    /* Transition matrix is implicit (see transition weight function) */
 
     /* Per-frame pitch candidate storage */
     MYFLT cand_freq[PYIN_MAX_CANDIDATES];
@@ -7372,6 +7363,8 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
     samples_to_end = bufsize - bufpos;
     memcpy(work_buf, input_buf + bufpos, samples_to_end * sizeof(MYFLT));
     memcpy(work_buf + samples_to_end, input_buf, bufpos * sizeof(MYFLT));
+
+    // TODO: apply window here, compute it at init
 
     MYFLT *cmnd = (MYFLT*)p->aux_cmnd.auxp;
     compute_yin_cmnd(work_buf, (MYFLT*)p->aux_diff.auxp, cmnd, p->bufsize, p->taumax);
@@ -7794,7 +7787,7 @@ static OENTRY localops[] = {
     {"strmul.k", S(STRMUL), 0, "S", "Sko", (SUBR)strmul_init, (SUBR)strmul_perf, NULL, NULL, 0},
     {"strmul.i", S(STRMUL), 0, "S", "Sio", (SUBR)strmul_i, NULL, NULL, NULL, 0},
 
-    {"pyin", S(PYIN_OPCODE), 0, "kkk", "aiiooOOoo", (SUBR)pyin_init, (SUBR)pyin_perf, NULL, NULL, 0}
+    {"pyinf0", S(PYIN_OPCODE), 0, "kkk", "aiiooOOoo", (SUBR)pyin_init, (SUBR)pyin_perf, NULL, NULL, 0}
 
 };
 #endif

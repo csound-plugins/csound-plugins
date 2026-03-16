@@ -243,6 +243,7 @@ function(make_c_plugin pluginlib srcs)
   # csound/Android.../jni include is a hack to include version.h which exists only as version.h.in in csound/include and
   # needs an extra cmake step to generate it
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
+  target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/src/common)
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/Android/CsoundAndroid/jni)
 
   if(LINUX)
@@ -262,7 +263,7 @@ endfunction(make_c_plugin)
 # pluginlib: name of the plugin
 # srcs: sources of the plugin
 function(make_plugin pluginlib srcs)
-  message(STATUS "make_plugin: ${pluginlib}")
+  message(STATUS "make_plugin: ${pluginlib}, sources: ${srcs}")
   add_shared_library(${pluginlib} ${srcs})
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
   target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/Android/CsoundAndroid/jni)
