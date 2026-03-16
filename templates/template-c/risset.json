@@ -6,7 +6,7 @@
   ],
   "libname": "libmyplugin",
   "version": "0.1.0",
-  "short_description": "Risset plugin example",
+  "short_description": "plugin example",
   "long_description": "A template to show how a plugin can be included in risset",
   "author": "Name Surname",
   "email": "name.surname@email.com",

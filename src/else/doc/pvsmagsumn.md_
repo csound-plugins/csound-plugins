@@ -12,9 +12,9 @@ Can be used to calculate how much energy is concentrated on the
 loudest `inumbins` bins. The ratio between this value and the
 sum of all magnitudes is a good indicator of how spread out
 the energy of the signal is across the frequency spectrum, thus
-serving as a good measure for the noisyness of the signal.
-A noisy signal will tend to have energy spread more evenly across
-the spectrum, while a musical or speech signal will concentrate
+serving as a measure for the "voicedness" of the signal.
+A noisy (unvoiced) signal will tend to have energy spread more evenly 
+across the spectrum, while a musical or speech signal will concentrate
 that signal along a limited range of bins.
 This opcode combines in one the use of pvstrace and pvsmagsum
 making it more efficient for the use cases where the spectrum
@@ -22,13 +22,15 @@ of the selected bins is not actually needed.
 
 When used with a negative *inumbins*, it calculates the relative
 weight of the loudest *inumbins* bins (where a 1 would indicate
-that all the weight of the spectrum is concentrated on these bins)
+that all the weight of the spectrum is concentrated on these bins).
+The min. value for a perfectly uniform noise (where all bins have 
+the same amplitude) is `inumbins/(fftsize/2+1)`
 
 ## Syntax
 
 
 ```csound
-ktotalmag pvsmagsum fsig, inumbins, kminfreq=0, kmaxfreq=sr/2
+ktotalmag pvsmagsumn fsig, inumbins, kminfreq=0, kmaxfreq=sr/2
 ```
 
 ## Arguments
