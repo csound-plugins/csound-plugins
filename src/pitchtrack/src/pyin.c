@@ -209,9 +209,10 @@ static int32_t pyin_perf(CSOUND *csound, PYIN_OPCODE *p) {
 #define S(x) sizeof(x)
 
 #ifdef CSOUNDAPI6
+static OENTRY localops[] = {};
 #else
 static OENTRY localops[] = {
-  { "pyin2.s", S(PYIN_OPCODE), 0, "kkk", "a*", (SUBR)pyin_init, (SUBR)pyin_perf, (SUBR)pyin_deinit, NULL, 0}
+  { "pyin", S(PYIN_OPCODE), 0, "kkk", "a*", (SUBR)pyin_init, (SUBR)pyin_perf, (SUBR)pyin_deinit, NULL, 0}
 };
 #endif
 
