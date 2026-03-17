@@ -1,7 +1,9 @@
 {
   "name": "pitchtrack",
-  "version": "2.3.2",
-  "opcodes": ["pyin"],
+  "version": "2.3.3",
+  "opcodes": [
+    "pyin"
+  ],
   "short_description": "Fundamental pitch tracking",
   "long_description": "Opcodes for fundamental tracking via different algorithms (pyin, etc.)",
   "author": "Eduardo Moguillansky",
