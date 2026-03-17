@@ -14,6 +14,7 @@
  *   Using Probabilistic Threshold Distributions. ICASSP 2014.
  * ========================================================================= */
 
+
 /* ── Configuration ──────────────────────────────────────────────────────── */
 
 /**
@@ -237,6 +238,7 @@ typedef struct {
      * Default: 3.0
      */
     float octave_subharmonic_threshold;  /* Default: 3.0f */
+
 } PYINConfig;
 
 /**

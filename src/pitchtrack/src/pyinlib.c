@@ -56,6 +56,12 @@ static int next_pow2(int x)
     return p;
 }
 
+typedef struct {
+    double a, b;
+    double lbeta;
+    double threshold;
+} beta_cdf_ctx;
+
 /* ── Ring buffer ────────────────────────────────────────────────────────── */
 
 typedef struct {
@@ -331,6 +337,7 @@ static void hmm_push(HMM *h, const float *log_obs)
         }
     } else {
         /* ── Voiced destination states ────────────────────────────────── */
+        const float * restrict log_trans_band = h->log_trans_band;
         for (int s = 0; s < np; s++) {
             float best      = -1e30f;
             int   best_from = 0;
@@ -341,8 +348,10 @@ static void hmm_push(HMM *h, const float *log_obs)
 
             for (int f = f_lo; f <= f_hi; f++) {
                 float v = HMM_SCORE(h, prev, f)
-                        + h->log_trans_band[(f - s) + bh];
-                if (v > best) { best = v; best_from = f; }
+                        + log_trans_band[(f - s) + bh];
+                best = v > best ? v : best;
+                best_from = v > best ? f : best_from;
+                // if (v > best) { best = v; best_from = f; }
             }
 
             /* From unvoiced state */
@@ -382,16 +391,16 @@ static void hmm_push(HMM *h, const float *log_obs)
 }
 
 /* Return the best state in the most recent trellis frame. */
-static int hmm_best_state(const HMM *h)
+static inline int hmm_best_state(const HMM *h)
 {
     int   latest = (h->head - 1 + VITERBI_DEPTH) % VITERBI_DEPTH;
     float best   = -1e30f;
     int   best_s = 0;
     for (int s = 0; s < h->n_total; s++) {
-        if (HMM_SCORE(h, latest, s) > best) {
-            best   = HMM_SCORE(h, latest, s);
-            best_s = s;
-        }
+        float hmmscore = HMM_SCORE(h, latest, s);
+        int cond = (hmmscore > best);
+        best = cond ? hmmscore : best;
+        best_s = cond ? s : best_s;
     }
     return best_s;
 }
@@ -406,7 +415,148 @@ static inline float state_to_hz(int s, float state_cents)
 
 /* ── Beta distribution ──────────────────────────────────────────────────── */
 
+static inline double fast_beta_cdf_normal(double x, double a, double b)
+{
+    double ab = a + b;
+    double mu = a / ab;
+    double var = (a * b) / (ab * ab * (ab + 1.0));
+    double sigma = sqrt(var);
+
+    double z = (x - mu) / sigma;
+
+    // standard normal CDF via erf
+    return 0.5 * (1.0 + erf(z * M_SQRT1_2));
+}
+
+static inline double beta_cdf_eval(const beta_cdf_ctx *ctx, double x)
+{
+    if (x <= 0.0) return 0.0;
+    if (x >= 1.0) return 1.0;
+
+    int swap = x > ctx->threshold;
+
+    double xx = swap ? (1.0 - x) : x;
+    double aa = swap ? ctx->b : ctx->a;
+    double bb = swap ? ctx->a : ctx->b;
+
+    double logx  = log(xx);
+    double log1x = log1p(-xx);
+
+    double front = exp(logx * aa + log1x * bb - ctx->lbeta) / aa;
+
+    double f = 1.0, C = 1.0, D = 0.0;
+
+    for (int m = 0; m <= 200; m++) {
+        double dm = (double)m;
+        double a2m = aa + 2.0 * dm;
+
+        // even step
+        double num;
+        if (m == 0) {
+            num = 1.0;
+        } else {
+            num = dm * (bb - dm) * xx / ((a2m - 1.0) * a2m);
+        }
+
+        D = 1.0 + num * D;
+        C = 1.0 + num / C;
+
+        D = copysign(fmax(fabs(D), 1e-30), D);
+        C = copysign(fmax(fabs(C), 1e-30), C);
+
+        D = 1.0 / D;
+        double delta = C * D;
+        f *= delta;
+
+        if (fabs(delta - 1.0) < 1e-10) break;
+
+        // odd step
+        num = -(aa + dm) * (aa + bb + dm) * xx / (a2m * (a2m + 1.0));
+
+        D = 1.0 + num * D;
+        C = 1.0 + num / C;
+
+        D = copysign(fmax(fabs(D), 1e-30), D);
+        C = copysign(fmax(fabs(C), 1e-30), C);
+
+        D = 1.0 / D;
+        delta = C * D;
+        f *= delta;
+
+        if (fabs(delta - 1.0) < 1e-10) break;
+    }
+
+    double r = front * (f - 1.0);
+    return swap ? (1.0 - r) : r;
+}
+
 static double beta_cdf(double x, double a, double b)
+{
+    if (x <= 0.0) return 0.0;
+    if (x >= 1.0) return 1.0;
+
+    double lbeta = lgamma(a) + lgamma(b) - lgamma(a + b);
+
+    double threshold = (a + 1.0) / (a + b + 2.0);
+    int swap = x > threshold;
+
+    double xx = swap ? (1.0 - x) : x;
+    double aa = swap ? b : a;
+    double bb = swap ? a : b;
+
+    double logx  = log(xx);
+    double log1x = log1p(-xx);
+
+    double front = exp(logx * aa + log1x * bb - lbeta) / aa;
+
+    double f = 1.0, C = 1.0, D = 0.0;
+
+    for (int m = 0; m <= 200; m++) {
+        double dm = (double)m;
+        double a2m = aa + 2.0 * dm;
+
+        // ---- even step ----
+        double num;
+        if (m == 0) {
+            num = 1.0;
+        } else {
+            num = dm * (bb - dm) * xx / ((a2m - 1.0) * a2m);
+        }
+
+        D = 1.0 + num * D;
+        C = 1.0 + num / C;
+
+        D = copysign(fmax(fabs(D), 1e-30), D);
+        C = copysign(fmax(fabs(C), 1e-30), C);
+
+        D = 1.0 / D;
+        double delta = C * D;
+        f *= delta;
+
+        if (fabs(delta - 1.0) < 1e-10) break;
+
+        // ---- odd step ----
+        num = -(aa + dm) * (aa + bb + dm) * xx / (a2m * (a2m + 1.0));
+
+        D = 1.0 + num * D;
+        C = 1.0 + num / C;
+
+        D = copysign(fmax(fabs(D), 1e-30), D);
+        C = copysign(fmax(fabs(C), 1e-30), C);
+
+        D = 1.0 / D;
+        delta = C * D;
+        f *= delta;
+
+        if (fabs(delta - 1.0) < 1e-10) break;
+    }
+
+    double r = front * (f - 1.0);
+    return swap ? (1.0 - r) : r;
+}
+
+
+static double beta_cdf0(double x, double a, double b)
 {
     if (x <= 0.0) return 0.0;
     if (x >= 1.0) return 1.0;
@@ -442,13 +592,104 @@ done:;
 
 static inline float beta_exceed(float t, double a, double b)
 {
-    return (float)(1.0 - beta_cdf((double)t, a, b));
+    return (float)(1.0 - beta_cdf0((double)t, a, b));
 }
 
 /* ── YIN ────────────────────────────────────────────────────────────────── */
 
-static void compute_diff(const float *frame, int W,
-                         float *diff, int max_lag)
+#include <stddef.h>
+
+/* Portable alignment macro */
+#if defined(_MSC_VER)
+#  define ASSUME_ALIGNED(ptr, align) \
+       ((__declspec(align(align)) float *)(ptr))
+#  define FORCE_INLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+#  define ASSUME_ALIGNED(ptr, align) \
+       ((float *)__builtin_assume_aligned((ptr), (align)))
+#  define FORCE_INLINE __attribute__((always_inline)) inline
+#else
+#  define ASSUME_ALIGNED(ptr, align) (ptr)
+#  define FORCE_INLINE inline
+#endif
+
+/* Horizontal sum of 4 accumulators — the compiler folds this into
+   a single SIMD reduction when the loop above was vectorized.      */
+static FORCE_INLINE float hsum4(float a0, float a1, float a2, float a3)
+{
+    return (a0 + a1) + (a2 + a3);
+}
+
+/* Dot product of two float arrays, length n.
+ *
+ * Four independent accumulators break the serial add-dependency so
+ * the compiler can issue 4 FMAs per cycle.  The tail (n % 4 != 0)
+ * is handled scalarly.  With -O2 / -O3 the loop body will be
+ * auto-vectorized to SSE/AVX on x86 or NEON on ARM.
+ */
+static FORCE_INLINE float dot_product(const float * restrict a,
+                                      const float * restrict b,
+                                      int n)
+{
+    // this segfaults...
+    // a = ASSUME_ALIGNED(a, 32);
+    // b = ASSUME_ALIGNED(b, 32);
+
+    float acc0 = 0.0f, acc1 = 0.0f, acc2 = 0.0f, acc3 = 0.0f;
+    int j = 0;
+
+    for (; j <= n - 4; j += 4) {
+        acc0 += a[j + 0] * b[j + 0];
+        acc1 += a[j + 1] * b[j + 1];
+        acc2 += a[j + 2] * b[j + 2];
+        acc3 += a[j + 3] * b[j + 3];
+    }
+    /* Scalar tail */
+    float acc = hsum4(acc0, acc1, acc2, acc3);
+    for (; j < n; j++)
+        acc += a[j] * b[j];
+
+    return acc;
+}
+
+/*
+ * compute_diff — YIN difference function with auto-vectorization.
+ *
+ * Precondition: `frame` must be allocated with 32-byte alignment.
+ * e.g.  float *frame = aligned_alloc(32, W * sizeof(float));
+ */
+static void compute_diff(const float * restrict frame, int W,
+                         float       * restrict diff,  int max_lag)
+{
+    const float *af = ASSUME_ALIGNED(frame, 32);
+    /* --- full-frame energy r_x(0) = r_y(0) --- */
+    float r_x = 0.0f, r_y = 0.0f;
+    for (int j = 0; j < W; j++) {
+        float xj = af[j];
+        r_x += xj * xj;            /* auto-vectorizes: simple reduce */
+    }
+    r_y  = r_x;
+    diff[0] = 0.0f;
+
+    for (int tau = 1; tau <= max_lag; tau++) {
+        /* O(1) energy updates — intentionally scalar, no loop to vectorize */
+        float drop_left  = af[W - tau];
+        float drop_right = af[tau - 1];
+        r_x -= drop_left  * drop_left;
+        r_y -= drop_right * drop_right;
+
+        /* Lagged cross-product — the hot path.
+         * dot_product() is inlined; the 4-accumulator unroll lets the
+         * compiler emit 4-wide FMA instructions (vfmadd* / fmla).     */
+        float rt = dot_product(af, af + tau, W - tau);
+        diff[tau] = r_x + r_y - 2.0f * rt;
+    }
+
+}
+
+
+static void compute_diff0(const float * restrict frame, int W,
+                         float * restrict diff, int max_lag)
 {
     /*
      * Exact YIN difference function, computed efficiently with running sums.
@@ -560,6 +801,7 @@ struct PYINContext {
     allocfn_t allocfn;
     freefn_t freefn;
     void *allocdata;
+    beta_cdf_ctx betacdf;
 };
 
 /* ── Default config ─────────────────────────────────────────────────────── */
@@ -657,6 +899,7 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
     // if (!ring_alloc(&ctx->ring, ring_cap)) goto fail;
 
     size_t memsize = (size_t)cfg.frame_size + (size_t)lag_buf_len * 3 + (size_t)n_total;
+    // allocate all memory in one chunk, use offsets
     float *mem = (float *)_alloc(allocfn, allocdata, memsize, sizeof(float));
     if(!mem)
         goto fail;
@@ -677,6 +920,14 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
                    ctx->state_cents, cfg.voiced_transition_weight,
                    sigma_cents, ctx->allocfn, ctx->allocdata)) goto fail;
 
+
+    double a = ctx->beta_a;
+    double b = ctx->beta_b;
+    ctx->betacdf.a = a;
+    ctx->betacdf.b = b;
+    ctx->betacdf.lbeta = lgamma(a) + lgamma(b) - lgamma(a + b);
+    ctx->betacdf.threshold = (a + 1.0) / (a + b + 2.0);
+
     return ctx;
 
 fail:
@@ -690,13 +941,7 @@ void pyin_destroy(PYINContext *ctx)
     // ring_free(&ctx->ring);
     _free(ctx->freefn, ctx->allocdata, ctx->ring.buf);
     _free(ctx->freefn, ctx->allocdata, ctx->mem);
-    // free(ctx->frame);
-    // free(ctx->diff);
-    // free(ctx->cmndf);
-    // free(ctx->p_voiced_lag);
-    // free(ctx->log_obs);
     // hmm_free(&ctx->hmm);
-
     _free(ctx->freefn, ctx->allocdata, ctx->hmm.score);
     _free(ctx->freefn, ctx->allocdata, ctx->hmm.back);
     _free(ctx->freefn, ctx->allocdata, ctx->hmm.log_trans_band);
@@ -735,14 +980,19 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
      * ──────────────────────────────────────────────────────────────────── */
     {
         double sum_sq = 0.0;
-        for (int i = 0; i < W; i++)
-            sum_sq += (double)ctx->frame[i] * (double)ctx->frame[i];
+        float *frame = ctx->frame;
+        for (int i = 0; i < W; i++) {
+            double val = frame[i];
+            sum_sq += val * val;
+        }
+        //    sum_sq += (double)ctx->frame[i] * (double)ctx->frame[i];
 
         if (sqrtf((float)(sum_sq / W)) < ctx->cfg.energy_gate_rms) {
             /* Feed a strongly unvoiced observation to the HMM */
             const float FLOOR = 1e-7f;
+            const float logfloor = logf(FLOOR);
             for (int s = 0; s < n_pitched; s++)
-                ctx->log_obs[s] = logf(FLOOR);
+                ctx->log_obs[s] = logfloor;
             ctx->log_obs[n_pitched] = 0.0f;   /* log(1) = 0 → certain unvoiced */
             hmm_push(&ctx->hmm, ctx->log_obs);
 
@@ -754,7 +1004,7 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
     }
 
     /* ── Step 1: YIN difference + CMNDF ─────────────────────────────────── */
-    compute_diff (ctx->frame, W, ctx->diff,  lag_max);
+    compute_diff(ctx->frame, W, ctx->diff,  lag_max);
     compute_cmndf(ctx->diff,     ctx->cmndf, lag_max);
 
     /* ── Step 2: per-lag voiced probability ──────────────────────────────
@@ -764,7 +1014,9 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
     for (int tau = lag_min; tau <= lag_max; tau++) {
         float v = ctx->cmndf[tau];
         if (v > 1.0f) v = 1.0f;
-        float pv = beta_exceed(v, ctx->beta_a, ctx->beta_b);
+        // float pv = beta_exceed(v, ctx->beta_a, ctx->beta_b);
+        // float pv = 1.0 - fast_beta_cdf_normal(v, ctx->beta_a, ctx->beta_b); // fast approx.
+        float pv = 1.0 - beta_cdf_eval(&(ctx->betacdf), v);  // full resolution, constant a,b
         ctx->p_voiced_lag[tau] = pv;
         if (pv > max_p_voiced) max_p_voiced = pv;
     }

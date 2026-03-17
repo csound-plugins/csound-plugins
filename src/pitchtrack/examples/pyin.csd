@@ -47,6 +47,7 @@ subharmonic_tresh  4              1 - 8
 
 instr 1
   asig1 = oscili:a(0.5, 500)
+  ; asig2 = diskin2("../../beosc/examples/colours-german-male-mono.flac", 1, 0, 1)[0]
   ; asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]
   asig2 = diskin2("../../else/examples/voiceover-fragment-48k.flac", 1, 0, 1)[0]
   asig3 = buzz(0.1, 300, 7, -1)
@@ -62,11 +63,12 @@ instr 1
   asigpyin = compress2:a(asig, asig, -90, -40, -20, 6, 0.01, 0.5, 0.02)
   asigpyin *= 3
   ; asigpyin = asig
-  kpitch, kconf, kvoiced pyin2 asigpyin, "framesize", 2048, "hop", 256, \
+  kpitch, kconf, kvoiced pyin asigpyin, "framesize", 2048, "hop", 256, \
   	"fmin", 70, "fmax", 600, "transition_weight", 0.01, "beta_b", 1.6, \
-  	"drift", 150, "voiced_obs_floor", 0.1
+  	"drift", 120, "voiced_obs_floor", 0.05
   ksound = schmitt(dbamp(rms(asig)),  -45, -60);
-  kenv = schmitt:k(kconf, 0.3, 0.2) * schmitt:k(kpitch, 90, 75) * ksound;
+  kvalid = schmitt:k(kconf, 0.3, 0.2) * schmitt:k(kpitch, 90, 75) * (1-schmitt:k(kpitch, 400, 300))
+  kenv = kvalid * ksound;
   if metro(24) == 1 && kenv > 0 then
     printsk "pitch: %.1f, conf: %d, voiced: %d, sound: %d\n", kpitch, kconf*100, kvoiced, ksound
   endif
