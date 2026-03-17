@@ -271,7 +271,8 @@ typedef struct {
 
 typedef struct PYINContext PYINContext;
 
-typedef int32_t (*allocfn_t)(void *p, size_t num);
+typedef void* (*allocfn_t)(void *p, size_t num);
+typedef void (*freefn_t)(void *p, void *mem);
 
 
 /* ── API ────────────────────────────────────────────────────────────────── */
@@ -280,7 +281,7 @@ typedef int32_t (*allocfn_t)(void *p, size_t num);
  * Allocate and initialise a pYIN context for the given configuration.
  * Returns NULL if any constraint is violated or a memory allocation fails.
  */
-PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, void *allocfn_data);
+PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, void *allocdata);
 
 /**
  * Release all resources owned by ctx.  Safe to call with NULL.
@@ -309,6 +310,6 @@ bool pyin_process_block(PYINContext   *ctx,
  * Reset all internal state (ring-buffer, HMM trellis, hop counter).
  * Configuration is preserved.
  */
-void pyin_reset(PYINContext *ctx);
+// void pyin_reset(PYINContext *ctx);
 
 #endif /* PYIN_H */

@@ -65,14 +65,15 @@ typedef struct {
     uint32_t fill;
 } RingBuffer;
 
-static bool ring_alloc(RingBuffer *r, int cap)
-{
-    r->buf   = (float *)calloc((size_t)cap, sizeof(float));
-    r->cap   = (uint32_t)cap;
-    r->write = 0;
-    r->fill  = 0;
-    return r->buf != NULL;
-}
+
+// static bool ring_alloc(RingBuffer *r, int cap)
+// {
+//     r->buf   = (float *)calloc((size_t)cap, sizeof(float));
+//     r->cap   = (uint32_t)cap;
+//     r->write = 0;
+//     r->fill  = 0;
+//     return r->buf != NULL;
+// }
 
 static void ring_free(RingBuffer *r)  { free(r->buf); r->buf = NULL; }
 
@@ -142,6 +143,22 @@ static inline void ring_read_latest(const RingBuffer *r, float *dst, int len)
     }
 }
 
+void *_alloc(allocfn_t allocfn, void *ctx, size_t n, size_t size) {
+    if(ctx && allocfn) {
+        return allocfn(ctx, n*size);
+    } else {
+        return calloc(n, size);
+    }
+}
+
+void _free(freefn_t freefn, void *ctx, void *ptr) {
+    if(ctx && freefn)
+        freefn(ctx, ptr);
+    else
+        free(ptr);
+}
+
+
 /* ── HMM ────────────────────────────────────────────────────────────────── */
 
 /*
@@ -175,9 +192,11 @@ typedef struct {
 #define HMM_SCORE(h, slot, s)  (h)->score[(slot) * (h)->n_total + (s)]
 #define HMM_BACK(h, slot, s)   (h)->back [(slot) * (h)->n_total + (s)]
 
+#define MAX_BANDWIDTH 8192
+
 static bool hmm_alloc(HMM *h, int n_pitched, int band_half,
                       float state_cents, float voiced_transition_weight,
-                      double sigma_cents)
+                      double sigma_cents, allocfn_t alloc_fn, void *alloc_ctx)
 {
     h->n_pitched = n_pitched;
     h->n_total   = n_pitched + 1;      /* +1 for the unvoiced state */
@@ -185,12 +204,19 @@ static bool hmm_alloc(HMM *h, int n_pitched, int band_half,
     h->head      = 0;
     h->filled    = 0;
 
-    h->score = (float   *)calloc((size_t)(VITERBI_DEPTH * h->n_total),
-                                  sizeof(float));
-    h->back  = (int16_t *)calloc((size_t)(VITERBI_DEPTH * h->n_total),
-                                  sizeof(int16_t));
     int band_width = 2 * band_half + 1;
-    h->log_trans_band = (float *)malloc((size_t)band_width * sizeof(float));
+    if(band_width > MAX_BANDWIDTH)
+        return false;
+
+    h->score = (float *)_alloc(alloc_fn, alloc_ctx, VITERBI_DEPTH * h->n_total, sizeof(float));
+    h->back = (int16_t *)_alloc(alloc_fn, alloc_ctx, VITERBI_DEPTH * h->n_total, sizeof(int16_t));
+    h->log_trans_band = (float*)_alloc(alloc_fn, alloc_ctx, band_width, sizeof(float));
+
+    // h->score = (float   *)calloc((size_t)(VITERBI_DEPTH * h->n_total),
+    //                               sizeof(float));
+    // h->back  = (int16_t *)calloc((size_t)(VITERBI_DEPTH * h->n_total),
+    //                               sizeof(int16_t));
+    // h->log_trans_band = (float *)malloc((size_t)band_width * sizeof(float));
 
     if (!h->score || !h->back || !h->log_trans_band) return false;
 
@@ -212,8 +238,9 @@ static bool hmm_alloc(HMM *h, int n_pitched, int band_half,
      * which is 80× weaker than the unvoiced self-loop (p_uu ≈ 0.99), making
      * voiced segments permanently penalised and preventing onset detection.
      */
-    double *tmp = (double *)malloc((size_t)band_width * sizeof(double));
-    if (!tmp) return false;
+    double tmp[MAX_BANDWIDTH];
+    // double *tmp = (double *)malloc((size_t)band_width * sizeof(double));
+    // if (!tmp) return false;
 
     double p_vu = (double)voiced_transition_weight;
     double p_vv = 1.0 - p_vu;
@@ -230,7 +257,7 @@ static bool hmm_alloc(HMM *h, int n_pitched, int band_half,
     for (int i = 0; i < band_width; i++)
         h->log_trans_band[i] = (float)tmp[i];
 
-    free(tmp);
+    // free(tmp);
 
     /* ── Voiced ↔ unvoiced transition log-probs ──────────────────────────
      *
@@ -521,6 +548,7 @@ struct PYINContext {
 
     /* Heap buffers */
     RingBuffer ring;
+    float *mem;
     float *frame;
     float *diff;
     float *cmndf;
@@ -528,6 +556,10 @@ struct PYINContext {
     float *log_obs;      /* [n_pitched + 1]: voiced[0..n_pitched-1], unvoiced[n_pitched] */
 
     HMM hmm;
+
+    allocfn_t allocfn;
+    freefn_t freefn;
+    void *allocdata;
 };
 
 /* ── Default config ─────────────────────────────────────────────────────── */
@@ -584,13 +616,16 @@ static bool config_valid(const PYINConfig *c)
 
 /* ── Public API ─────────────────────────────────────────────────────────── */
 
-
-PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, void *allocfn_data)
+PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, void *allocdata)
 {
     if (!config_valid(&cfg)) return NULL;
 
-    PYINContext *ctx = (PYINContext *)calloc(1, sizeof(PYINContext));
+    PYINContext *ctx = (PYINContext *)_alloc(allocfn, allocdata, 1, sizeof(PYINContext));
     if (!ctx) return NULL;
+
+    ctx->allocfn = allocfn;
+    ctx->allocdata = allocdata;
+    ctx->freefn = freefn;
 
     ctx->cfg         = cfg;
     ctx->lag_min     = (int)(cfg.sample_rate / cfg.f0_max + 0.5f);
@@ -613,20 +648,34 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, void *allocfn_data)
     int lag_buf_len = ctx->lag_max + 2;
     int n_total     = ctx->n_pitched + 1;   /* +1 for unvoiced */
 
-    if (!ring_alloc(&ctx->ring, ring_cap)) goto fail;
+    ctx->ring.buf = _alloc(allocfn, allocdata, ring_cap, sizeof(float));
+    if(!ctx->ring.buf) goto fail;
+    ctx->ring.cap = ring_cap;
+    ctx->ring.write = 0;
+    ctx->ring.fill = 0;
 
-    ctx->frame        = (float *)calloc((size_t)cfg.frame_size, sizeof(float));
-    ctx->diff         = (float *)calloc((size_t)lag_buf_len,    sizeof(float));
-    ctx->cmndf        = (float *)calloc((size_t)lag_buf_len,    sizeof(float));
-    ctx->p_voiced_lag = (float *)calloc((size_t)lag_buf_len,    sizeof(float));
-    ctx->log_obs      = (float *)malloc ((size_t)n_total        * sizeof(float));
+    // if (!ring_alloc(&ctx->ring, ring_cap)) goto fail;
 
-    if (!ctx->frame || !ctx->diff || !ctx->cmndf ||
-        !ctx->p_voiced_lag || !ctx->log_obs) goto fail;
+    size_t memsize = (size_t)cfg.frame_size + (size_t)lag_buf_len * 3 + (size_t)n_total;
+    float *mem = (float *)_alloc(allocfn, allocdata, memsize, sizeof(float));
+    if(!mem)
+        goto fail;
+    ctx->mem = mem;
+    ctx->frame = mem;
+    ctx->diff = mem + (size_t)cfg.frame_size;
+    ctx->cmndf = ctx->diff + (size_t)lag_buf_len;
+    ctx->p_voiced_lag = ctx->cmndf + (size_t)lag_buf_len;
+    ctx->log_obs = ctx->p_voiced_lag + (size_t)lag_buf_len;
 
+    // ctx->frame        = (float *)calloc((size_t)cfg.frame_size, sizeof(float));
+    // ctx->diff         = (float *)calloc((size_t)lag_buf_len,    sizeof(float));
+    // ctx->cmndf        = (float *)calloc((size_t)lag_buf_len,    sizeof(float));
+    // ctx->p_voiced_lag = (float *)calloc((size_t)lag_buf_len,    sizeof(float));
+    // ctx->log_obs      = (float *)malloc ((size_t)n_total        * sizeof(float));
+    //
     if (!hmm_alloc(&ctx->hmm, ctx->n_pitched, ctx->band_half,
                    ctx->state_cents, cfg.voiced_transition_weight,
-                   sigma_cents)) goto fail;
+                   sigma_cents, ctx->allocfn, ctx->allocdata)) goto fail;
 
     return ctx;
 
@@ -638,14 +687,22 @@ fail:
 void pyin_destroy(PYINContext *ctx)
 {
     if (!ctx) return;
-    ring_free(&ctx->ring);
-    free(ctx->frame);
-    free(ctx->diff);
-    free(ctx->cmndf);
-    free(ctx->p_voiced_lag);
-    free(ctx->log_obs);
-    hmm_free(&ctx->hmm);
-    free(ctx);
+    // ring_free(&ctx->ring);
+    _free(ctx->freefn, ctx->allocdata, ctx->ring.buf);
+    _free(ctx->freefn, ctx->allocdata, ctx->mem);
+    // free(ctx->frame);
+    // free(ctx->diff);
+    // free(ctx->cmndf);
+    // free(ctx->p_voiced_lag);
+    // free(ctx->log_obs);
+    // hmm_free(&ctx->hmm);
+
+    _free(ctx->freefn, ctx->allocdata, ctx->hmm.score);
+    _free(ctx->freefn, ctx->allocdata, ctx->hmm.back);
+    _free(ctx->freefn, ctx->allocdata, ctx->hmm.log_trans_band);
+
+    _free(ctx->freefn, ctx->allocdata, ctx);
+    // free(ctx);
 }
 
 const PYINConfig *pyin_get_config(const PYINContext *ctx)
@@ -653,12 +710,12 @@ const PYINConfig *pyin_get_config(const PYINContext *ctx)
     return &ctx->cfg;
 }
 
-void pyin_reset(PYINContext *ctx)
-{
-    ring_clear(&ctx->ring);
-    hmm_clear(&ctx->hmm);
-    ctx->samples_since_last_hop = 0;
-}
+// void pyin_reset(PYINContext *ctx)
+// {
+//     ring_clear(&ctx->ring);
+//     hmm_clear(&ctx->hmm);
+//     ctx->samples_since_last_hop = 0;
+// }
 
 /* ── Core analysis ──────────────────────────────────────────────────────── */
 

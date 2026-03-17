@@ -28,7 +28,6 @@
 */
 
 #include "csdl.h"
-#include <math.h>
 
 #include "../../common/_common.h"
 #include "pyinlib.h"
@@ -168,7 +167,7 @@ static int32_t pyin_init(CSOUND *csound, PYIN_OPCODE *p) {
         if(cfg.hop_size == 0)
             cfg.hop_size = cfg.frame_size / 4;
     }
-    PYINContext *ctx = pyin_create(cfg, NULL, NULL);
+    PYINContext *ctx = pyin_create(cfg, (allocfn_t)(csound->Calloc), (freefn_t)csound->Free, csound);
     if(!ctx) {
         INITERR("Error while creating PYIN context");
         return NOTOK;
