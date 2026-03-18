@@ -46,8 +46,8 @@ subharmonic_tresh  4              1 - 8
 
 instr 1
   asig1 = oscili:a(0.5, 500)
-  ; asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]
-  asig2 = diskin2("../../else/examples/voiceover-fragment-48k.flac", 1, 0, 1)[0]
+  asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]
+  ; asig2 = diskin2("../../else/examples/voiceover-fragment-48k.flac", 1, 0, 1)[0]
   asig3 = buzz(0.1, 300, 7, -1)
   asig4 = pinker() * 0.1
   Snames[] fillarray "sine  ", "speech", "buzz  ", "pink  "

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.30)
+
 if(WIN32)
   set(VCPKG_TARGET_ARCHITECTURE x64)
   set(VCPKG_TARGET_TRIPLET "x64-windows")
@@ -6,7 +8,6 @@ endif()
 
 project("csound_plugins")
 
-cmake_minimum_required(VERSION 3.8)
 
 set(APIVERSION "6.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
 
@@ -140,14 +141,26 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
   include(CheckCCompilerFlag)
   include(CheckCXXCompilerFlag)
 
-  addflag(-msse HAS_SSE)
-  addflag(-msse2 HAS_SSE2)
-  addflag(-mxCORE-AVX512 HAS_AVX512)
   addflag(-mfgpath=sse HAS_FPMATH_SSE)
-  addflag(-mxCORE-AVX512 HAS_AVX512)
+  
+  if(LINUX AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|i[3-6]86|AMD64")
+    addflag(-mavx2 HAS_AVX2)
+    if(HAS_AVX2)
+      message(STATUS "AVX2 enabled for Linux (x86)")
+    endif()
+  endif()
+
   set(CMAKE_C_FLAGS_RELEASE "-O3")  
 endif()
 
+# AVX2 for Windows (MSVC)
+if(MSVC AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|x86")
+  check_cxx_compiler_flag(/arch:AVX2 MSVC_HAS_AVX2)
+  if(MSVC_HAS_AVX2)
+    add_compile_options(/arch:AVX2)
+    message(STATUS "AVX2 enabled for Windows (MSVC, x86)")
+  endif()
+endif()
 
 if(MINGW)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
@@ -288,4 +301,3 @@ message(STATUS "Building Opcodes")
 # ------------------------------------------------------------------------------------
 
 ADD_ALL_SUBDIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
-

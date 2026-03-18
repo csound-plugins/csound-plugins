@@ -149,7 +149,7 @@ static inline void ring_read_latest(const RingBuffer *r, float *dst, int len)
     }
 }
 
-void *_alloc(allocfn_t allocfn, void *ctx, size_t n, size_t size) {
+void *_calloc(allocfn_t allocfn, void *ctx, size_t n, size_t size) {
     if(ctx && allocfn) {
         return allocfn(ctx, n*size);
     } else {
@@ -214,16 +214,9 @@ static bool hmm_alloc(HMM *h, int n_pitched, int band_half,
     if(band_width > MAX_BANDWIDTH)
         return false;
 
-    h->score = (float *)_alloc(alloc_fn, alloc_ctx, VITERBI_DEPTH * h->n_total, sizeof(float));
-    h->back = (int16_t *)_alloc(alloc_fn, alloc_ctx, VITERBI_DEPTH * h->n_total, sizeof(int16_t));
-    h->log_trans_band = (float*)_alloc(alloc_fn, alloc_ctx, band_width, sizeof(float));
-
-    // h->score = (float   *)calloc((size_t)(VITERBI_DEPTH * h->n_total),
-    //                               sizeof(float));
-    // h->back  = (int16_t *)calloc((size_t)(VITERBI_DEPTH * h->n_total),
-    //                               sizeof(int16_t));
-    // h->log_trans_band = (float *)malloc((size_t)band_width * sizeof(float));
-
+    h->log_trans_band = (float*)_calloc(alloc_fn, alloc_ctx, band_width, sizeof(float));
+    h->score = (float *)_calloc(alloc_fn, alloc_ctx, VITERBI_DEPTH * h->n_total, sizeof(float));
+    h->back = (int16_t *)_calloc(alloc_fn, alloc_ctx, VITERBI_DEPTH * h->n_total, sizeof(int16_t));
     if (!h->score || !h->back || !h->log_trans_band) return false;
 
     /* ── Voiced→voiced Gaussian band ────────────────────────────────────
@@ -661,7 +654,8 @@ static FORCE_INLINE float dot_product(const float * restrict a,
 static void compute_diff(const float * restrict frame, int W,
                          float       * restrict diff,  int max_lag)
 {
-    const float *af = ASSUME_ALIGNED(frame, 32);
+    // const float *af = ASSUME_ALIGNED(frame, 32);
+    const float *af = frame;
     /* --- full-frame energy r_x(0) = r_y(0) --- */
     float r_x = 0.0f, r_y = 0.0f;
     for (int j = 0; j < W; j++) {
@@ -862,7 +856,7 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
 {
     if (!config_valid(&cfg)) return NULL;
 
-    PYINContext *ctx = (PYINContext *)_alloc(allocfn, allocdata, 1, sizeof(PYINContext));
+    PYINContext *ctx = (PYINContext *)_calloc(allocfn, allocdata, 1, sizeof(PYINContext));
     if (!ctx) return NULL;
 
     ctx->allocfn = allocfn;
@@ -890,7 +884,7 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
     int lag_buf_len = ctx->lag_max + 2;
     int n_total     = ctx->n_pitched + 1;   /* +1 for unvoiced */
 
-    ctx->ring.buf = _alloc(allocfn, allocdata, ring_cap, sizeof(float));
+    ctx->ring.buf = _calloc(allocfn, allocdata, ring_cap, sizeof(float));
     if(!ctx->ring.buf) goto fail;
     ctx->ring.cap = ring_cap;
     ctx->ring.write = 0;
@@ -900,7 +894,7 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
 
     size_t memsize = (size_t)cfg.frame_size + (size_t)lag_buf_len * 3 + (size_t)n_total;
     // allocate all memory in one chunk, use offsets
-    float *mem = (float *)_alloc(allocfn, allocdata, memsize, sizeof(float));
+    float *mem = (float *)_calloc(allocfn, allocdata, memsize, sizeof(float));
     if(!mem)
         goto fail;
     ctx->mem = mem;

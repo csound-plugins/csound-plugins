@@ -64,19 +64,20 @@ instr 1
   asigpyin *= 3
   kpitch, kconf, kvoiced pyin asigpyin, "framesize", 2048, "hop", 256, \
   	"fmin", 70, "fmax", 600, "transition_weight", 0.01, "beta_b", 1.6, \
-  	"drift", 120, "voiced_obs_floor", 0.05
+  	"drift", 120, "voiced_obs_floor", 0.1
   ; akOOOOO
   apllpitch, aloc plltrack asigpyin, 0.05, 15, 0.15, 70, 600, 0.0001
   ksound = schmitt(dbamp(rms(asig)),  -45, -60);
-  kvalid = schmitt:k(kconf, 0.3, 0.2) * schmitt:k(kpitch, 90, 75) * (1-schmitt:k(kpitch, 400, 300))
+  kvalid = schmitt:k(kconf, 0.4, 0.3) * schmitt:k(kpitch, 90, 75) * (1-schmitt:k(kpitch, 400, 300))
   kenv = kvalid * ksound;
-  if metro(24) == 1 && kenv > 0 then
+  if metro(48) == 1 && kenv > 0 then
     printsk "pitch: %.1f, conf: %d, voiced: %d, sound: %d\n", kpitch, kconf*100, kvoiced, ksound
   endif
   ;; Switch these to compare pyin with plltrack
   aout = vco2(0.5, kpitch) * a(kenv)
-  ; aout = vco2(0.5, k(apllpitch)) * a(kenv)
-  aout = lpf18(aout, 2000, 0.3, 0)
+  aenv = lagud(a(kenv), 0.03, 0.15)
+  ; aout = vco2(0.5, k(apllpitch)) * aenv
+  aout = lpf18(aout, 1500, 0.4, 0)
   outch 1, asigpyin * 0.9
   outch 2, aout
 endin
