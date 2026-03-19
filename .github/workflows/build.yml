@@ -97,7 +97,7 @@ jobs:
           git submodule update --init --recursive --remote
           git submodule status --recursive
 
-          cd csounda
+          cd csound
           git switch develop
           Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "include"
           cd ..

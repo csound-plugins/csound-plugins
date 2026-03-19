@@ -3398,13 +3398,14 @@ static int32_t perlin3hash_init(CSOUND *csound, PERLIN3 *p) {
 static int32_t perlin3hash_a_aaa(CSOUND *csound, PERLIN3 *p) {
     IGN(csound);
     MYFLT * restrict out = p->out;
+
     SAMPLE_ACCURATE(out);
+
     const MYFLT * restrict x = p->x;
     const MYFLT * restrict y = p->y;
     const MYFLT * restrict z = p->z;
     const uint32_t seed = p->seed;
 
-#pragma GCC ivdep
     for (n = offset; n < nsmps; n++)
         out[n] = (MYFLT)perlin_noise_hash((float)x[n], (float)y[n], (float)z[n], seed);
 
