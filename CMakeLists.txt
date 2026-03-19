@@ -160,16 +160,16 @@ if(MSVC AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|x86")
     endif()
 endif()
 
-if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-    add_compile_options(-O3 -mcpu=apple-m1)
-    # target_compile_options(your_target PRIVATE
-    #     -O2
-    #     -mcpu=apple-m1
-    #     -ffast-math
-    # )
-    # Optional: confirm autovectorization is firing
-    # -Rpass=loop-vectorize -Rpass-missed=loop-vectorize
-endif()
+## if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+##     add_compile_options(-O3 -mcpu=apple-m1)
+##     # target_compile_options(your_target PRIVATE
+##     #     -O2
+##     #     -mcpu=apple-m1
+##     #     -ffast-math
+##     # )
+##     # Optional: confirm autovectorization is firing
+##     # -Rpass=loop-vectorize -Rpass-missed=loop-vectorize
+## endif()
 
 if(MINGW)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
