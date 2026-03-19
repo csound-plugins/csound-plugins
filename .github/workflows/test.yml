@@ -3,7 +3,7 @@ on: push
 jobs:
   macos-test:
     name: Test mac universal plugins, csound ${{ matrix.csound-branch }}
-    runs-on: macos-latest
+    runs-on: macos-14
     strategy:
       matrix:
         csound-branch: ["csound6", "develop"]
@@ -11,6 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Check arm64
+        run: |
+          arch=$(uname -m)
+          if [ "$arch" != "arm64" ]; then
+            echo "Unexpected architecture: $arch"
+            exit 1
+          fi
       - name: Install csound 6 from installer
         if: matrix.csound-branch == 'csound6'
         run: |
