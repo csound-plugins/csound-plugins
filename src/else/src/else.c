@@ -3259,7 +3259,7 @@ static double grad(int hash, double x, double y, double z) {
     return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
 
-double inline perlin_noise(double x, double y, double z) {
+double inline perlin3_calc(double x, double y, double z) {
     // find unit cube that contains point
     int X = (int)x & 255,
         Y = (int)y & 255,
@@ -3312,22 +3312,22 @@ static int32_t perlin3_init(CSOUND *csound, PERLIN3 *p) {
 
 static int32_t perlin3_k_kkk(CSOUND *csound, PERLIN3 *p) {
     IGN(csound);
-    *p->out = perlin_noise(*p->x, *p->y, *p->z);
+    *p->out = perlin3_calc(*p->x, *p->y, *p->z);
     return OK;
 }
 
 static int32_t perlin3_a_aaa(CSOUND *csound, PERLIN3 *p) {
     IGN(csound);
-    MYFLT * restrict out = p->out;
+    MYFLT * out = p->out;
 
     SAMPLE_ACCURATE(out);
 
-    MYFLT * restrict x = p->x;
-    MYFLT * restrict y = p->y;
-    MYFLT * restrict z = p->z;
+    MYFLT * x = p->x;
+    MYFLT * y = p->y;
+    MYFLT * z = p->z;
 
     for(n=offset; n<nsmps; n++) {
-        out[n] = perlin_noise(x[n], y[n], z[n]);
+        out[n] = perlin3_calc(x[n], y[n], z[n]);
     }
 
     return OK;
@@ -7795,7 +7795,6 @@ static OENTRY localops[] = {
     {"perlin3.k_kkk", S(PERLIN3), 0, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk, NULL, NULL, 0},
     {"perlin3.a_aaa", S(PERLIN3), 0, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa, NULL, NULL, 0},
     {"perlin3hash.a_aaa", S(PERLIN3), 0, "a", "aaa", (SUBR)(perlin3hash_init), (SUBR)perlin3hash_a_aaa, NULL, NULL, 0},
-
 
     {"interp1d.k_kK",  S(INTERPARR_x_xK), 0, "k", "k.[]", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL, 0},
     {"interp1d.k_kKS", S(INTERPARR_x_xK), 0, "k", "k.[]SO", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL, 0},
