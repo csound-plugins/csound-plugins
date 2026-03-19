@@ -3259,7 +3259,7 @@ static double grad(int hash, double x, double y, double z) {
     return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
 
-double inline perlin3_calc(double x, double y, double z) {
+double perlin3_calc(double x, double y, double z) {
     // find unit cube that contains point
     int X = (int)x & 255,
         Y = (int)y & 255,
