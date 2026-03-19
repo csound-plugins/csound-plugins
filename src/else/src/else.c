@@ -7606,8 +7606,8 @@ static OENTRY localops[] = {
     {"extendarray.SS", S(_AA), 0, 1, "", "S[]S[]", (SUBR)extendArray_i, NULL, NULL, NULL},
     // itab, sr, nchnls, loopstart=0, basenote=60
     {"ftsetparams.i", S(FTSETPARAMS), 0, 1, "", "iiioj", (SUBR)ftsetparams, NULL, NULL, NULL},
-    // {"perlin3.k_kkk", S(PERLIN3), 0, 3, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk, NULL, NULL},
-    // {"perlin3.a_aaa", S(PERLIN3), 0, 3, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa, NULL, NULL},
+    {"perlin3.k_kkk", S(PERLIN3), 0, 3, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk, NULL, NULL},
+    {"perlin3.a_aaa", S(PERLIN3), 0, 3, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa, NULL, NULL},
 
     {"interp1d.k_kK", S(INTERPARR_x_xK), 0, 3, "k", "k.[]", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL},
     {"interp1d.k_kKS", S(INTERPARR_x_xK), 0, 3, "k", "k.[]SO", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL},
