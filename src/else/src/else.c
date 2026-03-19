@@ -3259,7 +3259,7 @@ static double grad(int hash, double x, double y, double z) {
     return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
 
-double perlin3_calc(double x, double y, double z) {
+static double inline perlin3_calc(double x, double y, double z) {
     // find unit cube that contains point
     int X = (int)x & 255,
         Y = (int)y & 255,
@@ -3691,11 +3691,11 @@ static int32_t interparr_a_aK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
         intpart = modf(idx, &frac);
         if (idx <= 0) {
             out[n] = data[0];
-            return OK;
+            continue;
         }
         if (idx >= len - 1) {
             out[n] = data[len - 1];
-            return OK;
+            continue;
         }
 
         uint64_t i = (uint64_t)intpart;
