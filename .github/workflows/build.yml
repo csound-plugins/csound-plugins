@@ -36,7 +36,7 @@ jobs:
             APIMAJOR=7
           fi
           echo "APIVERSION = $APIVERSION"
-          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DAPIVERSION=$APIVERSION ..
+          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION=$APIVERSION ..
           cmake --build . --parallel
 
           cd ..
@@ -97,7 +97,7 @@ jobs:
           git submodule update --init --recursive --remote
           git submodule status --recursive
 
-          cd csound
+          cd csounda
           git switch develop
           Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "include"
           cd ..
