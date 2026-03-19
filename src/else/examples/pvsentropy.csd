@@ -9,21 +9,13 @@ ksmps  = 64
 nchnls = 2
 0dbfs  = 1
 
-/* Example file for pvsmagsum
+/* Example file for pvsentropy
 
-ktotalmag pvsmagsum fsig, kminfreq=0, kmaxfreq=sr/2
+ktotalmag pvsentropy fsig, kminfreq=0, kmaxfreq=sr/2
 
-  Given an pv chain, sum all magnitudes of the bins between minfreq
-  and maxfreq.
-
-  Used together with pvstrace it can be determine how concentrated
-  the energy of a signal is, giving an idea of how "voiced" or "pitched"
-  it is. A noisy signal will tend to have energy spread more evenly across
-  the spectrum, while a musical or speech signal will tend to concentrate
-  that signal along a limited range of beans. By selecting the loudest
-  bins via pvstrace and comparing the energy of the selected pv signal
-  to the original signal this renders a quite relyable measurement of
-  the "peakyness" of the signal.
+This gives a measure which ranges from approx 0 for a pure sinusoid, 
+to ~180 for white noise, a measure of general peakiness of the spectral 
+distribution
 
 */
 
@@ -42,9 +34,10 @@ instr 1
   asig = picksource(ksource, asig1, asig2, asig3, asig4, asig5)
   fsig = pvsanal(asig, ifftsize, 256, ifftsize, 0)
   kentr = pvsentropy(fsig, 50)
-  kentrnorm = bpf(kentr, 0, 0, 0.55, 0, 6, .15, 20, .5, 60, .9, 180, 1.) 
-  if metro(30) == 1 then
-    printsk "Source: %d, %s, entropy: %.3f (%d %%)\n", ksource, Snames[ksource], kentr, kentrnorm*100
+  kentrnorm = limit(((kentr - 0.55) / 180) ^ 0.6, 0, 1)
+  ; kentrnorm = bpf(kentr, 0, 0, 0.55, 0, 6, .15, 20, .5, 60, .9, 180, 1.) 
+  if metro(20) == 1 then
+    printsk "Source: %d, %s, entropy: %.2f (%d %%)\n", ksource, Snames[ksource], kentr, kentrnorm*100
   endif
   outch 1, asig
 endin

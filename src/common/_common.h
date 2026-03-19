@@ -247,10 +247,19 @@ static inline float fastlog2 (float x) {
   y *= 1.1920928955078125e-7f;
 
   return y - 124.22551499f
-           - 1.498030302f * mx.f 
+           - 1.498030302f * mx.f
            - 1.72587999f / (0.3520887068f + mx.f);
 }
 
+static inline float fastlog2b(float x) {
+    uint32_t ix;
+    memcpy(&ix, &x, sizeof(ix));
+    float y  = (float)ix * 1.1920928955078125e-7f - 126.94269504f;
+    float mx = (float)((ix & 0x007FFFFFu) | 0x3f000000u);
+    mx -= 1.0f;
+    y  += mx * (1.0f + mx * (-0.5f + mx * 0.333333f));
+    return y;
+}
 
 static inline float fastlogf (float x) {
     return 0.69314718f * fastlog2 (x);

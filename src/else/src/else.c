@@ -376,7 +376,7 @@ static int32_t crackle_init(CSOUND *csound, CRACKLE* p) {
 
 static int32_t crackle_perf(CSOUND *csound, CRACKLE* p) {
     IGN(csound);
-    MYFLT *out = p->aout;                                             \
+    MYFLT * out = p->aout;                                             \
 
     SAMPLE_ACCURATE(out)
 
@@ -388,8 +388,9 @@ static int32_t crackle_perf(CSOUND *csound, CRACKLE* p) {
     MYFLT y2 = p->y2;
 
     for(n=offset; n<nsmps; n++) {
-        y0 = fabs(y1 * kp - y2 - FL(0.05));
-        y2 = y1; y1 = y0;
+        y0 = fabs(y1 * kp - y2 - 0.05);
+        y2 = y1;
+        y1 = y0;
         out[n] = y0;
     }
     p->y1 = y1;
@@ -3258,7 +3259,7 @@ static double grad(int hash, double x, double y, double z) {
     return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
 
-double perlin_noise(double x, double y, double z) {
+double inline perlin_noise(double x, double y, double z) {
     // find unit cube that contains point
     int X = (int)x & 255,
         Y = (int)y & 255,
@@ -3290,6 +3291,7 @@ typedef struct {
     OPDS h;
     MYFLT *out;
     MYFLT *x, *y, *z;
+    uint32_t seed;
 } PERLIN3;
 
 static void perlin_noise_init(CSOUND *csound) {
@@ -3316,17 +3318,95 @@ static int32_t perlin3_k_kkk(CSOUND *csound, PERLIN3 *p) {
 
 static int32_t perlin3_a_aaa(CSOUND *csound, PERLIN3 *p) {
     IGN(csound);
-    MYFLT *out = p->out;
+    MYFLT * restrict out = p->out;
 
     SAMPLE_ACCURATE(out);
 
-    MYFLT *x = p->x;
-    MYFLT *y = p->y;
-    MYFLT *z = p->z;
+    MYFLT * restrict x = p->x;
+    MYFLT * restrict y = p->y;
+    MYFLT * restrict z = p->z;
 
     for(n=offset; n<nsmps; n++) {
         out[n] = perlin_noise(x[n], y[n], z[n]);
     }
+
+    return OK;
+}
+
+
+/*
+ * Hash a 3D integer coordinate to a pseudo-random uint32.
+ * Uses the "bit finalizer" from xxHash / MurmurHash3.
+ * No table, no memory access — pure arithmetic.
+ */
+static inline uint32_t hash3(int xi, int yi, int zi, uint32_t seed) {
+    uint32_t h = (uint32_t)(xi * 1664525 + yi * 1013904223 + zi * 1234567891) ^ seed;
+    h ^= h >> 16;
+    h *= 0x45d9f3b;
+    h ^= h >> 16;
+    return h;
+}
+
+static inline float grad_hash(uint32_t hash, float x, float y, float z) {
+    int h = (int)(hash & 15u);
+    float u = h < 8 ? x : y;
+    float v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
+    return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}
+
+static inline float fade_h(float t) {
+    return t * t * t * (t * (t * 6.f - 15.f) + 10.f);
+}
+
+static inline float lerp_h(float t, float a, float b) {
+    return a + t * (b - a);
+}
+
+static float perlin_noise_hash(float x, float y, float z, uint32_t seed) {
+    int xi = (int)floorf(x);
+    int yi = (int)floorf(y);
+    int zi = (int)floorf(z);
+
+    float xf = x - (float)xi;
+    float yf = y - (float)yi;
+    float zf = z - (float)zi;
+
+    float u = fade_h(xf);
+    float v = fade_h(yf);
+    float w = fade_h(zf);
+
+    /* 8 corner gradients — all independent, no chained lookups */
+    float g0 = grad_hash(hash3(xi,   yi,   zi  , seed), xf,   yf,   zf  );
+    float g1 = grad_hash(hash3(xi+1, yi,   zi  , seed), xf-1, yf,   zf  );
+    float g2 = grad_hash(hash3(xi,   yi+1, zi  , seed), xf,   yf-1, zf  );
+    float g3 = grad_hash(hash3(xi+1, yi+1, zi  , seed), xf-1, yf-1, zf  );
+    float g4 = grad_hash(hash3(xi,   yi,   zi+1, seed), xf,   yf,   zf-1);
+    float g5 = grad_hash(hash3(xi+1, yi,   zi+1, seed), xf-1, yf,   zf-1);
+    float g6 = grad_hash(hash3(xi,   yi+1, zi+1, seed), xf,   yf-1, zf-1);
+    float g7 = grad_hash(hash3(xi+1, yi+1, zi+1, seed), xf-1, yf-1, zf-1);
+
+    return lerp_h(w,
+               lerp_h(v, lerp_h(u, g0, g1), lerp_h(u, g2, g3)),
+               lerp_h(v, lerp_h(u, g4, g5), lerp_h(u, g6, g7)));
+}
+
+static int32_t perlin3hash_init(CSOUND *csound, PERLIN3 *p) {
+    p->seed = csound->GetRandomSeedFromTime();
+    return OK;
+}
+
+static int32_t perlin3hash_a_aaa(CSOUND *csound, PERLIN3 *p) {
+    IGN(csound);
+    MYFLT * restrict out = p->out;
+    SAMPLE_ACCURATE(out);
+    const MYFLT * restrict x = p->x;
+    const MYFLT * restrict y = p->y;
+    const MYFLT * restrict z = p->z;
+    const uint32_t seed = p->seed;
+
+#pragma GCC ivdep
+    for (n = offset; n < nsmps; n++)
+        out[n] = (MYFLT)perlin_noise_hash((float)x[n], (float)y[n], (float)z[n], seed);
 
     return OK;
 }
@@ -5321,6 +5401,7 @@ static int32_t detectSilence_init(CSOUND *csound, DETECT_SILENCE *p) {
     return OK;
 }
 
+
 static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
     MYFLT thresh = *p->kthresh;
     if(thresh < 0)
@@ -5330,55 +5411,24 @@ static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
         ktime = 0.1;
     int endCounter = (int32_t)(LOCAL_SR(p) * ktime);
     int counter = p->counter;
-    MYFLT val;
     MYFLT out = 0.;
-    MYFLT *in = p->ain;
+    const MYFLT* restrict in = p->ain;
 
     uint32_t n,
         nsmps = LOCAL_KSMPS(p),
         offset = p->h.insdshead->ksmps_offset;
 
-    for(n=offset; n<nsmps; n++) {
-        val = fabs(*in++);
-        if(val > thresh) {
-            counter = 0;
-        } else if(counter >= 0) {
-            if(++counter >= endCounter) {
-                out = 1.;
-                break;
-            }
-        }
+    for (n = offset; n < nsmps; n++) {
+        int32_t loud = fabs(in[n]) > thresh;
+        counter = loud ? 0 : (counter + 1);
     }
+    out = (counter >= endCounter) ? 1. : 0.;
+
     p->counter = counter;
     *p->out = out;
     return OK;
 }
 
-// static int32_t detectSilence2_a_a(CSOUND *csound, DETECT_SILENCE *p) {
-//     int cnt = p->counter;
-//     MYFLT *in = p->ain;
-//     MYFLT *out = p->out;
-//     int endCounter = (int32_t)(LOCAL_SR(p) * *p->ktime);
-//     MYFLT thresh = *p->kthresh;
-
-//     AUDIO_OPCODE(csound, p);
-//     AUDIO_OUTPUT(out);
-
-//     for(n = offset; n < nsmps; n++) {
-//         float val = fabs(in[n]);
-//         int above_thresh = (val > thresh);
-
-//         // Reset counter if above threshold
-//         cnt = above_thresh ? 0 : (cnt >= 0 ? cnt + 1 : cnt);
-
-//         // Output 1 only if counter reached endCounter
-//         out[n] = (cnt >= endCounter) ? 1.f : 0.f;
-//     }
-
-//     p->counter = cnt;
-//     return OK;
-// }
-//
 
 static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
     MYFLT thresh = *p->kthresh;
@@ -6258,7 +6308,67 @@ static int32_t pvsflatness_init(CSOUND *csound, PVSFLATNESS *p) {
     return OK;
 }
 
+// SIMD optimized
 static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
+    if (p->lastframe > 0 && p->lastframe == p->fin->framecount) {
+        *p->out = p->old;
+        return OK;
+    }
+
+    MYFLT minfreq = *p->minfreq;
+    MYFLT maxfreq = *p->maxfreq;
+    if (maxfreq <= 0)
+        maxfreq = LOCAL_SR(p) / 2;
+    if (minfreq <= 0)
+        minfreq = 10.;
+
+    // const float * restrict fin = __builtin_assume_aligned(
+    //     (const float *)p->fin->frame.auxp, 32);
+    // alignment does not make any quantizable difference in benchmarks
+    const float * restrict fin = (const float *)p->fin->frame.auxp;
+    int32 i, N = p->fin->N;
+
+    /* --- pre-scan: find the valid bin range --- */
+    int32 istart = N - 2, iend = 2;
+    for (i = 2; i < N - 2; i += 2) {
+        float freq = fin[i + 1];
+        if (freq < (float)minfreq) continue;
+        if (istart == N - 2) istart = i;
+        if (freq > (float)maxfreq) break;
+        iend = i + 2;
+    }
+
+    /* --- main reduction loop: branchless, float-only, vectorizable --- */
+    float geommean = 0.f;
+    float mean     = 0.f;
+    uint32_t numbins = 0;
+
+#pragma GCC ivdep
+    for (i = istart; i < iend; i += 2) {
+        float amp2 = fin[i] * fin[i];               /* power spectrum    */
+        geommean  += logf(fmaxf(amp2, 1e-30f));     /* epsilon avoids    */
+        mean      += amp2;                           /* log(0), no branch */
+        numbins++;
+    }
+
+    MYFLT flatness;
+    if (numbins == 0) {
+        flatness = 1.;
+    } else {
+        float nb    = (float)numbins;
+        float gmean = expf(geommean / nb);
+        float amean = mean / nb;
+        flatness    = (amean == 0.f ? 1. : (MYFLT)(gmean / amean));
+    }
+
+    p->old  = flatness;
+    *p->out = flatness;
+    p->lastframe = p->fin->framecount;
+    return OK;
+}
+
+
+static int32_t _pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
     if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
         *p->out = p->old;
         return OK;
@@ -6272,10 +6382,10 @@ static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
         minfreq = 10.;
     }
 
-    float *fin = (float *)p->fin->frame.auxp;
+    const float* restrict fin = (float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
-    MYFLT geommean = 0.;
-    MYFLT mean = 0.;
+    float geommean = 0.;
+    float mean = 0.;
     uint32_t numbins = 0;
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
@@ -6283,7 +6393,7 @@ static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
             continue;
         if(freq > maxfreq)
             break;
-        MYFLT amp = fin[i];
+        float amp = fin[i];
         if (amp != 0.f) {  // skip zeroes
             amp *= amp;    // power spectrum is just amp**2
             geommean += log(amp);
@@ -6311,11 +6421,13 @@ typedef struct {
     MYFLT *silence;
     MYFLT old;
     uint32_t lastframe;
+    int32 last_rolloff_bin;
 } PVSROLLOFF;
 
 static int32_t pvsrolloff_init(CSOUND *csound, PVSROLLOFF *p) {
     p->old = 0;
     p->lastframe = 0;
+    p->last_rolloff_bin = 0;
     if (UNLIKELY(!((p->fin->format==PVS_AMP_FREQ) ||
                    (p->fin->format==PVS_AMP_PHASE))))
       return csound->InitError(csound,
@@ -6340,15 +6452,6 @@ static int32_t pvsrolloff_perf(CSOUND *csound, PVSROLLOFF *p) {
     if(minfreq <= 0) {
         minfreq = 20.;
     }
-
-    /*
-        assert 0 <= rolloff <= 1
-        cumenergy = np.cumsum(spectrum)
-        total = cumenergy[-1]
-        threshold = rolloff * total
-        return int(np.argmax(cumenergy > threshold))
-     */
-
     float *fin = (float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     MYFLT total_energy = 0.;
@@ -6613,7 +6716,8 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     }
     MinHeap *heap = p->heap;
     heap->size = 0;
-    float *fin = (float *)p->fin->frame.auxp;
+    const float* restrict fin = (float * restrict)p->fin->frame.auxp;
+    // fin = __builtin_assume_aligned(fin, 32); // AVX
     int32 i, N = p->fin->N;
     MYFLT minfreq = *p->minfreq;
     MYFLT maxfreq = *p->maxfreq;
@@ -6623,8 +6727,9 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     if(minfreq <= 0) {
         minfreq = 10.;
     }
-    MYFLT *heaparr = heap->arr;
-    MYFLT totalamp = 0.;
+    MYFLT * restrict heaparr = heap->arr;
+    float totalamp = 0.;
+
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
         if(freq < minfreq)
@@ -6644,7 +6749,7 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     }
     MYFLT total = 0.;
     for(i = 0; i < heap->size; i++) {
-        total += heap->arr[i];
+        total += heaparr[i];
     }
     if(p->relative && totalamp > 0) {
         total /= totalamp;
@@ -6676,12 +6781,13 @@ static int32_t pvsentropy_init(CSOUND *csound, PVSENTROPY *p) {
     return OK;
 }
 
+
 static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
     if(p->lastframe > 0 && p->lastframe == p->fin->framecount) {
         *p->out = p->old;
         return OK;
     }
-    float *fin = (float *)p->fin->frame.auxp;
+    const float * restrict fin = (float * restrict)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     MYFLT minfreq = *p->minfreq;
     MYFLT maxfreq = *p->maxfreq;
@@ -6721,7 +6827,7 @@ static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
         mag = fin[i];
         prob = mag * mag * oneover_maxmagsqr;
         if(prob > 0.)
-            entropysum -= prob * fastlog2(prob);   // <-- ~10% faster
+            entropysum -= prob * fastlog2b(prob);   // <-- ~10% faster
     }
     p->old = entropysum;
     *p->out = entropysum;
@@ -7687,6 +7793,8 @@ static OENTRY localops[] = {
     {"ftsetparams.i", S(FTSETPARAMS), 0, "", "iiioj", (SUBR)ftsetparams, NULL, NULL, NULL, 0},
     {"perlin3.k_kkk", S(PERLIN3), 0, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk, NULL, NULL, 0},
     {"perlin3.a_aaa", S(PERLIN3), 0, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa, NULL, NULL, 0},
+    {"perlin3hash.a_aaa", S(PERLIN3), 0, "a", "aaa", (SUBR)(perlin3hash_init), (SUBR)perlin3hash_a_aaa, NULL, NULL, 0},
+
 
     {"interp1d.k_kK",  S(INTERPARR_x_xK), 0, "k", "k.[]", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL, 0},
     {"interp1d.k_kKS", S(INTERPARR_x_xK), 0, "k", "k.[]SO", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL, 0},

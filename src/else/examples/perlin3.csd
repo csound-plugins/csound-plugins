@@ -60,6 +60,8 @@ i "perlin3" 0 300
 </CsoundSynthesizer>
 
 
+
+
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>
@@ -74,7 +76,7 @@ i "perlin3" 0 300
   <g>255</g>
   <b>255</b>
  </bgcolor>
- <bsbObject version="2" type="BSBTableDisplay">
+ <bsbObject type="BSBTableDisplay" version="2">
   <objectName>plot1</objectName>
   <x>6</x>
   <y>11</y>
@@ -92,7 +94,7 @@ i "perlin3" 0 300
   </color>
   <range>0.00</range>
  </bsbObject>
- <bsbObject version="2" type="BSBTableDisplay">
+ <bsbObject type="BSBTableDisplay" version="2">
   <objectName>plot2</objectName>
   <x>5</x>
   <y>170</y>

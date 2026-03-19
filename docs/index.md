@@ -117,6 +117,7 @@ Miscellaneous plugins
 * [nametoinstrnum](opcodes/nametoinstrnum.md): Returns the number of a named instrument 
 * [panstereo](opcodes/panstereo.md): Stereo signal balancer 
 * [perlin3](opcodes/perlin3.md): gradient noise sound generator 
+* [perlin3hash](opcodes/perlin3hash.md): gradient noise sound generator, drop-in replacement for perlin3 
 * [picksource](opcodes/picksource.md): Select one of multiple signals basen 
 * [pread](opcodes/pread.md): Read pfield values from any active instrument instance 
 * [presetinterp](opcodes/presetinterp.md): Interpolates between presets placed in a 2D plane 

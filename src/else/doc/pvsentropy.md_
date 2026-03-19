@@ -8,7 +8,8 @@ Compute the entropy of a spectral signal.
 
 Given a pvs chain this calculates the Spectral Entropy measure. This gives a
 measure which ranges from approx 0 for a pure sinusoid, to ~180 for white noise,
-a measure of general peakiness of the spectral distribution
+a measure of general peakiness of the spectral distribution. It might help to 
+normalize the output in some way (see example)
 
 See: SPECTRAL ENTROPY AS SPEECH FEATURES FOR SPEECH RECOGNITION Aik Ming Toh, 
 Roberto Togneri and Sven Nordholm http://www.ee.uwa.edu.au/~roberto/research/theses/tr05-01.pdf
