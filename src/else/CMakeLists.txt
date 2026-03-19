@@ -5,8 +5,10 @@ if(NOT(BUILD_ELSE_OPCODES))
 endif()
 
 # find_package(FLUIDSYNTH)
+set_source_files_properties(src/else.c PROPERTIES LANGUAGE C)
 
 make_plugin(else src/else.c)
+
 
 include(CheckLibraryExists)
 
