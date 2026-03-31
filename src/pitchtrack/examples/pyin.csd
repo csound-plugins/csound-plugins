@@ -73,10 +73,11 @@ instr 1
   if metro(48) == 1 && kenv > 0 then
     printsk "pitch: %.1f, conf: %d, voiced: %d, sound: %d\n", kpitch, kconf*100, kvoiced, ksound
   endif
+  aenv = lagud(a(kenv), 0.03, 0.15)
   ;; Switch these to compare pyin with plltrack
   aout = vco2(0.5, kpitch) * a(kenv)
-  aenv = lagud(a(kenv), 0.03, 0.15)
   ; aout = vco2(0.5, k(apllpitch)) * aenv
+
   aout = lpf18(aout, 1500, 0.4, 0)
   outch 1, asigpyin * 0.9
   outch 2, aout
