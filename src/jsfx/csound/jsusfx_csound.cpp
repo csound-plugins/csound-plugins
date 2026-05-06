@@ -1479,31 +1479,32 @@ extern "C" {
         // a1 [, a2, ...] jsfx Spath, a1, [a2, ...], [id0, kval0, id1, kval1, ...]
         
         // ihandle jsfx_new Spath
-        { "jsfx_new", S(t_jsfx_new), 0, "i", "S", (SUBR)jsfx_new_init, nullptr, nullptr },
+        { (char*)"jsfx_new",  S(t_jsfx_new),  0, (char*)"i",        (char*)"S",  (SUBR)jsfx_new_init,    nullptr,                nullptr, 0},
 
-        { (char*)"jsfx", S(t_jsfx), 0, (char*)"i*", (char*)"S*", (SUBR)jsfx_opcode_init, (SUBR)jsfx_opcode_perf, (SUBR)jsfx_opcode_deinit},
+        { (char*)"jsfx",      S(t_jsfx),      0, (char*)"i*",       (char*)"S*", (SUBR)jsfx_opcode_init, (SUBR)jsfx_opcode_perf, (SUBR)jsfx_opcode_deinit, 0},
         
         // a1, [a2, ...] jsfx_play ihandle, a1, [a2, ...]
-        { (char*)"jsfx_play", S(t_jsfx_play), 0, (char*)"mmmmmmmm", (char*)"iM", (SUBR)jsfx_play_init, (SUBR)jsfx_play_perf, nullptr },
+        { (char*)"jsfx_play", S(t_jsfx_play), 0, (char*)"mmmmmmmm", (char*)"iM", (SUBR)jsfx_play_init,   (SUBR)jsfx_play_perf, nullptr, 0},
 
         // jsfx_dump ihandle, ktrig
-        { (char*)"jsfx_dump", S(t_jsfx_dump), 0, (char*)"", (char*)"ik", (SUBR)jsfx_dump_init, (SUBR)jsfx_dump_perf, nullptr },
+        { (char*)"jsfx_dump", S(t_jsfx_dump), 0, (char*)"",         (char*)"ik", (SUBR)jsfx_dump_init,   (SUBR)jsfx_dump_perf, nullptr, 0},
 
         // kval jsfx_getslider ihandle, ksliderid
-        { (char*)"jsfx_getslider", S(t_jsfx_getslider), 0, (char*)"k", (char*)"ik", (SUBR)jsfx_getslider_init, (SUBR)jsfx_getslider_perf, nullptr },
+        { (char*)"jsfx_getslider", S(t_jsfx_getslider), 0, (char*)"k", (char*)"ik", (SUBR)jsfx_getslider_init, (SUBR)jsfx_getslider_perf, nullptr, 0},
 
         // jsfx_setslider ihandle, kid, kval
         // { (char*)"jsfx_setslider", S(t_jsfx_setslider), 0, (char*)"", (char*)"ikk",
         //  (SUBR)jsfx_setslider_init, (SUBR)jsfx_setslider_perf },
 
         // jsfx_setslider ihandle, id0, kval0 [, id1, kval1, ...]
-        { (char*)"jsfx_setslider.many", S(t_jsfx_setslider_many), 0, (char*)"", (char*)"iM", (SUBR)jsfx_setslider_many_init, (SUBR)jsfx_setslider_many_perf, nullptr },
+        { (char*)"jsfx_setslider.many", S(t_jsfx_setslider_many), 0, (char*)"", (char*)"iM", (SUBR)jsfx_setslider_many_init, (SUBR)jsfx_setslider_many_perf, nullptr, 0},
 
         // a1, a2 tubeharmonics a1, a2, keven, kodd, kfluct, kinputdb, koutputdb, kgain
-        { (char*)"tubeharmonics.2", S(t_tubeharmonics_stereo), 0, (char*)"aa", (char*)"aaJJJOOO", (SUBR)tubeharmonics_stereo_init, (SUBR)tubeharmonics_stereo_perf, nullptr},
+        { (char*)"tubeharmonics.2", S(t_tubeharmonics_stereo), 0, (char*)"aa", (char*)"aaJJJOOO", (SUBR)tubeharmonics_stereo_init, (SUBR)tubeharmonics_stereo_perf, nullptr, 0},
 
-        { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, (char*)"a", (char*)"aJJJOOO", (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf, nullptr},
-        { "", 0, 0, 0, 0, 0, 0, 0}
+        { (char*)"tubeharmonics.1", S(t_tubeharmonics_mono), 0, (char*)"a", (char*)"aJJJOOO", (SUBR)tubeharmonics_mono_init, (SUBR)tubeharmonics_mono_perf, nullptr, 0},
+        { (char*)"", 0, 0, (char*)"", (char*)"", nullptr, nullptr, nullptr, 0}
+        // {(char *)"alwayson", sizeof(AlwaysOn), 0,  (char *)"", (char *)"im", (SUBR)&AlwaysOn::init_, 0, 0},
 #endif
        
     };

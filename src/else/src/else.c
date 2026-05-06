@@ -2176,14 +2176,16 @@ typedef struct {
 static int32_t
 atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
 #ifdef CSOUNDAPI7
-    MYFLT pfields[VARGMAX];
+    MYFLT pfields[VARGMAX] = {0};
+    MYFLT offset = csound->GetScoreOffsetSeconds(csound);
     pfields[0] = p->instrnum;
-    pfields[1] = *p->p2;
+    pfields[1] = offset + (*p->p2);
     pfields[2] = *p->p3;
     for(uint32_t i=0; i<p->numargs; i++) {
         pfields[3+i] = *(MYFLT *)p->pargs[i];
     }
-    csound->Event(csound, 'i', (const MYFLT *)(&pfields), p->numargs + 3);
+    
+    csound->Event(csound, 0, (const MYFLT *)(&pfields), p->numargs + 3);
     return OK;
 #else
     EVTBLK evt;
