@@ -1,6 +1,6 @@
 {
   "name": "sndmeta",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "opcodes": [
     "filereadmeta"
   ],

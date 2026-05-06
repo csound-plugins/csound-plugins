@@ -1,6 +1,6 @@
 {
   "name": "else",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "opcodes": [
     "accum",
     "atstop",
@@ -30,7 +30,7 @@
     "nametoinstrnum",
     "panstereo",
     "perlin3",
-	"perlin3hash",
+    "perlin3hash",
     "picksource",
     "pread",
     "presetinterp",

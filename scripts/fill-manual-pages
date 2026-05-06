@@ -4,7 +4,7 @@ shopt -s globstar
 echo -e "\n------------------\nFilling manual pages\n"
 mypath=$(dirname $(realpath $0))
 srcpath=$(realpath $mypath/../src)
-parallel "$mypath"/fill_manual_page.py --verbose -- ${srcpath}/**/*.md_
+parallel "$mypath"/fill_manual_page.py --verbose ::: ${srcpath}/**/*.md_
 
 #templatefiles=$(find "$srcpath" -name "*.md_")
 #for f in $templatefiles; do
