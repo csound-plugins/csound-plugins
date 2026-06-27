@@ -1,0 +1,7 @@
+if(${BUILD_SEMSYS_OPCODES})
+    make_plugin(semsys src/semsys.c)
+	target_include_directories(semsys PRIVATE ${CSOUND_INCLUDE_DIRS})
+	if(APPLE)
+	   set_target_properties(semsys PROPERTIES COMPILE_FLAGS "-Wno-unused-local-typedef")
+	endif()
+endif()

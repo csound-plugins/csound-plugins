@@ -1,0 +1,49 @@
+{
+  "name": "semsys",
+  "version": "1.0.0",
+  "opcodes": [
+    "semload",
+    "semdim",
+    "semembed",
+    "semspace",
+    "semspacebuild",
+    "semspaceadd",
+    "semspacesave",
+    "semspacequery"
+  ],
+  "short_description": "Semantic synthesis and latent-space tools for Csound",
+  "long_description": "A Csound plugins for embeddings, semantic spaces, similarity search, and latent-space composition",
+  "author": "Pasquale Mainolfi",
+  "email": "mnlpql@gmail.com",
+  "license": "LGPL",
+  "repository": "https://github.com/csound-plugins/csound-plugins",
+  "binaries": [
+    {
+      "platform": "linux-x86_64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux.zip",
+      "extractpath": "libsemsys.so",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "windows-x86_64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-windows.zip",
+      "extractpath": "poddle.dll",
+      "build_platform": "windows 11",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "macos-x86_64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-universal.zip",
+      "extractpath": "libsemsys.dylib",
+      "build_platform": "25.6.1",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "macos-arm64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-universal.zip",
+      "extractpath": "libsemsys.dylib",
+      "build_platform": "25.6.1",
+      "csound_version": ">=7.0"
+    }
+  ]
+}
