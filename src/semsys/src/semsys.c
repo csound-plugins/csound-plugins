@@ -241,9 +241,38 @@ static int32_t sem_deinit(CSOUND *csound, void *vp) {
     return OK;
 }
 
+#ifdef _WIN32
+/* UTF-8 -> wide string (ORTCHAR_T is wchar_t on Windows). malloc'd, caller frees. */
+static wchar_t *utf8_to_wide(const char *s) {
+    int n = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
+    if (n <= 0) return NULL;
+    wchar_t *w = (wchar_t *) malloc((size_t) n * sizeof(wchar_t));
+    if (w == NULL) return NULL;
+    MultiByteToWideChar(CP_UTF8, 0, s, -1, w, n);
+    return w;
+}
+#endif
+
+/* CreateSession from a UTF-8 path. The ORT C API takes ORTCHAR_T* (wchar_t on
+   Windows, char elsewhere); this converts as needed so callers stay portable. */
+static OrtStatus *create_session_utf8(const OrtApi *api, OrtEnv *env, const char *path,
+                                      OrtSessionOptions *opts, OrtSession **out) {
+#ifdef _WIN32
+    wchar_t *wpath = utf8_to_wide(path);
+    if (wpath == NULL) {
+        return api->CreateStatus(ORT_FAIL, "[semload] could not convert model path");
+    }
+    OrtStatus *st = api->CreateSession(env, wpath, opts, out);
+    free(wpath);
+    return st;
+#else
+    return api->CreateSession(env, path, opts, out);
+#endif
+}
+
 int sem_init(CSOUND *csound, SEM_INIT *p) {
-    if (p->model_path == NULL || p->model_path->data == NULL) {
-        return csound->InitError(csound, "[semload] Missing model path");
+    if (p->model_dir == NULL || p->model_dir->data == NULL) {
+        return csound->InitError(csound, "[semload] Missing model dir");
     }
 
     SEMSYS *ctx = (SEMSYS *) csound->Calloc(csound, sizeof(SEMSYS));
@@ -256,15 +285,11 @@ int sem_init(CSOUND *csound, SEM_INIT *p) {
     /* publish handle before anything can fail; cleanup runs via the API7 OENTRY deinit slot */
     *p->handle = CTX_TO_FLT(ctx);
 
-    strncpy(ctx->model_path, p->model_path->data, sizeof(ctx->model_path) - 1);
-    ctx->model_path[sizeof(ctx->model_path) - 1] = '\0';
-
-    if (p->tokenizer_path != NULL && p->tokenizer_path->data != NULL) {
-        strncpy(ctx->tokenizer_path, p->tokenizer_path->data, sizeof(ctx->tokenizer_path) - 1);
-        ctx->tokenizer_path[sizeof(ctx->tokenizer_path) - 1] = '\0';
-    } else {
-        ctx->tokenizer_path[0] = '\0';
-    }
+    const char *mdir = (const char *) p->model_dir->data;
+    size_t mdlen = strlen(mdir);
+    const char *sep = (mdlen > 0 && (mdir[mdlen - 1] == '/' || mdir[mdlen - 1] == '\\')) ? "" : "/";
+    snprintf(ctx->model_path, sizeof(ctx->model_path), "%s%smodel.onnx", mdir, sep);
+    snprintf(ctx->tokenizer_path, sizeof(ctx->tokenizer_path), "%s%stokenizer.onnx", mdir, sep);
 
     ctx->api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
     if (ctx->api == NULL) {
@@ -272,14 +297,10 @@ int sem_init(CSOUND *csound, SEM_INIT *p) {
     }
 
     ONNX_CHECK_INIT(ctx->api, ctx->api->CreateEnv(ORT_LOGGING_LEVEL_WARNING, "SemSys", &ctx->env));
-
     ONNX_CHECK_INIT(ctx->api, ctx->api->CreateSessionOptions(&ctx->emb_session_options));
-    ONNX_CHECK_INIT(ctx->api, ctx->api->CreateSession(ctx->env, ctx->model_path, ctx->emb_session_options, &ctx->emb_session));
-
-    if (ctx->tokenizer_path[0] != '\0') {
-        ONNX_CHECK_INIT(ctx->api, ctx->api->CreateSessionOptions(&ctx->tok_session_options));
-        ONNX_CHECK_INIT(ctx->api, ctx->api->CreateSession(ctx->env, ctx->tokenizer_path, ctx->tok_session_options, &ctx->tok_session));
-    }
+    ONNX_CHECK_INIT(ctx->api, create_session_utf8(ctx->api, ctx->env, ctx->model_path, ctx->emb_session_options, &ctx->emb_session));
+    ONNX_CHECK_INIT(ctx->api, ctx->api->CreateSessionOptions(&ctx->tok_session_options));
+    ONNX_CHECK_INIT(ctx->api, create_session_utf8(ctx->api, ctx->env, ctx->tokenizer_path, ctx->tok_session_options, &ctx->tok_session));
 
     OrtTypeInfo *type_info = NULL;
     ONNX_CHECK_INIT(ctx->api, ctx->api->SessionGetOutputTypeInfo(ctx->emb_session, 0, &type_info));
@@ -1129,7 +1150,6 @@ int sem_space_save_kperf(CSOUND *csound, SEM_SPACE_SAVE *p) {
 
 static OENTRY localops[] = {
     { "semload",          S(SEM_INIT),             0, "i",         "iS",   (SUBR)sem_init,                   NULL,                       (SUBR)sem_deinit,       NULL, 0 },
-    { "semload.tok",      S(SEM_INIT),             0, "i",         "iSS",  (SUBR)sem_init,                   NULL,                       (SUBR)sem_deinit,       NULL, 0 },
     { "semdim",           S(SEM_DIM),              0, "i",         "i",    (SUBR)sem_dim,                    NULL,                       NULL,                   NULL, 0 },
     { "semembed",         S(SEM_EMBED),            0, "k[]k[][]k", "iS",   (SUBR)sem_embed_init,             (SUBR)sem_embed_perf,       NULL,                   NULL, 0 },
     { "semspace",         S(SEM_SPACE_INIT),       0, "i",         "i",    (SUBR)sem_space_init,             NULL,                       (SUBR)sem_space_deinit, NULL, 0 },

@@ -9,7 +9,7 @@ nchnls = 2
 0dbfs = 1
 
 // load embedding and tokenizer model (.onnx)
-e_handle@global:i = semload(256, "path/to/onnx_embedding_model.onnx", "path/to/onnx_tokenizer_model.onnx")
+e_handle@global:i = semload(256, "path/to/model_dir")
 
 semspacebuild(e_handle, "corpus.espc", "corpus.txt")   // from a single text file
 semspacebuild(e_handle, "all.espc", "path/to/texts")   // from every .txt in a directory

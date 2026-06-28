@@ -9,7 +9,7 @@ nchnls = 2
 0dbfs = 1
 
 // load embedding and tokenizer model (.onnx)
-e_handle@global:i = semload(256, "path/to/onnx_embedding_model.onnx", "path/to/onnx_tokenizer_model.onnx")
+e_handle@global:i = semload(256, "path/to/model_dir")
 
 // empty in-memory space (RAM-only). Use semspace(e_handle, "space.espc") to load an existing one.
 s_handle@global:i = semspace(e_handle)

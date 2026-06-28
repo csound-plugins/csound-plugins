@@ -9,7 +9,7 @@ nchnls = 2
 0dbfs = 1
 
 // load embedding and tokenizer model (.onnx)
-handle@global:i = semload(256, "path/to/onnx_embedding_model.onnx", "path/to/onnx_tokenizer_model.onnx")
+handle@global:i = semload(256, "path/to/model_dir")
 
 instr 1
     ldim:i = semdim(handle) // get latent dimension

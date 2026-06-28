@@ -140,8 +140,7 @@ typedef struct {
     MYFLT *handle;
     // inputs
     MYFLT *maxlen_seq; // depends on the onnx model (see max position embeedding for embedding model and truncation for tokenizer)
-    STRINGDAT *model_path;
-    STRINGDAT *tokenizer_path;
+    STRINGDAT *model_dir;
 } SEM_INIT;
 
 typedef struct {

@@ -13,6 +13,11 @@ mean-pooled into a single fixed-size vector (the *embedding*). Texts with simila
 meaning land close together in that space, so cosine similarity becomes a measure
 of semantic distance.
 
+`semload` takes a **model directory** containing two files with fixed names —
+`model.onnx` (the embedding model) and `tokenizer.onnx` (its tokenizer). The
+tokenizer is always paired with the model. See [doc/semload.md](doc/semload.md) for
+the expected tensor I/O and a Python snippet to export both files.
+
 > Status: experimental / research. APIs and the on-disk cache format may change.
 
 ## Two layers: `semembed` vs `semspace`
@@ -107,7 +112,7 @@ Practical rules:
 
 | Opcode | Form | Purpose |
 |--------|------|---------|
-| `semload` | `ihandle semload imaxlen, Smodel[, Stokenizer]` | Load model (+ optional tokenizer); returns a handle |
+| `semload` | `ihandle semload imaxlen, Smodeldir` | Load `model.onnx` + `tokenizer.onnx` from a directory; returns a handle |
 | `semdim`  | `idim semdim ihandle` | Embedding dimension of the loaded model |
 | `semembed` | `kpool[], ktokens[][], kchanged semembed ihandle, Stext` | Embed text in real time |
 | `semspace` | `ispace semspace ihandle[, Spath | Spaths[]]` | Create an in-memory space (optionally load a `.espc` file, directory, or array) |

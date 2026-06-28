@@ -55,7 +55,7 @@ ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-e_handle@global:i = semload(256, "path/to/embedding_model.onnx", "path/to/tokenizer_model.onnx")
+e_handle@global:i = semload(256, "path/to/model_dir")
 s_handle@global:i = semspace(e_handle, "space.espc") // init vector space from .espc file (to RAM)
 
 instr 1
