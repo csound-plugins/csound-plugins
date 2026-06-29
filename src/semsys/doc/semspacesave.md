@@ -88,4 +88,6 @@ i 2 4 0.1
 
 ## Credits
 
-Pasquale Mainolfi, 2026
+Author: Pasquale Mainolfi<br>
+Italy<br>
+June 2026.

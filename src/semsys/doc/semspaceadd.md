@@ -8,26 +8,35 @@ Embed a sentence and append its vector to a semantic space.
 
 `semspaceadd` tokenizes `sentence`, embeds it (mean-pooled), normalizes the vector and appends it to the **in-memory** space opened with [semspace](semspace.md). The add is RAM-only; nothing is written to disk. To persist the space, call [semspacesave](semspacesave.md).
 
-It is **self-gated**: the model runs and a vector is added only when `sentence` changes from the previous control pass. Feeding a constant string adds one vector and then idles, so a single sustained note adds one entry, not one per k-cycle.
-
-A single sentence is treated as **one** chunk (truncated to `imaxlen` if longer). To build a space from a large text with automatic chunking, use [semspacebuild](semspacebuild.md) instead.
+A single sentence is treated as **one** chunk (truncated to `maxlen` if longer). To build a space from a large text or a directory with automatic chunking, use [semspacebuild](semspacebuild.md) instead. Adding a vector identical to the previous add is skipped (dedup).
 
 A tokenizer must have been provided to [semload](semload.md). Empty input adds nothing.
+
+Two forms, distinguished by whether a trigger is given:
+
+* **i-rate** (`semspaceadd ispace, Ssentence`) — add **once, at init**. To grow a
+  space, issue several calls (e.g. one per scheduled instrument).
+* **k-rate** (`semspaceadd ispace, Ssentence, ktrig`) — add during performance, on the
+  **rising edge** of `ktrig` (`ktrig > 0` while the previous value was `<= 0`). Use it
+  to capture sentences live, on demand.
 
 ## Syntax
 
 ```csound
-semspaceadd(space:i, sentence:S)
+semspaceadd(space:i, sentence:S)           ; i-rate, once at init
+semspaceadd(space:i, sentence:S, trig:k)   ; k-rate, on rising edge of trig
 ```
+
 ## Arguments
 
 * `space:i`: handle returned by [semspace](semspace.md).
-* `sentence:S`: the text to embed and append (k-rate string).
+* `sentence:S`: the text to embed and append.
+* `trig:k`: k-rate form only. A vector is added on the rising edge of this signal.
 
 ## Execution Time
 
-* Init
-* Performance
+* Init (`semspaceadd ispace, Ssentence`)
+* Performance (`semspaceadd ispace, Ssentence, ktrig`)
 
 ## Examples
 
@@ -43,20 +52,19 @@ nchnls = 2
 0dbfs = 1
 
 e_handle@global:i = semload(256, "path/to/model_dir")
-s_handle@global:i = semspace(e_handle) // init vector space
+s_handle@global:i = semspace(e_handle)          // empty in-memory space
 
-; add one line per note from a text file
-instr 1
-    text:S, line:k = readf("space_text.txt")
-    if (line == -1) then
-        turnoff
-    endif
-    semspaceadd(s_handle, text)
+instr build
+    semspaceadd(s_handle, "a warm analog texture")
+    semspaceadd(s_handle, "a bright metallic hit")
+    semspaceadd(s_handle, "a deep resonant drone")
+    semspacesave(s_handle, "space.espc")          // persist to disk
+    turnoff
 endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 4
+i "build" 0 0.1
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -70,4 +78,6 @@ i 1 0 4
 
 ## Credits
 
-Pasquale Mainolfi, 2026
+Author: Pasquale Mainolfi<br>
+Italy<br>
+June 2026.

@@ -17,7 +17,6 @@ instr 1
     turnoff
 endin
 
-
 instr 2
     sentence:S = "sound synthesis in blue sky"
     // pool = mean-pooled sentence vector, tokens = per-token matrix, changed = 1 on text change

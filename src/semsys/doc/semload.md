@@ -59,6 +59,34 @@ Put both `model.onnx` and `tokenizer.onnx` in the same directory and pass that
 directory to `semload`. To embed long documents losslessly, export the tokenizer with
 truncation disabled (or set to your `maxlen`).
 
+## Tokenizer runtime dependency: onnxruntime-extensions
+
+The tokenizer graph produced above uses **custom ops** from
+[onnxruntime-extensions](https://github.com/microsoft/onnxruntime-extensions) (e.g.
+`BertTokenizer` in the `ai.onnx.contrib` domain). Plain ONNX Runtime does not know
+them, so `semload` registers the extensions shared library on the tokenizer session.
+
+You must provide the **native** `libortextensions` shared library (the pip/conda
+package only ships a Python-bound build that cannot be loaded standalone). Build it
+from source:
+
+```sh
+git clone --recursive https://github.com/microsoft/onnxruntime-extensions
+cd onnxruntime-extensions
+./build.sh -DOCOS_BUILD_SHARED_LIB=ON
+find . -name "libortextensions.dylib"   # (.so on Linux, ortextensions.dll on Windows)
+```
+
+`semload` looks for it, in order:
+
+1. the path in the `SEMSYS_ORT_EXTENSIONS` environment variable;
+2. next to the plugin (`libortextensions.dylib` / `.so` / `ortextensions.dll`) — this
+   is where the packaged build bundles it;
+3. inside `model_dir`, next to the tokenizer.
+
+If you build semsys yourself, bundle it by configuring with
+`-DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib`.
+
 ## Syntax
 
 ```csound
@@ -115,4 +143,6 @@ i 1 0 1
 
 ## Credits
 
-Pasquale Mainolfi, 2026
+Author: Pasquale Mainolfi<br>
+Italy<br>
+June 2026.

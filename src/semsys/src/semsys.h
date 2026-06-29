@@ -131,6 +131,7 @@ typedef struct {
     OrtSession *tok_session;
     uint32_t ldim;
     uint32_t maxlen_seq;
+    uint32_t needs_token_type; // model has a token_type_ids input (BERT) -> feed zeros
 } SEMSYS;
 
 
@@ -166,6 +167,21 @@ typedef struct {
     AUXCH input_ids;
     AUXCH attention_mask;
 } SEM_EMBED;
+
+// i-rate form of semembed: 2 outputs (pool, tokens), no gate / no change-cache
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *pool_embed;
+    ARRAYDAT *token_embed;
+    // inputs
+    MYFLT *handle;
+    STRINGDAT *text;
+    // private state
+    SEMSYS *ctx;
+    AUXCH input_ids;
+    AUXCH attention_mask;
+} SEM_EMBED_I;
 
 // --- SEM_SPACE ---
 
@@ -232,16 +248,17 @@ typedef struct {
     // inputs
     MYFLT *s_handle;
     STRINGDAT *sentence;
+    MYFLT *ktrig; // k-form only: add on rising edge
     // private state
     SEMSYS_SPACE *spc;
     AUXCH last_added; // cached last-added vector for dedup
     AUXCH vec_scratch; // float[ldim] scratch for normalize+write
-    AUXCH last_text; // cached prev sentence for change detection
     SEMSYS *ctx;
     AUXCH ids;
     AUXCH att;
     AUXCH pmb;
     AUXCH tmb;
+    MYFLT prev_trig;
 } SEM_SPACE_ADD;
 
 typedef struct {
@@ -287,6 +304,7 @@ int sem_init(CSOUND *csound, SEM_INIT *p);
 int sem_dim(CSOUND *csound, SEM_DIM *p);
 int sem_embed_init(CSOUND *csound, SEM_EMBED *p);
 int sem_embed_perf(CSOUND *csound, SEM_EMBED *p);
+int sem_embed_i(CSOUND *csound, SEM_EMBED_I *p);
 
 // SEMSYS SPACE
 int sem_space_init(CSOUND *csound, SEM_SPACE_INIT *p);
@@ -294,10 +312,12 @@ int sem_space_init_vs(CSOUND *csound, SEM_SPACE_INIT_VS *p);
 int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p);
 int sem_space_add_init(CSOUND *csound, SEM_SPACE_ADD *p);
 int sem_space_add(CSOUND *csound, SEM_SPACE_ADD *p);
+int sem_space_add_perf(CSOUND *csound, SEM_SPACE_ADD *p);
 int sem_space_save(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_save_kset(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_save_kperf(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY *p);
 int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p);
+int sem_space_query_i(CSOUND *csound, SEM_SPACE_QUERY *p);
 
 #endif

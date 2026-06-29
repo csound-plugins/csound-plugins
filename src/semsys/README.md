@@ -15,8 +15,11 @@ of semantic distance.
 
 `semload` takes a **model directory** containing two files with fixed names —
 `model.onnx` (the embedding model) and `tokenizer.onnx` (its tokenizer). The
-tokenizer is always paired with the model. See [doc/semload.md](doc/semload.md) for
-the expected tensor I/O and a Python snippet to export both files.
+tokenizer is always paired with the model. The tokenizer graph uses custom ops from
+**onnxruntime-extensions**, so its native shared library (`libortextensions`) must be
+available at runtime — bundled next to the plugin, or via the `SEMSYS_ORT_EXTENSIONS`
+env var. See [doc/semload.md](doc/semload.md) for the expected tensor I/O, the Python
+export snippet, and how to obtain/bundle the extensions library.
 
 > Status: experimental / research. APIs and the on-disk cache format may change.
 
@@ -112,16 +115,27 @@ Practical rules:
 
 | Opcode | Form | Purpose |
 |--------|------|---------|
-| `semload` | `ihandle semload imaxlen, Smodeldir` | Load `model.onnx` + `tokenizer.onnx` from a directory; returns a handle |
-| `semdim`  | `idim semdim ihandle` | Embedding dimension of the loaded model |
-| `semembed` | `kpool[], ktokens[][], kchanged semembed ihandle, Stext` | Embed text in real time |
-| `semspace` | `ispace semspace ihandle[, Spath | Spaths[]]` | Create an in-memory space (optionally load a `.espc` file, directory, or array) |
-| `semspacebuild` | `semspacebuild ihandle, Sdest, Ssource` | Build a `.espc` file from a text file or a directory of `.txt` |
-| `semspaceadd` | `semspaceadd ispace, Ssentence` | Embed a sentence and append it (in RAM) |
-| `semspacequery` | `kneighs[][], kscores[] semspacequery ispace, Squery, itopk` | Top-k nearest neighbours |
-| `semspacesave` | `semspacesave ispace, Sfile[, ktrig]` | Write the in-memory space to a `.espc` file |
+| `semload` | `handle:i = semload(maxlen:i, modeldir:S)` | Load `model.onnx` + `tokenizer.onnx` from a directory; returns a handle |
+| `semdim` | `dim:i = semdim(handle:i)` | Embedding dimension of the loaded model |
+| `semembed` | `pool:k[], tokens:k[][], changed:k = semembed(handle:i, text:S)` (k-rate); `pool:i[], tokens:i[][] = semembed(handle:i, text:S)` (i-rate) | Embed text — real-time (gated) or once at init |
+| `semspace` | `space:i = semspace(handle:i)`; `… = semspace(handle:i, path:S)`; `… = semspace(handle:i, paths:S[])` | Create an in-memory space (empty, or load a `.espc` file / directory / array) |
+| `semspacebuild` | `semspacebuild(handle:i, dest:S, source:S)` | Build a `.espc` from a text file or a directory of `.txt` |
+| `semspaceadd` | `semspaceadd(space:i, sentence:S)` (once at init); `semspaceadd(space:i, sentence:S, trig:k)` (on rising edge) | Embed a sentence and append it (in RAM) |
+| `semspacequery` | `neighs:k[][], scores:k[] = semspacequery(space:i, query:S, topk:i)` (k-rate); `neighs:i[][], scores:i[] = semspacequery(space:i, query:S, topk:i)` (i-rate) | Top-k nearest neighbours — real-time (gated) or once at init |
+| `semspacesave` | `semspacesave(space:i, file:S)`; `semspacesave(space:i, file:S, trig:k)` | Write the in-memory space to a `.espc` (once, or on trigger edge) |
 
-See `doc/` for per-opcode reference and `examples/` for working `.csd` files.
+See `doc/` for the per-opcode reference.
+
+## Examples
+
+The `examples/` directory holds working `.csd` files: usage examples for the opcodes
+(`sem_token_embedding.csd`, `sem_space.csd`, `sem_space_build.csd`) plus two small
+**semantic synthesis** demos that turn a query into sound:
+
+- `sem_synthesis.csd` — builds a filter **impulse response** from the query embedding
+  and convolves a source with it (`semspacequery` → IR → `ftconv`).
+- `sem_synthesis_additive.csd` — **additive synthesis**: the embedding coordinates
+  become the amplitudes of a bank of sine partials.
 
 ## Building
 
@@ -132,10 +146,19 @@ in as a sub-directory.
 You must pass `-DAPIVERSION=7.0`. The default is `6.0`, which does not define
 `CSOUNDAPI7`, and `semsys` fails to compile without it.
 
+To **bundle** the onnxruntime-extensions tokenizer library next to the plugin, point
+the build at the **native** `libortextensions` (see [doc/semload.md](doc/semload.md)),
+either explicitly with `-DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib`, or by a
+root hint `-DORTEXTENSIONS_ROOT=/root` (or the `ORTEXTENSIONS_ROOT` env var), which is
+searched with `find_library`. Without it the plugin still builds, but you must supply
+`libortextensions` at runtime via the `SEMSYS_ORT_EXTENSIONS` env var or inside the
+model directory.
+
 ### With an ONNX Runtime binary package
 
 ```sh
-cmake -S . -B build -DAPIVERSION=7.0 -DONNXRUNTIME_ROOT=/path/to/onnxruntime
+cmake -S . -B build -DAPIVERSION=7.0 -DONNXRUNTIME_ROOT=/path/to/onnxruntime \
+      -DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib
 cmake --build build --target semsys
 cmake --install build
 ```
@@ -143,7 +166,7 @@ cmake --install build
 ### With ONNX Runtime as a CMake config package (Homebrew, vcpkg, …)
 
 ```sh
-cmake -S . -B build -DAPIVERSION=7.0
+cmake -S . -B build -DAPIVERSION=7.0 -DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib
 cmake --build build --target semsys
 cmake --install build
 ```

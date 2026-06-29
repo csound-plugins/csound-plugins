@@ -45,6 +45,7 @@
 #else
 #include <dirent.h>
 #include <sys/stat.h>
+#include <dlfcn.h>
 #endif
 #include <ctype.h>
 #include <math.h>
@@ -270,6 +271,64 @@ static OrtStatus *create_session_utf8(const OrtApi *api, OrtEnv *env, const char
 #endif
 }
 
+/* directory containing this plugin binary (the .dylib/.so/.dll), so we can find
+   sibling bundled libraries. returns 0 on success. */
+static int plugin_dir(char *buf, size_t size) {
+#ifdef _WIN32
+    HMODULE hm = NULL;
+    if (!GetModuleHandleExA(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        (LPCSTR) &plugin_dir,
+        &hm)
+    ) {
+        return -1;
+    }
+    if (GetModuleFileNameA(hm, buf, (DWORD) size) == 0) return -1;
+    char *slash = strrchr(buf, '\\');
+    if (slash != NULL) *slash = '\0';
+    return 0;
+#else
+    Dl_info info;
+    if (dladdr((void *) &plugin_dir, &info) == 0 || info.dli_fname == NULL) return -1;
+    snprintf(buf, size, "%s", info.dli_fname);
+    char *slash = strrchr(buf, '/');
+    if (slash != NULL) *slash = '\0';
+    return 0;
+#endif
+}
+
+/* the ONNX tokenizer (e.g. BertTokenizer) is a custom op from onnxruntime-extensions.
+   resolve the extensions shared library, in order:
+   1. env SEMSYS_ORT_EXTENSIONS (full path), 2. bundled next to the plugin,
+   3. next to the model files in model_dir. */
+static const char *resolve_extensions_path(const char *model_dir, char *buf, size_t bufsize) {
+    const char *env = getenv("SEMSYS_ORT_EXTENSIONS");
+    if (env != NULL && env[0] != '\0') {
+        return env;
+    }
+#ifdef _WIN32
+    const char *libname = "ortextensions.dll";
+#elif defined(__APPLE__)
+    const char *libname = "libortextensions.dylib";
+#else
+    const char *libname = "libortextensions.so";
+#endif
+
+    /* bundled next to the plugin */
+    char dir[1024];
+    if (plugin_dir(dir, sizeof(dir)) == 0) {
+        snprintf(buf, bufsize, "%s/%s", dir, libname);
+        FILE *t = fopen(buf, "rb");
+        if (t != NULL) { fclose(t); return buf; }
+    }
+
+    /* fallback: next to the model files */
+    size_t dl = strlen(model_dir);
+    const char *sep = (dl > 0 && (model_dir[dl - 1] == '/' || model_dir[dl - 1] == '\\')) ? "" : "/";
+    snprintf(buf, bufsize, "%s%s%s", model_dir, sep, libname);
+    return buf;
+}
+
 int sem_init(CSOUND *csound, SEM_INIT *p) {
     if (p->model_dir == NULL || p->model_dir->data == NULL) {
         return csound->InitError(csound, "[semload] Missing model dir");
@@ -300,7 +359,29 @@ int sem_init(CSOUND *csound, SEM_INIT *p) {
     ONNX_CHECK_INIT(ctx->api, ctx->api->CreateSessionOptions(&ctx->emb_session_options));
     ONNX_CHECK_INIT(ctx->api, create_session_utf8(ctx->api, ctx->env, ctx->model_path, ctx->emb_session_options, &ctx->emb_session));
     ONNX_CHECK_INIT(ctx->api, ctx->api->CreateSessionOptions(&ctx->tok_session_options));
+    /* the tokenizer graph uses onnxruntime-extensions custom ops -> register the lib */
+    char extbuf[1024];
+    const char *extpath = resolve_extensions_path(mdir, extbuf, sizeof(extbuf));
+    void *exthandle = NULL;
+    ONNX_CHECK_INIT(ctx->api, ctx->api->RegisterCustomOpsLibrary(ctx->tok_session_options, extpath, &exthandle));
     ONNX_CHECK_INIT(ctx->api, create_session_utf8(ctx->api, ctx->env, ctx->tokenizer_path, ctx->tok_session_options, &ctx->tok_session));
+
+    /* detect whether the embedding model wants a token_type_ids input (BERT does) */
+    ctx->needs_token_type = 0;
+    {
+        OrtAllocator *alloc = NULL;
+        size_t n_inputs = 0;
+        if (ctx->api->GetAllocatorWithDefaultOptions(&alloc) == NULL &&
+            ctx->api->SessionGetInputCount(ctx->emb_session, &n_inputs) == NULL) {
+            for (size_t i = 0; i < n_inputs; i++) {
+                char *iname = NULL;
+                if (ctx->api->SessionGetInputName(ctx->emb_session, i, alloc, &iname) == NULL && iname != NULL) {
+                    if (strcmp(iname, "token_type_ids") == 0) ctx->needs_token_type = 1;
+                    alloc->Free(alloc, iname);
+                }
+            }
+        }
+    }
 
     OrtTypeInfo *type_info = NULL;
     ONNX_CHECK_INIT(ctx->api, ctx->api->SessionGetOutputTypeInfo(ctx->emb_session, 0, &type_info));
@@ -421,7 +502,7 @@ fail:
 static int embed_helper(MYFLT *pool_embed, MYFLT *token_embed, const MYFLT *input_ids, const MYFLT *attention_mask, SEMSYS *ctx, int64_t n, uint32_t maxlen_seq) {
     int64_t shape[2] = { 1, n };
     OrtAllocator *alloc = NULL;
-    OrtValue *ids_t = NULL, *mask_t = NULL;
+    OrtValue *ids_t = NULL, *mask_t = NULL, *type_t = NULL;
     OrtValue *outs[1] = { NULL };
     int ret = 1;
 
@@ -439,11 +520,23 @@ static int embed_helper(MYFLT *pool_embed, MYFLT *token_embed, const MYFLT *inpu
         mask_p[i] = (int64_t) attention_mask[i];
     }
 
-    const char *in_names[]  = { "input_ids", "attention_mask" };
-    const OrtValue *ins[]   = { ids_t, mask_t };
+    /* optional token_type_ids (BERT-family): all zeros for single-segment input */
+    if (ctx->needs_token_type) {
+        int64_t *type_p = NULL;
+        ONNX_CHECK_GOTO(ctx->api, ctx->api->CreateTensorAsOrtValue(alloc, shape, 2, ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64, &type_t));
+        ONNX_CHECK_GOTO(ctx->api, ctx->api->GetTensorMutableData(type_t, (void **)&type_p));
+        for (int64_t i = 0; i < n; i++) type_p[i] = 0;
+    }
+
+    const char *in_names[3];
+    const OrtValue *ins[3];
+    size_t n_in = 0;
+    in_names[n_in] = "input_ids";      ins[n_in] = ids_t;  n_in++;
+    in_names[n_in] = "attention_mask"; ins[n_in] = mask_t; n_in++;
+    if (ctx->needs_token_type) { in_names[n_in] = "token_type_ids"; ins[n_in] = type_t; n_in++; }
     const char *out_names[] = { "last_hidden_state" };
 
-    ONNX_CHECK_GOTO(ctx->api, ctx->api->Run(ctx->emb_session, NULL, in_names, ins, 2, out_names, 1, outs));
+    ONNX_CHECK_GOTO(ctx->api, ctx->api->Run(ctx->emb_session, NULL, in_names, ins, n_in, out_names, 1, outs));
 
     /* token embeddings float32 [n, ldim], row-major */
     float *tok = NULL;
@@ -477,6 +570,7 @@ fail:
     if (outs[0] != NULL) ctx->api->ReleaseValue(outs[0]);
     if (ids_t != NULL) ctx->api->ReleaseValue(ids_t);
     if (mask_t != NULL) ctx->api->ReleaseValue(mask_t);
+    if (type_t != NULL) ctx->api->ReleaseValue(type_t);
     return ret;
 }
 
@@ -498,7 +592,7 @@ static int embed_sentence(MYFLT *ids, MYFLT *att, MYFLT *pmb, MYFLT *tmb, SEMSYS
     return n;
 }
 
-int sem_embed_init(CSOUND *csound, SEM_EMBED *p) {
+static int sem_embed_init_helper(CSOUND *csound, SEM_EMBED *p) {
     SEMSYS *ctx = FLT_TO_CTX(p);
     if (ctx == NULL) {
         return csound->InitError(csound, "[semembed] Not valid handle");
@@ -516,6 +610,13 @@ int sem_embed_init(CSOUND *csound, SEM_EMBED *p) {
     csound->AuxAlloc(csound, sizeof(MYFLT) * p->ctx->maxlen_seq, &(p->input_ids));
     csound->AuxAlloc(csound, sizeof(MYFLT) * p->ctx->maxlen_seq, &(p->attention_mask));
 
+    return OK;
+}
+
+int sem_embed_init(CSOUND *csound, SEM_EMBED *p) {
+    int err = sem_embed_init_helper(csound, p);
+    if (err != OK) { return err; }
+
     /* empty cache forces tokenization on the first perf pass */
     csound->AuxAlloc(csound, 1, &p->last_text);
     ((char *) p->last_text.auxp)[0] = '\0';
@@ -523,8 +624,22 @@ int sem_embed_init(CSOUND *csound, SEM_EMBED *p) {
     return OK;
 }
 
-int sem_embed_perf(CSOUND *csound, SEM_EMBED *p) {
+static int sem_embed_ik(SEM_EMBED *p, const char *text) {
     SEMSYS *ctx = p->ctx;
+
+    MYFLT *ids = (MYFLT *) p->input_ids.auxp;
+    MYFLT *att = (MYFLT *) p->attention_mask.auxp;
+    MYFLT *pool_embed = p->pool_embed->data;
+    MYFLT *token_embed = p->token_embed->data;
+
+    if (embed_sentence(ids, att, pool_embed, token_embed, ctx, text) == NOTOK) {
+        return NOTOK;
+    }
+
+    return OK;
+}
+
+int sem_embed_perf(CSOUND *csound, SEM_EMBED *p) {
     *p->gate = FL(0.0);
 
     const char *text = (p->text != NULL && p->text->data != NULL) ? p->text->data : "";
@@ -540,18 +655,39 @@ int sem_embed_perf(CSOUND *csound, SEM_EMBED *p) {
 
     strcpy((char *) p->last_text.auxp, text);
 
-    MYFLT *ids = (MYFLT *) p->input_ids.auxp;
-    MYFLT *att = (MYFLT *) p->attention_mask.auxp;
-    MYFLT *pool_embed = p->pool_embed->data;
-    MYFLT *token_embed = p->token_embed->data;
-
-    int err = embed_sentence(ids, att, pool_embed, token_embed, ctx, text);
+    int err = sem_embed_ik(p, text);
     if (err == NOTOK) {
         return csound->PerfError(csound, &(p->h), "[semembed] Embedding process error");
     }
 
     *p->gate = FL(1.0);
 
+    return OK;
+}
+
+/* i-rate form: 2 outputs (pool, tokens), no gate. embeds once at init. uses its own
+   struct SEM_EMBED_I so the arg layout matches the 2-output signature. */
+int sem_embed_i(CSOUND *csound, SEM_EMBED_I *p) {
+    SEMSYS *ctx = FLT_TO_CTX(p);
+    if (ctx == NULL) {
+        return csound->InitError(csound, "[semembed] Not valid handle");
+    }
+    if (ctx->tok_session == NULL) {
+        return csound->InitError(csound, "[semembed] No tokenizer session (missing tokenizer path)");
+    }
+    p->ctx = ctx;
+
+    tabinit_compat(csound, p->pool_embed, ctx->ldim, &(p->h));
+    tabinit2d(csound, p->token_embed, ctx->maxlen_seq, ctx->ldim, &(p->h));
+    csound->AuxAlloc(csound, sizeof(MYFLT) * ctx->maxlen_seq, &p->input_ids);
+    csound->AuxAlloc(csound, sizeof(MYFLT) * ctx->maxlen_seq, &p->attention_mask);
+
+    const char *text = (p->text != NULL && p->text->data != NULL) ? p->text->data : "";
+    MYFLT *ids = (MYFLT *) p->input_ids.auxp;
+    MYFLT *att = (MYFLT *) p->attention_mask.auxp;
+    if (embed_sentence(ids, att, p->pool_embed->data, p->token_embed->data, ctx, text) == NOTOK) {
+        return csound->InitError(csound, "[semembed] Embedding process error");
+    }
     return OK;
 }
 
@@ -791,13 +927,22 @@ int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p) {
     p->tmb = csound->Calloc(csound, sizeof(MYFLT) * (ctx->ldim * ctx->maxlen_seq));
     p->pool = (float *) calloc(ctx->ldim, sizeof(float));
 
-    int failed = 0;
+    int failed = 0;          /* 0 = ok, 1 = open error, 2 = embedding error */
+    char failpath[1024] = { 0 };
     for (size_t i = 0; i < nfiles; i++) {
         FILE *cf = fopen(list[i], "rb");
-        if (cf == NULL) { failed = 1; break; }
+        if (cf == NULL) {
+            failed = 1;
+            snprintf(failpath, sizeof(failpath), "%s", list[i]);
+            break;
+        }
         uint64_t _count = sem_space_create_helper(cf, fptr, ctx, p->ids, p->att, p->pmb, p->tmb, p->pool);
         fclose(cf);
-        if ((int) _count == NOTOK) { failed = 1; break; }
+        if ((int) _count == NOTOK) {
+            failed = 2;
+            snprintf(failpath, sizeof(failpath), "%s", list[i]);
+            break;
+        }
         ch.count += _count;
     }
 
@@ -805,7 +950,10 @@ int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p) {
 
     if (failed) {
         sem_space_build_deinit(csound, p, fptr, NULL);
-        return csound->InitError(csound, "[semspacebuild] Error processing source files");
+        if (failed == 1) {
+            return csound->InitError(csound, "[semspacebuild] Cannot open source file: %s", failpath);
+        }
+        return csound->InitError(csound, "[semspacebuild] Embedding error in: %s", failpath);
     }
 
     fseek(fptr, offsetof(CACHE_HEADER, count), SEEK_SET);
@@ -924,41 +1072,27 @@ int sem_space_add_init(CSOUND *csound, SEM_SPACE_ADD *p) {
     csound->AuxAlloc(csound, sizeof(MYFLT) * p->ctx->ldim, &p->pmb);
     csound->AuxAlloc(csound, sizeof(MYFLT) * (p->ctx->ldim * p->ctx->maxlen_seq), &p->tmb);
 
-    /* empty cache forces embedding on the first perf pass */
-    csound->AuxAlloc(csound, 1, &p->last_text);
-    ((char *) p->last_text.auxp)[0] = '\0';
+    p->prev_trig = FL(0.0);
 
     return OK;
 }
 
-int sem_space_add(CSOUND *csound, SEM_SPACE_ADD *p) {
-
+/* embed the sentence, dedup against the last add, normalize and append to the space.
+   returns OK or NOTOK. shared by the i-rate and k-rate forms. */
+static int sem_space_add_helper(CSOUND *csound, SEM_SPACE_ADD *p) {
     SEMSYS_SPACE *spc = p->spc;
-    const char *sentence = p->sentence->data;
-
-    /* self-gate: skip the model when the sentence is unchanged */
-    if (strcmp(sentence, (char *) p->last_text.auxp) == 0) {
-        return OK;
-    }
-    size_t tlen = strlen(sentence) + 1;
-    if (tlen > (size_t) p->last_text.size) {
-        csound->AuxAlloc(csound, tlen, &p->last_text);
-    }
-    strcpy((char *) p->last_text.auxp, sentence);
 
     MYFLT *ids = (MYFLT *) p->ids.auxp;
     MYFLT *att = (MYFLT *) p->att.auxp;
     MYFLT *in_vec = (MYFLT *) p->pmb.auxp;
     MYFLT *tmb = (MYFLT *) p->tmb.auxp;
 
-    int err = embed_sentence(ids, att, in_vec, tmb, p->ctx, sentence);
-    if (err == NOTOK) {
-        return csound->PerfError(csound, &(p->h), "[semspaceadd] onnx model error");
-    };
-
-    MYFLT *last = (MYFLT *) p->last_added.auxp;
+    if (embed_sentence(ids, att, in_vec, tmb, p->ctx, p->sentence->data) == NOTOK) {
+        return NOTOK;
+    }
 
     /* dedup: skip when identical to the previously added vector */
+    MYFLT *last = (MYFLT *) p->last_added.auxp;
     if (memcmp(in_vec, last, sizeof(MYFLT) * spc->ldim) == 0) {
         return OK;
     }
@@ -967,25 +1101,45 @@ int sem_space_add(CSOUND *csound, SEM_SPACE_ADD *p) {
     for (uint32_t i = 0; i < spc->ldim; i++) {
         vec[i] = (float) in_vec[i];
     }
-
     normalize(vec, spc->ldim);
 
     if (spc->count == spc->capacity) {
         uint64_t new_cap = spc->capacity ? spc->capacity * 2 : INITIAL_VCAPACITY;
-        float *tmp = (float *) csound->ReAlloc(csound, spc->vectors, sizeof(float) *  new_cap * spc->ldim);
-        if (tmp == NULL) {
-            return csound->PerfError(csound, &(p->h), "[semspaceadd] Out of memory in realloc vector space");
-        }
-
+        float *tmp = (float *) csound->ReAlloc(csound, spc->vectors, sizeof(float) * new_cap * spc->ldim);
+        if (tmp == NULL) { return NOTOK; }
         spc->vectors = tmp;
         spc->capacity = new_cap;
     }
 
     memcpy(spc->vectors + (spc->count * spc->ldim), vec, sizeof(float) * spc->ldim);
     spc->count++;
-
     memcpy(last, in_vec, sizeof(MYFLT) * spc->ldim);
 
+    return OK;
+}
+
+/* k-rate form: add on the rising edge of ktrig */
+int sem_space_add_perf(CSOUND *csound, SEM_SPACE_ADD *p) {
+    MYFLT trig = *p->ktrig;
+    if (trig > FL(0.0) && p->prev_trig <= FL(0.0)) {
+        if (sem_space_add_helper(csound, p) == NOTOK) {
+            p->prev_trig = trig;
+            return csound->PerfError(csound, &(p->h), "[semspaceadd] add to space error");
+        }
+    }
+    p->prev_trig = trig;
+    return OK;
+}
+
+/* i-rate form: set up and add once, at init */
+int sem_space_add(CSOUND *csound, SEM_SPACE_ADD *p) {
+    int err = sem_space_add_init(csound, p);
+    if (err != OK) {
+        return err;
+    }
+    if (sem_space_add_helper(csound, p) == NOTOK) {
+        return csound->InitError(csound, "[semspaceadd] add to space error");
+    }
     return OK;
 }
 
@@ -1019,7 +1173,7 @@ int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY *p) {
     return OK;
 }
 
-int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p) {
+static int sem_space_query_helper(SEM_SPACE_QUERY *p) {
     SEMSYS_SPACE *spc = p->spc;
 
     MYFLT *ids = (MYFLT *) p->ids.auxp;
@@ -1029,20 +1183,10 @@ int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p) {
 
     const char *sentence = p->query->data;
 
-    /* self-gate: skip the model when the query is unchanged */
-    if (strcmp(sentence, (char *) p->last_text.auxp) == 0) {
-        return OK;
-    }
-    size_t tlen = strlen(sentence) + 1;
-    if (tlen > (size_t) p->last_text.size) {
-        csound->AuxAlloc(csound, tlen, &p->last_text);
-    }
     strcpy((char *) p->last_text.auxp, sentence);
-
-    int err = embed_sentence(ids, att, pool_embed_query, tmb, p->ctx, sentence);
-    if (err == NOTOK) {
-        return csound->PerfError(csound, &(p->h), "[semspacequery] onnx model error");
-    };
+    if (embed_sentence(ids, att, pool_embed_query, tmb, p->ctx, sentence) == NOTOK) {
+        return NOTOK;
+    }
 
     float *query = (float *) p->query_buf.auxp;
     for (uint32_t i = 0; i < spc->ldim; i++) {
@@ -1086,7 +1230,38 @@ int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p) {
     }
 
     return OK;
+}
 
+int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p) {
+    const char *sentence = p->query->data;
+
+    /* self-gate: skip the model when the query is unchanged */
+    if (strcmp(sentence, (char *) p->last_text.auxp) == 0) {
+        return OK;
+    }
+
+    size_t tlen = strlen(sentence) + 1;
+    if (tlen > (size_t) p->last_text.size) {
+        csound->AuxAlloc(csound, tlen, &p->last_text);
+    }
+    strcpy((char *) p->last_text.auxp, sentence);
+
+    if (sem_space_query_helper(p) == NOTOK) {
+        return csound->PerfError(csound, &(p->h), "[semspacequery] onnx model error");
+    }
+
+    return OK;
+}
+
+int sem_space_query_i(CSOUND *csound, SEM_SPACE_QUERY *p) {
+    int err = sem_space_query_init(csound, p);
+    if (err != OK) { return err; }
+
+    if (sem_space_query_helper(p) == NOTOK) {
+        return csound->InitError(csound, "[semspacequery] onnx model error");
+    }
+
+    return OK;
 }
 
 /* dump the whole space (header + all vectors) to a fresh file.
@@ -1151,15 +1326,18 @@ int sem_space_save_kperf(CSOUND *csound, SEM_SPACE_SAVE *p) {
 static OENTRY localops[] = {
     { "semload",          S(SEM_INIT),             0, "i",         "iS",   (SUBR)sem_init,                   NULL,                       (SUBR)sem_deinit,       NULL, 0 },
     { "semdim",           S(SEM_DIM),              0, "i",         "i",    (SUBR)sem_dim,                    NULL,                       NULL,                   NULL, 0 },
-    { "semembed",         S(SEM_EMBED),            0, "k[]k[][]k", "iS",   (SUBR)sem_embed_init,             (SUBR)sem_embed_perf,       NULL,                   NULL, 0 },
+    { "semembed",         S(SEM_EMBED_I),          0, "i[]i[][]",  "iS",   (SUBR)sem_embed_i,                NULL,                       NULL,                   NULL, 0 },
+    { "semembed.k",       S(SEM_EMBED),            0, "k[]k[][]k", "iS",   (SUBR)sem_embed_init,             (SUBR)sem_embed_perf,       NULL,                   NULL, 0 },
     { "semspace",         S(SEM_SPACE_INIT),       0, "i",         "i",    (SUBR)sem_space_init,             NULL,                       (SUBR)sem_space_deinit, NULL, 0 },
     { "semspace.f",       S(SEM_SPACE_INIT),       0, "i",         "iS",   (SUBR)sem_space_init,             NULL,                       (SUBR)sem_space_deinit, NULL, 0 },
     { "semspace.vs",      S(SEM_SPACE_INIT_VS),    0, "i",         "iS[]", (SUBR)sem_space_init_vs,          NULL,                       (SUBR)sem_space_deinit, NULL, 0 },
     { "semspacebuild",    S(SEM_SPACE_BUILD),      0, "",          "iSS",  (SUBR)sem_space_build,            NULL,                       NULL,                   NULL, 0 },
-    { "semspaceadd",      S(SEM_SPACE_ADD),        0, "",          "iS",   (SUBR)sem_space_add_init,         (SUBR)sem_space_add,        NULL,                   NULL, 0 },
+    { "semspaceadd",      S(SEM_SPACE_ADD),        0, "",          "iS",   (SUBR)sem_space_add,              NULL,                       NULL,                   NULL, 0 },
+    { "semspaceadd.k",    S(SEM_SPACE_ADD),        0, "",          "iSk",  (SUBR)sem_space_add_init,         (SUBR)sem_space_add_perf,   NULL,                   NULL, 0 },
     { "semspacesave",     S(SEM_SPACE_SAVE),       0, "",          "iS",   (SUBR)sem_space_save,             NULL,                       NULL,                   NULL, 0 },
     { "semspacesave.k",   S(SEM_SPACE_SAVE),       0, "",          "iSk",  (SUBR)sem_space_save_kset,        (SUBR)sem_space_save_kperf, NULL,                   NULL, 0 },
-    { "semspacequery",    S(SEM_SPACE_QUERY),      0, "k[][]k[]",  "iSi",  (SUBR)sem_space_query_init,       (SUBR)sem_space_query_perf, NULL,                   NULL, 0 }
+    { "semspacequery",    S(SEM_SPACE_QUERY),      0, "i[][]i[]",  "iSi",  (SUBR)sem_space_query_i,          NULL,                       NULL,                   NULL, 0 },
+    { "semspacequery.k",  S(SEM_SPACE_QUERY),      0, "k[][]k[]",  "iSi",  (SUBR)sem_space_query_init,       (SUBR)sem_space_query_perf, NULL,                   NULL, 0 }
 };
 
 LINKAGE
