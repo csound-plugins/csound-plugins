@@ -124,6 +124,31 @@ Practical rules:
 | `semspacequery` | `neighs:k[][], scores:k[] = semspacequery(space:i, query:S, topk:i)` (k-rate); `neighs:i[][], scores:i[] = semspacequery(space:i, query:S, topk:i)` (i-rate) | Top-k nearest neighbours — real-time (gated) or once at init |
 | `semspacesave` | `semspacesave(space:i, file:S)`; `semspacesave(space:i, file:S, trig:k)` | Write the in-memory space to a `.espc` (once, or on trigger edge) |
 
+### Speech-to-text (experimental)
+
+An **asynchronous** speech-to-text front-end: load an end-to-end ONNX model, submit audio,
+poll for the transcription. Inference runs on a background worker thread started on demand,
+so it never blocks the audio thread; jobs and results pass through a bounded FIFO queue.
+
+| Opcode | Form | Purpose |
+|--------|------|---------|
+| `semsttload` | `handle:i = semsttload(model_dir:S, maxlen:i [, queue:i])` | Load an end-to-end STT model |
+| `semsttsubmitfile` | `semsttsubmitfile(handle:i, path:S)` | Submit an audio file (any format) |
+| `semsttsubmitarray` | `semsttsubmitarray(handle:i, samples:i[])` | Submit a buffer of samples |
+| `semsttsubmitft` | `semsttsubmitft(handle:i, ftable:i)` | Submit a function table of samples |
+| `semsttsubmitlive` | `semsttsubmitlive(handle:i, asig:a, maxdur:i [, trig:k])` | Capture live a-rate speech; `maxdur` is a preferred window length and the backend closes usable speech windows |
+| `semsttready` | `ready:k = semsttready(handle:i)` | `1` when a transcription is ready |
+| `semsttresult` | `text:S, length:k = semsttresult(handle:i)` | Read the next transcription + its length (FIFO) |
+
+The model is **not tied to Whisper** — any end-to-end graph matching the I/O contract
+(`audio_stream` bytes in → `str` text out, plus the generation scalars) works. The model
+directory must hold `model.onnx` and `model.onnx.data` (external weights). `maxlen` comes
+from the model's config, not chosen freely. Each transcription covers a **single audio
+window whose length is fixed by the model** (~30 s for Whisper); longer audio must be split
+into segments, or captured with `semsttsubmitlive`, which uses a built-in energy gate to
+avoid arbitrary fixed cuts. See
+[doc/semsttload.md](doc/semsttload.md) for the contract, limits and the Whisper export recipe.
+
 See `doc/` for the per-opcode reference.
 
 ## Examples
@@ -136,6 +161,14 @@ The `examples/` directory holds working `.csd` files: usage examples for the opc
   and convolves a source with it (`semspacequery` → IR → `ftconv`).
 - `sem_synthesis_additive.csd` — **additive synthesis**: the embedding coordinates
   become the amplitudes of a bank of sine partials.
+
+and two **speech-to-text** demos:
+
+- `sem_stt_file.csd` — transcribe an audio file (`semsttsubmitfile` → `semsttready` →
+  `semsttresult`).
+- `sem_stt_live.csd` — **voice-controlled latent space**: speak into the mic, each usable
+  speech window is transcribed and used as a query into a semantic space, and the match
+  drives sound.
 
 ## Building
 
@@ -206,6 +239,15 @@ plugin so the loader can resolve it from the plugin directory.
 - **Multimodal embeddings.** Embed audio and images, not just text, and extend the
   search space across modalities — so a single space can hold and cross-search
   sound, image, and text together.
+- **Blocking `semstttranscribe` (offline).** A synchronous i-time variant that
+  transcribes a file or function table and returns the text directly, for non-real-time /
+  batch use where blocking is fine. It should also provide reliable segmentation for files
+  longer than the model window instead of requiring users to split them manually.
+- **Configurable live STT gate.** `semsttsubmitlive` currently uses built-in constants for
+  energy threshold, minimum speech duration, trailing silence, pre/post pad and hard cap.
+  Expose these as optional arguments or a separate setup opcode once the defaults settle.
+- **STT `generation_config.json`.** Read the model's generation defaults (e.g.
+  `max_length`, special tokens) from the model directory instead of passing them.
 
 ## Version history
 
@@ -221,4 +263,21 @@ plugin so the loader can resolve it from the plugin directory.
 - `semspacebuild` builds a `.espc` from a text file or a directory of `.txt`
   (word-window chunking with overlap).
 - Brute-force cosine nearest-neighbour search in RAM, top-k via min-heap.
+- Added experimental asynchronous speech-to-text opcodes: `semsttload`,
+  `semsttsubmitfile`, `semsttsubmitarray`, `semsttsubmitft`, `semsttsubmitlive`,
+  `semsttready`, `semsttresult`.
+- Added STT model documentation for end-to-end ONNX graphs, ONNX Runtime
+  Extensions, queue sizing and result polling.
+- `semsttsubmitlive` now accumulates a-rate audio into usable speech windows
+  instead of blindly cutting fixed-size chunks; it waits for enough speech and a
+  trailing silence boundary, with debug diagnostics via `SEMSYS_STT_DEBUG=1`.
+- STT queues are bounded FIFO queues. If a submit queue is full the newest submit
+  is dropped with a warning; result queue overflow drops the newest result with a
+  warning.
+- STT worker threads are started lazily and cleaned up when idle or when the STT
+  handle is released.
+- Hardened semantic-space embedding and query paths against non-finite vectors:
+  failed or NaN embeddings are rejected, invalid `.espc` rows are skipped on load,
+  and query outputs are cleared on invalid input instead of propagating NaN scores.
+- Added STT examples: `sem_stt_file.csd` and `sem_stt_live.csd`.
 - Requires Csound API 7.

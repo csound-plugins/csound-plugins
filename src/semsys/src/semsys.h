@@ -57,10 +57,12 @@
 
 #define INITIAL_VCAPACITY 100
 
-#define CTX_TO_FLT(ctx) (MYFLT)(uintptr_t) (ctx)
-#define FLT_TO_CTX(p) (SEMSYS *)(uintptr_t) (*p->handle)
+#define CTX_TO_FLT(ctx) (MYFLT) (uintptr_t) (ctx)
+#define FLT_TO_CTX(p) (SEMSYS *) (uintptr_t) (*p->handle)
 #define SPC_TO_FLT(spc) (MYFLT)(uintptr_t) (spc)
-#define FLT_TO_SPC(p) (SEMSYS_SPACE *)(uintptr_t) (*p->s_handle)
+#define FLT_TO_SPC(p) (SEMSYS_SPACE *) (uintptr_t) (*p->s_handle)
+#define FLT_TO_STT(stt) (SEMSYS_STT *) (uintptr_t) (*p->handle)
+#define STT_TO_FLT(stt) (MYFLT) (uintptr_t) (stt)
 #define CACHE_INDEX(spc, ndx) sizeof(CACHE_HEADER) + (ndx) * (spc)->ldim * sizeof(float)
 
 #define TOKWIN(maxlen_seq) (int) ((maxlen_seq) * 0.6) > 1 ? (int) ((maxlen_seq) * 0.6) : 1
@@ -118,6 +120,32 @@
         }                                                         \
     } while (0)
 
+/* like ONNX_CHECK_GOTO but also records an init error in `ret` (caller must
+   declare `int ret` and a `fail:` label that returns `ret`) */
+#define ONNX_CHECK_STT(api, expr)                                 \
+    do {                                                          \
+        OrtStatus *_st = (expr);                                  \
+        if (_st != NULL) {                                        \
+            ret = csound->InitError(                              \
+                csound, "[semstt] onnxruntime error: %s",         \
+                (api)->GetErrorMessage(_st));                     \
+            (api)->ReleaseStatus(_st);                            \
+            goto fail;                                            \
+        }                                                         \
+    } while (0)
+
+/* ORT check for stt_run: record the message into errbuf and bail (sets ret=NOTOK).
+   needs `api`, `errbuf`, `errcap`, `ret` in scope. */
+#define ORT_CK(expr)                                                               \
+do {                                                                               \
+    OrtStatus *_s = (expr);                                                        \
+    if (_s != NULL) {                                                              \
+            snprintf(errbuf, errcap, "onnxruntime: %s", api->GetErrorMessage(_s)); \
+            api->ReleaseStatus(_s);                                                \
+            ret = NOTOK;                                                           \
+            goto fail;                                                             \
+        }                                                                          \
+    } while (0)
 
 // core
 typedef struct {
@@ -299,6 +327,113 @@ typedef struct {
     AUXCH mheap;
 } SEM_SPACE_QUERY;
 
+
+// SEMSYS STT
+
+// core
+// one queued audio job: malloc'd encoded bytes (file bytes or in-RAM WAV)
+typedef struct {
+    uint8_t *bytes;
+    size_t size;
+    uint64_t id;
+} STT_JOB;
+
+typedef struct {
+    char model_path[1024];
+    const OrtApi *api;
+    OrtEnv *env;
+    OrtSessionOptions *mod_session_options;
+    OrtSession *mod_session;
+    int32_t max_length;
+    // async worker
+    CSOUND *csound;     // for the worker's thread-API calls
+    void *thread;       // background worker (one per handle)
+    void *mutex;        // protects both queues + err
+    void *job_lock;     // wakes the worker
+    volatile int stop;  // deinit -> worker exits
+    int worker_done;    // worker returned; join handle before restarting/freeing
+    // fixed FIFO of pending jobs (ring buffer, capacity qcap)
+    STT_JOB *jobs;
+    int qcap;
+    int qhead;          // oldest job index
+    int qcount;         // jobs queued
+    uint64_t next_job_id;
+    // FIFO of finished transcriptions (ring, same capacity)
+    char **results;     // malloc'd texts, consumed in order by semsttresult
+    uint64_t *result_ids;
+    int rhead;          // oldest result index
+    int rcount;         // results waiting to be read
+    char err[256];      // last error message
+} SEMSYS_STT;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    MYFLT *handle;
+    // inputs
+    STRINGDAT *model_dir;
+    MYFLT *max_length;
+    MYFLT *queue_depth;   // FIFO capacity (jobs + results); 0 -> default
+} SEM_STT_INIT;
+
+typedef struct {
+    OPDS h;
+    // inputs
+    MYFLT *handle;
+    STRINGDAT *audio_speech_fpath;
+} SEM_STT_SUBMIT_AUDIO_FILE;
+
+typedef struct {
+    OPDS h;
+    // inputs
+    MYFLT *handle;
+    ARRAYDAT *audio_speech_arr;
+} SEM_STT_SUBMIT_AUDIO_ARRAY;
+
+typedef struct {
+    OPDS h;
+    // inputs
+    MYFLT *handle;
+    MYFLT *ftable_num;
+} SEM_STT_SUBMIT_AUDIO_FUNC;
+
+// live a-rate capture: accumulate asig across k-blocks, submit a window every imaxdur
+// seconds (auto) and/or on the rising edge of the optional ktrig
+typedef struct {
+    OPDS h;
+    // inputs
+    MYFLT *handle;
+    MYFLT *asig;      // a-rate audio in
+    MYFLT *imaxdur;   // window length, seconds (buffer size; auto-submit when full)
+    MYFLT *ktrig;     // optional: also submit on rising edge (default 0 -> auto only)
+    // state
+    SEMSYS_STT *ctx;
+    AUXCH buf;        // accumulation buffer (MYFLT, engine sr, mono)
+    size_t target;    // preferred window length in samples
+    size_t cap;       // hard capacity in samples
+    size_t next_check; // next automatic VAD boundary check
+    size_t len;       // samples written so far
+    MYFLT prev_trig;
+} SEM_STT_SUBMIT_LIVE;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    MYFLT *is_ready; // bool: 1 when a fresh transcription is ready
+    // inputs
+    MYFLT *handle;
+} SEM_STT_READY;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    STRINGDAT *result;
+    MYFLT *text_length;
+    // inputs
+    MYFLT *handle;
+} SEM_STT_RESULT;
+
+
 // SEMSYS EMBED
 int sem_init(CSOUND *csound, SEM_INIT *p);
 int sem_dim(CSOUND *csound, SEM_DIM *p);
@@ -319,5 +454,16 @@ int sem_space_save_kperf(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY *p);
 int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p);
 int sem_space_query_i(CSOUND *csound, SEM_SPACE_QUERY *p);
+
+// SEMSYS STT
+int sem_stt_init(CSOUND *csound, SEM_STT_INIT *p);
+int sem_stt_ready(CSOUND *csound, SEM_STT_READY *p);
+int sem_stt_submit_audio_file(CSOUND *csound, SEM_STT_SUBMIT_AUDIO_FILE *p);
+int sem_stt_submit_audio_arr(CSOUND *csound, SEM_STT_SUBMIT_AUDIO_ARRAY *p);
+int sem_stt_submit_audio_func(CSOUND *csound, SEM_STT_SUBMIT_AUDIO_FUNC *p);
+int sem_stt_submit_live_init(CSOUND *csound, SEM_STT_SUBMIT_LIVE *p);
+int sem_stt_submit_live_perf(CSOUND *csound, SEM_STT_SUBMIT_LIVE *p);
+int sem_stt_submit_live_deinit(CSOUND *csound, SEM_STT_SUBMIT_LIVE *p);
+int sem_stt_result(CSOUND *csound, SEM_STT_RESULT *p);
 
 #endif

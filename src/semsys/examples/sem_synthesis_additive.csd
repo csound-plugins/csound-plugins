@@ -1,6 +1,6 @@
 <CsoundSynthesizer>
 <CsOptions>
--odac
+-o dac
 </CsOptions>
 <CsInstruments>
 
