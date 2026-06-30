@@ -10,7 +10,7 @@ nchnls = 2
 0dbfs = 1
 
 #define EPS # pow(10, -12) #
-#define MODEL_DIR # "/Users/pm/Desktop/all-MiniLM-L6-v2" #
+#define MODEL_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/all-MiniLM-L6-v2" #
 
 seed(0)
 

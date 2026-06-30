@@ -43,7 +43,7 @@ semsttsubmitft(handle:i, ftable:i)
 ## Examples
 
 ```csound
-h@global:i = semsttload("path/to/whisper_e2e", 448, 8)
+h@global:i = semsttload("path/to/model_e2e", 448, 8)
 audio:i = ftgen(0, 0, 0, 1, "speech.wav", 0, 0, 1)   ; mono table
 
 instr transcribe

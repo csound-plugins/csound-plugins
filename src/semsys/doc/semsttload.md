@@ -148,7 +148,7 @@ nchnls = 2
 0dbfs = 1
 
 ; the directory must contain the end-to-end model.onnx (+ its .data)
-h@global:i = semsttload("path/to/whisper_e2e", 448, 256)
+h@global:i = semsttload("path/to/model_e2e", 448, 256)
 
 instr transcribe
     semsttsubmitfile(h, "speech.wav")     ; returns immediately

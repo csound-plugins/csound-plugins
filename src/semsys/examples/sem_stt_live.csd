@@ -25,8 +25,8 @@ ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-#define STT_DIR # "/Users/pm/Desktop/whisper-core/model_e2e" #
-#define EMB_DIR # "/Users/pm/Desktop/all-MiniLM-L6-v2" #
+#define STT_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/whisper-core/model_e2e" #
+#define EMB_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/all-MiniLM-L6-v2" #
 
 ; speech-to-text + embedding model
 h_stt@global:i = semsttload($STT_DIR, 448, 64)

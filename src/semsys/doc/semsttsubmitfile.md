@@ -47,7 +47,7 @@ ksmps = 128
 nchnls = 1
 0dbfs = 1
 
-h@global:i = semsttload("path/to/whisper_e2e", 448, 256)
+h@global:i = semsttload("path/to/model_e2e", 448, 256)
 
 instr SUBMIT
     semsttsubmitfile(h, "speech.wav")

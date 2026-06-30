@@ -22,7 +22,7 @@ nchnls = 1
 0dbfs = 1
 
 ; end-to-end STT model dir: must contain model.onnx + model.onnx.data
-#define STT_DIR # "/Users/pm/Desktop/whisper-core/model_e2e" #
+#define STT_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/whisper-core/model_e2e" #
 #define AUDIO   # "/Users/pm/AcaHub/AudioSamples/vox.wav" #
 
 h@global:i = semsttload($STT_DIR, 448, 4)

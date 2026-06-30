@@ -74,7 +74,7 @@ ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-h_stt@global:i = semsttload("path/to/whisper_e2e", 448, 256)
+h_stt@global:i = semsttload("path/to/model_e2e", 448, 256)
 
 instr LISTEN
     sig:a = inch(1)

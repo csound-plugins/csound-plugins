@@ -44,7 +44,7 @@ semsttsubmitarray(handle:i, samples:i[])
 ## Examples
 
 ```csound
-h@global:i = semsttload("path/to/whisper_e2e", 448, 8)
+h@global:i = semsttload("path/to/model_e2e", 448, 8)
 
 instr transcribe
     ; samps:i[] filled elsewhere with mono audio at engine sr
