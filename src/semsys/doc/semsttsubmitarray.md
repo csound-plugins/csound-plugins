@@ -22,6 +22,11 @@ warning and already queued jobs stay queued.
 The samples must be at **engine `sr`** (the rate at which Csound arrays/signals are
 produced); the WAV header records that rate so the model's decoder resamples correctly.
 
+Audio longer than the model window (~30 s for Whisper) is **segmented automatically**: the
+buffer is split into ≤30 s chunks — each cut snapped to the quietest point near the boundary
+so words are not clipped — every chunk is transcribed, and the texts are joined into a single
+result. One submit yields one combined transcription regardless of length.
+
 ## Syntax
 
 ```csound

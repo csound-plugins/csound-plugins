@@ -8,9 +8,11 @@ Find the nearest stored vectors to a query text (k-nearest neighbours).
 
 `semspacequery` embeds `query`, normalizes it, and compares it against every vector in the space (opened with [semspace](semspace.md)) by **cosine similarity**. It returns the `top-k` closest entries, sorted from most to least similar.
 
+A query longer than the model window is not truncated: it is split into `≤`-window token chunks, each chunk is embedded, and the chunk embeddings are **mean-pooled** into one centroid query vector — so the whole query text contributes to the search. (Short queries embed to a single vector, unchanged.)
+
 Search is **brute force**: a linear scan over the whole space, in RAM (no disk access), with a bounded min-heap keeping only the `top-k` best as it goes. `top-k` is clamped to the number of stored vectors.
 
-Because the space stores vectors only, the result is the matching **vectors and scores, not the source text** (see [semspace](semspace.md)). A tokenizer must have been provided to [semload](semload.md).
+Because the space stores vectors only, the result is the matching **vectors and scores, not the source text** (see [semspace](semspace.md)). An embedding model must have been loaded with [semload](semload.md).
 
 Two forms, selected by the **rate of the output variables**:
 

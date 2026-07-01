@@ -68,6 +68,28 @@
 #define TOKWIN(maxlen_seq) (int) ((maxlen_seq) * 0.6) > 1 ? (int) ((maxlen_seq) * 0.6) : 1
 #define TOKSTRIDE(wsize) ((wsize) - (int) (0.15 * (wsize) + 0.5)) > 1 ? ((wsize) - (int) (0.15 * (wsize) + 0.5)) : 1
 
+#define STT_IDLE_TICKS 20
+#define STT_WAIT_MS 100
+#define STT_DEFAULT_QUEUE_CAP 256
+#define STT_MAX_QUEUE_CAP 512
+#define STT_LIVE_HARD_MAX_SEC 30.0
+// offline file/array/func segmentation: split long PCM into ~28s chunks, snapping
+// the cut to the quietest 20ms frame in the 2s before the target end (hard cap 30s)
+#define STT_FILE_CHUNK_TARGET_SEC 28.0
+#define STT_FILE_CHUNK_SEARCH_SEC 2.0
+#define STT_LIVE_VAD_FRAME_SEC 0.02
+#define STT_LIVE_VAD_RMS 0.010
+#define STT_LIVE_VAD_PEAK 0.035
+#define STT_LIVE_MIN_SPEECH_SEC 0.80
+#define STT_LIVE_TRAILING_SILENCE_SEC 0.45
+#define STT_LIVE_PAD_BEFORE_SEC 0.25
+#define STT_LIVE_PAD_AFTER_SEC 0.35
+
+#define STT_DEBUG_ENABLED                       \
+    (getenv("SEMSYS_STT_DEBUG") != NULL   &&    \
+    getenv("SEMSYS_STT_DEBUG")[0] != '\0' &&    \
+    getenv("SEMSYS_STT_DEBUG")[0] != '0')       \
+
 #define ONNX_CHECK_INIT(api, expr)                                \
     do {                                                          \
         OrtStatus *status = (expr);                               \
@@ -147,21 +169,17 @@ do {                                                                            
         }                                                                          \
     } while (0)
 
+
 // core
 typedef struct {
     char model_path[1024];
-    char tokenizer_path[1024];
     const OrtApi *api;
     OrtEnv *env;
     OrtSessionOptions *emb_session_options;
     OrtSession *emb_session;
-    OrtSessionOptions *tok_session_options;
-    OrtSession *tok_session;
     uint32_t ldim;
     uint32_t maxlen_seq;
-    uint32_t needs_token_type; // model has a token_type_ids input (BERT) -> feed zeros
 } SEMSYS;
-
 
 typedef struct {
     OPDS h;
@@ -184,7 +202,6 @@ typedef struct {
     OPDS h;
     // outputs
     ARRAYDAT *pool_embed;
-    ARRAYDAT *token_embed;
     MYFLT *gate;
     //inputs
     MYFLT *handle;
@@ -192,24 +209,30 @@ typedef struct {
     // private state
     SEMSYS *ctx;
     AUXCH last_text;
-    AUXCH input_ids;
-    AUXCH attention_mask;
 } SEM_EMBED;
 
-// i-rate form of semembed: 2 outputs (pool, tokens), no gate / no change-cache
+// i-rate form of semembed: 1 output (pooled embedding), no gate / no change-cache
 typedef struct {
     OPDS h;
     // outputs
     ARRAYDAT *pool_embed;
-    ARRAYDAT *token_embed;
     // inputs
     MYFLT *handle;
     STRINGDAT *text;
     // private state
     SEMSYS *ctx;
-    AUXCH input_ids;
-    AUXCH attention_mask;
-} SEM_EMBED_I;
+} SEM_EMBED_TEXT_I;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *pool_embed;
+    // inputs
+    MYFLT *handle;
+    STRINGDAT *file_path;
+    // private state
+    SEMSYS *ctx;
+} SEM_EMBED_FILE_I;
 
 // --- SEM_SPACE ---
 
@@ -264,10 +287,7 @@ typedef struct {
     STRINGDAT *file_name;
     STRINGDAT *source;
     // private
-    MYFLT *ids;
-    MYFLT *att;
     MYFLT *pmb;
-    MYFLT *tmb;
     float *pool;
 } SEM_SPACE_BUILD;
 
@@ -279,13 +299,10 @@ typedef struct {
     MYFLT *ktrig; // k-form only: add on rising edge
     // private state
     SEMSYS_SPACE *spc;
-    AUXCH last_added; // cached last-added vector for dedup
-    AUXCH vec_scratch; // float[ldim] scratch for normalize+write
+    AUXCH last_text; // cached last-added text; self-gate skips re-embedding unchanged text
+    AUXCH vec_scratch; // float[ldim] scratch for chunk_and_embed
     SEMSYS *ctx;
-    AUXCH ids;
-    AUXCH att;
     AUXCH pmb;
-    AUXCH tmb;
     MYFLT prev_trig;
 } SEM_SPACE_ADD;
 
@@ -320,10 +337,7 @@ typedef struct {
     AUXCH query_buf; // float[ldim] normalized query
     AUXCH last_text; // cached prev sentence for change detection
     SEMSYS *ctx;
-    AUXCH ids;
-    AUXCH att;
     AUXCH pmb;
-    AUXCH tmb;
     AUXCH mheap;
 } SEM_SPACE_QUERY;
 
@@ -331,10 +345,13 @@ typedef struct {
 // SEMSYS STT
 
 // core
-// one queued audio job: malloc'd encoded bytes (file bytes or in-RAM WAV)
+// one queued audio job: one or more malloc'd encoded byte buffers (file blob or
+// in-RAM WAV). long PCM is pre-split into <=30s segments (Whisper's fixed window);
+// the worker transcribes each chunk and joins the texts into a single result.
 typedef struct {
-    uint8_t *bytes;
-    size_t size;
+    uint8_t **chunks;   // nchunks malloc'd byte buffers
+    size_t *sizes;      // byte size of each chunk
+    int nchunks;
     uint64_t id;
 } STT_JOB;
 
@@ -433,13 +450,23 @@ typedef struct {
     MYFLT *handle;
 } SEM_STT_RESULT;
 
+typedef struct {
+    size_t first_voice;
+    size_t last_voice_end;
+    size_t voiced_samples;
+    double rms;
+    double peak;
+    int has_voice;
+} STT_LIVE_ANALYSIS;
+
 
 // SEMSYS EMBED
 int sem_init(CSOUND *csound, SEM_INIT *p);
 int sem_dim(CSOUND *csound, SEM_DIM *p);
 int sem_embed_init(CSOUND *csound, SEM_EMBED *p);
 int sem_embed_perf(CSOUND *csound, SEM_EMBED *p);
-int sem_embed_i(CSOUND *csound, SEM_EMBED_I *p);
+int sem_embed_i(CSOUND *csound, SEM_EMBED_TEXT_I *p);
+int sem_embed_i_file(CSOUND *csound, SEM_EMBED_FILE_I *p);
 
 // SEMSYS SPACE
 int sem_space_init(CSOUND *csound, SEM_SPACE_INIT *p);

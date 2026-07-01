@@ -59,7 +59,8 @@ if(BUILD_SEMSYS_OPCODES)
         message(STATUS "onnxruntime target is ${_onnxruntime_target_type}; runtime library installation is left to the package manager")
     endif()
 
-    # onnxruntime-extensions: the ONNX tokenizer uses custom ops from this library,
+    # onnxruntime-extensions: the end-to-end embedding and STT graphs use custom ops
+    # from this library (the embedded tokenizer, audio decode/STFT, BPE detokenizer),
     # loaded at runtime (RegisterCustomOpsLibrary) and resolved next to the plugin.
     # Provide the NATIVE (non-Python) shared lib in one of two ways:
     #   -DORT_EXTENSIONS_LIB=/full/path/to/libortextensions.<ext>   (explicit), or
@@ -96,7 +97,7 @@ if(BUILD_SEMSYS_OPCODES)
         )
     else()
         message(STATUS "onnxruntime-extensions (${_ortext_name}) not found; it will NOT be bundled. "
-                       "The semsys tokenizer needs it at runtime: pass -DORT_EXTENSIONS_LIB=/path/to/${_ortext_name}, "
+                       "The semsys embedding and STT models need it at runtime: pass -DORT_EXTENSIONS_LIB=/path/to/${_ortext_name}, "
                        "or -DORTEXTENSIONS_ROOT=/root (env ORTEXTENSIONS_ROOT), "
                        "or set the SEMSYS_ORT_EXTENSIONS env var at runtime.")
     endif()

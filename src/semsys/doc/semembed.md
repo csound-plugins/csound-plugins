@@ -2,41 +2,43 @@
 
 ## Abstract
 
-Embed a text string in real time, returning its sentence and token embeddings.
+Embed a text string in real time, returning its mean-pooled sentence embedding.
 
 ## Description
 
-`semembed` tokenizes `text` and runs it through the embedding model, producing the
-**mean-pooled sentence embedding** (a single vector, length = embedding dimension, see
-[semdim](semdim.md)) and the **per-token embeddings** (a matrix `maxlen × dim`, one row
-per token position, unused positions zero-padded). A tokenizer must have been provided
-to [semload](semload.md), otherwise `semembed` raises an error. The text is truncated
-to the model/tokenizer limits.
+`semembed` runs `text` through the end-to-end embedding model (the model tokenizes
+internally), producing the **mean-pooled sentence embedding**: a vector of length =
+embedding dimension (see [semdim](semdim.md)).
 
 It comes in two forms, selected automatically by the **rate of the output variables**:
 
-* **i-rate** (`i[]`, `i[][]` outputs) — embed **once at init**. Two outputs, no change
-  flag. Use it to compute a fixed embedding for the note.
-* **k-rate** (`k[]`, `k[][]`, plus a `k` flag) — embed in real time, **self-gated**:
-  the model re-runs only when the text changes, and `changed` is `1` on that pass. Use
-  it for live latent-space control.
+* **i-rate** (`i[][]` output) — embed **once at init**, returning a **2D array
+  `[nchunks, ldim]`**. Text longer than the model window is split into `≤`-window token
+  chunks (the same chunker as [semspacebuild](semspacebuild.md)), producing one embedding
+  **row per chunk**; short text yields a single row. Iterate the rows with `lenarray`.
+  To embed a text file instead of an inline string, use [semembedfile](semembedfile.md).
+* **k-rate** (`k[]`, plus a `k` flag) — embed in real time, **self-gated**: the model
+  re-runs only when the text changes, and `changed` is `1` on that pass. Returns a **single
+  vector**: text longer than the model window is chunked and the chunk embeddings are
+  **mean-pooled** into one vector (a k-rate array can't change its row count per pass, so
+  the per-chunk 2D form is i-rate only). Use it for live latent-space control.
 
 ## Syntax
 
 ```csound
-pool:i[], tokens:i[][]            = semembed(handle:i, text:S)   ; i-rate, once
-pool:k[], tokens:k[][], changed:k = semembed(handle:i, text:S)   ; k-rate, real-time
+chunks:i[][]        = semembed(handle:i, text:S)   ; i-rate, once, one row per chunk
+pool:k[], changed:k = semembed(handle:i, text:S)   ; k-rate, real-time
 ```
 
 ## Arguments
 
-* `handle:i`: handle returned by [semload](semload.md) (with a tokenizer).
+* `handle:i`: handle returned by [semload](semload.md).
 * `text:S`: the text to embed.
 
 ## Output
 
-* `pool[]`: mean-pooled sentence embedding (length = embedding dim).
-* `tokens[][]`: per-token embeddings (`maxlen × dim`).
+* `chunks:i[][]`: (i-rate form) `[nchunks, ldim]` — one mean-pooled embedding per chunk.
+* `pool:k[]`: (k-rate form) mean-pooled sentence embedding (length = embedding dim).
 * `changed:k`: (k-rate form only) `1` on the pass the text changed, else `0`.
 
 ## Execution Time
@@ -61,7 +63,7 @@ handle@global:i = semload(256, "path/to/model_dir")
 
 instr 1
     sentence:S = "sound synthesis in blue sky"
-    pool_embed:k[], tokens_embed:k[][], changed:k = semembed(handle, sentence)
+    pool_embed:k[], changed:k = semembed(handle, sentence)
 endin
 
 </CsInstruments>
@@ -79,6 +81,7 @@ For **semantic synthesis** demos that turn embeddings into sound, see
 
 * [semload](semload.md)
 * [semdim](semdim.md)
+* [semembedfile](semembedfile.md)
 * [semspacequery](semspacequery.md)
 
 ## Credits

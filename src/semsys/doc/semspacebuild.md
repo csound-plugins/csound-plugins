@@ -17,11 +17,11 @@ Chunking:
 
 * The source is read **paragraph by paragraph**. A blank line is a hard boundary; a chunk never crosses it.
 * Each paragraph is split into **overlapping word-windows** (~`maxlen`-sized words, ~15% overlap). One embedding vector is produced per window.
-* Boundaries are **word-based, approximate**, not token-exact. For long inputs to be fully covered, the tokenizer must not truncate below `maxlen`, otherwise each window is cut and the tail is lost (see the README, *Model and token limits*).
+* Boundaries are **word-based, approximate**, not token-exact. For long inputs to be fully covered, the model's built-in tokenizer must not truncate below `maxlen`, otherwise each window is cut and the tail is lost (see the README, *Model and token limits*).
 
 The output file is **created/overwritten**. The stored vectors carry no source text (see [semspace](semspace.md); the space does not index).
 
-A tokenizer must have been provided to [semload](semload.md).
+An embedding model must have been loaded with [semload](semload.md).
 
 ## Syntax
 
@@ -31,7 +31,7 @@ semspacebuild(handle:i, dest:S, source:S)
 
 ## Arguments
 
-* `handle:i`: handle returned by [semload](semload.md) (with a tokenizer).
+* `handle:i`: handle returned by [semload](semload.md).
 * `dest:S`: path to the `.espc` file to create (overwritten if present).
 * `source:S`: a text file, or a directory of `.txt` files, to embed.
 

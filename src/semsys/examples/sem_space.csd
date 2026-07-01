@@ -8,21 +8,19 @@ ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-// load embedding and tokenizer model (.onnx)
+// load the end-to-end embedding model (dir must contain model.onnx + model.onnx.data)
 e_handle@global:i = semload(256, "path/to/model_dir")
 
 // empty in-memory space (RAM-only). Use semspace(e_handle, "space.espc") to load an existing one.
 s_handle@global:i = semspace(e_handle)
 
-instr 1 // add one line per k-cycle from a text file (semspaceadd embeds internally)
-    text:S, line:k = readf("space_text.txt")
-    printf("%s\n", line, text)
-
-    if (line == -1) then
-        turnoff
-    endif
-
-    semspaceadd(s_handle, text) // add to latent space (self-gated, consider token truncation config)
+instr 1 // add sentences to the space (i-rate form: each call embeds + appends once at init)
+    semspaceadd(s_handle, "deep blue ocean under a calm evening sky")
+    semspaceadd(s_handle, "a red sunset burns over the marine horizon")
+    semspaceadd(s_handle, "rockets roar as they climb into orbit")
+    semspaceadd(s_handle, "green forests breathe in the cold morning mist")
+    semspaceadd(s_handle, "a lone violin sings a slow melancholic tune")
+    turnoff
 endin
 
 instr 2 // persist the in-memory space to disk (scheduled after instr 1, so it sees all adds)

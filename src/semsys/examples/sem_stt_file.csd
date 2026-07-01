@@ -23,13 +23,20 @@ nchnls = 1
 
 ; end-to-end STT model dir: must contain model.onnx + model.onnx.data
 #define STT_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/whisper-core/model_e2e" #
-#define AUDIO   # "/Users/pm/AcaHub/AudioSamples/vox.wav" #
+#define AUDIO   # "/Users/pm/AcaHub/AudioSamples/spoken.wav" #
 
-h@global:i = semsttload($STT_DIR, 448, 4)
+faudio@global:i = ftgen(0, 0, 0, 1, $AUDIO, 0, 0, 0)
+
+
+h@global:i = semsttload($STT_DIR, 448, 64)
 
 ; submit the file once at init; transcription runs on the worker thread
 instr SUBMIT
     semsttsubmitfile(h, $AUDIO)
+    ; audio_arr:i[] = init(ftlen(faudio))
+    ; copyf2array(audio_arr, faudio)
+    ; semsttsubmitarray(h, audio_arr)
+    ; semsttsubmitft(h, faudio)
 endin
 
 ; poll until the transcription is ready, print it, stop
@@ -44,6 +51,6 @@ endin
 </CsInstruments>
 <CsScore>
 i "SUBMIT" 0 0.1
-i "POLL"   0 30
+i "POLL"   0 120
 </CsScore>
 </CsoundSynthesizer>

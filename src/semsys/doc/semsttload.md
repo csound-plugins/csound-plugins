@@ -55,20 +55,22 @@ not block to drain the queue at shutdown.
 Two limits matter, and **both depend on the model** (the values below are for Whisper, the
 reference model — a different end-to-end model may differ):
 
-* **Audio window.** Each transcription processes a **single** audio window: the model's
+* **Audio window.** Each model call processes a **single** audio window: the model's
   feature extractor pads or trims the input to a **fixed length set by the model** (Whisper:
-  **~30 s**, 480000 samples at 16 kHz). Audio **longer than that window is not fully
-  transcribed** — only the first window is. The output is one continuous string (the whole
-  recognised text on one line, not split into lines).
+  **~30 s**, 480000 samples at 16 kHz). A single call **cannot** fully transcribe audio
+  longer than that window. The offline opcodes work around this by segmenting (below); the
+  output is one continuous string (the whole recognised text on one line, not split lines).
 
 * **Output tokens — `maxlen`.** `maxlen` caps the number of output tokens per window — the
   maximum transcription length. Its sensible value comes from the model (Whisper: `448`).
 
-To transcribe audio **longer than the model's window**, **split it into segments** shorter
-than the window and submit each (`semsttsubmit*`); the results come back in submission order,
-concatenate them yourself. Alternatively use [semsttsubmitlive](semsttsubmitlive.md), which
-captures a stream and submits usable speech windows automatically using its built-in energy
-gate, or on an explicit trigger.
+Audio **longer than the model's window** is handled **automatically** by the offline opcodes
+[semsttsubmitfile](semsttsubmitfile.md), [semsttsubmitarray](semsttsubmitarray.md) and
+[semsttsubmitft](semsttsubmitft.md): they split the audio into ≤-window segments — snapping
+each cut to the quietest point near the boundary so words are not clipped — transcribe each
+segment on the worker, and join the texts into one result (one submit → one transcription).
+For live capture use [semsttsubmitlive](semsttsubmitlive.md), which submits usable speech
+windows automatically using its built-in energy gate, or on an explicit trigger.
 
 ## Tokenizer / audio runtime dependency: onnxruntime-extensions
 

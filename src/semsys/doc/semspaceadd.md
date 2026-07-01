@@ -2,15 +2,17 @@
 
 ## Abstract
 
-Embed a sentence and append its vector to a semantic space.
+Embed a sentence and append its vector(s) to a semantic space.
 
 ## Description
 
-`semspaceadd` tokenizes `sentence`, embeds it (mean-pooled), normalizes the vector and appends it to the **in-memory** space opened with [semspace](semspace.md). The add is RAM-only; nothing is written to disk. To persist the space, call [semspacesave](semspacesave.md).
+`semspaceadd` embeds `sentence` (the model tokenizes internally), normalizes, and appends the vector to the **in-memory** space opened with [semspace](semspace.md). The add is RAM-only; nothing is written to disk. To persist the space, call [semspacesave](semspacesave.md).
 
-A single sentence is treated as **one** chunk (truncated to `maxlen` if longer). To build a space from a large text or a directory with automatic chunking, use [semspacebuild](semspacebuild.md) instead. Adding a vector identical to the previous add is skipped (dedup).
+Text longer than the model window is **chunked** (the same token-window chunker as [semspacebuild](semspacebuild.md)) and **each chunk is added as a separate entry** — so a long sentence grows the space by several vectors, not one. Short text adds a single vector. (To bulk-build a space from a file or a directory of `.txt`, use [semspacebuild](semspacebuild.md).)
 
-A tokenizer must have been provided to [semload](semload.md). Empty input adds nothing.
+A **consecutive self-gate** skips the add — before embedding — when `sentence` is unchanged from the previous add, so a repeated k-rate trigger with the same text does not re-embed or re-append.
+
+An embedding model must have been loaded with [semload](semload.md). Empty input adds nothing.
 
 Two forms, distinguished by whether a trigger is given:
 

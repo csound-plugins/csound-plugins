@@ -2,13 +2,14 @@
 
 ## Abstract
 
-Submit an audio file for transcription (asynchronous, non-blocking).
+Submit a PCM16 WAV file for transcription (asynchronous, non-blocking).
 
 ## Description
 
-`semsttsubmitfile` reads `path` from disk as raw bytes and hands it to the background worker
-created by [semsttload](semsttload.md). The model graph's audio decoder handles the file
-format and resampling internally, so WAV/MP3/etc. support depends on the exported graph.
+`semsttsubmitfile` reads `path` from disk and hands the audio to the background worker
+created by [semsttload](semsttload.md). Only **PCM16 WAV** is accepted; any other format
+raises an init error (convert to WAV first, or load it into a function table and use
+[semsttsubmitft](semsttsubmitft.md)).
 
 The opcode only enqueues the job and returns. Poll with [semsttready](semsttready.md), then
 read the transcription with [semsttresult](semsttresult.md).
@@ -16,9 +17,11 @@ read the transcription with [semsttresult](semsttresult.md).
 The job goes into the handle's bounded FIFO. If the queue is full, the newest submit is
 dropped with a warning and already queued jobs stay queued.
 
-One submit is one model call. For Whisper-like models, audio longer than the model window
-(~30 s) is not fully transcribed by a single call; split long files into model-sized
-segments or use [semsttsubmitlive](semsttsubmitlive.md) for gated stream capture.
+Audio longer than the model window (~30 s for Whisper) is **segmented automatically**: the
+file is split into ≤30 s chunks — each cut snapped to the quietest point near the boundary
+so words are not clipped — every chunk is transcribed, and the texts are joined into a
+single result. So one `semsttsubmitfile` call yields one combined transcription regardless
+of length.
 
 ## Syntax
 

@@ -1,6 +1,6 @@
 <CsoundSynthesizer>
 <CsOptions>
--o dac
+-o dac3
 </CsOptions>
 <CsInstruments>
 
@@ -10,7 +10,7 @@ nchnls = 2
 0dbfs = 1
 
 #define EPS # pow(10, -12) #
-#define MODEL_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/all-MiniLM-L6-v2" #
+#define MODEL_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/all-MiniLM-L6-v2/all-MiniLM-L6-v2-e2e" #
 
 seed(0)
 
@@ -48,7 +48,7 @@ opcode osc_bank(amp:k[], freq:k[], dim:i, cnt:o):(a)
     endif
 endop
 
-// load model dir (must contain model.onnx + tokenizer.onnx)
+// load model dir (must contain model.onnx + model.onnx.data)
 e_handle@global:i = semload(256, $MODEL_DIR)
 sdim@global:i = semdim(e_handle)
 
@@ -61,14 +61,14 @@ s@global:i = semspace(e_handle, "corpus.espc")
 // idea: each embedding coordinate becomes the amplitude of a sine partial placed at a
 // fixed center frequency. The query's MEANING shapes the timbre.
 instr 1
+    // build an example with array of sequences
+
     neighs:k[][], scores:k[] = semspacequery(s, "warm analog texture", 3)
     cfreqs:i[] = get_center_freqs(90, 2500, sdim)
 
     npart:i = 30
     mask:i[] = get_partials_mask(npart, sdim)
-    printarray(mask)
 
-    // neighs is k-rate (query runs at perf): build the bank ONCE, when it is ready
     amp:k[] = init(npart)
     frq:k[] = init(npart)
     kidx:k = 0
@@ -90,7 +90,7 @@ endin
 </CsInstruments>
 <CsScore>
 
-i 1 0 10
+i 1 0 5
 
 </CsScore>
 </CsoundSynthesizer>

@@ -6,20 +6,20 @@ and lets you treat *meaning* as a control signal: compare it, search it, navigat
 it, and drive synthesis, sound design, or algorithmic composition from natural
 language.
 
-Under the hood it runs an ONNX sentence-embedding model (e.g.
-`sentence-transformers/all-MiniLM-L6-v2`) plus its tokenizer through the ONNX
-Runtime C API. A piece of text is tokenized, run through the model, and
-mean-pooled into a single fixed-size vector (the *embedding*). Texts with similar
-meaning land close together in that space, so cosine similarity becomes a measure
-of semantic distance.
+Under the hood it runs an end-to-end ONNX sentence-embedding model (e.g.
+`sentence-transformers/all-MiniLM-L6-v2`) through the ONNX Runtime C API. A piece of
+text is tokenized, run through the encoder, and mean-pooled into a single fixed-size
+vector (the *embedding*) — all inside one ONNX graph. Texts with similar meaning land
+close together in that space, so cosine similarity becomes a measure of semantic
+distance.
 
 `semload` takes a **model directory** containing two files with fixed names —
-`model.onnx` (the embedding model) and `tokenizer.onnx` (its tokenizer). The
-tokenizer is always paired with the model. The tokenizer graph uses custom ops from
-**onnxruntime-extensions**, so its native shared library (`libortextensions`) must be
-available at runtime — bundled next to the plugin, or via the `SEMSYS_ORT_EXTENSIONS`
-env var. See [doc/semload.md](doc/semload.md) for the expected tensor I/O, the Python
-export snippet, and how to obtain/bundle the extensions library.
+`model.onnx` (the end-to-end graph) and `model.onnx.data` (its external weights). The
+graph tokenizes internally with custom ops from **onnxruntime-extensions**, so its
+native shared library (`libortextensions`) must be available at runtime — bundled next
+to the plugin, or via the `SEMSYS_ORT_EXTENSIONS` env var. See
+[doc/semload.md](doc/semload.md) for the expected tensor I/O, the export recipe, and how
+to obtain/bundle the extensions library.
 
 > Status: experimental / research. APIs and the on-disk cache format may change.
 
@@ -33,6 +33,11 @@ semsys has two distinct sides. Keep them separate in your head.
 stored. Use it for live latent-space control: map a phrase to a 384-d vector and
 patch that into your synthesis (interpolate between phrases, modulate parameters
 from semantic axes, etc.). It re-runs the model only when the input text changes.
+
+The **i-rate** form embeds once at init and returns a **2D array `i[][]` of shape
+`[nchunks, ldim]`**: text longer than the model window is split into `≤`-window token
+chunks (same chunker as `semspacebuild`), one embedding row per chunk — short text
+yields a single row. `semembedfile` is the same but reads the text from a file on disk.
 
 ### `semspace` — an in-memory vector store
 
@@ -74,7 +79,9 @@ This is a deliberate limitation, not a TODO:
 
 - **Brute-force search.** A query is embedded, normalized, then compared against
   *every* stored vector by cosine similarity — a linear scan in RAM, with a bounded
-  min-heap keeping the top-k. There is no ANN / approximate index.
+  min-heap keeping the top-k. There is no ANN / approximate index. A query longer than
+  the model window is chunked and its chunk embeddings are **mean-pooled** into one
+  centroid vector, so the whole query is represented rather than truncated.
 - **No text is stored.** The space holds vectors only. `semspacequery` returns the
   matching *vectors* and their scores — **not** the source text. semsys is not a
   retrieval/RAG index; mapping a result back to its original sentence is out of
@@ -96,17 +103,17 @@ Three separate caps interact:
 |-------|----------------|---------|
 | `max_position_embeddings` | model `config.json` | Hard architectural ceiling. Exceeding it produces garbage or errors. (MiniLM-L6-v2: **512**) |
 | `max_seq_length` (training) | sentence-transformers config | Context the model was trained on. Beyond it, embeddings degrade. (MiniLM-L6-v2: **256**) |
-| `truncation.max_length` | tokenizer config | Where the tokenizer cuts the input. (often **128** by default) |
+| `truncation.max_length` | tokenizer (baked into `model.onnx`) | Where the internal tokenizer cuts the input. (often **128** by default) |
 
 Practical rules:
 
 - Keep `maxlen` **≤ `max_position_embeddings`** (hard), ideally **≤ training
   `max_seq_length`** (quality).
-- For `semspacebuild` to actually cover long documents, the **tokenizer must
-  not truncate below `maxlen`**. If your exported tokenizer has
-  `truncation.max_length = 128` but you pass `maxlen = 256`, every window is
-  silently cut at 128 and the rest is lost. Re-export the tokenizer with
-  truncation set to your `maxlen` (or disabled).
+- For `semspacebuild` to actually cover long documents, the model's **built-in
+  tokenizer must not truncate below `maxlen`**. If the tokenizer baked into your
+  `model.onnx` has `truncation.max_length = 128` but you pass `maxlen = 256`, every
+  window is silently cut at 128 and the rest is lost. Re-export the end-to-end model
+  with tokenizer truncation set to your `maxlen` (or disabled).
 - Smaller chunks give sharper, more specific vectors; larger chunks dilute meaning
   through mean-pooling. For navigation/similarity, smaller is often better even
   when the model allows more.
@@ -115,13 +122,14 @@ Practical rules:
 
 | Opcode | Form | Purpose |
 |--------|------|---------|
-| `semload` | `handle:i = semload(maxlen:i, modeldir:S)` | Load `model.onnx` + `tokenizer.onnx` from a directory; returns a handle |
+| `semload` | `handle:i = semload(maxlen:i, modeldir:S)` | Load the end-to-end `model.onnx` (+ `model.onnx.data`) from a directory; returns a handle |
 | `semdim` | `dim:i = semdim(handle:i)` | Embedding dimension of the loaded model |
-| `semembed` | `pool:k[], tokens:k[][], changed:k = semembed(handle:i, text:S)` (k-rate); `pool:i[], tokens:i[][] = semembed(handle:i, text:S)` (i-rate) | Embed text — real-time (gated) or once at init |
+| `semembed` | `pool:k[], changed:k = semembed(handle:i, text:S)` (k-rate); `chunks:i[][] = semembed(handle:i, text:S)` (i-rate, one row per chunk) | Embed text — real-time (gated) or once at init (long text auto-chunked) |
+| `semembedfile` | `chunks:i[][] = semembedfile(handle:i, path:S)` | Embed a text file at init; one row per chunk (long text auto-chunked) |
 | `semspace` | `space:i = semspace(handle:i)`; `… = semspace(handle:i, path:S)`; `… = semspace(handle:i, paths:S[])` | Create an in-memory space (empty, or load a `.espc` file / directory / array) |
 | `semspacebuild` | `semspacebuild(handle:i, dest:S, source:S)` | Build a `.espc` from a text file or a directory of `.txt` |
-| `semspaceadd` | `semspaceadd(space:i, sentence:S)` (once at init); `semspaceadd(space:i, sentence:S, trig:k)` (on rising edge) | Embed a sentence and append it (in RAM) |
-| `semspacequery` | `neighs:k[][], scores:k[] = semspacequery(space:i, query:S, topk:i)` (k-rate); `neighs:i[][], scores:i[] = semspacequery(space:i, query:S, topk:i)` (i-rate) | Top-k nearest neighbours — real-time (gated) or once at init |
+| `semspaceadd` | `semspaceadd(space:i, sentence:S)` (once at init); `semspaceadd(space:i, sentence:S, trig:k)` (on rising edge) | Embed a sentence and append it (in RAM); long text added as one entry per chunk |
+| `semspacequery` | `neighs:k[][], scores:k[] = semspacequery(space:i, query:S, topk:i)` (k-rate); `neighs:i[][], scores:i[] = semspacequery(space:i, query:S, topk:i)` (i-rate) | Top-k nearest neighbours — real-time (gated) or once at init (long query auto-chunked + mean-pooled) |
 | `semspacesave` | `semspacesave(space:i, file:S)`; `semspacesave(space:i, file:S, trig:k)` | Write the in-memory space to a `.espc` (once, or on trigger edge) |
 
 ### Speech-to-text (experimental)
@@ -133,9 +141,9 @@ so it never blocks the audio thread; jobs and results pass through a bounded FIF
 | Opcode | Form | Purpose |
 |--------|------|---------|
 | `semsttload` | `handle:i = semsttload(model_dir:S, maxlen:i [, queue:i])` | Load an end-to-end STT model |
-| `semsttsubmitfile` | `semsttsubmitfile(handle:i, path:S)` | Submit an audio file (any format) |
-| `semsttsubmitarray` | `semsttsubmitarray(handle:i, samples:i[])` | Submit a buffer of samples |
-| `semsttsubmitft` | `semsttsubmitft(handle:i, ftable:i)` | Submit a function table of samples |
+| `semsttsubmitfile` | `semsttsubmitfile(handle:i, path:S)` | Submit a PCM16 WAV file (long audio auto-segmented) |
+| `semsttsubmitarray` | `semsttsubmitarray(handle:i, samples:i[])` | Submit a sample buffer (long audio auto-segmented) |
+| `semsttsubmitft` | `semsttsubmitft(handle:i, ftable:i)` | Submit a function table of samples (long audio auto-segmented) |
 | `semsttsubmitlive` | `semsttsubmitlive(handle:i, asig:a, maxdur:i [, trig:k])` | Capture live a-rate speech; `maxdur` is a preferred window length and the backend closes usable speech windows |
 | `semsttready` | `ready:k = semsttready(handle:i)` | `1` when a transcription is ready |
 | `semsttresult` | `text:S, length:k = semsttresult(handle:i)` | Read the next transcription + its length (FIFO) |
@@ -143,10 +151,12 @@ so it never blocks the audio thread; jobs and results pass through a bounded FIF
 The model is **not tied to Whisper** — any end-to-end graph matching the I/O contract
 (`audio_stream` bytes in → `str` text out, plus the generation scalars) works. The model
 directory must hold `model.onnx` and `model.onnx.data` (external weights). `maxlen` comes
-from the model's config, not chosen freely. Each transcription covers a **single audio
-window whose length is fixed by the model** (~30 s for Whisper); longer audio must be split
-into segments, or captured with `semsttsubmitlive`, which uses a built-in energy gate to
-avoid arbitrary fixed cuts. See
+from the model's config, not chosen freely. The model transcribes a **single audio window
+whose length is fixed by the model** (~30 s for Whisper); the offline opcodes
+(`semsttsubmitfile`, `semsttsubmitarray`, `semsttsubmitft`) **split longer audio
+automatically** into ≤30 s segments — cutting at the quietest point near each boundary —
+transcribe each, and join the texts into one result. `semsttsubmitlive` instead uses a
+built-in energy gate to close usable speech windows. See
 [doc/semsttload.md](doc/semsttload.md) for the contract, limits and the Whisper export recipe.
 
 See `doc/` for the per-opcode reference.
@@ -154,7 +164,7 @@ See `doc/` for the per-opcode reference.
 ## Examples
 
 The `examples/` directory holds working `.csd` files: usage examples for the opcodes
-(`sem_token_embedding.csd`, `sem_space.csd`, `sem_space_build.csd`) plus two small
+(`sem_embedding.csd`, `sem_space.csd`, `sem_space_build.csd`) plus two small
 **semantic synthesis** demos that turn a query into sound:
 
 - `sem_synthesis.csd` — builds a filter **impulse response** from the query embedding
@@ -179,7 +189,7 @@ in as a sub-directory.
 You must pass `-DAPIVERSION=7.0`. The default is `6.0`, which does not define
 `CSOUNDAPI7`, and `semsys` fails to compile without it.
 
-To **bundle** the onnxruntime-extensions tokenizer library next to the plugin, point
+To **bundle** the onnxruntime-extensions library next to the plugin, point
 the build at the **native** `libortextensions` (see [doc/semload.md](doc/semload.md)),
 either explicitly with `-DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib`, or by a
 root hint `-DORTEXTENSIONS_ROOT=/root` (or the `ORTEXTENSIONS_ROOT` env var), which is
@@ -241,8 +251,8 @@ plugin so the loader can resolve it from the plugin directory.
   sound, image, and text together.
 - **Blocking `semstttranscribe` (offline).** A synchronous i-time variant that
   transcribes a file or function table and returns the text directly, for non-real-time /
-  batch use where blocking is fine. It should also provide reliable segmentation for files
-  longer than the model window instead of requiring users to split them manually.
+  batch use where blocking is fine. (Long-audio segmentation is now handled automatically
+  by the async offline opcodes.)
 - **Configurable live STT gate.** `semsttsubmitlive` currently uses built-in constants for
   energy threshold, minimum speech duration, trailing silence, pre/post pad and hard cap.
   Expose these as optional arguments or a separate setup opcode once the defaults settle.
@@ -254,9 +264,17 @@ plugin so the loader can resolve it from the plugin directory.
 ### 1.0.0
 
 - Initial release.
-- Opcodes: `semload`, `semdim`, `semembed`, `semspace`, `semspacebuild`,
-  `semspaceadd`, `semspacequery`, `semspacesave`.
+- Opcodes: `semload`, `semdim`, `semembed`, `semembedfile`, `semspace`,
+  `semspacebuild`, `semspaceadd`, `semspacequery`, `semspacesave`.
 - ONNX Runtime C API backend; mean-pooled sentence embeddings.
+- `semembed` i-rate returns a 2D `[nchunks, ldim]` array: text longer than the model
+  window is split into `≤`-window token chunks, one embedding per chunk. `semembedfile`
+  is the same for a text file on disk.
+- `semspacequery` chunks a query longer than the model window and **mean-pools** the
+  chunk embeddings into one centroid query vector (no truncation). `semembed` k-rate
+  does the same (single mean-pooled vector) since a k-rate array can't change row count.
+- `semspaceadd` chunks long text too, adding **one entry per chunk**; a consecutive
+  self-gate skips re-embedding when the text is unchanged from the previous add.
 - In-memory vector space with explicit persistence: `semspace` loads a `.espc`
   file, a directory of them, or an array into RAM; `semspaceadd` appends in memory;
   `semspacesave` writes a snapshot (i-time or k-rate trigger).
@@ -271,6 +289,10 @@ plugin so the loader can resolve it from the plugin directory.
 - `semsttsubmitlive` now accumulates a-rate audio into usable speech windows
   instead of blindly cutting fixed-size chunks; it waits for enough speech and a
   trailing silence boundary, with debug diagnostics via `SEMSYS_STT_DEBUG=1`.
+- The offline STT opcodes (`semsttsubmitfile`, `semsttsubmitarray`, `semsttsubmitft`)
+  auto-segment audio longer than the model window (~30 s) into ≤30 s chunks, snapping
+  each cut to the quietest point near the boundary, and join the per-chunk texts into
+  one result. `semsttsubmitfile` accepts PCM16 WAV.
 - STT queues are bounded FIFO queues. If a submit queue is full the newest submit
   is dropped with a warning; result queue overflow drops the newest result with a
   warning.
