@@ -15,11 +15,11 @@ e_handle@global:i = semload(256, "path/to/model_dir")
 s_handle@global:i = semspace(e_handle)
 
 instr 1 // add sentences to the space (i-rate form: each call embeds + appends once at init)
-    semspaceadd(s_handle, "deep blue ocean under a calm evening sky")
-    semspaceadd(s_handle, "a red sunset burns over the marine horizon")
-    semspaceadd(s_handle, "rockets roar as they climb into orbit")
-    semspaceadd(s_handle, "green forests breathe in the cold morning mist")
-    semspaceadd(s_handle, "a lone violin sings a slow melancholic tune")
+    semspaceaddtxt(s_handle, e_handle, "deep blue ocean under a calm evening sky")
+    semspaceaddtxt(s_handle, e_handle, "a red sunset burns over the marine horizon")
+    semspaceaddtxt(s_handle, e_handle, "rockets roar as they climb into orbit")
+    semspaceaddtxt(s_handle, e_handle, "green forests breathe in the cold morning mist")
+    semspaceaddtxt(s_handle, e_handle, "a lone violin sings a slow melancholic tune")
     turnoff
 endin
 
@@ -31,7 +31,7 @@ endin
 instr 3 // query the space
     top_k:i = 3
     query:S = "blue marine in red sky"
-    neighs:k[][], scores:k[] = semspacequery(s_handle, query, top_k)
+    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s_handle, e_handle, query, top_k)
 endin
 
 </CsInstruments>

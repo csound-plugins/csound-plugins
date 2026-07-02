@@ -7,7 +7,7 @@ Load an end-to-end ONNX embedding model from a directory; return a handle.
 ## Description
 
 `semload` initialises a **semsys** context from a **model directory** and returns an
-integer handle used by all other semsys opcodes (`semdim`, `semembed`, `semspace`, …).
+integer handle used by all other semsys opcodes (`semdim`, `semembedtxt`, `semembedaudio`, `semspace`, …).
 
 The directory must contain two files, with these exact names:
 
@@ -26,6 +26,11 @@ available through [semdim](semdim.md).
 model's `max_position_embeddings` (hard ceiling) and ideally the training
 `max_seq_length`. semsys does not auto-detect or validate it — see the project README,
 section *Model and token limits*, before choosing a value.
+
+Pass **`maxlen = -1`** ("full", no cap) for models that impose no sequence limit — e.g. an
+audio embedding model with global time pooling such as PANNs CNN14, used by
+[semembedaudio](semembedaudio.md). `maxlen` is only meaningful for text models with a token
+window.
 
 The model is released automatically when the instance is deinitialised.
 
@@ -94,7 +99,8 @@ handle:i = semload(maxlen:i, model_dir:S)
 
 ## Arguments
 
-* `maxlen:i`: maximum token sequence length (e.g. `256` for all-MiniLM-L6-v2).
+* `maxlen:i`: maximum token sequence length (e.g. `256` for all-MiniLM-L6-v2). Use `-1`
+  for models with no sequence cap (e.g. an audio embedder with global time pooling).
 * `model_dir:S`: path to a directory containing `model.onnx` and `model.onnx.data`.
 
 ## Output
@@ -137,7 +143,8 @@ i 1 0 1
 ## See also
 
 * [semdim](semdim.md)
-* [semembed](semembed.md)
+* [semembedtxt](semembedtxt.md)
+* [semembedaudio](semembedaudio.md)
 * [semspace](semspace.md)
 
 ## Credits

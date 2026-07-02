@@ -15,7 +15,7 @@ Two forms:
 * `semspacesave(space:i, file:S)` — saves once, at init.
 * `semspacesave(space:i, file:S, trig:k)` — saves during performance, on the **rising edge** of `trig` (`trig > 0` while the previous value was `<= 0`). It does not write on every k-cycle.
 
-Because the i-time form runs at note init, while [semspaceadd](semspaceadd.md) appends at performance time, schedule the saving instrument **after** the one that fills the space (or use the k-form on a trigger).
+Because the i-time form runs at note init, while [semspaceaddtxt](semspaceaddtxt.md) appends at performance time, schedule the saving instrument **after** the one that fills the space (or use the k-form on a trigger).
 
 ## Syntax
 
@@ -57,7 +57,7 @@ instr 1
     if (line == -1) then
         turnoff
     endif
-    semspaceadd(s_handle, text)
+    semspaceaddtxt(s_handle, e_handle, text)
 endin
 
 ; instr 2 is scheduled later, so its i-time save sees all the adds
@@ -83,7 +83,7 @@ i 2 4 0.1
 ## See also
 
 * [semspace](semspace.md)
-* [semspaceadd](semspaceadd.md)
+* [semspaceaddtxt](semspaceaddtxt.md)
 * [semspacebuild](semspacebuild.md)
 
 ## Credits

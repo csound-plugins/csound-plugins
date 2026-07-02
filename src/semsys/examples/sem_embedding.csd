@@ -22,7 +22,7 @@ endin
 instr SENTENCE_K
     sentence:S = "sound synthesis in blue sky"
     // pool_embed = mean-pooled sentence vector; changed = 1 on the pass the text changes
-    pool_embed:k[], changed:k = semembed:k(handle, sentence)
+    pool_embed:k[], changed:k = semembedtxt:k(handle, sentence)
     printarray(pool_embed, -1)
 endin
 
@@ -45,7 +45,7 @@ instr SENTENCE_I
         Emma visited the park every Friday morning, hoping to leave another encouraging message for                  \
         the next person who might need it."
 
-    pool_embed:i[][] = semembed:i(handle, sentence)
+    pool_embed:i[][] = semembedtxt:i(handle, sentence)
     printarray(pool_embed)
 endin
 

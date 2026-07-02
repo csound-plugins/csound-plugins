@@ -63,7 +63,7 @@ s@global:i = semspace(e_handle, "corpus.espc")
 instr 1
     // build an example with array of sequences
 
-    neighs:k[][], scores:k[] = semspacequery(s, "warm analog texture", 3)
+    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s, e_handle, "warm analog texture", 3)
     cfreqs:i[] = get_center_freqs(90, 2500, sdim)
 
     npart:i = 30

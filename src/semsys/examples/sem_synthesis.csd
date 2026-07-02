@@ -76,7 +76,7 @@ endin
 ; runs once at its own init, when the "sem_query" channel already holds the transcription.
 instr BUILD_IR
     query:S = chnget:S("sem_query")
-    neighs:i[][], scores:i[] = semspacequery(s_handle, query, 3)
+    neighs:i[][], scores:i[] = semspacequerytxt(s_handle, e_handle, query, 3)
 
     bin_freqs:i[] = rfft_bin_freqs() // nbins
     cfreqs:i[] = get_center_freqs(90, 1500, sdim)

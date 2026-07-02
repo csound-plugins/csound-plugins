@@ -2,26 +2,38 @@
 
 ## Abstract
 
-Bulk-build a `.espc` semantic space from a text file or a directory of text files.
+Bulk-build a `.espc` semantic space from a text or audio source, using the model you pass.
 
 ## Description
 
-`semspacebuild` reads source text, splits it into chunks, embeds each chunk, and writes the resulting vectors to a new `.espc` file. Use it to build a space from a corpus in one pass instead of adding sentences one by one. Load the result later with [semspace](semspace.md).
+`semspacebuild` reads a source, embeds it, and writes the resulting vectors to a new `.espc`
+file. Use it to build a space from a corpus in one pass instead of adding items one by one.
+Load the result later with [semspace](semspace.md).
 
-`source` is auto-detected:
+It is **universal**: the embedding model comes from `handle` (from [semload](semload.md)),
+and semsys dispatches on the model's **kind**, detected at load time:
 
-* a **file** → that file is embedded;
-* a **directory** → every `.txt` file directly inside it is embedded, in turn, into the same output.
+* a **text** model → `source` is read as text (a `.txt` file, or a directory of `.txt`),
+  split into overlapping token-window chunks, one vector per chunk (see the chunking notes
+  below);
+* an **audio** model → `source` is decoded as audio (a PCM16 WAV file, or a directory of
+  `.wav`), split into fixed ~10 s windows, one L2-normalized vector per window; near-silent
+  windows are skipped.
 
-Chunking:
+`source` is auto-detected as a **file** (embedded directly) or a **directory** (every
+matching file inside it is embedded into the same output). The output file is
+**created/overwritten**. Stored vectors carry no source text/label (see [semspace](semspace.md)).
 
-* The source is read **paragraph by paragraph**. A blank line is a hard boundary; a chunk never crosses it.
-* Each paragraph is split into **overlapping word-windows** (~`maxlen`-sized words, ~15% overlap). One embedding vector is produced per window.
-* Boundaries are **word-based, approximate**, not token-exact. For long inputs to be fully covered, the model's built-in tokenizer must not truncate below `maxlen`, otherwise each window is cut and the tail is lost (see the README, *Model and token limits*).
+Text chunking:
 
-The output file is **created/overwritten**. The stored vectors carry no source text (see [semspace](semspace.md); the space does not index).
+* read **paragraph by paragraph**; a blank line is a hard boundary a chunk never crosses;
+* each paragraph is split into **overlapping word-windows** (~`maxlen`-sized, ~15% overlap);
+* boundaries are **word-based, approximate**. For long inputs to be fully covered the model's
+  tokenizer must not truncate below `maxlen` (see the README, *Model and token limits*).
 
-An embedding model must have been loaded with [semload](semload.md).
+Because the `.espc` format stores only dim + vectors, `.espc` files built from a **text**
+model and from an **audio** model can be **merged into one space** — as long as their
+embedding dimensions match (loading validates this).
 
 ## Syntax
 
@@ -31,9 +43,10 @@ semspacebuild(handle:i, dest:S, source:S)
 
 ## Arguments
 
-* `handle:i`: handle returned by [semload](semload.md).
+* `handle:i`: a text or audio embedding model from [semload](semload.md); its kind selects
+  how `source` is embedded.
 * `dest:S`: path to the `.espc` file to create (overwritten if present).
-* `source:S`: a text file, or a directory of `.txt` files, to embed.
+* `source:S`: a file, or a directory, to embed (`.txt` for a text model, `.wav` for audio).
 
 ## Execution Time
 
@@ -48,22 +61,24 @@ semspacebuild(handle:i, dest:S, source:S)
 <CsInstruments>
 
 sr = 44100
-ksmps = 1
+ksmps = 32
 nchnls = 2
 0dbfs = 1
 
-e_handle@global:i = semload(256, "path/to/model_dir")
+e_handle@global:i = semload(256, "path/to/text_model_dir")
+a_handle@global:i = semload(-1, "path/to/audio_model_dir")
 
-; build "corpus.espc" from a single text file
+; build "corpus.espc" from a text corpus (text model)
 semspacebuild(e_handle, "corpus.espc", "corpus.txt")
 
-; build "all.espc" from every .txt in a directory
-semspacebuild(e_handle, "all.espc", "path/to/texts")
+; build "sounds.espc" from a directory of .wav (audio model)
+semspacebuild(a_handle, "sounds.espc", "path/to/wavs")
 
 instr 1
-    ; load a built space into RAM and query it
-    s_handle:i = semspace(e_handle, "corpus.espc")
-    neighs:k[][], scores:k[] = semspacequery(s_handle, "warm analog texture", 3)
+    ; load a built space and query it (with a matching-kind model)
+    s:i = semspace(e_handle, "corpus.espc")
+    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s, e_handle, "warm analog texture", 3)
+    turnoff
 endin
 
 </CsInstruments>
@@ -76,9 +91,10 @@ i 1 0 1
 ## See also
 
 * [semspace](semspace.md)
-* [semspaceadd](semspaceadd.md)
-* [semspacequery](semspacequery.md)
-* [semspacesave](semspacesave.md)
+* [semspaceaddtxt](semspaceaddtxt.md)
+* [semspaceaddaudio](semspaceaddaudio.md)
+* [semspacequerytxt](semspacequerytxt.md)
+* [semspacequeryaudio](semspacequeryaudio.md)
 * [semload](semload.md)
 
 ## Credits

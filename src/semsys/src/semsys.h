@@ -90,6 +90,14 @@
     getenv("SEMSYS_STT_DEBUG")[0] != '\0' &&    \
     getenv("SEMSYS_STT_DEBUG")[0] != '0')       \
 
+
+#define CHECK_PTR_CTX(csound, ctx, ctx_string)                                    \
+    do {                                                                      \
+        if (ctx == NULL) {                                                    \
+            return csound->InitError(csound, "[%s] Null context", ctx_string);  \
+        }                                                                     \
+    } while(0)
+
 #define ONNX_CHECK_INIT(api, expr)                                \
     do {                                                          \
         OrtStatus *status = (expr);                               \
@@ -178,7 +186,8 @@ typedef struct {
     OrtSessionOptions *emb_session_options;
     OrtSession *emb_session;
     uint32_t ldim;
-    uint32_t maxlen_seq;
+    int32_t maxlen_seq; // text token cap; <= 0 (e.g. -1) means "full, no cap" (audio embedder)
+    int is_audio;       // 1 if input 0 is a float waveform (audio model), 0 if a STRING (text)
 } SEMSYS;
 
 typedef struct {
@@ -209,7 +218,7 @@ typedef struct {
     // private state
     SEMSYS *ctx;
     AUXCH last_text;
-} SEM_EMBED;
+} SEM_EMBED_TEXT;
 
 // i-rate form of semembed: 1 output (pooled embedding), no gate / no change-cache
 typedef struct {
@@ -232,7 +241,59 @@ typedef struct {
     STRINGDAT *file_path;
     // private state
     SEMSYS *ctx;
-} SEM_EMBED_FILE_I;
+} SEM_EMBED_TEXT_FILE_I;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *pool_embed; // 1D [ldim], refreshed when a fresh embedding is ready
+    MYFLT *gate;          // 1 on the k-pass a fresh embedding is published, else 0
+    // inputs
+    MYFLT *handle;
+    MYFLT *asig;          // a-rate audio in (engine sr, mono)
+    MYFLT *iwindow;       // window length in seconds (optional, default 10, min 1)
+    // private state
+    SEMSYS *ctx;
+    AUXCH buf;            // MYFLT engine-sr accumulation (perf-thread only)
+    size_t target;       // window length in samples (engine sr)
+    size_t len;          // samples buffered so far
+    uint32_t esr;        // engine sr
+    // async worker: resample + inference run off the audio thread (like STT) to avoid xruns
+    CSOUND *csound;
+    void *thread;
+    void *mutex;         // guards job_* and result_*
+    void *job_lock;      // wakes the worker
+    volatile int stop;
+    int worker_done;
+    MYFLT *job_buf;      // handoff window (malloc, target samples)
+    size_t job_len;
+    int job_pending;     // 1 = a window is waiting for the worker (latest wins)
+    MYFLT *result;       // last embedding (malloc, ldim)
+    int result_ready;    // 1 = fresh embedding to publish
+} SEM_EMBED_AUDIO;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *pool_embed; // 2D [nchunks, ldim]
+    // inputs
+    MYFLT *handle;
+    MYFLT *func_number;
+    // private state
+    SEMSYS *ctx;
+} SEM_EMBED_AUDIO_FUNC_I;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *pool_embed; // 2D [nchunks, ldim]
+    // inputs
+    MYFLT *handle;
+    STRINGDAT *file_path;
+    // private state
+    SEMSYS *ctx;
+} SEM_EMBED_AUDIO_FILE_I;
+
 
 // --- SEM_SPACE ---
 
@@ -253,11 +314,14 @@ typedef struct {
     uint32_t data_tag;
 } CACHE_HEADER;
 
-// space core
+// space core. the space is a pure vector store: it fixes ldim from the handle passed to
+// semspace and does NOT embed. the embedding model is chosen by the user per operation
+// (semspaceaddtxt/addaudio/querytxt/queryaudio each take a model handle), so text and audio
+// vectors of matching dim can share one space / one .espc.
 typedef struct {
     uint32_t ldim;
     uint64_t count;
-    SEMSYS *ctx; // borrowed model handle (owned by semload) for embedding sentences
+    SEMSYS *ctx;       // borrowed model bound at init; ldim anchor only (add/query bring their own)
     float *vectors;
     uint64_t capacity;
 } SEMSYS_SPACE;
@@ -280,6 +344,7 @@ typedef struct {
     ARRAYDAT *paths; // S[] of .espc file paths to merge into RAM
 } SEM_SPACE_INIT_VS;
 
+
 typedef struct {
     OPDS h;
     // inputs
@@ -294,14 +359,15 @@ typedef struct {
 typedef struct {
     OPDS h;
     // inputs
-    MYFLT *s_handle;
-    STRINGDAT *sentence;
+    MYFLT *s_handle;   // space handle
+    MYFLT *handle;     // model handle (text for addtxt, audio for addaudio); chosen per-op
+    STRINGDAT *sentence; // text (addtxt) or audio file path (addaudio)
     MYFLT *ktrig; // k-form only: add on rising edge
     // private state
     SEMSYS_SPACE *spc;
-    AUXCH last_text; // cached last-added text; self-gate skips re-embedding unchanged text
-    AUXCH vec_scratch; // float[ldim] scratch for chunk_and_embed
-    SEMSYS *ctx;
+    AUXCH last_text; // cached last-added text/path; self-gate skips re-embedding unchanged input
+    AUXCH vec_scratch; // float[ldim] scratch for chunk_and_embed (text form)
+    SEMSYS *ctx;     // resolved from *handle at init
     AUXCH pmb;
     MYFLT prev_trig;
 } SEM_SPACE_ADD;
@@ -322,14 +388,51 @@ typedef struct {
     float score;
 } Score;
 
+// async query context: a per-instance worker embeds the query + runs the top-k search off
+// the audio thread (large-space search and the ONNX embed both block otherwise). latest-wins
+// single slot; the perf pass publishes the freshest result into the output arrays. shared by the
+// perf-time (.k) query forms.
+typedef struct {
+    CSOUND *csound;
+    void *thread;
+    void *mutex;         // guards job_* and result_*
+    void *job_lock;      // wakes the worker
+    volatile int stop;
+    int worker_done;
+    // shared read-only, set at init
+    SEMSYS_SPACE *spc;
+    SEMSYS *ctx;
+    int top_k_neighs;
+    int kind;            // 0 text, 1 audio file path, 2 ftable pcm snapshot
+    // job (perf -> worker), latest-wins
+    int job_pending;
+    char *job_str;       // text/path (kinds 0/1), malloc'd
+    MYFLT *job_pcm;      // pcm snapshot (kind 2), malloc'd
+    size_t job_n;
+    uint32_t job_sr;
+    // worker-private scratch (alloc at init)
+    MYFLT *pmb;          // ldim
+    float *pool;         // ldim
+    float *qvec;         // ldim centroid
+    Score *mheap;        // top_k
+    // result (worker -> perf), mutex-guarded
+    int result_ready;
+    int result_error;
+    uint64_t submitted_id;
+    uint64_t result_id;
+    Score *res;          // top_k, sorted descending
+    int res_count;
+} QUERY_ASYNC;
+
 typedef struct {
     OPDS h;
     // outputs
     ARRAYDAT *neighs; // need to return also string
     ARRAYDAT *scores;
     // inputs
-    MYFLT *s_handle;
-    STRINGDAT *query;
+    MYFLT *s_handle;   // space handle
+    MYFLT *handle;     // model handle (text for querytxt, audio for queryaudio); chosen per-op
+    STRINGDAT *query;  // query text (querytxt) or audio file path (queryaudio)
     MYFLT *top_k;
     // private
     SEMSYS_SPACE *spc;
@@ -339,7 +442,76 @@ typedef struct {
     SEMSYS *ctx;
     AUXCH pmb;
     AUXCH mheap;
+    QUERY_ASYNC async;
 } SEM_SPACE_QUERY;
+
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *neighs;
+    ARRAYDAT *scores;
+    MYFLT *gate;      // 1 on the k-pass a fresh query result is published, else 0
+    // inputs
+    MYFLT *s_handle;
+    MYFLT *handle;
+    STRINGDAT *query;
+    MYFLT *top_k;
+    // private
+    SEMSYS_SPACE *spc;
+    int top_k_neighs;
+    AUXCH query_buf;
+    AUXCH last_text;
+    SEMSYS *ctx;
+    AUXCH pmb;
+    AUXCH mheap;
+    QUERY_ASYNC async;
+} SEM_SPACE_QUERY_K;
+
+// real-time audio query from an ftable (samples at engine sr), not a file. iminsec sets the
+// minimum audio duration to run a query, so short/partial live buffers can be gated out.
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *neighs;
+    ARRAYDAT *scores;
+    // inputs
+    MYFLT *s_handle;
+    MYFLT *handle;    // audio model handle
+    MYFLT *ftable;    // ftable of mono audio samples (engine sr)
+    MYFLT *top_k;
+    MYFLT *iminsec;   // optional: min duration (s) to run a query; 0 = no minimum
+    // private
+    SEMSYS_SPACE *spc;
+    int top_k_neighs;
+    AUXCH query_buf;
+    SEMSYS *ctx;
+    AUXCH mheap;
+} SEM_SPACE_QUERY_FT;
+
+// k-rate form: same, plus a trigger (query on rising edge). ktrig comes before the optional
+// iminsec so the field order matches the argument order.
+typedef struct {
+    OPDS h;
+    // outputs
+    ARRAYDAT *neighs;
+    ARRAYDAT *scores;
+    MYFLT *gate;      // 1 on the k-pass a fresh query result is published, else 0
+    // inputs
+    MYFLT *s_handle;
+    MYFLT *handle;    // audio model handle
+    MYFLT *ftable;
+    MYFLT *top_k;
+    MYFLT *ktrig;     // query on rising edge
+    MYFLT *iminsec;   // optional: min duration (s) to run a query; 0 = no minimum
+    // private
+    SEMSYS_SPACE *spc;
+    int top_k_neighs;
+    AUXCH query_buf;
+    SEMSYS *ctx;
+    AUXCH mheap;
+    MYFLT prev_trig;
+    QUERY_ASYNC async;
+} SEM_SPACE_QUERY_FT_K;
 
 
 // SEMSYS STT
@@ -463,24 +635,48 @@ typedef struct {
 // SEMSYS EMBED
 int sem_init(CSOUND *csound, SEM_INIT *p);
 int sem_dim(CSOUND *csound, SEM_DIM *p);
-int sem_embed_init(CSOUND *csound, SEM_EMBED *p);
-int sem_embed_perf(CSOUND *csound, SEM_EMBED *p);
-int sem_embed_i(CSOUND *csound, SEM_EMBED_TEXT_I *p);
-int sem_embed_i_file(CSOUND *csound, SEM_EMBED_FILE_I *p);
+// text
+int sem_embed_text_init(CSOUND *csound, SEM_EMBED_TEXT *p);
+int sem_embed_text_perf(CSOUND *csound, SEM_EMBED_TEXT *p);
+int sem_embed_text_i(CSOUND *csound, SEM_EMBED_TEXT_I *p);
+int sem_embed_text_i_file(CSOUND *csound, SEM_EMBED_TEXT_FILE_I *p);
+// audio
+int sem_embed_audio_init(CSOUND *csound, SEM_EMBED_AUDIO *p);
+int sem_embed_audio_perf(CSOUND *csound, SEM_EMBED_AUDIO *p);
+int sem_embed_audio_deinit(CSOUND *csound, SEM_EMBED_AUDIO *p);
+int sem_embed_audio_file_i(CSOUND *csound, SEM_EMBED_AUDIO_FILE_I *p);
+int sem_embed_audio_func_i(CSOUND *csound, SEM_EMBED_AUDIO_FUNC_I *p);
 
 // SEMSYS SPACE
 int sem_space_init(CSOUND *csound, SEM_SPACE_INIT *p);
 int sem_space_init_vs(CSOUND *csound, SEM_SPACE_INIT_VS *p);
+// build is universal: it dispatches text vs audio on the model kind (semload-detected)
 int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p);
+// text (add/query take the model handle per-op; audio forms differ only in the model used)
 int sem_space_add_init(CSOUND *csound, SEM_SPACE_ADD *p);
 int sem_space_add(CSOUND *csound, SEM_SPACE_ADD *p);
 int sem_space_add_perf(CSOUND *csound, SEM_SPACE_ADD *p);
+int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY_K *p);
+int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY_K *p);
+int sem_space_query_i(CSOUND *csound, SEM_SPACE_QUERY *p);
+int sem_space_query_deinit(CSOUND *csound, SEM_SPACE_QUERY_K *p);
+// audio
+int sem_space_add_audio(CSOUND *csound, SEM_SPACE_ADD *p);
+int sem_space_add_audio_init(CSOUND *csound, SEM_SPACE_ADD *p);
+int sem_space_add_audio_perf(CSOUND *csound, SEM_SPACE_ADD *p);
+int sem_space_query_audio_init(CSOUND *csound, SEM_SPACE_QUERY_K *p);
+int sem_space_query_audio_perf(CSOUND *csound, SEM_SPACE_QUERY_K *p);
+int sem_space_query_audio_i(CSOUND *csound, SEM_SPACE_QUERY *p);
+int sem_space_query_audio_deinit(CSOUND *csound, SEM_SPACE_QUERY_K *p);
+// real-time audio query from an ftable
+int sem_space_query_audio_ft_i(CSOUND *csound, SEM_SPACE_QUERY_FT *p);
+int sem_space_query_audio_ft_init(CSOUND *csound, SEM_SPACE_QUERY_FT_K *p);
+int sem_space_query_audio_ft_perf(CSOUND *csound, SEM_SPACE_QUERY_FT_K *p);
+int sem_space_query_audio_ft_deinit(CSOUND *csound, SEM_SPACE_QUERY_FT_K *p);
+// save (dim-agnostic, shared)
 int sem_space_save(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_save_kset(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_save_kperf(CSOUND *csound, SEM_SPACE_SAVE *p);
-int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY *p);
-int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p);
-int sem_space_query_i(CSOUND *csound, SEM_SPACE_QUERY *p);
 
 // SEMSYS STT
 int sem_stt_init(CSOUND *csound, SEM_STT_INIT *p);

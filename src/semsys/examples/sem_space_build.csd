@@ -17,19 +17,19 @@ semspacebuild(e_handle, "corpus.espc", "corpus.txt")   // from a single text fil
 
 instr 1 // load a single .espc into RAM and query it
     s:i = semspace(e_handle, "corpus.espc")
-    neighs:k[][], scores:k[] = semspacequery(s, "warm analog texture", 3)
+    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s, e_handle, "warm analog texture", 3)
 endin
 
 // reference: other loading modes. set the placeholder paths and score them to try.
 instr 2 // load a whole directory of .espc, merged into one space
     s:i = semspace(e_handle, "path/to/espc_dir")
-    neighs:k[][], scores:k[] = semspacequery(s, "deep resonant drone", 5)
+    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s, e_handle, "deep resonant drone", 5)
 endin
 
 instr 3 // load and merge an explicit array of .espc files
     paths:S[] = fillarray("corpus.espc", "all.espc")
     s:i = semspace(e_handle, paths)
-    neighs:k[][], scores:k[] = semspacequery(s, "bright metallic hit", 3)
+    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s, e_handle, "bright metallic hit", 3)
 endin
 
 </CsInstruments>

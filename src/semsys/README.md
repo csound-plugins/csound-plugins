@@ -23,13 +23,13 @@ to obtain/bundle the extensions library.
 
 > Status: experimental / research. APIs and the on-disk cache format may change.
 
-## Two layers: `semembed` vs `semspace`
+## Two layers: `semembed*` vs `semspace`
 
 semsys has two distinct sides. Keep them separate in your head.
 
-### `semembed` — stateless, real-time embedding
+### `semembedtxt` — stateless, real-time embedding
 
-`semembed` takes one text and produces its vectors *now*, at k-rate. Nothing is
+`semembedtxt` takes one text and produces its vectors *now*, at k-rate. Nothing is
 stored. Use it for live latent-space control: map a phrase to a 384-d vector and
 patch that into your synthesis (interpolate between phrases, modulate parameters
 from semantic axes, etc.). It re-runs the model only when the input text changes.
@@ -37,26 +37,72 @@ from semantic axes, etc.). It re-runs the model only when the input text changes
 The **i-rate** form embeds once at init and returns a **2D array `i[][]` of shape
 `[nchunks, ldim]`**: text longer than the model window is split into `≤`-window token
 chunks (same chunker as `semspacebuild`), one embedding row per chunk — short text
-yields a single row. `semembedfile` is the same but reads the text from a file on disk.
+yields a single row. `semembedtxtfile` is the same but reads the text from a file on disk.
+
+### `semembedaudio*` — audio embedding (no classification)
+
+The same idea for **audio**: feed raw sound to an end-to-end ONNX audio model (e.g.
+**PANNs CNN14**) and get a semantic vector back — the model's pooled embedding, not its
+class scores. Load it with `semload`; if the model has global time pooling and imposes no
+sequence cap (PANNs does), pass **`maxlen = -1`** ("full"). semsys resamples and downmixes
+to the model's rate (32 kHz for PANNs) in C before inference, and picks the graph output
+named `embedding` (so a model that also emits `clip_scores` still reports the right dim).
+
+- **`semembedaudiofile`** / **`semembedaudioft`** (i-rate): embed a whole file (PCM16 WAV)
+  or a function table at init, returning a **2D `[nchunks, ldim]`** array — the audio is
+  split into ~10 s windows, one L2-normalized row per window. Runs in the init pass, off
+  the audio thread.
+- **`semembedaudio`** (a-rate): accumulate live `asig` into windows (`iwindow` seconds,
+  default 10, min 1) and embed each on a **background worker thread** — like STT, inference
+  never blocks the audio thread. Returns a 1D `[ldim]` vector plus a gate that pulses `1`
+  on the pass a fresh embedding is published (embeddings arrive one window behind). Near-
+  silent windows are skipped. Latest-wins: under overload the freshest window is kept
+  rather than a growing backlog, so live control stays current.
+
+Audio and text embeddings are **not comparable across models** — a PANNs vector says
+nothing about a MiniLM text vector. Use audio embeddings for audio↔audio similarity; bridge
+to text via STT, or use a joint audio-text model, for cross-modal search. (A `semspace` can
+still *hold* both text and audio vectors when their dimensions match — it just compares them
+blindly; see the space section.)
 
 ### `semspace` — an in-memory vector store
 
-`semspace` is a *collection* of embeddings held **in RAM**. You build it (add
-sentences, or bulk-build from a text file), query it for nearest neighbours, and
-persist it with `semspacesave`. Use it for similarity search and corpus navigation.
+`semspace` is a *collection* of embeddings held **in RAM**. You build it (add items,
+or bulk-build from a folder), query it for nearest neighbours, and persist it with
+`semspacesave`. Use it for similarity search and corpus navigation.
+
+The space is a **pure vector store: it does not embed.** The embedding model is passed
+by *you* to each add/query call, so **text and audio vectors can live in one space** as
+long as they share a dimension. The `handle` given to `semspace` only anchors the
+dimension. This is why add/query come in `txt` and `audio` variants, while `semspacebuild`
+is a single **universal** opcode that dispatches on the model kind (detected at `semload`).
 
 Persistence is explicit and decoupled:
 
 - `semspace(handle)` starts an empty space; `semspace(handle, path)` loads a `.espc`
   file **or** a whole directory of them into RAM; `semspace(handle, paths[])` merges
-  an array of `.espc` files. Loaded files are read once, then closed.
-- `semspaceadd` appends to the space **in RAM only** — no file is touched.
-- `semspacebuild` is a separate offline builder: it reads text (a file, or a
-  directory of `.txt`) and writes a `.espc` file to disk, ready to be loaded with
-  `semspace`.
+  an array of `.espc` files. Loaded files are read once, then closed. When files are
+  merged, vectors already present in the space are skipped.
+- `semspaceaddtxt(space, model, text)` / `semspaceaddaudio(space, model, wavfile)` append
+  to the space **in RAM only** — no file is touched. Each brings its own model, and
+  duplicate vectors are not reinserted.
+- `semspacebuild(model, dest, source)` is a separate offline builder: it reads a source
+  (`.txt` for a text model, `.wav` for an audio model) and writes a `.espc` to disk, ready
+  to load with `semspace`.
+- `semspacequerytxt(space, model, text, k)` / `semspacequeryaudio(space, model, wavfile, k)`
+  return the top-k nearest vectors (a long text/audio query is chunked and **mean-pooled**
+  into one centroid query). `semspacequeryaudioft(space, model, ftable, k [, ktrig][, iminsec])`
+  is the **real-time** audio query: it reads a live capture **ftable** instead of a file and
+  can fire on a trigger, with a minimum-duration gate. The k-rate query forms run
+  inference/search on per-instance worker threads with latest-wins scheduling; their
+  third output, `kgate`, pulses to 1 when a fresh result has been published.
 - `semspacesave(space, file)` writes a full snapshot of the in-memory space to a
   fresh file (loaded files are never overwritten). A k-rate form saves on a trigger
   edge.
+
+A `.espc` stores only dimension + vectors — no source text or labels, and no record of
+which model produced each row — so text- and audio-built files with the same dimension
+merge freely into one search space.
 
 ### Building large search spaces
 
@@ -82,11 +128,11 @@ This is a deliberate limitation, not a TODO:
   min-heap keeping the top-k. There is no ANN / approximate index. A query longer than
   the model window is chunked and its chunk embeddings are **mean-pooled** into one
   centroid vector, so the whole query is represented rather than truncated.
-- **No text is stored.** The space holds vectors only. `semspacequery` returns the
-  matching *vectors* and their scores — **not** the source text. semsys is not a
-  retrieval/RAG index; mapping a result back to its original sentence is out of
+- **No text is stored.** The space holds vectors only. The query opcodes return the
+  matching *vectors* and their scores — **not** the source text/audio. semsys is not a
+  retrieval/RAG index; mapping a result back to its original item is out of
   scope (for now).
-- **Approximate chunking.** `semspacebuild` splits the source text into
+- **Approximate chunking.** For a text model, `semspacebuild` splits the source text into
   overlapping word-windows (~`maxlen`-sized, ~15% overlap), one vector per window.
   Boundaries are approximate (word-based, not token-exact). Blank lines are hard
   boundaries; a window never crosses one.
@@ -124,12 +170,18 @@ Practical rules:
 |--------|------|---------|
 | `semload` | `handle:i = semload(maxlen:i, modeldir:S)` | Load the end-to-end `model.onnx` (+ `model.onnx.data`) from a directory; returns a handle |
 | `semdim` | `dim:i = semdim(handle:i)` | Embedding dimension of the loaded model |
-| `semembed` | `pool:k[], changed:k = semembed(handle:i, text:S)` (k-rate); `chunks:i[][] = semembed(handle:i, text:S)` (i-rate, one row per chunk) | Embed text — real-time (gated) or once at init (long text auto-chunked) |
-| `semembedfile` | `chunks:i[][] = semembedfile(handle:i, path:S)` | Embed a text file at init; one row per chunk (long text auto-chunked) |
-| `semspace` | `space:i = semspace(handle:i)`; `… = semspace(handle:i, path:S)`; `… = semspace(handle:i, paths:S[])` | Create an in-memory space (empty, or load a `.espc` file / directory / array) |
-| `semspacebuild` | `semspacebuild(handle:i, dest:S, source:S)` | Build a `.espc` from a text file or a directory of `.txt` |
-| `semspaceadd` | `semspaceadd(space:i, sentence:S)` (once at init); `semspaceadd(space:i, sentence:S, trig:k)` (on rising edge) | Embed a sentence and append it (in RAM); long text added as one entry per chunk |
-| `semspacequery` | `neighs:k[][], scores:k[] = semspacequery(space:i, query:S, topk:i)` (k-rate); `neighs:i[][], scores:i[] = semspacequery(space:i, query:S, topk:i)` (i-rate) | Top-k nearest neighbours — real-time (gated) or once at init (long query auto-chunked + mean-pooled) |
+| `semembedtxt` | `pool:k[], changed:k = semembedtxt:k(handle:i, text:S)` (k-rate); `chunks:i[][] = semembedtxt:i(handle:i, text:S)` (i-rate, one row per chunk) | Embed text — real-time (gated) or once at init (long text auto-chunked) |
+| `semembedtxtfile` | `chunks:i[][] = semembedtxtfile(handle:i, path:S)` | Embed a text file at init; one row per chunk (long text auto-chunked) |
+| `semembedaudiofile` | `chunks:i[][] = semembedaudiofile(handle:i, path:S)` | Embed an audio file (PCM16 WAV) at init; one row per ~10 s window |
+| `semembedaudioft` | `chunks:i[][] = semembedaudioft(handle:i, ftable:i)` | Embed a function table of samples at init; one row per ~10 s window |
+| `semembedaudio` | `emb:k[], gate:k = semembedaudio(handle:i, asig:a [, window:i])` | Embed live a-rate audio on a background worker; `gate` pulses when a fresh vector arrives |
+| `semspace` | `space:i = semspace(handle:i)`; `… = semspace(handle:i, path:S)`; `… = semspace(handle:i, paths:S[])` | Create an in-memory vector store (empty, or load a `.espc` file / directory / array). `handle` only anchors the dimension |
+| `semspacebuild` | `semspacebuild(handle:i, dest:S, source:S)` | Universal builder: `.espc` from a text source (text model) or an audio source (audio model), dispatched on the model kind |
+| `semspaceaddtxt` | `semspaceaddtxt(space:i, handle:i, sentence:S [, trig:k])` | Embed text with `handle` and append it (in RAM); long text added as one entry per chunk; duplicate vectors are skipped |
+| `semspaceaddaudio` | `semspaceaddaudio(space:i, handle:i, path:S [, trig:k])` | Embed a PCM16 WAV with `handle` and append it (in RAM); one entry per ~10 s window; duplicate vectors are skipped |
+| `semspacequerytxt` | `neighs:i[][], scores:i[] = semspacequerytxt(...)`; `neighs:k[][], scores:k[], kgate:k = semspacequerytxt(...)` | Top-k nearest to a text query (long query auto-chunked + mean-pooled); k-rate runs async latest-wins |
+| `semspacequeryaudio` | `neighs:i[][], scores:i[] = semspacequeryaudio(...)`; `neighs:k[][], scores:k[], kgate:k = semspacequeryaudio(...)` | Top-k nearest to an audio query (file windows mean-pooled into one query); k-rate runs async latest-wins |
+| `semspacequeryaudioft` | `neighs:i[][], scores:i[] = semspacequeryaudioft(...)`; `neighs:k[][], scores:k[], kgate:k = semspacequeryaudioft(...)` | Real-time audio query from an ftable; k-rate snapshots the table on trigger and runs async latest-wins |
 | `semspacesave` | `semspacesave(space:i, file:S)`; `semspacesave(space:i, file:S, trig:k)` | Write the in-memory space to a `.espc` (once, or on trigger edge) |
 
 ### Speech-to-text (experimental)
@@ -164,13 +216,23 @@ See `doc/` for the per-opcode reference.
 ## Examples
 
 The `examples/` directory holds working `.csd` files: usage examples for the opcodes
-(`sem_embedding.csd`, `sem_space.csd`, `sem_space_build.csd`) plus two small
-**semantic synthesis** demos that turn a query into sound:
+(`sem_embedding.csd`, `sem_embed_audio.csd`, `sem_space.csd`, `sem_space_build.csd`,
+`sem_space_audio.csd`) plus two small **semantic synthesis** demos that turn a query into
+sound:
 
 - `sem_synthesis.csd` — builds a filter **impulse response** from the query embedding
-  and convolves a source with it (`semspacequery` → IR → `ftconv`).
+  and convolves a source with it (`semspacequerytxt` → IR → `ftconv`).
 - `sem_synthesis_additive.csd` — **additive synthesis**: the embedding coordinates
   become the amplitudes of a bank of sine partials.
+
+two **audio** demos:
+
+- `sem_embed_audio.csd` — embed a file into per-window vectors (`semembedaudiofile`,
+  `semembedaudioft`) and stream live a-rate audio into embeddings on a worker thread
+  (`semembedaudio`, gated).
+- `sem_space_audio.csd` — an **audio semantic space**: build a `.espc` from a folder of
+  `.wav`, then retrieve the nearest sounds to a query sound (`semspacebuild` →
+  `semspaceaddaudio` → `semspacequeryaudio`).
 
 and two **speech-to-text** demos:
 
@@ -242,13 +304,14 @@ plugin so the loader can resolve it from the plugin directory.
 - **Faster search for large spaces.** The scan is now in RAM with a bounded
   min-heap for top-k. Still open: vectorize the dot products (SIMD / blocked) and,
   for large spaces, an approximate-nearest-neighbour index.
-- **Source-text storage.** Optionally keep each vector's originating text so
-  `semspacequery` can return it — turning the space into a real retrieval index.
-- **Token-accurate chunking** in `semspacebuild` (current chunking is
+- **Source-text storage.** Optionally keep each vector's originating text/path so the
+  query opcodes can return it — turning the space into a real retrieval index.
+- **Token-accurate chunking** in `semspacebuild` (current text chunking is
   word-based / approximate).
-- **Multimodal embeddings.** Embed audio and images, not just text, and extend the
-  search space across modalities — so a single space can hold and cross-search
-  sound, image, and text together.
+- **Multimodal embeddings.** Audio embeddings and a modality-agnostic space (text + audio
+  in one `.espc`) are done. Still open: images, and a **joint text-audio model** so a single
+  space can *cross-search* meaning across modalities (today the space compares vectors
+  blindly — cross-modal only makes sense with aligned models).
 - **Blocking `semstttranscribe` (offline).** A synchronous i-time variant that
   transcribes a file or function table and returns the text directly, for non-real-time /
   batch use where blocking is fine. (Long-audio segmentation is now handled automatically
@@ -264,20 +327,23 @@ plugin so the loader can resolve it from the plugin directory.
 ### 1.0.0
 
 - Initial release.
-- Opcodes: `semload`, `semdim`, `semembed`, `semembedfile`, `semspace`,
-  `semspacebuild`, `semspaceadd`, `semspacequery`, `semspacesave`.
+- Opcodes: `semload`, `semdim`, `semembedtxt`, `semembedtxtfile`, `semembedaudiofile`,
+  `semembedaudioft`, `semembedaudio`, `semspace`, `semspacebuild`, `semspaceaddtxt`,
+  `semspaceaddaudio`, `semspacequerytxt`, `semspacequeryaudio`, `semspacesave`.
 - ONNX Runtime C API backend; mean-pooled sentence embeddings.
-- `semembed` i-rate returns a 2D `[nchunks, ldim]` array: text longer than the model
-  window is split into `≤`-window token chunks, one embedding per chunk. `semembedfile`
+- `semembedtxt` i-rate returns a 2D `[nchunks, ldim]` array: text longer than the model
+  window is split into `≤`-window token chunks, one embedding per chunk. `semembedtxtfile`
   is the same for a text file on disk.
-- `semspacequery` chunks a query longer than the model window and **mean-pools** the
-  chunk embeddings into one centroid query vector (no truncation). `semembed` k-rate
+- `semspacequerytxt` chunks a query longer than the model window and **mean-pools** the
+  chunk embeddings into one centroid query vector (no truncation). `semembedtxt` k-rate
   does the same (single mean-pooled vector) since a k-rate array can't change row count.
-- `semspaceadd` chunks long text too, adding **one entry per chunk**; a consecutive
-  self-gate skips re-embedding when the text is unchanged from the previous add.
+- `semspaceaddtxt` chunks long text too, adding **one entry per chunk**; a consecutive
+  self-gate skips re-embedding when the text is unchanged from the previous add, and
+  duplicate vectors already present in the space are skipped.
 - In-memory vector space with explicit persistence: `semspace` loads a `.espc`
-  file, a directory of them, or an array into RAM; `semspaceadd` appends in memory;
-  `semspacesave` writes a snapshot (i-time or k-rate trigger).
+  file, a directory of them, or an array into RAM; `semspaceaddtxt` / `semspaceaddaudio`
+  append in memory while skipping vectors already present; `semspacesave` writes a
+  snapshot (i-time or k-rate trigger).
 - `semspacebuild` builds a `.espc` from a text file or a directory of `.txt`
   (word-window chunking with overlap).
 - Brute-force cosine nearest-neighbour search in RAM, top-k via min-heap.
@@ -302,4 +368,34 @@ plugin so the loader can resolve it from the plugin directory.
   failed or NaN embeddings are rejected, invalid `.espc` rows are skipped on load,
   and query outputs are cleared on invalid input instead of propagating NaN scores.
 - Added STT examples: `sem_stt_file.csd` and `sem_stt_live.csd`.
+- Renamed the text embedding opcodes to `semembedtxt` / `semembedtxtfile` (was
+  `semembed` / `semembedfile`) to make room for audio embedding.
+- Added **audio embedding** opcodes for end-to-end audio models (e.g. PANNs CNN14):
+  `semembedaudiofile` and `semembedaudioft` (i-rate, 2D `[nchunks, ldim]`, one row per
+  ~10 s window) and `semembedaudio` (a-rate live). semsys resamples/downmixes to the
+  model's 32 kHz in C and selects the graph output named `embedding` for `ldim`, so a
+  model that also emits `clip_scores` reports the embedding dimension. `semload` accepts
+  `maxlen = -1` for models with no sequence cap (global time pooling).
+- `semembedaudio` runs inference on a per-instance background worker thread (like STT), so
+  the audio thread never stalls; it embeds full, non-silent windows and publishes the
+  freshest result (latest-wins, bounded latency), gating on new embeddings.
+- `semspacequerytxt.k`, `semspacequeryaudio.k`, and `semspacequeryaudioft.k` run
+  embedding/search on per-instance background workers. They are latest-wins: faster input
+  changes/triggers replace pending work, stale worker results are discarded, and `kgate`
+  pulses when the freshest response is published.
+- Added audio embedding example: `sem_embed_audio.csd`.
+- Made the semantic space **modality-agnostic**: the space is now a pure vector store that
+  holds no model, and the embedding model is passed per operation. `semspaceadd` and
+  `semspacequery` split into `…txt` (text) and `…audio` (PCM16 WAV, per-window, mean-pooled)
+  forms, each taking a model handle; `semspacebuild` became a **single universal** opcode
+  that dispatches text vs audio on the model kind (detected at `semload` from the input
+  tensor type). Text- and audio-built `.espc` files with the same dimension merge into one
+  space; add/query validate the model's dim and kind against the space.
+- Added audio-space example: `sem_space_audio.csd`.
+- Added `semspacequeryaudioft` — a real-time audio query that reads a live-capture **ftable**
+  instead of a WAV file, with an optional trigger (`ktrig`) and a minimum-duration gate
+  (`iminsec`) so short/partial buffers are skipped. The k-rate form snapshots the ftable
+  on submit, so concurrent recording can overwrite the live table while the worker runs.
+- Semantic spaces now skip duplicate vectors when loading/merging `.espc` files and when
+  adding text/audio embeddings to an existing in-memory space.
 - Requires Csound API 7.

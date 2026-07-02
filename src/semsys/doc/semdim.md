@@ -63,7 +63,8 @@ i 1 0 1
 ## See also
 
 * [semload](semload.md)
-* [semembed](semembed.md)
+* [semembedtxt](semembedtxt.md)
+* [semembedaudio](semembedaudio.md)
 
 ## Credits
 

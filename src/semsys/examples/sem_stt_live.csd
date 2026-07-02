@@ -12,7 +12,7 @@
 ; speech navigates the space and drives sound:
 ;
 ;   mic -> semsttsubmitlive (built-in speech gate) -> worker transcribes
-;       -> semsttresult (text) -> semspacequery (nearest vector + score)
+;       -> semsttresult (text) -> semspacequerytxt (nearest vector + score)
 ;       -> the match score drives a synth voice
 ;
 ; Needs both an end-to-end STT model and a sentence-embedding model, plus a
@@ -51,7 +51,7 @@ instr POLL
         println("[STT len=%d]:<%s>", tlen, text)
         if (tlen > 0) then ; skip empty (no-speech) windows
             ; query the space with the spoken text -> nearest vector + score
-            neighs:k[][], score:k[] = semspacequery(h_space, text, 3)
+            neighs:k[][], score:k[], kgate:k = semspacequerytxt(h_space, h_emb, text, 3)
 
             println("match score: %f", score[0])
 

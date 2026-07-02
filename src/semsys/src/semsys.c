@@ -120,6 +120,26 @@ static inline int normalize(float *vec, uint32_t dim) {
     return OK;
 }
 
+#define SPACE_DUP_EPS 1.0e-6f
+
+static int vector_equalish(const float *a, const float *b, uint32_t dim) {
+    for (uint32_t i = 0; i < dim; i++) {
+        if (fabsf(a[i] - b[i]) > SPACE_DUP_EPS) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int vector_exists_in_rows(const float *rows, uint64_t count, uint32_t dim, const float *vec) {
+    for (uint64_t i = 0; i < count; i++) {
+        if (vector_equalish(rows + i * dim, vec, dim)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static inline float dot(float *vec_a, float *vec_b, uint32_t dim) {
     double d = 0.0;
     for (uint32_t i = 0; i < dim; i++) {
@@ -256,6 +276,58 @@ static void heapfy_down(Score *mheap, int index, int size) {
 static int compare(const void *a, const void *b) {
     float d = ((Score *)b)->score - ((Score *)a)->score;
     return (d > 0) - (d < 0);
+}
+
+/* forward declaration */
+static int wav_to_pcm_mono(const uint8_t *b, size_t n, MYFLT **out, size_t *out_n, uint32_t *out_sr);
+/* forward declaration */
+static int stt_segment_pcm(const MYFLT *s, size_t n, uint32_t sr, uint8_t ***out_chunks, size_t **out_sizes, int *out_n);
+
+static int read_audio_file_as_raw(const char *file_path, uint8_t **raw, long *fsz) {
+    /* read the whole file as RAW bytes. */
+    FILE *f = fopen(file_path, "rb");
+    if (f == NULL) return NOTOK;
+
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (fsize <= 0) {
+        fclose(f);
+        return NOTOK;
+    }
+
+    *raw = (uint8_t *) malloc((size_t) fsize);   /* worker frees -> plain malloc */
+    if (*raw == NULL) {
+        fclose(f);
+        return NOTOK;
+    }
+    size_t got = fread(*raw, 1, (size_t) fsize, f);
+    fclose(f);
+    if (got != (size_t) fsize) {
+        free(*raw);
+        *raw = NULL;
+        return NOTOK;
+    }
+
+    *fsz = fsize;
+    return OK;
+}
+
+/* take ownership of raw_audio (frees it), decode PCM16 WAV + segment into <=30s WAV
+   byte chunks for the STT worker. outputs are malloc'd arrays the caller owns.
+   only PCM16 WAV is accepted; for mp3/flac/ogg convert to WAV or load into an ftable. */
+static int audio_file_into_chunks(uint8_t *raw_audio, size_t fsz, uint8_t ***out_chunks, size_t **out_sizes, int *out_n) {
+    MYFLT *pcm = NULL;
+    size_t nframes = 0;
+    uint32_t wsr = 0;
+    int parsed = wav_to_pcm_mono(raw_audio, fsz, &pcm, &nframes, &wsr);
+    free(raw_audio);
+    if (parsed != OK) return NOTOK;
+
+    int seg = stt_segment_pcm(pcm, nframes, wsr, out_chunks, out_sizes, out_n);
+    free(pcm);
+    if (seg != OK) return NOTOK;
+    return OK;
 }
 
 // CORE
@@ -430,8 +502,27 @@ int sem_init(CSOUND *csound, SEM_INIT *p) {
     ONNX_CHECK_INIT(ctx->api, ctx->api->RegisterCustomOpsLibrary(ctx->emb_session_options, extpath, &exthandle));
     ONNX_CHECK_INIT(ctx->api, create_session_utf8(ctx->api, ctx->env, ctx->model_path, ctx->emb_session_options, &ctx->emb_session));
 
+    /* pick the output named "embedding" for the latent dim. E2E text and PANN audio
+       both expose it, but PANN also emits clip_scores[527] at index 0 -> reading index 0
+       blindly would set ldim to the tag count. fall back to index 0 for single-output
+       models that name it differently. */
+    OrtAllocator *name_alloc = NULL;
+    ONNX_CHECK_INIT(ctx->api, ctx->api->GetAllocatorWithDefaultOptions(&name_alloc));
+
+    size_t out_count = 0;
+    ONNX_CHECK_INIT(ctx->api, ctx->api->SessionGetOutputCount(ctx->emb_session, &out_count));
+
+    size_t emb_idx = 0;
+    for (size_t oi = 0; oi < out_count; oi++) {
+        char *oname = NULL;
+        ONNX_CHECK_INIT(ctx->api, ctx->api->SessionGetOutputName(ctx->emb_session, oi, name_alloc, &oname));
+        int is_emb = (oname != NULL && strcmp(oname, "embedding") == 0);
+        if (oname != NULL) name_alloc->Free(name_alloc, oname);
+        if (is_emb) { emb_idx = oi; break; }
+    }
+
     OrtTypeInfo *type_info = NULL;
-    ONNX_CHECK_INIT(ctx->api, ctx->api->SessionGetOutputTypeInfo(ctx->emb_session, 0, &type_info));
+    ONNX_CHECK_INIT(ctx->api, ctx->api->SessionGetOutputTypeInfo(ctx->emb_session, emb_idx, &type_info));
 
     const OrtTensorTypeAndShapeInfo *shape_info = NULL;
     OrtStatus *status = ctx->api->CastTypeInfoToTensorInfo(type_info, &shape_info);
@@ -465,7 +556,24 @@ int sem_init(CSOUND *csound, SEM_INIT *p) {
     if (last <= 0) {
         return csound->InitError(csound, "[semload] Model has dynamic/invalid embedding dim (%lld)", (long long) last);
     }
+
     ctx->ldim = (int32_t) last;
+
+    /* detect modality from input 0: a STRING input is a text model (tokenized internally),
+       a float input is an audio model (raw waveform). semspacebuild dispatches on this, and
+       the add/query opcodes validate the passed model matches (text vs audio). best-effort. */
+    ctx->is_audio = 0;
+    OrtTypeInfo *in_info = NULL;
+    if (ctx->api->SessionGetInputTypeInfo(ctx->emb_session, 0, &in_info) == NULL) {
+        const OrtTensorTypeAndShapeInfo *in_shape = NULL;
+        if (ctx->api->CastTypeInfoToTensorInfo(in_info, &in_shape) == NULL && in_shape != NULL) {
+            ONNXTensorElementDataType et = ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED;
+            if (ctx->api->GetTensorElementType(in_shape, &et) == NULL) {
+                ctx->is_audio = (et != ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING);
+            }
+        }
+        ctx->api->ReleaseTypeInfo(in_info);
+    }
 
     return OK;
 
@@ -476,9 +584,7 @@ fail:
 
 int sem_dim(CSOUND *csound, SEM_DIM *p) {
     SEMSYS *ctx = FLT_TO_CTX(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semdim] Not valid handle");
-    }
+    CHECK_PTR_CTX(csound, ctx, "SEMDIM");
 
     *p->out_dim = (MYFLT) ctx->ldim;
     return OK;
@@ -528,11 +634,9 @@ static int embed_sentence(MYFLT *pmb, SEMSYS *ctx, const char *sentence) {
 /* defined below; reused to chunk + embed text into a growing per-chunk buffer */
 static int chunk_and_embed(const char *paragraph, FILE *dest_file, float **dest_vec, SEMSYS *ctx, MYFLT *pmb, float *pool, uint64_t *count);
 
-static int sem_embed_init_helper(CSOUND *csound, SEM_EMBED *p) {
+static int sem_embed_text_init_helper(CSOUND *csound, SEM_EMBED_TEXT *p) {
     SEMSYS *ctx = FLT_TO_CTX(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semembed] Not valid handle");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semembed");
 
     p->ctx = ctx;
 
@@ -543,8 +647,8 @@ static int sem_embed_init_helper(CSOUND *csound, SEM_EMBED *p) {
     return OK;
 }
 
-int sem_embed_init(CSOUND *csound, SEM_EMBED *p) {
-    int err = sem_embed_init_helper(csound, p);
+int sem_embed_text_init(CSOUND *csound, SEM_EMBED_TEXT *p) {
+    int err = sem_embed_text_init_helper(csound, p);
     if (err != OK) { return err; }
 
     /* empty cache forces embedding on the first perf pass */
@@ -558,7 +662,7 @@ int sem_embed_init(CSOUND *csound, SEM_EMBED *p) {
    (chunk_and_embed) and the per-chunk embeddings are mean-pooled into one centroid
    vector, so the whole text contributes instead of being truncated. called only on text
    change from perf, so the per-change malloc cost is negligible. */
-static int sem_embed_ik(CSOUND *csound, SEM_EMBED *p, const char *text) {
+static int sem_embed_text_ik(CSOUND *csound, SEM_EMBED_TEXT *p, const char *text) {
     (void) csound;
     SEMSYS *ctx = p->ctx;
 
@@ -602,7 +706,7 @@ static int sem_embed_ik(CSOUND *csound, SEM_EMBED *p, const char *text) {
     return OK;
 }
 
-int sem_embed_perf(CSOUND *csound, SEM_EMBED *p) {
+int sem_embed_text_perf(CSOUND *csound, SEM_EMBED_TEXT *p) {
     *p->gate = FL(0.0);
 
     const char *text = (p->text != NULL && p->text->data != NULL) ? p->text->data : "";
@@ -618,7 +722,7 @@ int sem_embed_perf(CSOUND *csound, SEM_EMBED *p) {
 
     strcpy((char *) p->last_text.auxp, text);
 
-    int err = sem_embed_ik(csound, p, text);
+    int err = sem_embed_text_ik(csound, p, text);
     if (err == NOTOK) {
         return csound->PerfError(csound, &(p->h), "[semembed] Embedding process error");
     }
@@ -631,11 +735,10 @@ int sem_embed_perf(CSOUND *csound, SEM_EMBED *p) {
 /* i-rate form: embeds at init and returns a 2D array [nchunks, ldim]. long text is
    chunked with the same token-window logic as semspacebuild (reused via chunk_and_embed),
    one row per chunk. short text yields a single row. */
-int sem_embed_i(CSOUND *csound, SEM_EMBED_TEXT_I *p) {
+int sem_embed_text_i(CSOUND *csound, SEM_EMBED_TEXT_I *p) {
     SEMSYS *ctx = FLT_TO_CTX(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semembed] Not valid handle");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semembed");
+
     p->ctx = ctx;
 
     const char *text = (p->text != NULL && p->text->data != NULL) ? p->text->data : "";
@@ -673,11 +776,10 @@ int sem_embed_i(CSOUND *csound, SEM_EMBED_TEXT_I *p) {
     return OK;
 }
 
-int sem_embed_i_file(CSOUND *csound, SEM_EMBED_FILE_I *p) {
+int sem_embed_text_i_file(CSOUND *csound, SEM_EMBED_TEXT_FILE_I *p) {
     SEMSYS *ctx = FLT_TO_CTX(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semembed] Not valid handle");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semembed");
+
     p->ctx = ctx;
 
     FILE *fp = fopen(p->file_path->data, "rb");
@@ -742,9 +844,363 @@ int sem_embed_i_file(CSOUND *csound, SEM_EMBED_FILE_I *p) {
     return OK;
 }
 
+/* PANN CNN14 works at 32 kHz; it has global time pooling so any length is valid, but we
+   window to the ~10 s training length for bounded memory and a per-segment embedding. */
+#define AUDIO_EMBED_TARGET_SR 32000u
+#define AUDIO_EMBED_CHUNK_SEC 10.0
+
+/* linear-interp resample mono MYFLT [-1,1] -> float32 at out_sr. sr match just converts
+   type. caller frees *out. */
+static int resample_to_f32(const MYFLT *in, size_t in_n, uint32_t in_sr, uint32_t out_sr,
+                           float **out, size_t *out_n) {
+    if (in == NULL || in_n == 0 || in_sr == 0) return NOTOK;
+
+    if (in_sr == out_sr) {
+        float *o = (float *) malloc(sizeof(float) * in_n);
+        if (o == NULL) return NOTOK;
+        for (size_t i = 0; i < in_n; i++) o[i] = (float) in[i];
+        *out = o;
+        *out_n = in_n;
+        return OK;
+    }
+
+    double ratio = (double) out_sr / (double) in_sr;
+    size_t on = (size_t) ((double) in_n * ratio);
+    if (on == 0) on = 1;
+    float *o = (float *) malloc(sizeof(float) * on);
+    if (o == NULL) return NOTOK;
+    for (size_t i = 0; i < on; i++) {
+        double src = (double) i / ratio;
+        size_t i0 = (size_t) src;
+        double frac = src - (double) i0;
+        double a = (double) in[i0];
+        double b = (i0 + 1 < in_n) ? (double) in[i0 + 1] : a;
+        o[i] = (float) (a + (b - a) * frac);
+    }
+    *out = o;
+    *out_n = on;
+    return OK;
+}
+
+static void l2_normalize(MYFLT *v, uint32_t dim) {
+    double s = 0.0;
+    for (uint32_t i = 0; i < dim; i++) s += (double) v[i] * (double) v[i];
+    if (s > 0.0) {
+        double inv = 1.0 / sqrt(s);
+        for (uint32_t i = 0; i < dim; i++) v[i] = (MYFLT) ((double) v[i] * inv);
+    }
+}
+
+/* run the audio embedder on one float32 window [1, nsamp] -> embedding row [ldim] into
+   `row`. samples must stay valid for the call (CreateTensorWithData does not copy). */
+static int embed_audio_window(SEMSYS *ctx, const float *samples, size_t nsamp, MYFLT *row) {
+    int64_t shape[2] = { 1, (int64_t) nsamp };
+    OrtMemoryInfo *mem = NULL;
+    OrtValue *input_tensor = NULL;
+    OrtValue *outs[1] = { NULL };
+    int ret = NOTOK;
+
+    ONNX_CHECK_GOTO(ctx->api, ctx->api->CreateCpuMemoryInfo(OrtArenaAllocator, OrtMemTypeDefault, &mem));
+    ONNX_CHECK_GOTO(ctx->api, ctx->api->CreateTensorWithDataAsOrtValue(
+        mem, (void *) samples, nsamp * sizeof(float), shape, 2,
+        ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, &input_tensor));
+
+    const char *in_names[]  = { "input_audio" };
+    const OrtValue *ins[]   = { input_tensor };
+    const char *out_names[] = { "embedding" };
+
+    ONNX_CHECK_GOTO(ctx->api, ctx->api->Run(ctx->emb_session, NULL, in_names, ins, 1, out_names, 1, outs));
+
+    float *emb = NULL;
+    ONNX_CHECK_GOTO(ctx->api, ctx->api->GetTensorMutableData(outs[0], (void **) &emb));
+    for (uint32_t d = 0; d < ctx->ldim; d++) row[d] = (MYFLT) emb[d];
+
+    ret = OK;
+
+fail:
+    if (outs[0] != NULL) ctx->api->ReleaseValue(outs[0]);
+    if (input_tensor != NULL) ctx->api->ReleaseValue(input_tensor);
+    if (mem != NULL) ctx->api->ReleaseMemoryInfo(mem);
+    return ret;
+}
+
+/* split float32 @ target sr into ~10 s windows, embed each into a 2D array
+   [nchunks, ldim], one L2-normalized row per window (ready for cosine search). */
+static int embed_audio_buffer(CSOUND *csound, SEMSYS *ctx, const float *samples, size_t nsamp,
+                              ARRAYDAT *arr, OPDS *h) {
+    size_t chunk = (size_t) (AUDIO_EMBED_CHUNK_SEC * (double) AUDIO_EMBED_TARGET_SR);
+    if (chunk == 0) chunk = 1;
+    int nchunks = (int) ((nsamp + chunk - 1) / chunk);
+    if (nchunks < 1) nchunks = 1;
+
+    tabinit2d(csound, arr, nchunks, (int) ctx->ldim, h);
+    MYFLT *data = arr->data;
+
+    for (int r = 0; r < nchunks; r++) {
+        size_t off = (size_t) r * chunk;
+        size_t win = (off + chunk <= nsamp) ? chunk : (nsamp - off);
+        if (win == 0) win = 1;   /* guard tiny/absent tail */
+        MYFLT *row = data + (size_t) r * ctx->ldim;
+        if (embed_audio_window(ctx, samples + off, win, row) != OK) return NOTOK;
+        l2_normalize(row, ctx->ldim);
+    }
+    return OK;
+}
+
+/* embed a whole audio file -> 2D [nchunks, ldim]. PCM16 WAV only (mp3/flac -> convert or
+   load into an ftable and use semembedaudioft). i-time only. */
+int sem_embed_audio_file_i(CSOUND *csound, SEM_EMBED_AUDIO_FILE_I *p) {
+    SEMSYS *ctx = FLT_TO_CTX(p);
+    CHECK_PTR_CTX(csound, ctx, "semembedaudiofile");
+    p->ctx = ctx;
+
+    if (p->file_path == NULL || p->file_path->data == NULL) {
+        return csound->InitError(csound, "[semembedaudiofile] Missing audio file path");
+    }
+
+    uint8_t *raw = NULL;
+    long fsize = 0;
+    if (read_audio_file_as_raw(p->file_path->data, &raw, &fsize) == NOTOK) {
+        return csound->InitError(csound, "[semembedaudiofile] Cannot read audio file: %s", p->file_path->data);
+    }
+
+    MYFLT *pcm = NULL;
+    size_t nframes = 0;
+    uint32_t sr = 0;
+    int parsed = wav_to_pcm_mono(raw, (size_t) fsize, &pcm, &nframes, &sr);
+    free(raw);
+    if (parsed != OK) {
+        return csound->InitError(csound, "[semembedaudiofile] Only PCM16 WAV is supported: %s", p->file_path->data);
+    }
+
+    float *samples = NULL;
+    size_t nsamp = 0;
+    int rs = resample_to_f32(pcm, nframes, sr, AUDIO_EMBED_TARGET_SR, &samples, &nsamp);
+    free(pcm);
+    if (rs != OK) {
+        return csound->InitError(csound, "[semembedaudiofile] Resample failed / out of memory");
+    }
+
+    int err = embed_audio_buffer(csound, ctx, samples, nsamp, p->pool_embed, &(p->h));
+    free(samples);
+    if (err != OK) {
+        return csound->InitError(csound, "[semembedaudiofile] Embedding run failed");
+    }
+    return OK;
+}
+
+/* embed an ftable of audio (samples at engine sr, mono) -> 2D [nchunks, ldim]. i-time. */
+int sem_embed_audio_func_i(CSOUND *csound, SEM_EMBED_AUDIO_FUNC_I *p) {
+    SEMSYS *ctx = FLT_TO_CTX(p);
+    CHECK_PTR_CTX(csound, ctx, "semembedaudioft");
+    p->ctx = ctx;
+
+    FUNC *ft = csound->FTFind(csound, p->func_number);
+    if (ft == NULL || ft->ftable == NULL) {
+        return csound->InitError(csound, "[semembedaudioft] No audio data from ftable");
+    }
+    size_t n = (size_t) ft->flen;
+    if (n == 0) {
+        return csound->InitError(csound, "[semembedaudioft] Empty ftable");
+    }
+    uint32_t sr = (uint32_t) csound->GetEngineSr(csound);   /* ftable samples are at engine sr */
+
+    float *samples = NULL;
+    size_t nsamp = 0;
+    if (resample_to_f32(ft->ftable, n, sr, AUDIO_EMBED_TARGET_SR, &samples, &nsamp) != OK) {
+        return csound->InitError(csound, "[semembedaudioft] Resample failed / out of memory");
+    }
+
+    int err = embed_audio_buffer(csound, ctx, samples, nsamp, p->pool_embed, &(p->h));
+    free(samples);
+    if (err != OK) {
+        return csound->InitError(csound, "[semembedaudioft] Embedding run failed");
+    }
+    return OK;
+}
+
+#define AUDIO_EMBED_MIN_WINDOW_SEC 1.0     /* refuse to embed windows shorter than this */
+#define AUDIO_EMBED_WAIT_MS 100            /* worker wake timeout (avoids lost-notify stall) */
+#define AUDIO_EMBED_MIN_RMS 1.0e-4         /* below this the window is treated as silence */
+
+/* true when the window is (near) digital silence -> skip, don't waste an inference */
+static int window_is_silent(const MYFLT *s, size_t n) {
+    if (n == 0) return 1;
+    double sumsq = 0.0;
+    for (size_t i = 0; i < n; i++) sumsq += (double) s[i] * (double) s[i];
+    return sqrt(sumsq / (double) n) < AUDIO_EMBED_MIN_RMS;
+}
+
+/* one worker per semembedaudio instance: waits for a full window, resamples to 32k, runs
+   PANN off the audio thread, publishes the embedding. exits on p->stop. */
+static uintptr_t audio_embed_worker(void *arg) {
+    SEM_EMBED_AUDIO *p = (SEM_EMBED_AUDIO *) arg;
+    CSOUND *csound = p->csound;
+    SEMSYS *ctx = p->ctx;
+
+    for (;;) {
+        csound->WaitThreadLock(p->job_lock, AUDIO_EMBED_WAIT_MS);
+
+        csound->LockMutex(p->mutex);
+        if (p->stop) {
+            p->worker_done = 1;
+            csound->UnlockMutex(p->mutex);
+            return 0;
+        }
+        if (!p->job_pending) {
+            csound->UnlockMutex(p->mutex);
+            continue;
+        }
+        size_t n = p->job_len;
+        MYFLT *local = (MYFLT *) malloc(sizeof(MYFLT) * n);   /* copy so perf can refill */
+        if (local == NULL) {
+            p->job_pending = 0;
+            csound->UnlockMutex(p->mutex);
+            continue;
+        }
+        memcpy(local, p->job_buf, sizeof(MYFLT) * n);
+        p->job_pending = 0;
+        csound->UnlockMutex(p->mutex);
+
+        /* heavy work off-lock: resample + inference */
+        float *samples = NULL;
+        size_t nsamp = 0;
+        if (resample_to_f32(local, n, p->esr, AUDIO_EMBED_TARGET_SR, &samples, &nsamp) == OK) {
+            MYFLT *emb = (MYFLT *) malloc(sizeof(MYFLT) * ctx->ldim);
+            if (emb != NULL) {
+                if (embed_audio_window(ctx, samples, nsamp, emb) == OK) {
+                    l2_normalize(emb, ctx->ldim);
+                    csound->LockMutex(p->mutex);
+                    memcpy(p->result, emb, sizeof(MYFLT) * ctx->ldim);
+                    p->result_ready = 1;
+                    csound->UnlockMutex(p->mutex);
+                }
+                free(emb);
+            }
+            free(samples);
+        }
+        free(local);
+    }
+}
+
+/* a-rate: accumulate asig into a window (iwindow seconds, default 10, min 1), then hand a
+   full, non-silent window to the worker. the 1D [ldim] output is refreshed and gate is
+   raised on the k-pass the worker's result is published. inference is off the audio
+   thread, so no xruns; embeddings arrive one window's worth of latency behind. */
+int sem_embed_audio_init(CSOUND *csound, SEM_EMBED_AUDIO *p) {
+    SEMSYS *ctx = FLT_TO_CTX(p);
+    CHECK_PTR_CTX(csound, ctx, "semembedaudio");
+    p->ctx = ctx;
+    p->csound = csound;
+    p->thread = NULL;
+    p->mutex = NULL;
+    p->job_lock = NULL;
+    p->job_buf = NULL;
+    p->result = NULL;
+
+    p->esr = (uint32_t) csound->GetEngineSr(csound);
+    MYFLT win = (p->iwindow != NULL) ? *p->iwindow : FL(0.0);
+    if (win <= FL(0.0)) win = (MYFLT) AUDIO_EMBED_CHUNK_SEC;
+    if (win < (MYFLT) AUDIO_EMBED_MIN_WINDOW_SEC) win = (MYFLT) AUDIO_EMBED_MIN_WINDOW_SEC;
+    p->target = (size_t) (win * (MYFLT) p->esr);
+    if (p->target < 1) p->target = 1;
+
+    csound->AuxAlloc(csound, sizeof(MYFLT) * p->target, &p->buf);
+    p->len = 0;
+
+    /* worker handoff + result buffers (plain malloc; freed in deinit after join) */
+    p->job_buf = (MYFLT *) malloc(sizeof(MYFLT) * p->target);
+    p->result  = (MYFLT *) malloc(sizeof(MYFLT) * ctx->ldim);
+    if (p->job_buf == NULL || p->result == NULL) {
+        return csound->InitError(csound, "[semembedaudio] Out of memory");
+    }
+    p->job_len = 0;
+    p->job_pending = 0;
+    p->result_ready = 0;
+
+    tabinit_compat(csound, p->pool_embed, ctx->ldim, &(p->h));
+    memset(p->pool_embed->data, 0, sizeof(MYFLT) * ctx->ldim);
+    *p->gate = FL(0.0);
+
+    p->stop = 0;
+    p->worker_done = 0;
+    p->mutex = csound->Create_Mutex(0);
+    p->job_lock = csound->CreateThreadLock();
+    if (p->mutex == NULL || p->job_lock == NULL) {
+        return csound->InitError(csound, "[semembedaudio] Could not create sync primitives");
+    }
+    p->thread = csound->CreateThread(audio_embed_worker, p);
+    if (p->thread == NULL) {
+        return csound->InitError(csound, "[semembedaudio] Could not start worker thread");
+    }
+    return OK;
+}
+
+int sem_embed_audio_perf(CSOUND *csound, SEM_EMBED_AUDIO *p) {
+    SEMSYS *ctx = p->ctx;
+    uint32_t nsmps = CS_KSMPS;
+    const MYFLT *asig = p->asig;
+    MYFLT *buf = (MYFLT *) p->buf.auxp;
+
+    *p->gate = FL(0.0);
+
+    /* publish a fresh embedding produced by the worker, if any */
+    csound->LockMutex(p->mutex);
+    if (p->result_ready) {
+        memcpy(p->pool_embed->data, p->result, sizeof(MYFLT) * ctx->ldim);
+        p->result_ready = 0;
+        *p->gate = FL(1.0);
+    }
+    csound->UnlockMutex(p->mutex);
+
+    /* accumulate this block; hand a full, non-silent window to the worker */
+    uint32_t i = 0;
+    while (i < nsmps) {
+        size_t room = p->target - p->len;
+        size_t todo = (size_t) (nsmps - i);
+        if (todo > room) todo = room;
+        memcpy(buf + p->len, asig + i, sizeof(MYFLT) * todo);
+        p->len += todo;
+        i += (uint32_t) todo;
+
+        if (p->len >= p->target) {
+            if (!window_is_silent(buf, p->len)) {
+                csound->LockMutex(p->mutex);
+                memcpy(p->job_buf, buf, sizeof(MYFLT) * p->len);
+                p->job_len = p->len;
+                p->job_pending = 1;   /* latest wins: overwrites an ungrabbed job */
+                csound->UnlockMutex(p->mutex);
+                csound->NotifyThreadLock(p->job_lock);   /* wake the worker */
+            }
+            p->len = 0;
+        }
+    }
+    return OK;
+}
+
+int sem_embed_audio_deinit(CSOUND *csound, SEM_EMBED_AUDIO *p) {
+    if (p->thread != NULL) {
+        if (p->mutex != NULL) {
+            csound->LockMutex(p->mutex);
+            p->stop = 1;
+            csound->UnlockMutex(p->mutex);
+        } else {
+            p->stop = 1;
+        }
+        if (p->job_lock != NULL) csound->NotifyThreadLock(p->job_lock);
+        csound->JoinThread(p->thread);
+        p->thread = NULL;
+    }
+    if (p->job_lock != NULL) { csound->DestroyThreadLock(p->job_lock); p->job_lock = NULL; }
+    if (p->mutex != NULL) { csound->DestroyMutex(p->mutex); p->mutex = NULL; }
+    if (p->job_buf != NULL) { free(p->job_buf); p->job_buf = NULL; }
+    if (p->result != NULL) { free(p->result); p->result = NULL; }
+    return OK;
+}
+
 static int32_t sem_space_deinit(CSOUND *csound, void *vp) {
     SEM_SPACE_INIT *p = (SEM_SPACE_INIT *) vp;
-    SEMSYS_SPACE *spc = (SEMSYS_SPACE *)(uintptr_t) *p->s_handle;
+    SEMSYS_SPACE *spc = (SEMSYS_SPACE *) (uintptr_t) *p->s_handle;
     if (spc != NULL) {
         csound->Free(csound, spc->vectors);
         csound->Free(csound, spc);
@@ -975,6 +1431,22 @@ static int is_dir(const char *path) {
 /* append every vector from a .espc file into spc (growing the RAM buffer).
    validates the magic tags and that the file ldim matches the space.
    returns OK, or NOTOK on any error. */
+static int space_append_unique(CSOUND *csound, SEMSYS_SPACE *spc, const float *vec) {
+    if (vector_exists_in_rows(spc->vectors, spc->count, spc->ldim, vec)) {
+        return OK;
+    }
+    if (spc->count == spc->capacity) {
+        uint64_t new_cap = spc->capacity ? spc->capacity * 2 : INITIAL_VCAPACITY;
+        float *tmp = (float *) csound->ReAlloc(csound, spc->vectors, sizeof(float) * new_cap * spc->ldim);
+        if (tmp == NULL) return NOTOK;
+        spc->vectors = tmp;
+        spc->capacity = new_cap;
+    }
+    memcpy(spc->vectors + spc->count * spc->ldim, vec, sizeof(float) * spc->ldim);
+    spc->count++;
+    return OK;
+}
+
 static int load_espc_into(CSOUND *csound, SEMSYS_SPACE *spc, const char *path) {
     FILE *f = fopen(path, "rb");
     if (f == NULL) return NOTOK;
@@ -983,6 +1455,7 @@ static int load_espc_into(CSOUND *csound, SEMSYS_SPACE *spc, const char *path) {
     if (fread(&ch, sizeof(CACHE_HEADER), 1, f) != 1) { fclose(f); return NOTOK; }
     if (ch.head_tag != CACHE_HEADER_TAG || ch.data_tag != CACHE_DATA_TAG) { fclose(f); return NOTOK; }
     if (ch.ldim != spc->ldim) { fclose(f); return NOTOK; }
+    if (ch.count == 0) { fclose(f); return OK; }
 
     uint64_t new_count = spc->count + ch.count;
     if (new_count > spc->capacity) {
@@ -1004,6 +1477,9 @@ static int load_espc_into(CSOUND *csound, SEMSYS_SPACE *spc, const char *path) {
         if (!vec_is_finite(vec, spc->ldim) || normalize(vec, spc->ldim) != OK) {
             continue;
         }
+        if (vector_exists_in_rows(spc->vectors, old_count + valid_count, spc->ldim, vec)) {
+            continue;
+        }
         if (valid_count != i) {
             memmove(base + valid_count * spc->ldim, vec, sizeof(float) * spc->ldim);
         }
@@ -1016,11 +1492,9 @@ static int load_espc_into(CSOUND *csound, SEMSYS_SPACE *spc, const char *path) {
 
 // from dir of files (.txt) to .espc
 // build a .espc from a text file, or from a directory of .txt files (auto-detected)
-int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p) {
+static int sem_space_build_text(CSOUND *csound, SEM_SPACE_BUILD *p) {
     SEMSYS *ctx = FLT_TO_CTX(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semspacebuild] Null semsys context");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semspacebuild");
 
     char *src = (char *) p->source->data;
 
@@ -1095,7 +1569,8 @@ int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p) {
     return OK;
 }
 
-/* allocate + init a SEMSYS_SPACE bound to the model handle. returns NULL on error. */
+/* allocate + init a SEMSYS_SPACE. the handle only anchors ldim; embedding models are
+   passed per-op by the add/query opcodes. returns NULL on error. */
 static SEMSYS_SPACE *sem_space_alloc(CSOUND *csound, SEMSYS *ctx) {
     SEMSYS_SPACE *spc = (SEMSYS_SPACE *) csound->Calloc(csound, sizeof(SEMSYS_SPACE));
     if (spc == NULL) return NULL;
@@ -1107,26 +1582,15 @@ static SEMSYS_SPACE *sem_space_alloc(CSOUND *csound, SEMSYS *ctx) {
     return spc;
 }
 
-// forms: semspace ihandle [, Sfile_or_dir]
-int sem_space_init(CSOUND *csound, SEM_SPACE_INIT *p) {
-    SEMSYS *ctx = FLT_TO_CTX(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semspace] Null semsys context");
-    }
-
-    SEMSYS_SPACE *spc = sem_space_alloc(csound, ctx);
-    if (spc == NULL) {
-        return csound->InitError(csound, "[semspace] Null space context");
-    }
-
-    const char *path = (p->cache_file != NULL && p->cache_file->data != NULL) ? p->cache_file->data : NULL;
-
+/* shared loader: fill `spc` from an optional cache path (empty -> RAM-only space, a .espc
+   file, or a directory of .espc). frees spc on failure and returns an InitError. */
+static int sem_space_load_cache(CSOUND *csound, SEMSYS_SPACE *spc, const char *path) {
     if (path == NULL || path[0] == '\0') {
-        /* empty RAM-only space */
         spc->capacity = INITIAL_VCAPACITY;
         spc->vectors = (float *) csound->Calloc(csound, sizeof(float) * spc->ldim * spc->capacity);
-    } else if (is_dir(path)) {
-        /* load every .espc in the directory */
+        return OK;
+    }
+    if (is_dir(path)) {
         char **files = NULL;
         size_t nf = 0;
         if (list_files_ext(path, ".espc", &files, &nf) != 0) {
@@ -1142,35 +1606,20 @@ int sem_space_init(CSOUND *csound, SEM_SPACE_INIT *p) {
             }
         }
         free_str_list(files, nf);
-    } else {
-        /* single .espc file */
-        if (load_espc_into(csound, spc, path) != OK) {
-            csound->Free(csound, spc->vectors);
-            csound->Free(csound, spc);
-            return csound->InitError(csound, "[semspace] Cannot load .espc file (check format / ldim)");
-        }
+        return OK;
     }
-
-    *p->s_handle = SPC_TO_FLT(spc);
+    if (load_espc_into(csound, spc, path) != OK) {
+        csound->Free(csound, spc->vectors);
+        csound->Free(csound, spc);
+        return csound->InitError(csound, "[semspace] Cannot load .espc file (check format / ldim)");
+    }
     return OK;
 }
 
-// form: semspace ihandle, Spaths[]  -> merge several .espc files
-int sem_space_init_vs(CSOUND *csound, SEM_SPACE_INIT_VS *p) {
-    SEMSYS *ctx = FLT_TO_CTX(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semspace] Null semsys context");
-    }
-
-    SEMSYS_SPACE *spc = sem_space_alloc(csound, ctx);
-    if (spc == NULL) {
-        return csound->InitError(csound, "[semspace] Null space context");
-    }
-
-    ARRAYDAT *arr = p->paths;
+/* merge several .espc files listed in a string array into `spc`. frees spc on failure. */
+static int sem_space_load_paths(CSOUND *csound, SEMSYS_SPACE *spc, ARRAYDAT *arr) {
     int32_t npaths = (arr != NULL && arr->dimensions >= 1) ? arr->sizes[0] : 0;
     STRINGDAT *items = (arr != NULL) ? (STRINGDAT *) arr->data : NULL;
-
     for (int32_t i = 0; i < npaths; i++) {
         const char *path = items[i].data;
         if (path == NULL || path[0] == '\0') continue;
@@ -1180,18 +1629,75 @@ int sem_space_init_vs(CSOUND *csound, SEM_SPACE_INIT_VS *p) {
             return csound->InitError(csound, "[semspace] Error loading .espc from path array (check format / ldim)");
         }
     }
+    return OK;
+}
+
+// forms: semspace ihandle [, Sfile_or_dir]
+int sem_space_init(CSOUND *csound, SEM_SPACE_INIT *p) {
+    SEMSYS *ctx = FLT_TO_CTX(p);
+    CHECK_PTR_CTX(csound, ctx, "semspace");
+
+    SEMSYS_SPACE *spc = sem_space_alloc(csound, ctx);
+    CHECK_PTR_CTX(csound, spc, "semspace");
+
+    const char *path = (p->cache_file != NULL && p->cache_file->data != NULL) ? p->cache_file->data : NULL;
+    int rc = sem_space_load_cache(csound, spc, path);
+    if (rc != OK) return rc;
 
     *p->s_handle = SPC_TO_FLT(spc);
     return OK;
 }
 
+// form: semspace ihandle, Spaths[]  -> merge several .espc files
+int sem_space_init_vs(CSOUND *csound, SEM_SPACE_INIT_VS *p) {
+    SEMSYS *ctx = FLT_TO_CTX(p);
+    CHECK_PTR_CTX(csound, ctx, "semspace");
+
+    SEMSYS_SPACE *spc = sem_space_alloc(csound, ctx);
+    CHECK_PTR_CTX(csound, spc, "semspace");
+
+    int rc = sem_space_load_paths(csound, spc, p->paths);
+    if (rc != OK) return rc;
+
+    *p->s_handle = SPC_TO_FLT(spc);
+    return OK;
+}
+
+/* resolve the per-op model handle and check it fits the space: same ldim, and the right
+   modality (want_audio) for the txt/audio opcode. returns the model in *out, or an
+   InitError. */
+static int sem_space_resolve_model(CSOUND *csound, SEMSYS_SPACE *spc, MYFLT *handle,
+                                   int want_audio, const char *tag, SEMSYS **out) {
+    if (spc == NULL) {
+        return csound->InitError(csound, "[%s] Null space context", tag);
+    }
+    SEMSYS *m = (SEMSYS *) (uintptr_t) *handle;
+    if (m == NULL) {
+        return csound->InitError(csound, "[%s] Null model handle", tag);
+    }
+    if (m->ldim != spc->ldim) {
+        return csound->InitError(csound, "[%s] model dim %u != space dim %u",
+                                 tag, (unsigned) m->ldim, (unsigned) spc->ldim);
+    }
+    if (want_audio && !m->is_audio) {
+        return csound->InitError(csound, "[%s] expected an audio model handle", tag);
+    }
+    if (!want_audio && m->is_audio) {
+        return csound->InitError(csound, "[%s] expected a text model handle", tag);
+    }
+    *out = m;
+    return OK;
+}
+
 int sem_space_add_init(CSOUND *csound, SEM_SPACE_ADD *p) {
     SEMSYS_SPACE *spc = FLT_TO_SPC(p);
-    if (spc == NULL) {
-        return csound->InitError(csound, "[semspaceadd] Null space context");
-    }
+    CHECK_PTR_CTX(csound, spc, "semspaceaddtxt");
 
-    p->ctx = spc->ctx;
+    SEMSYS *m = NULL;
+    int rc = sem_space_resolve_model(csound, spc, p->handle, 0, "semspaceaddtxt", &m);
+    if (rc != OK) return rc;
+
+    p->ctx = m;
     p->spc = spc;
 
     csound->AuxAlloc(csound, sizeof(float) * spc->ldim, &p->vec_scratch);
@@ -1232,18 +1738,10 @@ static int sem_space_add_helper(CSOUND *csound, SEM_SPACE_ADD *p) {
     }
 
     for (uint64_t c = 0; c < count; c++) {
-        if (spc->count == spc->capacity) {
-            uint64_t new_cap = spc->capacity ? spc->capacity * 2 : INITIAL_VCAPACITY;
-            float *tmp = (float *) csound->ReAlloc(csound, spc->vectors, sizeof(float) * new_cap * spc->ldim);
-            if (tmp == NULL) {
-                free(vecs);
-                return NOTOK;
-            }
-            spc->vectors = tmp;
-            spc->capacity = new_cap;
+        if (space_append_unique(csound, spc, vecs + c * spc->ldim) != OK) {
+            free(vecs);
+            return NOTOK;
         }
-        memcpy(spc->vectors + (spc->count * spc->ldim), vecs + c * spc->ldim, sizeof(float) * spc->ldim);
-        spc->count++;
     }
     free(vecs);
 
@@ -1282,15 +1780,22 @@ int sem_space_add(CSOUND *csound, SEM_SPACE_ADD *p) {
     return OK;
 }
 
-int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY *p) {
+static int query_async_start(CSOUND *csound, QUERY_ASYNC *q, SEMSYS_SPACE *spc, SEMSYS *ctx, int top_k_neighs, int kind, const char *opcode);
+static int query_async_deinit(CSOUND *csound, QUERY_ASYNC *q);
+
+static int sem_space_query_setup(CSOUND *csound, SEM_SPACE_QUERY *p, int model_kind, const char *opcode, int start_async) {
+    if (start_async) memset(&p->async, 0, sizeof(p->async));
+
     SEMSYS_SPACE *spc = FLT_TO_SPC(p);
-    if (spc == NULL) {
-        return csound->InitError(csound, "[semspacequery] Null space context");
-    }
+    CHECK_PTR_CTX(csound, spc, "semspacequery");
+
+    SEMSYS *m = NULL;
+    int rc = sem_space_resolve_model(csound, spc, p->handle, model_kind, opcode, &m);
+    if (rc != OK) return rc;
 
     *p->top_k = *p->top_k <= (MYFLT) spc->count ? *p->top_k : (MYFLT) spc->count;
 
-    p->ctx = spc->ctx;
+    p->ctx = m;
     p->spc = spc;
     p->top_k_neighs = (int) *p->top_k;
     tabinit_compat(csound, p->scores, p->top_k_neighs, &(p->h));
@@ -1306,6 +1811,367 @@ int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY *p) {
 
     csound->AuxAlloc(csound, sizeof(Score) * p->top_k_neighs, &p->mheap);
 
+    if (start_async) {
+        rc = query_async_start(csound, &p->async, spc, m, p->top_k_neighs, model_kind, opcode);
+        if (rc != OK) return rc;
+    }
+
+    return OK;
+}
+
+static int sem_space_query_k_setup(CSOUND *csound, SEM_SPACE_QUERY_K *p, int model_kind, const char *opcode) {
+    memset(&p->async, 0, sizeof(p->async));
+
+    SEMSYS_SPACE *spc = FLT_TO_SPC(p);
+    CHECK_PTR_CTX(csound, spc, "semspacequery");
+
+    SEMSYS *m = NULL;
+    int rc = sem_space_resolve_model(csound, spc, p->handle, model_kind, opcode, &m);
+    if (rc != OK) return rc;
+
+    *p->top_k = *p->top_k <= (MYFLT) spc->count ? *p->top_k : (MYFLT) spc->count;
+
+    p->ctx = m;
+    p->spc = spc;
+    p->top_k_neighs = (int) *p->top_k;
+    tabinit_compat(csound, p->scores, p->top_k_neighs, &(p->h));
+    tabinit2d(csound, p->neighs, p->top_k_neighs, spc->ldim, &(p->h));
+    *p->gate = FL(0.0);
+
+    csound->AuxAlloc(csound, sizeof(float) * spc->ldim, &p->query_buf);
+    csound->AuxAlloc(csound, sizeof(MYFLT) * p->ctx->ldim, &p->pmb);
+
+    csound->AuxAlloc(csound, 1, &p->last_text);
+    ((char *) p->last_text.auxp)[0] = '\0';
+
+    csound->AuxAlloc(csound, sizeof(Score) * p->top_k_neighs, &p->mheap);
+
+    rc = query_async_start(csound, &p->async, spc, m, p->top_k_neighs, model_kind, opcode);
+    if (rc != OK) return rc;
+    return OK;
+}
+
+int sem_space_query_init(CSOUND *csound, SEM_SPACE_QUERY_K *p) {
+    return sem_space_query_k_setup(csound, p, 0, "semspacequerytxt");
+}
+
+static int pcm_to_vectors(SEMSYS *actx, const MYFLT *pcm, size_t nframes, uint32_t in_sr,
+                          float **out_vecs, uint64_t *out_count);
+static int audio_file_to_vectors(SEMSYS *actx, const char *path, float **out_vecs, uint64_t *out_count);
+
+/* top-k cosine search: `query` (normalized, ldim) vs every stored vector. `neighs`/`scores`
+   must be pre-zeroed; fills them with the top-k, descending. `mheap` is scratch of at least
+   top_k_neighs Scores. */
+static void space_search_topk_scores(SEMSYS_SPACE *spc, float *query, int top_k_neighs,
+                                     Score *mheap, int *out_count) {
+    int mheap_size = 0;
+    *out_count = 0;
+    if (spc->count == 0 || top_k_neighs <= 0) return;
+
+    for (uint64_t i = 0; i < spc->count; i++) {
+        float curr_score = dot(query, spc->vectors + i * spc->ldim, spc->ldim);
+        if (!float_is_finite(curr_score)) continue;
+        Score curr = { .ndx = i, .score = curr_score };
+        if (mheap_size < top_k_neighs) {
+            mheap[mheap_size] = curr;
+            heapfy_up(mheap, mheap_size);
+            mheap_size++;
+        } else if (curr.score > mheap[0].score) {
+            mheap[0] = curr;
+            heapfy_down(mheap, 0, mheap_size);
+        }
+    }
+
+    qsort(mheap, mheap_size, sizeof(Score), compare);
+    *out_count = mheap_size;
+}
+
+static void space_search_topk(SEMSYS_SPACE *spc, float *query, int top_k_neighs,
+                              Score *mheap, MYFLT *neighs, MYFLT *scores) {
+    int mheap_size = 0;
+    space_search_topk_scores(spc, query, top_k_neighs, mheap, &mheap_size);
+
+    for (int i = 0; i < top_k_neighs; i++) {
+        if (i >= mheap_size) continue;
+        scores[i] = (MYFLT) mheap[i].score;
+        float *vec = spc->vectors + mheap[i].ndx * spc->ldim;
+        for (uint32_t j = 0; j < spc->ldim; j++) {
+            neighs[i * spc->ldim + j] = (MYFLT) vec[j];
+        }
+    }
+}
+
+static void query_clear_outputs(SEMSYS_SPACE *spc, int top_k_neighs, ARRAYDAT *neighs_arr, ARRAYDAT *scores_arr) {
+    MYFLT *neighs = (MYFLT *) neighs_arr->data;
+    MYFLT *scores = (MYFLT *) scores_arr->data;
+    for (int i = 0; i < top_k_neighs; i++) {
+        scores[i] = FL(0.0);
+        for (uint32_t j = 0; j < spc->ldim; j++) {
+            neighs[i * spc->ldim + j] = FL(0.0);
+        }
+    }
+}
+
+static int query_mean_pool(float *vecs, uint64_t count, uint32_t dim, float *query) {
+    if (count == 0) return OK;
+    for (uint32_t j = 0; j < dim; j++) {
+        double acc = 0.0;
+        for (uint64_t c = 0; c < count; c++) {
+            acc += (double) vecs[c * dim + j];
+        }
+        query[j] = (float) (acc / (double) count);
+    }
+    return normalize(query, dim);
+}
+
+static int query_async_compute(QUERY_ASYNC *q, const char *str, MYFLT *pcm, size_t n,
+                               uint32_t sr, int *res_count) {
+    float *vecs = NULL;
+    uint64_t count = 0;
+    int rc = OK;
+    *res_count = 0;
+
+    if (q->kind == 0) {
+        const char *sentence = skip_leading_query_junk(str != NULL ? str : "");
+        rc = chunk_and_embed(sentence, NULL, &vecs, q->ctx, q->pmb, q->pool, &count);
+    } else if (q->kind == 1) {
+        const char *path = str != NULL ? str : "";
+        if (path[0] == '\0') return OK;
+        rc = audio_file_to_vectors(q->ctx, path, &vecs, &count);
+    } else {
+        if (pcm == NULL || n == 0) return OK;
+        rc = pcm_to_vectors(q->ctx, pcm, n, sr, &vecs, &count);
+    }
+
+    if (rc != OK) {
+        free(vecs);
+        return NOTOK;
+    }
+    if (count == 0) {
+        free(vecs);
+        return OK;
+    }
+
+    if (query_mean_pool(vecs, count, q->spc->ldim, q->qvec) != OK) {
+        free(vecs);
+        return OK;
+    }
+    free(vecs);
+
+    space_search_topk_scores(q->spc, q->qvec, q->top_k_neighs, q->mheap, res_count);
+    return OK;
+}
+
+static uintptr_t query_async_worker(void *arg) {
+    QUERY_ASYNC *q = (QUERY_ASYNC *) arg;
+    CSOUND *csound = q->csound;
+
+    for (;;) {
+        csound->WaitThreadLock(q->job_lock, AUDIO_EMBED_WAIT_MS);
+
+        csound->LockMutex(q->mutex);
+        if (q->stop) {
+            free(q->job_str);
+            free(q->job_pcm);
+            q->job_str = NULL;
+            q->job_pcm = NULL;
+            q->job_pending = 0;
+            q->worker_done = 1;
+            csound->UnlockMutex(q->mutex);
+            return 0;
+        }
+        if (!q->job_pending) {
+            csound->UnlockMutex(q->mutex);
+            continue;
+        }
+
+        uint64_t job_id = q->submitted_id;
+        char *str = q->job_str;
+        MYFLT *pcm = q->job_pcm;
+        size_t n = q->job_n;
+        uint32_t sr = q->job_sr;
+        q->job_str = NULL;
+        q->job_pcm = NULL;
+        q->job_n = 0;
+        q->job_pending = 0;
+        csound->UnlockMutex(q->mutex);
+
+        int res_count = 0;
+        int rc = query_async_compute(q, str, pcm, n, sr, &res_count);
+        free(str);
+        free(pcm);
+
+        csound->LockMutex(q->mutex);
+        if (!q->stop && job_id == q->submitted_id) {
+            if (rc == OK && res_count > 0) {
+                memcpy(q->res, q->mheap, sizeof(Score) * res_count);
+            }
+            q->res_count = (rc == OK) ? res_count : 0;
+            q->result_error = (rc == OK) ? 0 : 1;
+            q->result_id = job_id;
+            q->result_ready = 1;
+        }
+        csound->UnlockMutex(q->mutex);
+    }
+}
+
+static int query_async_start(CSOUND *csound, QUERY_ASYNC *q, SEMSYS_SPACE *spc, SEMSYS *ctx,
+                             int top_k_neighs, int kind, const char *opcode) {
+    memset(q, 0, sizeof(*q));
+    q->csound = csound;
+    q->spc = spc;
+    q->ctx = ctx;
+    q->top_k_neighs = top_k_neighs;
+    q->kind = kind;
+
+    q->pmb = (MYFLT *) malloc(sizeof(MYFLT) * ctx->ldim);
+    q->pool = (float *) malloc(sizeof(float) * spc->ldim);
+    q->qvec = (float *) malloc(sizeof(float) * spc->ldim);
+    q->mheap = (Score *) malloc(sizeof(Score) * (top_k_neighs > 0 ? top_k_neighs : 1));
+    q->res = (Score *) malloc(sizeof(Score) * (top_k_neighs > 0 ? top_k_neighs : 1));
+    if (q->pmb == NULL || q->pool == NULL || q->qvec == NULL || q->mheap == NULL || q->res == NULL) {
+        query_async_deinit(csound, q);
+        return csound->InitError(csound, "[%s] Out of memory", opcode);
+    }
+
+    q->mutex = csound->Create_Mutex(0);
+    q->job_lock = csound->CreateThreadLock();
+    if (q->mutex == NULL || q->job_lock == NULL) {
+        query_async_deinit(csound, q);
+        return csound->InitError(csound, "[%s] Could not create sync primitives", opcode);
+    }
+
+    q->thread = csound->CreateThread(query_async_worker, q);
+    if (q->thread == NULL) {
+        query_async_deinit(csound, q);
+        return csound->InitError(csound, "[%s] Could not start worker thread", opcode);
+    }
+    return OK;
+}
+
+static int query_async_deinit(CSOUND *csound, QUERY_ASYNC *q) {
+    if (q->thread != NULL) {
+        if (q->mutex != NULL) {
+            csound->LockMutex(q->mutex);
+            q->stop = 1;
+            csound->UnlockMutex(q->mutex);
+        } else {
+            q->stop = 1;
+        }
+        if (q->job_lock != NULL) csound->NotifyThreadLock(q->job_lock);
+        csound->JoinThread(q->thread);
+        q->thread = NULL;
+    }
+    if (q->job_lock != NULL) { csound->DestroyThreadLock(q->job_lock); q->job_lock = NULL; }
+    if (q->mutex != NULL) { csound->DestroyMutex(q->mutex); q->mutex = NULL; }
+    free(q->job_str); q->job_str = NULL;
+    free(q->job_pcm); q->job_pcm = NULL;
+    free(q->pmb); q->pmb = NULL;
+    free(q->pool); q->pool = NULL;
+    free(q->qvec); q->qvec = NULL;
+    free(q->mheap); q->mheap = NULL;
+    free(q->res); q->res = NULL;
+    return OK;
+}
+
+static int query_async_submit_str(CSOUND *csound, QUERY_ASYNC *q, const char *str) {
+    size_t len = strlen(str != NULL ? str : "") + 1;
+    char *copy = (char *) malloc(len);
+    if (copy == NULL) return NOTOK;
+    memcpy(copy, str != NULL ? str : "", len);
+
+    csound->LockMutex(q->mutex);
+    free(q->job_str);
+    free(q->job_pcm);
+    q->job_str = copy;
+    q->job_pcm = NULL;
+    q->job_n = 0;
+    q->job_sr = 0;
+    q->submitted_id++;
+    q->job_pending = 1;
+    q->result_ready = 0;
+    csound->UnlockMutex(q->mutex);
+    csound->NotifyThreadLock(q->job_lock);
+    return OK;
+}
+
+static int query_async_submit_pcm(CSOUND *csound, QUERY_ASYNC *q, const MYFLT *pcm,
+                                  size_t n, uint32_t sr) {
+    MYFLT *copy = NULL;
+    if (n > 0) {
+        copy = (MYFLT *) malloc(sizeof(MYFLT) * n);
+        if (copy == NULL) return NOTOK;
+        memcpy(copy, pcm, sizeof(MYFLT) * n);
+    }
+
+    csound->LockMutex(q->mutex);
+    free(q->job_str);
+    free(q->job_pcm);
+    q->job_str = NULL;
+    q->job_pcm = copy;
+    q->job_n = n;
+    q->job_sr = sr;
+    q->submitted_id++;
+    q->job_pending = 1;
+    q->result_ready = 0;
+    csound->UnlockMutex(q->mutex);
+    csound->NotifyThreadLock(q->job_lock);
+    return OK;
+}
+
+static void query_async_cancel_pending(CSOUND *csound, QUERY_ASYNC *q) {
+    csound->LockMutex(q->mutex);
+    free(q->job_str);
+    free(q->job_pcm);
+    q->job_str = NULL;
+    q->job_pcm = NULL;
+    q->job_n = 0;
+    q->job_sr = 0;
+    q->submitted_id++;
+    q->job_pending = 0;
+    q->result_ready = 0;
+    csound->UnlockMutex(q->mutex);
+}
+
+static int query_async_publish(CSOUND *csound, QUERY_ASYNC *q, OPDS *h, MYFLT *gate,
+                               ARRAYDAT *neighs_arr, ARRAYDAT *scores_arr,
+                               const char *opcode) {
+    int ready = 0;
+    int error = 0;
+    if (gate != NULL) *gate = FL(0.0);
+
+    csound->LockMutex(q->mutex);
+    if (q->result_ready) {
+        ready = 1;
+        error = q->result_error;
+        q->result_ready = 0;
+    }
+
+    if (!ready) {
+        csound->UnlockMutex(q->mutex);
+        return OK;
+    }
+
+    query_clear_outputs(q->spc, q->top_k_neighs, neighs_arr, scores_arr);
+    if (!error) {
+        MYFLT *neighs = (MYFLT *) neighs_arr->data;
+        MYFLT *scores = (MYFLT *) scores_arr->data;
+        for (int i = 0; i < q->top_k_neighs; i++) {
+            if (i >= q->res_count) continue;
+            Score neigh = q->res[i];
+            scores[i] = (MYFLT) neigh.score;
+            float *vec = q->spc->vectors + neigh.ndx * q->spc->ldim;
+            for (uint32_t j = 0; j < q->spc->ldim; j++) {
+                neighs[i * q->spc->ldim + j] = (MYFLT) vec[j];
+            }
+        }
+    }
+    csound->UnlockMutex(q->mutex);
+
+    if (error) {
+        return csound->PerfError(csound, h, "[%s] query error", opcode);
+    }
+    if (gate != NULL) *gate = FL(1.0);
     return OK;
 }
 
@@ -1396,7 +2262,10 @@ static int sem_space_query_helper(SEM_SPACE_QUERY *p) {
     return OK;
 }
 
-int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p) {
+int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY_K *p) {
+    int prc = query_async_publish(csound, &p->async, &(p->h), p->gate, p->neighs, p->scores, "semspacequerytxt");
+    if (prc != OK) return prc;
+
     const char *sentence = (p->query != NULL && p->query->data != NULL) ? p->query->data : "";
 
     /* self-gate: skip the model when the query is unchanged */
@@ -1410,7 +2279,8 @@ int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p) {
     }
     strcpy((char *) p->last_text.auxp, sentence);
 
-    if (sem_space_query_helper(p) == NOTOK) {
+    query_clear_outputs(p->spc, p->top_k_neighs, p->neighs, p->scores);
+    if (query_async_submit_str(csound, &p->async, sentence) == NOTOK) {
         return csound->PerfError(csound, &(p->h), "[semspacequery] onnx model error");
     }
 
@@ -1418,7 +2288,7 @@ int sem_space_query_perf(CSOUND *csound, SEM_SPACE_QUERY *p) {
 }
 
 int sem_space_query_i(CSOUND *csound, SEM_SPACE_QUERY *p) {
-    int err = sem_space_query_init(csound, p);
+    int err = sem_space_query_setup(csound, p, 0, "semspacequerytxt", 0);
     if (err != OK) { return err; }
 
     if (sem_space_query_helper(p) == NOTOK) {
@@ -1426,6 +2296,484 @@ int sem_space_query_i(CSOUND *csound, SEM_SPACE_QUERY *p) {
     }
 
     return OK;
+}
+
+int sem_space_query_deinit(CSOUND *csound, SEM_SPACE_QUERY_K *p) {
+    return query_async_deinit(csound, &p->async);
+}
+
+/* ---- audio space: same vector store, embeddings produced by the audio model ---- */
+
+/* decode an audio file (PCM16 WAV) -> per-window L2-normalized embeddings via the audio
+   model `actx`. returns a malloc'd float[count*ldim] in *out_vecs (caller frees) and the
+   row count in *out_count. windows that can't be normalized (silent) are dropped; a fully
+   silent file yields *out_count == 0 with *out_vecs == NULL. NOTOK on read/decode/OOM. */
+/* embed mono PCM (`pcm`, nframes @ in_sr) -> per-window L2-normalized vectors. resamples to
+   the model rate, splits into ~10 s windows, embeds each, drops silent (non-normalizable)
+   windows. same output contract as audio_file_to_vectors. */
+static int pcm_to_vectors(SEMSYS *actx, const MYFLT *pcm, size_t nframes, uint32_t in_sr,
+                          float **out_vecs, uint64_t *out_count) {
+    *out_vecs = NULL;
+    *out_count = 0;
+
+    float *samples = NULL;
+    size_t nsamp = 0;
+    if (resample_to_f32(pcm, nframes, in_sr, AUDIO_EMBED_TARGET_SR, &samples, &nsamp) != OK) {
+        return NOTOK;
+    }
+
+    size_t chunk = (size_t) (AUDIO_EMBED_CHUNK_SEC * (double) AUDIO_EMBED_TARGET_SR);
+    if (chunk == 0) chunk = 1;
+    uint64_t nchunks = (uint64_t) ((nsamp + chunk - 1) / chunk);
+    if (nchunks < 1) nchunks = 1;
+
+    float *vecs = (float *) malloc(sizeof(float) * nchunks * actx->ldim);
+    MYFLT *row = (MYFLT *) malloc(sizeof(MYFLT) * actx->ldim);
+    if (vecs == NULL || row == NULL) {
+        free(vecs); free(row); free(samples);
+        return NOTOK;
+    }
+
+    uint64_t written = 0;
+    for (uint64_t r = 0; r < nchunks; r++) {
+        size_t off = (size_t) r * chunk;
+        size_t win = (off + chunk <= nsamp) ? chunk : (nsamp - off);
+        if (win == 0) win = 1;
+        if (embed_audio_window(actx, samples + off, win, row) != OK) {
+            free(vecs); free(row); free(samples);
+            return NOTOK;
+        }
+        float *dst = vecs + written * actx->ldim;
+        for (uint32_t d = 0; d < actx->ldim; d++) dst[d] = (float) row[d];
+        if (normalize(dst, actx->ldim) == OK) {
+            written++;   /* keep only normalizable (non-silent) windows */
+        }
+    }
+    free(row);
+    free(samples);
+
+    if (written == 0) {
+        free(vecs);
+        return OK;   /* silent: nothing to add */
+    }
+    *out_vecs = vecs;
+    *out_count = written;
+    return OK;
+}
+
+static int audio_file_to_vectors(SEMSYS *actx, const char *path, float **out_vecs, uint64_t *out_count) {
+    *out_vecs = NULL;
+    *out_count = 0;
+
+    uint8_t *raw = NULL;
+    long fsize = 0;
+    if (read_audio_file_as_raw(path, &raw, &fsize) == NOTOK) return NOTOK;
+
+    MYFLT *pcm = NULL;
+    size_t nframes = 0;
+    uint32_t sr = 0;
+    int parsed = wav_to_pcm_mono(raw, (size_t) fsize, &pcm, &nframes, &sr);
+    free(raw);
+    if (parsed != OK) return NOTOK;
+
+    int rc = pcm_to_vectors(actx, pcm, nframes, sr, out_vecs, out_count);
+    free(pcm);
+    return rc;
+}
+
+// build a .espc from an audio file, or a directory of audio files (PCM16 WAV)
+static int sem_space_build_audio(CSOUND *csound, SEM_SPACE_BUILD *p) {
+    SEMSYS *actx = FLT_TO_CTX(p);
+    CHECK_PTR_CTX(csound, actx, "semspacebuild");
+
+    char *src = (char *) p->source->data;
+
+    char **files = NULL;
+    size_t nfiles = 0;
+    char *single_arr[1];
+    char **list;
+    if (is_dir(src)) {
+        if (list_files_ext(src, ".wav", &files, &nfiles) != 0) {
+            return csound->InitError(csound, "[semspacebuildaudio] Cannot open directory");
+        }
+        list = files;
+    } else {
+        single_arr[0] = src;
+        list = single_arr;
+        nfiles = 1;
+    }
+
+    FILE *fptr = fopen((char *) p->file_name->data, "wb+");
+    if (fptr == NULL) {
+        free_str_list(files, nfiles);
+        return csound->InitError(csound, "[semspacebuildaudio] Cannot create dest file");
+    }
+
+    CACHE_HEADER ch;
+    ch.head_tag = CACHE_HEADER_TAG;
+    ch.ldim = actx->ldim;
+    ch.count = 0;
+    ch.data_tag = CACHE_DATA_TAG;
+    fwrite(&ch, sizeof(CACHE_HEADER), 1, fptr);
+
+    int failed = 0; /* 0 = ok, 1 = read/decode error, 2 = write error */
+    char failpath[1024] = { 0 };
+    for (size_t i = 0; i < nfiles; i++) {
+        float *vecs = NULL;
+        uint64_t count = 0;
+        if (audio_file_to_vectors(actx, list[i], &vecs, &count) != OK) {
+            failed = 1;
+            snprintf(failpath, sizeof(failpath), "%s", list[i]);
+            break;
+        }
+        if (count > 0) {
+            if (fwrite(vecs, sizeof(float) * actx->ldim, count, fptr) != count) {
+                free(vecs);
+                failed = 2;
+                snprintf(failpath, sizeof(failpath), "%s", list[i]);
+                break;
+            }
+            ch.count += count;
+        }
+        free(vecs);
+    }
+
+    free_str_list(files, nfiles);
+
+    if (failed) {
+        fclose(fptr);
+        if (failed == 1) {
+            return csound->InitError(csound, "[semspacebuildaudio] Cannot read/decode (PCM16 WAV only): %s", failpath);
+        }
+        return csound->InitError(csound, "[semspacebuildaudio] Write error for: %s", failpath);
+    }
+
+    fseek(fptr, offsetof(CACHE_HEADER, count), SEEK_SET);
+    fwrite(&ch.count, sizeof(ch.count), 1, fptr);
+    fflush(fptr);
+    fclose(fptr);
+    return OK;
+}
+
+/* universal build: one opcode, the embedding model comes from the handle the user passes.
+   text model -> chunk + embed .txt; audio model -> decode + embed .wav. the model's kind is
+   detected at semload. */
+int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p) {
+    SEMSYS *ctx = FLT_TO_CTX(p);
+    CHECK_PTR_CTX(csound, ctx, "semspacebuild");
+    return ctx->is_audio ? sem_space_build_audio(csound, p) : sem_space_build_text(csound, p);
+}
+
+int sem_space_add_audio_init(CSOUND *csound, SEM_SPACE_ADD *p) {
+    SEMSYS_SPACE *spc = FLT_TO_SPC(p);
+    CHECK_PTR_CTX(csound, spc, "semspaceaddaudio");
+
+    SEMSYS *m = NULL;
+    int rc = sem_space_resolve_model(csound, spc, p->handle, 1, "semspaceaddaudio", &m);
+    if (rc != OK) return rc;
+
+    p->ctx = m;
+    p->spc = spc;
+
+    /* self-gate on the file path string (re-adding the same path is skipped) */
+    csound->AuxAlloc(csound, 1, &p->last_text);
+    ((char *) p->last_text.auxp)[0] = '\0';
+    p->prev_trig = FL(0.0);
+    return OK;
+}
+
+/* embed the audio file at `p->sentence` (reused as a path) and append its per-window
+   vectors to the space. shared by the i-rate and k-rate forms. */
+static int sem_space_add_audio_helper(CSOUND *csound, SEM_SPACE_ADD *p) {
+    SEMSYS_SPACE *spc = p->spc;
+    const char *path = (p->sentence != NULL && p->sentence->data != NULL) ? p->sentence->data : "";
+    if (path[0] == '\0') return OK;
+    if (strcmp(path, (char *) p->last_text.auxp) == 0) return OK;   /* unchanged path */
+
+    float *vecs = NULL;
+    uint64_t count = 0;
+    if (audio_file_to_vectors(p->ctx, path, &vecs, &count) != OK) {
+        return NOTOK;
+    }
+
+    for (uint64_t c = 0; c < count; c++) {
+        if (space_append_unique(csound, spc, vecs + c * spc->ldim) != OK) {
+            free(vecs);
+            return NOTOK;
+        }
+    }
+    free(vecs);
+
+    size_t tlen = strlen(path) + 1;
+    if (tlen > (size_t) p->last_text.size) {
+        csound->AuxAlloc(csound, tlen, &p->last_text);
+    }
+    strcpy((char *) p->last_text.auxp, path);
+    return OK;
+}
+
+int sem_space_add_audio_perf(CSOUND *csound, SEM_SPACE_ADD *p) {
+    MYFLT trig = *p->ktrig;
+    if (trig > FL(0.0) && p->prev_trig <= FL(0.0)) {
+        if (sem_space_add_audio_helper(csound, p) == NOTOK) {
+            p->prev_trig = trig;
+            return csound->PerfError(csound, &(p->h), "[semspaceaddaudio] add to space error");
+        }
+    }
+    p->prev_trig = trig;
+    return OK;
+}
+
+int sem_space_add_audio(CSOUND *csound, SEM_SPACE_ADD *p) {
+    int err = sem_space_add_audio_init(csound, p);
+    if (err != OK) return err;
+    if (sem_space_add_audio_helper(csound, p) == NOTOK) {
+        return csound->InitError(csound, "[semspaceaddaudio] add to space error");
+    }
+    return OK;
+}
+
+int sem_space_query_audio_init(CSOUND *csound, SEM_SPACE_QUERY_K *p) {
+    return sem_space_query_k_setup(csound, p, 1, "semspacequeryaudio");
+}
+
+/* embed the audio query file, mean-pool its per-window vectors into one centroid query,
+   then run the same brute-force top-k cosine search as the text form. */
+static int sem_space_query_audio_helper(SEM_SPACE_QUERY *p) {
+    SEMSYS_SPACE *spc = p->spc;
+
+    MYFLT *neighs = (MYFLT *) p->neighs->data;
+    MYFLT *out_scores = (MYFLT *) p->scores->data;
+    for (int i = 0; i < p->top_k_neighs; i++) {
+        out_scores[i] = FL(0.0);
+        for (uint32_t j = 0; j < spc->ldim; j++) {
+            neighs[i * spc->ldim + j] = FL(0.0);
+        }
+    }
+
+    float *query = (float *) p->query_buf.auxp;
+    const char *path = (p->query != NULL && p->query->data != NULL) ? p->query->data : "";
+    if (path[0] == '\0') return OK;
+
+    float *vecs = NULL;
+    uint64_t count = 0;
+    if (audio_file_to_vectors(p->ctx, path, &vecs, &count) != OK) {
+        free(vecs);
+        return NOTOK;
+    }
+    if (count == 0) {
+        free(vecs);
+        return OK;   /* silent/empty query: outputs already zeroed */
+    }
+
+    for (uint32_t j = 0; j < spc->ldim; j++) {
+        double acc = 0.0;
+        for (uint64_t c = 0; c < count; c++) {
+            acc += (double) vecs[c * spc->ldim + j];
+        }
+        query[j] = (float) (acc / (double) count);
+    }
+    free(vecs);
+
+    if (normalize(query, spc->ldim) != OK) return OK;
+    if (spc->count == 0) return OK;
+
+    Score *mheap = (Score *) p->mheap.auxp;
+    int mheap_size = 0;
+    for (uint64_t i = 0; i < spc->count; i++) {
+        size_t offset = i * spc->ldim;
+        float curr_score = dot(query, spc->vectors + offset, spc->ldim);
+        if (!float_is_finite(curr_score)) continue;
+        Score curr = { .ndx = i, .score = curr_score };
+        if (mheap_size < p->top_k_neighs) {
+            mheap[mheap_size] = curr;
+            heapfy_up(mheap, mheap_size);
+            mheap_size++;
+        } else if (curr.score > mheap[0].score) {
+            mheap[0] = curr;
+            heapfy_down(mheap, 0, mheap_size);
+        }
+    }
+
+    qsort(mheap, mheap_size, sizeof(Score), compare);
+
+    for (int i = 0; i < p->top_k_neighs; i++) {
+        if (i >= mheap_size) continue;
+        Score neigh = mheap[i];
+        out_scores[i] = (MYFLT) neigh.score;
+        float *vec = spc->vectors + neigh.ndx * spc->ldim;
+        for (uint32_t j = 0; j < spc->ldim; j++) {
+            neighs[i * spc->ldim + j] = (MYFLT) vec[j];
+        }
+    }
+    return OK;
+}
+
+int sem_space_query_audio_perf(CSOUND *csound, SEM_SPACE_QUERY_K *p) {
+    int prc = query_async_publish(csound, &p->async, &(p->h), p->gate, p->neighs, p->scores, "semspacequeryaudio");
+    if (prc != OK) return prc;
+
+    const char *path = (p->query != NULL && p->query->data != NULL) ? p->query->data : "";
+
+    /* self-gate: skip the model when the query path is unchanged */
+    if (strcmp(path, (char *) p->last_text.auxp) == 0) return OK;
+
+    size_t tlen = strlen(path) + 1;
+    if (tlen > (size_t) p->last_text.size) {
+        csound->AuxAlloc(csound, tlen, &p->last_text);
+    }
+    strcpy((char *) p->last_text.auxp, path);
+
+    query_clear_outputs(p->spc, p->top_k_neighs, p->neighs, p->scores);
+    if (query_async_submit_str(csound, &p->async, path) == NOTOK) {
+        return csound->PerfError(csound, &(p->h), "[semspacequeryaudio] query error");
+    }
+    return OK;
+}
+
+int sem_space_query_audio_i(CSOUND *csound, SEM_SPACE_QUERY *p) {
+    int err = sem_space_query_setup(csound, p, 1, "semspacequeryaudio", 0);
+    if (err != OK) return err;
+    if (sem_space_query_audio_helper(p) == NOTOK) {
+        return csound->InitError(csound, "[semspacequeryaudio] query error");
+    }
+    return OK;
+}
+
+int sem_space_query_audio_deinit(CSOUND *csound, SEM_SPACE_QUERY_K *p) {
+    return query_async_deinit(csound, &p->async);
+}
+
+/* ---- real-time audio query from an ftable ---- */
+
+/* resolve the audio model, clamp top-k, size outputs, allocate scratch. shared setup for
+   the i and k ftable-query forms. writes back the clamped top-k into *topk. */
+static int space_query_ft_setup(CSOUND *csound, SEMSYS_SPACE *spc, MYFLT *handle, MYFLT *topk,
+                                ARRAYDAT *scores, ARRAYDAT *neighs, AUXCH *query_buf, AUXCH *mheap,
+                                SEMSYS **ctx_out, int *tkn_out, OPDS *hh) {
+    SEMSYS *m = NULL;
+    int rc = sem_space_resolve_model(csound, spc, handle, 1, "semspacequeryaudioft", &m);
+    if (rc != OK) return rc;
+    *ctx_out = m;
+
+    *topk = (*topk <= (MYFLT) spc->count) ? *topk : (MYFLT) spc->count;
+    int tkn = (int) *topk;
+    *tkn_out = tkn;
+
+    tabinit_compat(csound, scores, tkn, hh);
+    tabinit2d(csound, neighs, tkn, spc->ldim, hh);
+    csound->AuxAlloc(csound, sizeof(float) * spc->ldim, query_buf);
+    csound->AuxAlloc(csound, sizeof(Score) * (tkn > 0 ? tkn : 1), mheap);
+    return OK;
+}
+
+/* embed the current ftable content (if it has at least `minsec` of audio), mean-pool the
+   per-window vectors into one centroid query, and run the top-k search. too-short/silent
+   buffers leave the (zeroed) outputs unchanged and return OK, so a live loop never errors. */
+static int space_query_ft_run(CSOUND *csound, SEMSYS_SPACE *spc, SEMSYS *ctx, MYFLT ftno,
+                              double minsec, int top_k_neighs, float *query, Score *mheap,
+                              ARRAYDAT *neighs_arr, ARRAYDAT *scores_arr) {
+    MYFLT *neighs = (MYFLT *) neighs_arr->data;
+    MYFLT *scores = (MYFLT *) scores_arr->data;
+    for (int i = 0; i < top_k_neighs; i++) {
+        scores[i] = FL(0.0);
+        for (uint32_t j = 0; j < spc->ldim; j++) neighs[i * spc->ldim + j] = FL(0.0);
+    }
+
+    FUNC *ft = csound->FTFind(csound, &ftno);
+    if (ft == NULL || ft->ftable == NULL || ft->flen == 0) return OK;   /* nothing to query */
+
+    uint32_t sr = (uint32_t) csound->GetEngineSr(csound);   /* ftable samples at engine sr */
+    double dur = (double) ft->flen / (double) sr;
+    if (dur < minsec) return OK;   /* not enough audio yet: keep outputs zeroed */
+
+    float *vecs = NULL;
+    uint64_t count = 0;
+    if (pcm_to_vectors(ctx, ft->ftable, (size_t) ft->flen, sr, &vecs, &count) != OK) {
+        free(vecs);
+        return NOTOK;
+    }
+    if (count == 0) { free(vecs); return OK; }   /* silent */
+
+    for (uint32_t j = 0; j < spc->ldim; j++) {
+        double acc = 0.0;
+        for (uint64_t c = 0; c < count; c++) acc += (double) vecs[c * spc->ldim + j];
+        query[j] = (float) (acc / (double) count);
+    }
+    free(vecs);
+
+    if (normalize(query, spc->ldim) != OK) return OK;
+
+    space_search_topk(spc, query, top_k_neighs, mheap, neighs, scores);
+    return OK;
+}
+
+// i-rate: query once at init from an ftable
+int sem_space_query_audio_ft_i(CSOUND *csound, SEM_SPACE_QUERY_FT *p) {
+    SEMSYS_SPACE *spc = FLT_TO_SPC(p);
+    CHECK_PTR_CTX(csound, spc, "semspacequery");
+
+    int rc = space_query_ft_setup(csound, spc, p->handle, p->top_k, p->scores, p->neighs, &p->query_buf, &p->mheap, &p->ctx, &p->top_k_neighs, &(p->h));
+    if (rc != OK) return rc;
+    p->spc = spc;
+
+    double minsec = (p->iminsec != NULL) ? (double) *p->iminsec : 0.0;
+    if (space_query_ft_run(csound, spc, p->ctx, *p->ftable, minsec, p->top_k_neighs, (float *) p->query_buf.auxp, (Score *) p->mheap.auxp, p->neighs, p->scores) == NOTOK) {
+        return csound->InitError(csound, "[semspacequeryaudioft] query error");
+    }
+    return OK;
+}
+
+// k-rate: query on the rising edge of ktrig (real-time, e.g. from a live capture ftable)
+int sem_space_query_audio_ft_init(CSOUND *csound, SEM_SPACE_QUERY_FT_K *p) {
+    memset(&p->async, 0, sizeof(p->async));
+
+    SEMSYS_SPACE *spc = FLT_TO_SPC(p);
+    int rc = space_query_ft_setup(csound, spc, p->handle, p->top_k, p->scores, p->neighs, &p->query_buf, &p->mheap, &p->ctx, &p->top_k_neighs, &(p->h));
+    if (rc != OK) return rc;
+    p->spc = spc;
+    p->prev_trig = FL(0.0);
+    *p->gate = FL(0.0);
+    rc = query_async_start(csound, &p->async, spc, p->ctx, p->top_k_neighs, 2, "semspacequeryaudioft");
+    if (rc != OK) return rc;
+    return OK;
+}
+
+int sem_space_query_audio_ft_perf(CSOUND *csound, SEM_SPACE_QUERY_FT_K *p) {
+    int prc = query_async_publish(csound, &p->async, &(p->h), p->gate, p->neighs, p->scores, "semspacequeryaudioft");
+    if (prc != OK) return prc;
+
+    MYFLT trig = (p->ktrig != NULL) ? *p->ktrig : FL(0.0);
+    if (trig > FL(0.0) && p->prev_trig <= FL(0.0)) {
+        double minsec = (p->iminsec != NULL) ? (double) *p->iminsec : 0.0;
+        query_clear_outputs(p->spc, p->top_k_neighs, p->neighs, p->scores);
+
+        FUNC *ft = csound->FTFind(csound, p->ftable);
+        if (ft == NULL || ft->ftable == NULL || ft->flen == 0) {
+            query_async_cancel_pending(csound, &p->async);
+            p->prev_trig = trig;
+            return OK;
+        }
+
+        uint32_t sr = (uint32_t) csound->GetEngineSr(csound);
+        double dur = (double) ft->flen / (double) sr;
+        if (dur < minsec) {
+            query_async_cancel_pending(csound, &p->async);
+            p->prev_trig = trig;
+            return OK;
+        }
+
+        if (query_async_submit_pcm(csound, &p->async, ft->ftable, (size_t) ft->flen, sr) == NOTOK) {
+            p->prev_trig = trig;
+            return csound->PerfError(csound, &(p->h), "[semspacequeryaudioft] query error");
+        }
+    }
+    p->prev_trig = trig;
+    return OK;
+}
+
+int sem_space_query_audio_ft_deinit(CSOUND *csound, SEM_SPACE_QUERY_FT_K *p) {
+    return query_async_deinit(csound, &p->async);
 }
 
 /* dump the whole space (header + all vectors) to a fresh file.
@@ -1453,9 +2801,8 @@ static int space_dump(SEMSYS_SPACE *spc, const char *path) {
 /* i-time form: semspacesave ispace, Sfile -> dump once at init */
 int sem_space_save(CSOUND *csound, SEM_SPACE_SAVE *p) {
     SEMSYS_SPACE *spc = FLT_TO_SPC(p);
-    if (spc == NULL) {
-        return csound->InitError(csound, "[semspacesave] Null space context");
-    }
+    CHECK_PTR_CTX(csound, spc, "semspacesave");
+
     if (space_dump(spc, p->fname->data) != OK) {
         return csound->InitError(csound, "[semspacesave] Cannot create file");
     }
@@ -1465,9 +2812,8 @@ int sem_space_save(CSOUND *csound, SEM_SPACE_SAVE *p) {
 /* k-time form: semspacesave ispace, Sfile, ktrig -> dump on rising edge of ktrig */
 int sem_space_save_kset(CSOUND *csound, SEM_SPACE_SAVE *p) {
     p->spc = FLT_TO_SPC(p);
-    if (p->spc == NULL) {
-        return csound->InitError(csound, "[semspacesave] Null space context");
-    }
+    CHECK_PTR_CTX(csound, p->spc, "semspacesave");
+
     p->prev_trig = FL(0.0);
     return OK;
 }
@@ -1579,9 +2925,7 @@ int sem_stt_init(CSOUND *csound, SEM_STT_INIT *p) {
     int ret = OK;
 
     SEMSYS_STT *ctx = (SEMSYS_STT *) csound->Calloc(csound, sizeof(SEMSYS_STT));
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semsttload] Could not allocate context");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semsttload");
 
     /* publish handle before anything can fail; cleanup runs via the API7 OENTRY deinit slot */
     *p->handle = STT_TO_FLT(ctx);
@@ -2065,10 +3409,6 @@ static int stt_enqueue(CSOUND *csound, SEMSYS_STT *ctx, uint8_t *audio, size_t n
     return stt_enqueue_chunks(csound, ctx, chunks, sizes, 1);
 }
 
-/* defined below (after pcm_to_wav); used by the file path to segment decoded WAV */
-static int stt_segment_pcm(const MYFLT *s, size_t n, uint32_t sr,
-                           uint8_t ***out_chunks, size_t **out_sizes, int *out_n);
-
 /* little-endian readers (host is LE; pcm_to_wav writes LE too) */
 static uint16_t rd_u16(const uint8_t *p) { uint16_t v; memcpy(&v, p, 2); return v; }
 static uint32_t rd_u32(const uint8_t *p) { uint32_t v; memcpy(&v, p, 4); return v; }
@@ -2136,60 +3476,32 @@ static int wav_to_pcm_mono(const uint8_t *b, size_t n, MYFLT **out, size_t *out_
 
 int sem_stt_submit_audio_file(CSOUND *csound, SEM_STT_SUBMIT_AUDIO_FILE *p) {
     SEMSYS_STT *ctx = FLT_TO_STT(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semsttsubmit] Null STT context");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semsttsubmit");
+
     if (p->audio_speech_fpath == NULL || p->audio_speech_fpath->data == NULL) {
         return csound->InitError(csound, "[semsttsubmitfile] Missing audio file path");
     }
 
-    /* read the whole file as RAW bytes. */
-    FILE *f = fopen(p->audio_speech_fpath->data, "rb");
-    if (f == NULL) {
-        return csound->InitError(csound, "[semsttsubmit] Cannot open audio file: %s", p->audio_speech_fpath->data);
-    }
-    fseek(f, 0, SEEK_END);
-    long fsz = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    if (fsz <= 0) {
-        fclose(f);
-        return csound->InitError(csound, "[semsttsubmit] Empty audio file");
-    }
-    uint8_t *audio = (uint8_t *) malloc((size_t) fsz);   /* worker frees -> plain malloc */
-    if (audio == NULL) {
-        fclose(f);
-        return csound->InitError(csound, "[semsttsubmit] Out of memory reading audio");
-    }
-    size_t got = fread(audio, 1, (size_t) fsz, f);
-    fclose(f);
-    if (got != (size_t) fsz) {
-        free(audio);
-        return csound->InitError(csound, "[semsttsubmit] Short read on audio file");
+    uint8_t *audio = NULL;
+    long fsize = 0;
+    if (read_audio_file_as_raw(p->audio_speech_fpath->data, &audio, &fsize) == NOTOK) {
+        return csound->InitError(csound, "[semsttsubmit] Cannot read audio file: %s", p->audio_speech_fpath->data);
     }
 
     /* only PCM16 WAV is accepted: decode + segment into <=30s chunks so long files
        transcribe fully. for other formats (mp3/flac/ogg) convert to WAV first, or load
-       into an ftable and use semsttsubmitft. */
-    MYFLT *pcm = NULL;
-    size_t nframes = 0;
-    uint32_t wsr = 0;
-    int parsed = wav_to_pcm_mono(audio, (size_t) fsz, &pcm, &nframes, &wsr);
-    free(audio);
-    if (parsed != OK) {
-        return csound->InitError(csound, "[semsttsubmitfile] Only PCM16 WAV is supported: %s", p->audio_speech_fpath->data);
-    }
-
+       into an ftable and use semsttsubmitft. audio_file_into_chunks frees `audio`. */
     uint8_t **chunks = NULL;
     size_t *sizes = NULL;
     int nchunks = 0;
-    int seg = stt_segment_pcm(pcm, nframes, wsr, &chunks, &sizes, &nchunks);
-    free(pcm);
-    if (seg != OK) {
-        return csound->InitError(csound, "[semsttsubmit] Out of memory building WAV");
+    if (audio_file_into_chunks(audio, (size_t) fsize, &chunks, &sizes, &nchunks) == NOTOK) {
+        return csound->InitError(csound, "[semsttsubmit] Only PCM16 WAV is supported (or out of memory): %s", p->audio_speech_fpath->data);
     }
+
     if (stt_enqueue_chunks(csound, ctx, chunks, sizes, nchunks) != OK) {
         return csound->InitError(csound, "[semsttsubmit] Could not start transcription worker");
     }
+
     return OK;
 }
 
@@ -2270,8 +3582,7 @@ static size_t stt_find_split(const MYFLT *s, size_t pos, size_t target_end, size
    transcribed piecewise. boundaries snap to silence (see stt_find_split). on success
    fills out_chunks and out_sizes (malloc'd arrays the caller owns) and out_n >= 1.
    returns NOTOK on OOM (nothing allocated). */
-static int stt_segment_pcm(const MYFLT *s, size_t n, uint32_t sr,
-                           uint8_t ***out_chunks, size_t **out_sizes, int *out_n) {
+static int stt_segment_pcm(const MYFLT *s, size_t n, uint32_t sr, uint8_t ***out_chunks, size_t **out_sizes, int *out_n) {
     size_t max_samples = (size_t) (STT_LIVE_HARD_MAX_SEC * (double) sr);
     size_t target = (size_t) (STT_FILE_CHUNK_TARGET_SEC * (double) sr);
     size_t search = (size_t) (STT_FILE_CHUNK_SEARCH_SEC * (double) sr);
@@ -2337,9 +3648,8 @@ static int stt_segment_pcm(const MYFLT *s, size_t n, uint32_t sr,
 
 int sem_stt_submit_audio_arr(CSOUND *csound, SEM_STT_SUBMIT_AUDIO_ARRAY *p) {
     SEMSYS_STT *ctx = FLT_TO_STT(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semsttsubmit] Null STT context");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semsttsubmit");
+
     if (p->audio_speech_arr == NULL || p->audio_speech_arr->data == NULL) {
         return csound->InitError(csound, "[semsttsubmit] No audio data from array");
     }
@@ -2365,9 +3675,7 @@ int sem_stt_submit_audio_arr(CSOUND *csound, SEM_STT_SUBMIT_AUDIO_ARRAY *p) {
 
 int sem_stt_submit_audio_func(CSOUND *csound, SEM_STT_SUBMIT_AUDIO_FUNC *p) {
     SEMSYS_STT *ctx = FLT_TO_STT(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semsttsubmit] Null STT context");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semsttsubmit");
 
     FUNC *ft = csound->FTFind(csound, p->ftable_num);
     if (ft == NULL || ft->ftable == NULL) {
@@ -2549,9 +3857,8 @@ static void stt_submit_window(CSOUND *csound, SEM_STT_SUBMIT_LIVE *p, int mode) 
 /* live a-rate: allocate the accumulation buffer (imaxdur seconds) */
 int sem_stt_submit_live_init(CSOUND *csound, SEM_STT_SUBMIT_LIVE *p) {
     SEMSYS_STT *ctx = FLT_TO_STT(p);
-    if (ctx == NULL) {
-        return csound->InitError(csound, "[semsttsubmit] Null STT context");
-    }
+    CHECK_PTR_CTX(csound, ctx, "semsttsubmit");
+
     p->ctx = ctx;
     MYFLT dur = *p->imaxdur;
     if (dur <= FL(0.0)) {
@@ -2670,28 +3977,37 @@ int sem_stt_result(CSOUND *csound, SEM_STT_RESULT *p) {
 #define S(s) sizeof(s)
 
 static OENTRY localops[] = {
-    { "semload",           S(SEM_INIT),                   0, "i",         "iS",   (SUBR)sem_init,                   NULL,                           (SUBR)sem_deinit,                 NULL, 0 },
-    { "semdim",            S(SEM_DIM),                    0, "i",         "i",    (SUBR)sem_dim,                    NULL,                           NULL,                             NULL, 0 },
-    { "semembed",          S(SEM_EMBED_TEXT_I),           0, "i[][]",     "iS",   (SUBR)sem_embed_i,                NULL,                           NULL,                             NULL, 0 },
-    { "semembedfile",      S(SEM_EMBED_FILE_I),           0, "i[][]",     "iS",   (SUBR)sem_embed_i_file,           NULL,                           NULL,                             NULL, 0 },
-    { "semembed.k",        S(SEM_EMBED),                  0, "k[]k",      "iS",   (SUBR)sem_embed_init,             (SUBR)sem_embed_perf,           NULL,                             NULL, 0 },
-    { "semspace",          S(SEM_SPACE_INIT),             0, "i",         "i",    (SUBR)sem_space_init,             NULL,                           (SUBR)sem_space_deinit,           NULL, 0 },
-    { "semspace.f",        S(SEM_SPACE_INIT),             0, "i",         "iS",   (SUBR)sem_space_init,             NULL,                           (SUBR)sem_space_deinit,           NULL, 0 },
-    { "semspace.vs",       S(SEM_SPACE_INIT_VS),          0, "i",         "iS[]", (SUBR)sem_space_init_vs,          NULL,                           (SUBR)sem_space_deinit,           NULL, 0 },
-    { "semspacebuild",     S(SEM_SPACE_BUILD),            0, "",          "iSS",  (SUBR)sem_space_build,            NULL,                           NULL,                             NULL, 0 },
-    { "semspaceadd",       S(SEM_SPACE_ADD),              0, "",          "iS",   (SUBR)sem_space_add,              NULL,                           NULL,                             NULL, 0 },
-    { "semspaceadd.k",     S(SEM_SPACE_ADD),              0, "",          "iSk",  (SUBR)sem_space_add_init,         (SUBR)sem_space_add_perf,       NULL,                             NULL, 0 },
-    { "semspacesave",      S(SEM_SPACE_SAVE),             0, "",          "iS",   (SUBR)sem_space_save,             NULL,                           NULL,                             NULL, 0 },
-    { "semspacesave.k",    S(SEM_SPACE_SAVE),             0, "",          "iSk",  (SUBR)sem_space_save_kset,        (SUBR)sem_space_save_kperf,     NULL,                             NULL, 0 },
-    { "semspacequery",     S(SEM_SPACE_QUERY),            0, "i[][]i[]",  "iSi",  (SUBR)sem_space_query_i,          NULL,                           NULL,                             NULL, 0 },
-    { "semspacequery.k",   S(SEM_SPACE_QUERY),            0, "k[][]k[]",  "iSi",  (SUBR)sem_space_query_init,       (SUBR)sem_space_query_perf,     NULL,                             NULL, 0 },
-    { "semsttload",        S(SEM_STT_INIT),               0, "i",         "Sio",  (SUBR)sem_stt_init,               NULL,                           (SUBR)sem_stt_deinit,             NULL, 0 },
-    { "semsttsubmitfile",  S(SEM_STT_SUBMIT_AUDIO_FILE),  0, "",          "iS",   (SUBR)sem_stt_submit_audio_file,  NULL,                           NULL,                             NULL, 0 },
-    { "semsttsubmitarray", S(SEM_STT_SUBMIT_AUDIO_ARRAY), 0, "",          "ii[]", (SUBR)sem_stt_submit_audio_arr,   NULL,                           NULL,                             NULL, 0 },
-    { "semsttsubmitft",    S(SEM_STT_SUBMIT_AUDIO_FUNC),  0, "",          "ii",   (SUBR)sem_stt_submit_audio_func,  NULL,                           NULL,                             NULL, 0 },
-    { "semsttsubmitlive",  S(SEM_STT_SUBMIT_LIVE),        0, "",          "iaiO", (SUBR)sem_stt_submit_live_init,   (SUBR)sem_stt_submit_live_perf, (SUBR)sem_stt_submit_live_deinit, NULL, 0 },
-    { "semsttready",       S(SEM_STT_READY),              0, "k",         "i",    NULL,                             (SUBR)sem_stt_ready,            NULL,                             NULL, 0 },
-    { "semsttresult",      S(SEM_STT_RESULT),             0, "Sk",        "i",    NULL,                             (SUBR)sem_stt_result,           NULL,                             NULL, 0 },
+    { "semload",                S(SEM_INIT),                   0, "i",         "iS",     (SUBR)sem_init,                      NULL,                                (SUBR)sem_deinit,                      NULL, 0 },
+    { "semdim",                 S(SEM_DIM),                    0, "i",         "i",      (SUBR)sem_dim,                       NULL,                                NULL,                                  NULL, 0 },
+    { "semembedtxt",            S(SEM_EMBED_TEXT_I),           0, "i[][]",     "iS",     (SUBR)sem_embed_text_i,              NULL,                                NULL,                                  NULL, 0 },
+    { "semembedtxtfile",        S(SEM_EMBED_TEXT_FILE_I),      0, "i[][]",     "iS",     (SUBR)sem_embed_text_i_file,         NULL,                                NULL,                                  NULL, 0 },
+    { "semembedtxt.k",          S(SEM_EMBED_TEXT),             0, "k[]k",      "iS",     (SUBR)sem_embed_text_init,           (SUBR)sem_embed_text_perf,           NULL,                                  NULL, 0 },
+    { "semembedaudiofile",      S(SEM_EMBED_AUDIO_FILE_I),     0, "i[][]",     "iS",     (SUBR)sem_embed_audio_file_i,        NULL,                                NULL,                                  NULL, 0 },
+    { "semembedaudioft",        S(SEM_EMBED_AUDIO_FUNC_I),     0, "i[][]",     "ii",     (SUBR)sem_embed_audio_func_i,        NULL,                                NULL,                                  NULL, 0 },
+    { "semembedaudio",          S(SEM_EMBED_AUDIO),            0, "k[]k",      "iao",    (SUBR)sem_embed_audio_init,          (SUBR)sem_embed_audio_perf,          (SUBR)sem_embed_audio_deinit,          NULL, 0 },
+    { "semspace",               S(SEM_SPACE_INIT),             0, "i",         "i",      (SUBR)sem_space_init,                NULL,                                (SUBR)sem_space_deinit,                NULL, 0 },
+    { "semspace.f",             S(SEM_SPACE_INIT),             0, "i",         "iS",     (SUBR)sem_space_init,                NULL,                                (SUBR)sem_space_deinit,                NULL, 0 },
+    { "semspace.vs",            S(SEM_SPACE_INIT_VS),          0, "i",         "iS[]",   (SUBR)sem_space_init_vs,             NULL,                                (SUBR)sem_space_deinit,                NULL, 0 },
+    { "semspacebuild",          S(SEM_SPACE_BUILD),            0, "",          "iSS",    (SUBR)sem_space_build,               NULL,                                NULL,                                  NULL, 0 },
+    { "semspaceaddtxt",         S(SEM_SPACE_ADD),              0, "",          "iiS",    (SUBR)sem_space_add,                 NULL,                                NULL,                                  NULL, 0 },
+    { "semspaceaddtxt.k",       S(SEM_SPACE_ADD),              0, "",          "iiSk",   (SUBR)sem_space_add_init,            (SUBR)sem_space_add_perf,            NULL,                                  NULL, 0 },
+    { "semspaceaddaudio",       S(SEM_SPACE_ADD),              0, "",          "iiS",    (SUBR)sem_space_add_audio,           NULL,                                NULL,                                  NULL, 0 },
+    { "semspaceaddaudio.k",     S(SEM_SPACE_ADD),              0, "",          "iiSk",   (SUBR)sem_space_add_audio_init,      (SUBR)sem_space_add_audio_perf,      NULL,                                  NULL, 0 },
+    { "semspacesave",           S(SEM_SPACE_SAVE),             0, "",          "iS",     (SUBR)sem_space_save,                NULL,                                NULL,                                  NULL, 0 },
+    { "semspacesave.k",         S(SEM_SPACE_SAVE),             0, "",          "iSk",    (SUBR)sem_space_save_kset,           (SUBR)sem_space_save_kperf,          NULL,                                  NULL, 0 },
+    { "semspacequerytxt",       S(SEM_SPACE_QUERY),            0, "i[][]i[]",  "iiSi",   (SUBR)sem_space_query_i,             NULL,                                NULL,                                  NULL, 0 },
+    { "semspacequerytxt.k",     S(SEM_SPACE_QUERY_K),          0, "k[][]k[]k", "iiSi",   (SUBR)sem_space_query_init,          (SUBR)sem_space_query_perf,          (SUBR)sem_space_query_deinit,          NULL, 0 },
+    { "semspacequeryaudio",     S(SEM_SPACE_QUERY),            0, "i[][]i[]",  "iiSi",   (SUBR)sem_space_query_audio_i,       NULL,                                NULL,                                  NULL, 0 },
+    { "semspacequeryaudio.k",   S(SEM_SPACE_QUERY_K),          0, "k[][]k[]k", "iiSi",   (SUBR)sem_space_query_audio_init,    (SUBR)sem_space_query_audio_perf,    (SUBR)sem_space_query_audio_deinit,    NULL, 0 },
+    { "semspacequeryaudioft",   S(SEM_SPACE_QUERY_FT),         0, "i[][]i[]",  "iiiio",  (SUBR)sem_space_query_audio_ft_i,    NULL,                                NULL,                                  NULL, 0 },
+    { "semspacequeryaudioft.k", S(SEM_SPACE_QUERY_FT_K),       0, "k[][]k[]k", "iiiiko", (SUBR)sem_space_query_audio_ft_init, (SUBR)sem_space_query_audio_ft_perf, (SUBR)sem_space_query_audio_ft_deinit, NULL, 0 },
+    { "semsttload",             S(SEM_STT_INIT),               0, "i",         "Sio",    (SUBR)sem_stt_init,                  NULL,                                (SUBR)sem_stt_deinit,                  NULL, 0 },
+    { "semsttsubmitfile",       S(SEM_STT_SUBMIT_AUDIO_FILE),  0, "",          "iS",     (SUBR)sem_stt_submit_audio_file,     NULL,                                NULL,                                  NULL, 0 },
+    { "semsttsubmitarray",      S(SEM_STT_SUBMIT_AUDIO_ARRAY), 0, "",          "ii[]",   (SUBR)sem_stt_submit_audio_arr,      NULL,                                NULL,                                  NULL, 0 },
+    { "semsttsubmitft",         S(SEM_STT_SUBMIT_AUDIO_FUNC),  0, "",          "ii",     (SUBR)sem_stt_submit_audio_func,     NULL,                                NULL,                                  NULL, 0 },
+    { "semsttsubmitlive",       S(SEM_STT_SUBMIT_LIVE),        0, "",          "iaiO",   (SUBR)sem_stt_submit_live_init,      (SUBR)sem_stt_submit_live_perf,      (SUBR)sem_stt_submit_live_deinit,      NULL, 0 },
+    { "semsttready",            S(SEM_STT_READY),              0, "k",         "i",      NULL,                                (SUBR)sem_stt_ready,                 NULL,                                  NULL, 0 },
+    { "semsttresult",           S(SEM_STT_RESULT),             0, "Sk",        "i",      NULL,                                (SUBR)sem_stt_result,                NULL,                                  NULL, 0 },
 };
 
 LINKAGE

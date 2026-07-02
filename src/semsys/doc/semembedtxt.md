@@ -1,4 +1,4 @@
-# semembed
+# semembedtxt
 
 ## Abstract
 
@@ -6,7 +6,7 @@ Embed a text string in real time, returning its mean-pooled sentence embedding.
 
 ## Description
 
-`semembed` runs `text` through the end-to-end embedding model (the model tokenizes
+`semembedtxt` runs `text` through the end-to-end embedding model (the model tokenizes
 internally), producing the **mean-pooled sentence embedding**: a vector of length =
 embedding dimension (see [semdim](semdim.md)).
 
@@ -16,18 +16,22 @@ It comes in two forms, selected automatically by the **rate of the output variab
   `[nchunks, ldim]`**. Text longer than the model window is split into `≤`-window token
   chunks (the same chunker as [semspacebuild](semspacebuild.md)), producing one embedding
   **row per chunk**; short text yields a single row. Iterate the rows with `lenarray`.
-  To embed a text file instead of an inline string, use [semembedfile](semembedfile.md).
+  To embed a text file instead of an inline string, use [semembedtxtfile](semembedtxtfile.md).
 * **k-rate** (`k[]`, plus a `k` flag) — embed in real time, **self-gated**: the model
   re-runs only when the text changes, and `changed` is `1` on that pass. Returns a **single
   vector**: text longer than the model window is chunked and the chunk embeddings are
   **mean-pooled** into one vector (a k-rate array can't change its row count per pass, so
   the per-chunk 2D form is i-rate only). Use it for live latent-space control.
 
+For **audio** embedding (raw sound → semantic vector, no classification), see
+[semembedaudiofile](semembedaudiofile.md), [semembedaudioft](semembedaudioft.md) and
+[semembedaudio](semembedaudio.md).
+
 ## Syntax
 
 ```csound
-chunks:i[][]        = semembed(handle:i, text:S)   ; i-rate, once, one row per chunk
-pool:k[], changed:k = semembed(handle:i, text:S)   ; k-rate, real-time
+chunks:i[][]        = semembedtxt:i(handle:i, text:S)   ; i-rate, once, one row per chunk
+pool:k[], changed:k = semembedtxt:k(handle:i, text:S)   ; k-rate, real-time
 ```
 
 ## Arguments
@@ -63,7 +67,7 @@ handle@global:i = semload(256, "path/to/model_dir")
 
 instr 1
     sentence:S = "sound synthesis in blue sky"
-    pool_embed:k[], changed:k = semembed(handle, sentence)
+    pool_embed:k[], changed:k = semembedtxt:k(handle, sentence)
 endin
 
 </CsInstruments>
@@ -81,8 +85,9 @@ For **semantic synthesis** demos that turn embeddings into sound, see
 
 * [semload](semload.md)
 * [semdim](semdim.md)
-* [semembedfile](semembedfile.md)
-* [semspacequery](semspacequery.md)
+* [semembedtxtfile](semembedtxtfile.md)
+* [semembedaudio](semembedaudio.md)
+* [semspacequerytxt](semspacequerytxt.md)
 
 ## Credits
 
