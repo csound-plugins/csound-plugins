@@ -1,17 +1,25 @@
-option(BUILD_SEMSYS_OPCODES "Build semsys opcodes" ON)
+option(BUILD_SEMSYS_OPCODES "Build semsys opcodes (needs onnxruntime + onnxruntime-extensions, Csound API 7)" ON)
 
 if(BUILD_SEMSYS_OPCODES)
+    # Soft gate: build semsys only when its prerequisites are present. If not,
+    # skip quietly (message + return) so the other plugins and CI without
+    # onnxruntime still configure and build.
     if(DEFINED APIVERSION AND NOT APIVERSION MATCHES "^7\\.0$")
-        message(FATAL_ERROR "semsys requires Csound API 7; configure with -DAPIVERSION=7.0")
+        message(STATUS "semsys: skipped (requires Csound API 7, got APIVERSION=${APIVERSION}; configure with -DAPIVERSION=7.0)")
+        return()
     endif()
 
     if(ONNXRUNTIME_ROOT OR DEFINED ENV{ONNXRUNTIME_ROOT})
-        find_package(onnxruntime REQUIRED MODULE)
+        find_package(onnxruntime MODULE)
     else()
         find_package(onnxruntime CONFIG QUIET)
     endif()
     if(NOT onnxruntime_FOUND)
-        find_package(onnxruntime REQUIRED)
+        find_package(onnxruntime QUIET)
+    endif()
+    if(NOT onnxruntime_FOUND)
+        message(STATUS "semsys: skipped (onnxruntime not found; install it or pass -DONNXRUNTIME_ROOT=/path)")
+        return()
     endif()
 
     make_plugin(semsys src/semsys.c)
