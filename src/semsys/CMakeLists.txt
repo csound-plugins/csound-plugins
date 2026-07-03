@@ -1,112 +1,87 @@
-option(BUILD_SEMSYS_OPCODES "Build semsys opcodes (needs onnxruntime + onnxruntime-extensions, Csound API 7)" ON)
+option(BUILD_SEMSYS_OPCODES "Build semsys opcodes (Csound API 7; onnxruntime + onnxruntime-extensions needed at runtime)" ON)
 
 if(BUILD_SEMSYS_OPCODES)
-    # Soft gate: build semsys only when its prerequisites are present. If not,
-    # skip quietly (message + return) so the other plugins and CI without
-    # onnxruntime still configure and build.
+    # Soft gate: semsys is Csound API 7 only. Skip quietly on API 6 so the other
+    # plugins still configure and build.
     if(DEFINED APIVERSION AND NOT APIVERSION MATCHES "^7\\.0$")
         message(STATUS "semsys: skipped (requires Csound API 7, got APIVERSION=${APIVERSION}; configure with -DAPIVERSION=7.0)")
         return()
     endif()
 
-    if(ONNXRUNTIME_ROOT OR DEFINED ENV{ONNXRUNTIME_ROOT})
-        find_package(onnxruntime MODULE)
-    else()
-        find_package(onnxruntime CONFIG QUIET)
-    endif()
-    if(NOT onnxruntime_FOUND)
-        find_package(onnxruntime QUIET)
-    endif()
-    if(NOT onnxruntime_FOUND)
-        message(STATUS "semsys: skipped (onnxruntime not found; install it or pass -DONNXRUNTIME_ROOT=/path)")
-        return()
-    endif()
-
+    # onnxruntime is loaded at runtime via dlopen (see load_ort_get_api_base in
+    # semsys.c): the C API is a function-pointer table reached from the single symbol
+    # OrtGetApiBase. So building needs ONLY the vendored C API headers in
+    # third_party/onnxruntime -- no onnxruntime install, no link dependency, no
+    # find_package. The shared library is required at runtime, not at build time.
     make_plugin(semsys src/semsys.c)
-    target_link_libraries(semsys PRIVATE onnxruntime::onnxruntime)
+    target_include_directories(semsys PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/third_party/onnxruntime")
+    target_link_libraries(semsys PRIVATE ${CMAKE_DL_LIBS})   # dlopen/dlsym/dladdr (empty on win/mac)
 
+    # rpath so the bundled sibling libraries (below) resolve from the plugin's own dir
     if(APPLE)
-        set_target_properties(semsys PROPERTIES
-            BUILD_RPATH "@loader_path"
-            INSTALL_RPATH "@loader_path"
-        )
+        set_target_properties(semsys PROPERTIES BUILD_RPATH "@loader_path" INSTALL_RPATH "@loader_path")
     elseif(UNIX)
-        set_target_properties(semsys PROPERTIES
-            BUILD_RPATH "$ORIGIN"
-            INSTALL_RPATH "$ORIGIN"
-        )
+        set_target_properties(semsys PROPERTIES BUILD_RPATH "$ORIGIN" INSTALL_RPATH "$ORIGIN")
     endif()
 
-    get_target_property(_onnxruntime_target_type onnxruntime::onnxruntime TYPE)
-    if(_onnxruntime_target_type STREQUAL "SHARED_LIBRARY")
-        add_custom_command(TARGET semsys POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "$<TARGET_FILE:onnxruntime::onnxruntime>"
-                "$<TARGET_FILE_DIR:semsys>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "$<TARGET_SONAME_FILE:onnxruntime::onnxruntime>"
-                "$<TARGET_FILE_DIR:semsys>"
-            VERBATIM
-        )
-        if(APPLE)
-            add_custom_command(TARGET semsys POST_BUILD
-                COMMAND "${CMAKE_COMMAND}"
-                    "-DTARGET_FILE=$<TARGET_FILE:semsys>"
-                    "-DDEPENDENCY_FILE=$<TARGET_FILE:onnxruntime::onnxruntime>"
-                    "-DDEPENDENCY_NAME=$<TARGET_SONAME_FILE_NAME:onnxruntime::onnxruntime>"
-                    -P "${CMAKE_SOURCE_DIR}/cmake/Modules/FixMachODependencyInstallName.cmake"
-                VERBATIM
-            )
-        endif()
-        install(IMPORTED_RUNTIME_ARTIFACTS onnxruntime::onnxruntime
-            RUNTIME DESTINATION "${PLUGIN_INSTALL_DIR}"
-            LIBRARY DESTINATION "${PLUGIN_INSTALL_DIR}"
-            FRAMEWORK DESTINATION "${PLUGIN_INSTALL_DIR}"
-        )
-    else()
-        message(STATUS "onnxruntime target is ${_onnxruntime_target_type}; runtime library installation is left to the package manager")
-    endif()
-
-    # onnxruntime-extensions: the end-to-end embedding and STT graphs use custom ops
-    # from this library (the embedded tokenizer, audio decode/STFT, BPE detokenizer),
-    # loaded at runtime (RegisterCustomOpsLibrary) and resolved next to the plugin.
-    # Provide the NATIVE (non-Python) shared lib in one of two ways:
-    #   -DORT_EXTENSIONS_LIB=/full/path/to/libortextensions.<ext>   (explicit), or
-    #   -DORTEXTENSIONS_ROOT=/root (or env ORTEXTENSIONS_ROOT)       (discovered below)
+    # --- optional runtime bundling ---------------------------------------------
+    # The build does not need these; a self-contained plugin zip does. When the
+    # runtime shared libraries are provided (or discoverable) they are copied next to
+    # the plugin and installed. Otherwise supply them at runtime via the
+    # SEMSYS_ONNXRUNTIME / SEMSYS_ORT_EXTENSIONS env vars, or a system install.
     if(WIN32)
+        set(_onnx_name "onnxruntime.dll")
         set(_ortext_name "ortextensions.dll")
     elseif(APPLE)
+        set(_onnx_name "libonnxruntime.dylib")
         set(_ortext_name "libortextensions.dylib")
     else()
+        set(_onnx_name "libonnxruntime.so")
         set(_ortext_name "libortextensions.so")
     endif()
 
+    # onnxruntime runtime library: -DONNXRUNTIME_LIB=/path (explicit) wins, else
+    # discovered under -DONNXRUNTIME_ROOT / env ONNXRUNTIME_ROOT, else system paths.
+    if(NOT ONNXRUNTIME_LIB)
+        find_file(ONNXRUNTIME_LIB
+            NAMES "${_onnx_name}" onnxruntime.dll libonnxruntime.dylib libonnxruntime.so
+            HINTS "${ONNXRUNTIME_ROOT}" ENV ONNXRUNTIME_ROOT
+            PATH_SUFFIXES lib lib64 bin
+        )
+    endif()
+    if(ONNXRUNTIME_LIB AND EXISTS "${ONNXRUNTIME_LIB}")
+        add_custom_command(TARGET semsys POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${ONNXRUNTIME_LIB}" "$<TARGET_FILE_DIR:semsys>/${_onnx_name}"
+            VERBATIM)
+        install(FILES "${ONNXRUNTIME_LIB}" DESTINATION "${PLUGIN_INSTALL_DIR}" RENAME "${_onnx_name}")
+        message(STATUS "semsys: bundling onnxruntime from ${ONNXRUNTIME_LIB}")
+    else()
+        message(STATUS "semsys: onnxruntime runtime lib not bundled "
+                       "(pass -DONNXRUNTIME_LIB=/path/${_onnx_name} or -DONNXRUNTIME_ROOT=/root). "
+                       "Provide libonnxruntime at runtime via SEMSYS_ONNXRUNTIME or a system install.")
+    endif()
+
+    # onnxruntime-extensions runtime library (custom ops the E2E embedding/STT graphs
+    # need), loaded via RegisterCustomOpsLibrary. -DORT_EXTENSIONS_LIB=/path (explicit)
+    # or discovered under -DORTEXTENSIONS_ROOT / env ORTEXTENSIONS_ROOT. Note: the PyPI
+    # wheel's native lib (onnxruntime_extensions.get_library_path()) works here too.
     if(NOT ORT_EXTENSIONS_LIB)
         find_library(ORT_EXTENSIONS_LIB
             NAMES ortextensions libortextensions
             HINTS "${ORTEXTENSIONS_ROOT}" ENV ORTEXTENSIONS_ROOT
-            PATH_SUFFIXES lib lib64 bin
-        )
+            PATH_SUFFIXES lib lib64 bin)
     endif()
-
-    if(ORT_EXTENSIONS_LIB)
-        if(NOT EXISTS "${ORT_EXTENSIONS_LIB}")
-            message(FATAL_ERROR "ORT_EXTENSIONS_LIB does not exist: ${ORT_EXTENSIONS_LIB}")
-        endif()
+    if(ORT_EXTENSIONS_LIB AND EXISTS "${ORT_EXTENSIONS_LIB}")
         add_custom_command(TARGET semsys POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "${ORT_EXTENSIONS_LIB}"
-                "$<TARGET_FILE_DIR:semsys>/${_ortext_name}"
-            VERBATIM
-        )
-        install(FILES "${ORT_EXTENSIONS_LIB}"
-            DESTINATION "${PLUGIN_INSTALL_DIR}"
-            RENAME "${_ortext_name}"
-        )
+                "${ORT_EXTENSIONS_LIB}" "$<TARGET_FILE_DIR:semsys>/${_ortext_name}"
+            VERBATIM)
+        install(FILES "${ORT_EXTENSIONS_LIB}" DESTINATION "${PLUGIN_INSTALL_DIR}" RENAME "${_ortext_name}")
+        message(STATUS "semsys: bundling onnxruntime-extensions from ${ORT_EXTENSIONS_LIB}")
     else()
-        message(STATUS "onnxruntime-extensions (${_ortext_name}) not found; it will NOT be bundled. "
-                       "The semsys embedding and STT models need it at runtime: pass -DORT_EXTENSIONS_LIB=/path/to/${_ortext_name}, "
-                       "or -DORTEXTENSIONS_ROOT=/root (env ORTEXTENSIONS_ROOT), "
-                       "or set the SEMSYS_ORT_EXTENSIONS env var at runtime.")
+        message(STATUS "semsys: onnxruntime-extensions not bundled "
+                       "(pass -DORT_EXTENSIONS_LIB=/path/${_ortext_name} or -DORTEXTENSIONS_ROOT=/root). "
+                       "Provide it at runtime via SEMSYS_ORT_EXTENSIONS.")
     endif()
 endif()

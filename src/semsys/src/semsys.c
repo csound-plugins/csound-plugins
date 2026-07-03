@@ -449,6 +449,55 @@ static const char *resolve_extensions_path(const char *model_dir, char *buf, siz
     return buf;
 }
 
+/* onnxruntime is loaded dynamically rather than at link time: its C API is a table of
+   function pointers reached from the single exported symbol OrtGetApiBase, so we only
+   dlopen libonnxruntime and resolve that one symbol; everything else goes through the
+   returned OrtApi*. resolve order mirrors the extensions lib: 1. env SEMSYS_ONNXRUNTIME
+   (full path), 2. bundled next to the plugin, 3. the loader's default search path
+   (system install). returns NULL if libonnxruntime cannot be found/loaded. */
+typedef const OrtApiBase *(ORT_API_CALL *SemOrtGetApiBaseFn)(void);
+
+static SemOrtGetApiBaseFn load_ort_get_api_base(void) {
+#ifdef _WIN32
+    const char *libname = "onnxruntime.dll";
+#elif defined(__APPLE__)
+    const char *libname = "libonnxruntime.dylib";
+#else
+    const char *libname = "libonnxruntime.so";
+#endif
+    char pathbuf[1100];
+    const char *candidates[3];
+    int n = 0;
+
+    const char *env = getenv("SEMSYS_ONNXRUNTIME");
+    if (env != NULL && env[0] != '\0') {
+        candidates[n++] = env;
+    }
+    char dir[1024];
+    if (plugin_dir(dir, sizeof(dir)) == 0) {
+        snprintf(pathbuf, sizeof(pathbuf), "%s/%s", dir, libname);
+        candidates[n++] = pathbuf;
+    }
+    candidates[n++] = libname; /* let the loader search its default paths */
+
+    for (int i = 0; i < n; i++) {
+#ifdef _WIN32
+        HMODULE h = LoadLibraryA(candidates[i]);
+        if (h != NULL) {
+            SemOrtGetApiBaseFn fn = (SemOrtGetApiBaseFn) GetProcAddress(h, "OrtGetApiBase");
+            if (fn != NULL) return fn;
+        }
+#else
+        void *h = dlopen(candidates[i], RTLD_NOW | RTLD_GLOBAL);
+        if (h != NULL) {
+            SemOrtGetApiBaseFn fn = (SemOrtGetApiBaseFn) dlsym(h, "OrtGetApiBase");
+            if (fn != NULL) return fn;
+        }
+#endif
+    }
+    return NULL;
+}
+
 int sem_init(CSOUND *csound, SEM_INIT *p) {
     if (p->model_dir == NULL || p->model_dir->data == NULL) {
         return csound->InitError(csound, "[semload] Missing model dir");
@@ -482,7 +531,11 @@ int sem_init(CSOUND *csound, SEM_INIT *p) {
     fclose(fmcheck);
     // ---
 
-    ctx->api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
+    SemOrtGetApiBaseFn get_api_base = load_ort_get_api_base();
+    if (get_api_base == NULL) {
+        return csound->InitError(csound, "[semload] Could not load onnxruntime shared library; set SEMSYS_ONNXRUNTIME or bundle libonnxruntime next to the plugin");
+    }
+    ctx->api = get_api_base()->GetApi(ORT_API_VERSION);
     if (ctx->api == NULL) {
         return csound->InitError(csound, "[semload] Could not get onnxruntime api");
     }
@@ -3013,7 +3066,12 @@ int sem_stt_init(CSOUND *csound, SEM_STT_INIT *p) {
     fclose(fmcheck);
     // ---
 
-    ctx->api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
+    SemOrtGetApiBaseFn get_api_base = load_ort_get_api_base();
+    if (get_api_base == NULL) {
+        ret = csound->InitError(csound, "[semsttload] Could not load onnxruntime shared library; set SEMSYS_ONNXRUNTIME or bundle libonnxruntime next to the plugin");
+        goto fail;
+    }
+    ctx->api = get_api_base()->GetApi(ORT_API_VERSION);
     if (ctx->api == NULL) {
         ret = csound->InitError(csound, "[semsttload] Could not get onnxruntime api");
         goto fail;

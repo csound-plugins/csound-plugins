@@ -252,60 +252,74 @@ messages for each check.
 
 ## Building
 
-Configure and build from the **repository root** (`csound-plugins/`), not from this
-directory — only the root `CMakeLists.txt` defines the project and pulls `semsys`
-in as a sub-directory.
+### From the release
 
-You must pass `-DAPIVERSION=7.0`. The default is `6.0`, which does not define
-`CSOUNDAPI7`, and `semsys` fails to compile without it.
+The prebuilt package in the [releases](https://github.com/csound-plugins/csound-plugins/releases)
+includes the `semsys` plugin, but **not** its two ONNX runtime libraries. To run it you
+supply, yourself:
 
-To **bundle** the onnxruntime-extensions library next to the plugin, point
-the build at the **native** `libortextensions` (see [doc/semload.md](doc/semload.md)),
-either explicitly with `-DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib`, or by a
-root hint `-DORTEXTENSIONS_ROOT=/root` (or the `ORTEXTENSIONS_ROOT` env var), which is
-searched with `find_library`. Without it the plugin still builds, but you must supply
-`libortextensions` at runtime via the `SEMSYS_ORT_EXTENSIONS` env var or inside the
-model directory.
+- `libonnxruntime` and `libortextensions` — get them as described under **Manual build**
+  below, then either drop them next to the plugin or point `SEMSYS_ONNXRUNTIME` /
+  `SEMSYS_ORT_EXTENSIONS` at them;
+- the ONNX **models** (see [`semload`](doc/semload.md)).
 
-### With an ONNX Runtime binary package
+### Manual build
+
+Build from the **repository root** (`csound-plugins/`), not this folder.
+
+semsys loads ONNX Runtime dynamically, so it **compiles with no ONNX SDK installed** (the
+headers are vendored). You only need two shared libraries at **runtime**:
+
+- **`libonnxruntime`** — download the official [ONNX Runtime](https://github.com/microsoft/onnxruntime/releases) build (auto-found if installed via Homebrew/apt/vcpkg).
+- **`libortextensions`** — from the NuGet package `Microsoft.ML.OnnxRuntime.Extensions`
+  (a `.nupkg` is a zip; take the lib under `runtimes/<os>/native/`). **Not** the PyPI
+  wheel — that one needs Python and won't load standalone.
+
+**Option A — bundle the extensions lib into the build** (self-contained plugin):
 
 ```sh
-cmake -S . -B build -DAPIVERSION=7.0 -DONNXRUNTIME_ROOT=/path/to/onnxruntime \
+cmake -S . -B build -DAPIVERSION=7.0 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
       -DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib
-cmake --build build --target semsys
-cmake --install build
+cmake --build build --target semsys --parallel
 ```
 
-### With ONNX Runtime as a CMake config package (Homebrew, vcpkg, …)
+**Option B — don't bundle, give it at runtime:**
 
 ```sh
-cmake -S . -B build -DAPIVERSION=7.0 -DORT_EXTENSIONS_LIB=/path/to/libortextensions.dylib
-cmake --build build --target semsys
-cmake --install build
+cmake -S . -B build -DAPIVERSION=7.0 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+cmake --build build --target semsys --parallel
+
+# then, before running Csound, point the plugin at whatever was NOT bundled:
+export SEMSYS_ORT_EXTENSIONS=/path/to/libortextensions.dylib
+# onnxruntime is auto-bundled from a system install (check the configure log). Only if it
+# said "semsys: onnxruntime ... not bundled" do you also need:
+# export SEMSYS_ONNXRUNTIME=/path/to/libonnxruntime.dylib
 ```
 
-## ONNX Runtime dependency
+So: with a system ONNX Runtime (e.g. Homebrew) you typically export **only**
+`SEMSYS_ORT_EXTENSIONS`; on a clean machine where neither was bundled, export **both**.
 
-How the dependency is resolved (see `src/semsys/CMakeLists.txt`):
+Notes:
+- `-DAPIVERSION=7.0` is **required** (semsys is Csound API 7 only).
+- `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` is only needed with **CMake ≥ 4** (an old sibling
+  plugin aborts the configure otherwise); drop it on CMake 3.x.
+- `libonnxruntime` is auto-bundled from a system install; override with `-DONNXRUNTIME_LIB=/path`.
 
-- If `ONNXRUNTIME_ROOT` is set (cache var or environment), the build uses the
-  `MODULE` finder `Findonnxruntime.cmake`.
-- Otherwise it tries `find_package(onnxruntime CONFIG)`, then falls back to a
-  `REQUIRED` lookup.
+### Runtime — where the libraries are looked up
 
-When using `ONNXRUNTIME_ROOT`, point it at an extracted/installed ONNX Runtime
-C/C++ binary package. The root directory must contain:
+At `semload` time the plugin resolves each library in order:
 
-```text
-include/onnxruntime_c_api.h
-lib/libonnxruntime.dylib  # macOS
-lib/libonnxruntime.so     # Linux
-lib/onnxruntime.lib       # Windows import library
-bin/onnxruntime.dll       # Windows runtime library
-```
+- **onnxruntime**: `SEMSYS_ONNXRUNTIME` env → next to the plugin → the system loader's default paths.
+- **onnxruntime-extensions**: `SEMSYS_ORT_EXTENSIONS` env → next to the plugin → next to the model directory.
 
-During install, the ONNX Runtime shared library is installed next to the Csound
-plugin so the loader can resolve it from the plugin directory.
+> NOTE: The system-loader step for **onnxruntime** covers only standard paths (`/usr/lib`,
+> `DYLD_*` / `LD_LIBRARY_PATH`). **Homebrew's `/opt/homebrew/lib` is *not* among them** —
+> so a Homebrew ONNX Runtime is auto-found at **build** time (`find_file`, then bundled
+> next to the plugin) but is **not** found at runtime by name. Therefore:
+>
+> - **bundled** (sitting next to the plugin) → found automatically
+> - **not bundled** → set `SEMSYS_ONNXRUNTIME=/path/to/libonnxruntime.dylib`, or drop the
+>   library next to the plugin / model directory.
 
 ## Roadmap
 
@@ -408,4 +422,10 @@ plugin so the loader can resolve it from the plugin directory.
   on submit, so concurrent recording can overwrite the live table while the worker runs.
 - Semantic spaces now skip duplicate vectors when loading/merging `.espc` files and when
   adding text/audio embeddings to an existing in-memory space.
+- ONNX Runtime is now **loaded dynamically** (`dlopen` of `OrtGetApiBase`) instead of
+  linked; its C API headers are **vendored** in `third_party/onnxruntime/`. The build
+  needs no ONNX Runtime SDK — only the runtime shared libraries, bundled next to the
+  plugin or supplied via `SEMSYS_ONNXRUNTIME` / `SEMSYS_ORT_EXTENSIONS`. Use the NuGet
+  `Microsoft.ML.OnnxRuntime.Extensions` native lib (not the Python wheel) for
+  onnxruntime-extensions.
 - Requires Csound API 7.

@@ -31,18 +31,18 @@ nchnls = 2
 #define EMBED_AUDIO_MODEL_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/PANNs_CNN14_ONNX" # // replace with your model folder
 #define STT_MODEL_DIR         # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/whisper-core/model_e2e" # // replace with your model folder
 
-#define UTEST_DIR       # "utest_data" #
-#define TEXT_FILE       # "utest_data/corpus_a.txt" #
-#define TEXT_DIR        # "utest_data/texts" #
-#define AUDIO_DIR       # "utest_data/audio_space_wav" #
-#define AUDIO_TEST_FILE # "utest_data/mallets_on_piano.wav" #  // replace with <some_audio_file>.wav
-#define STT_AUDIO_TRACK # "utest_data/spoken.wav" # // replace with <some_audio_speech_file>.wav
+#define UTEST_DIR       # "./utest_data" #
+#define TEXT_FILE       # "./utest_data/corpus_a.txt" #
+#define TEXT_DIR        # "./utest_data/texts" #
+#define AUDIO_DIR       # "./utest_data/audio_space_wav" #
+#define AUDIO_TEST_FILE # "./utest_data/mallets_on_piano.wav" #  // replace with <some_audio_file>.wav
+#define STT_AUDIO_TRACK # "./utest_data/spoken.wav" # // replace with <some_audio_speech_file>.wav
 
-#define TEXT_ESPC       # "espc/semsys_utest_text.espc" #
-#define TEXT_ESPC_SAVE  # "espc/semsys_utest_text_saved.espc" #
-#define TEXT_ESPC_SAVEK # "espc/semsys_utest_text_saved_k.espc" #
-#define AUDIO_ESPC      # "espc/semsys_utest_audio.espc" #
-#define AUDIO_ESPC_SAVE # "espc/semsys_utest_audio_saved.espc" #
+#define TEXT_ESPC       # "./espc/semsys_utest_text.espc" #
+#define TEXT_ESPC_SAVE  # "./espc/semsys_utest_text_saved.espc" #
+#define TEXT_ESPC_SAVEK # "./espc/semsys_utest_text_saved_k.espc" #
+#define AUDIO_ESPC      # "./espc/semsys_utest_audio.espc" #
+#define AUDIO_ESPC_SAVE # "./espc/semsys_utest_audio_saved.espc" #
 
 #define MIN_SCORE       # 0.0001 #
 
