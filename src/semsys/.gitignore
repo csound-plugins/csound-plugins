@@ -1,8 +1,13 @@
- utest/espc/*
- !utest/espc/.gitkeep
+utest/espc/*
+!utest/espc/.gitkeep
 
- utest/utest_data/audio_space_wav/*
- !utest/utest_data/audio_space_wav/.gitkeep
+utest/utest_data/*
+!utest/utest_data/.gitkeep
+!utest/utest_data/audio_space_wav/
+!utest/utest_data/texts/
 
- utest/utest_data/texts/*
- !utest/utest_data/texts/.gitkeep
+utest/utest_data/audio_space_wav/*
+!utest/utest_data/audio_space_wav/.gitkeep
+
+utest/utest_data/texts/*
+!utest/utest_data/texts/.gitkeep
