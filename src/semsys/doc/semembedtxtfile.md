@@ -9,12 +9,10 @@ Embed the text contents of a file at init, returning one embedding per chunk.
 `semembedtxtfile` reads the whole file at `path` and embeds it with the end-to-end model
 (the model tokenizes internally), returning a **2D array `[nchunks, ldim]`**. It is the
 file counterpart of the i-rate [semembedtxt](semembedtxt.md): text longer than the model
-window is split into `≤`-window token chunks (the same chunker as
-[semspacebuild](semspacebuild.md)), producing one mean-pooled embedding **row per chunk**.
+window is split into `<=` window token chunks, producing one mean-pooled embedding **row per chunk**.
 A short file yields a single row.
-
 The whole file is treated as one block of text (paragraph/blank-line structure is not
-significant); chunking is by token window. Embedding runs **once at init** (i-rate).
+significant); chunking is by token window.
 
 ## Syntax
 

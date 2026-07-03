@@ -9,9 +9,9 @@ ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-#define STT_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/whisper-core/model_e2e" # ; end-to-end STT model dir: must contain model.onnx + model.onnx.data
+#define STT_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/whisper-core/model_e2e" # ; end-to-end STT model dir: must contain model.onnx; keep model.onnx.data there too if present
 #define AUDIO # "/Users/pm/AcaHub/AudioSamples/spoken.wav" #
-#define MODEL_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/all-MiniLM-L6-v2/all-MiniLM-L6-v2-e2e" # ; end-to-end embedding model dir: must contain model.onnx + model.onnx.data
+#define MODEL_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/all-MiniLM-L6-v2/all-MiniLM-L6-v2-e2e" # ; end-to-end embedding model dir: must contain model.onnx; keep model.onnx.data there too if present
 #define FFT_SIZE # 1024 #
 #define PLEN # 128 #
 

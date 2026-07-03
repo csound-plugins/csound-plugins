@@ -21,7 +21,7 @@ ksmps = 128
 nchnls = 1
 0dbfs = 1
 
-; end-to-end STT model dir: must contain model.onnx + model.onnx.data
+; end-to-end STT model dir: must contain model.onnx; keep model.onnx.data there too if present
 #define STT_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/whisper-core/model_e2e" #
 #define AUDIO   # "/Users/pm/AcaHub/AudioSamples/spoken.wav" #
 

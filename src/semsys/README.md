@@ -13,8 +13,9 @@ vector (the *embedding*) — all inside one ONNX graph. Texts with similar meani
 close together in that space, so cosine similarity becomes a measure of semantic
 distance.
 
-`semload` takes a **model directory** containing two files with fixed names —
-`model.onnx` (the end-to-end graph) and `model.onnx.data` (its external weights). The
+`semload` takes a **model directory** containing `model.onnx` (the end-to-end
+graph). If the graph uses ONNX external data, `model.onnx.data` must be in the same
+directory. The
 graph tokenizes internally with custom ops from **onnxruntime-extensions**, so its
 native shared library (`libortextensions`) must be available at runtime — bundled next
 to the plugin, or via the `SEMSYS_ORT_EXTENSIONS` env var. See
@@ -168,7 +169,7 @@ Practical rules:
 
 | Opcode | Form | Purpose |
 |--------|------|---------|
-| `semload` | `handle:i = semload(maxlen:i, modeldir:S)` | Load the end-to-end `model.onnx` (+ `model.onnx.data`) from a directory; returns a handle |
+| `semload` | `handle:i = semload(maxlen:i, modeldir:S)` | Load the end-to-end `model.onnx` from a directory; if `model.onnx.data` exists, keep it alongside the graph |
 | `semdim` | `dim:i = semdim(handle:i)` | Embedding dimension of the loaded model |
 | `semembedtxt` | `pool:k[], changed:k = semembedtxt:k(handle:i, text:S)` (k-rate); `chunks:i[][] = semembedtxt:i(handle:i, text:S)` (i-rate, one row per chunk) | Embed text — real-time (gated) or once at init (long text auto-chunked) |
 | `semembedtxtfile` | `chunks:i[][] = semembedtxtfile(handle:i, path:S)` | Embed a text file at init; one row per chunk (long text auto-chunked) |
@@ -176,6 +177,7 @@ Practical rules:
 | `semembedaudioft` | `chunks:i[][] = semembedaudioft(handle:i, ftable:i)` | Embed a function table of samples at init; one row per ~10 s window |
 | `semembedaudio` | `emb:k[], gate:k = semembedaudio(handle:i, asig:a [, window:i])` | Embed live a-rate audio on a background worker; `gate` pulses when a fresh vector arrives |
 | `semspace` | `space:i = semspace(handle:i)`; `… = semspace(handle:i, path:S)`; `… = semspace(handle:i, paths:S[])` | Create an in-memory vector store (empty, or load a `.espc` file / directory / array). `handle` only anchors the dimension |
+| `semspaceclear` | `semspaceclear(space:i)`; `semspaceclear(space:i, trig:k)` | Clear all vectors from an in-memory space; k-rate form clears on a rising edge |
 | `semspacebuild` | `semspacebuild(handle:i, dest:S, source:S)` | Universal builder: `.espc` from a text source (text model) or an audio source (audio model), dispatched on the model kind |
 | `semspaceaddtxt` | `semspaceaddtxt(space:i, handle:i, sentence:S [, trig:k])` | Embed text with `handle` and append it (in RAM); long text added as one entry per chunk; duplicate vectors are skipped |
 | `semspaceaddaudio` | `semspaceaddaudio(space:i, handle:i, path:S [, trig:k])` | Embed a PCM16 WAV with `handle` and append it (in RAM); one entry per ~10 s window; duplicate vectors are skipped |
@@ -202,7 +204,7 @@ so it never blocks the audio thread; jobs and results pass through a bounded FIF
 
 The model is **not tied to Whisper** — any end-to-end graph matching the I/O contract
 (`audio_stream` bytes in → `str` text out, plus the generation scalars) works. The model
-directory must hold `model.onnx` and `model.onnx.data` (external weights). `maxlen` comes
+directory must hold `model.onnx`; if `model.onnx.data` exists, it must be alongside it. `maxlen` comes
 from the model's config, not chosen freely. The model transcribes a **single audio window
 whose length is fixed by the model** (~30 s for Whisper); the offline opcodes
 (`semsttsubmitfile`, `semsttsubmitarray`, `semsttsubmitft`) **split longer audio
@@ -241,6 +243,12 @@ and two **speech-to-text** demos:
 - `sem_stt_live.csd` — **voice-controlled latent space**: speak into the mic, each usable
   speech window is transcribed and used as a query into a semantic space, and the match
   drives sound.
+
+## Tests
+
+The smoke test score is in `utest/utest.csd`, with its fixtures under `utest/utest_data`.
+It exercises the semsys opcodes and prints `[PASS]`, `[FAIL]`, `[SKIP]`, or `[INFO]`
+messages for each check.
 
 ## Building
 
@@ -328,8 +336,9 @@ plugin so the loader can resolve it from the plugin directory.
 
 - Initial release.
 - Opcodes: `semload`, `semdim`, `semembedtxt`, `semembedtxtfile`, `semembedaudiofile`,
-  `semembedaudioft`, `semembedaudio`, `semspace`, `semspacebuild`, `semspaceaddtxt`,
-  `semspaceaddaudio`, `semspacequerytxt`, `semspacequeryaudio`, `semspacesave`.
+  `semembedaudioft`, `semembedaudio`, `semspace`, `semspaceclear`, `semspacebuild`,
+  `semspaceaddtxt`, `semspaceaddaudio`, `semspacequerytxt`, `semspacequeryaudio`,
+  `semspacesave`.
 - ONNX Runtime C API backend; mean-pooled sentence embeddings.
 - `semembedtxt` i-rate returns a 2D `[nchunks, ldim]` array: text longer than the model
   window is split into `≤`-window token chunks, one embedding per chunk. `semembedtxtfile`
@@ -342,7 +351,8 @@ plugin so the loader can resolve it from the plugin directory.
   duplicate vectors already present in the space are skipped.
 - In-memory vector space with explicit persistence: `semspace` loads a `.espc`
   file, a directory of them, or an array into RAM; `semspaceaddtxt` / `semspaceaddaudio`
-  append in memory while skipping vectors already present; `semspacesave` writes a
+  append in memory while skipping vectors already present; `semspaceclear` empties
+  the in-memory space while keeping its allocation; `semspacesave` writes a
   snapshot (i-time or k-rate trigger).
 - `semspacebuild` builds a `.espc` from a text file or a directory of `.txt`
   (word-window chunking with overlap).

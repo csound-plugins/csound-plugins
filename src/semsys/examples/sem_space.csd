@@ -8,7 +8,7 @@ ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-// load the end-to-end embedding model (dir must contain model.onnx + model.onnx.data)
+// load the end-to-end embedding model (dir must contain model.onnx; keep model.onnx.data there too if present)
 e_handle@global:i = semload(256, "path/to/model_dir")
 
 // empty in-memory space (RAM-only). Use semspace(e_handle, "space.espc") to load an existing one.

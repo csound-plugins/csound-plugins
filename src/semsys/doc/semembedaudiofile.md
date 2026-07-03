@@ -11,16 +11,11 @@ model's rate (32 kHz for PANNs CNN14) and runs it through an end-to-end audio em
 model, returning a **2D array `[nchunks, ldim]`**. The audio is split into fixed **~10 s
 windows** (PANNs' training length); each window is embedded and **L2-normalized** into one
 **row per window**. A file shorter than one window yields a single row.
-
-Unlike an audio *tagger*, this returns the model's pooled **embedding** (a semantic feature
-vector), not class scores — for audio↔audio similarity, retrieval, or driving synthesis.
 semsys selects the graph output named `embedding`, so a model that also emits `clip_scores`
 still reports the embedding dimension (see [semdim](semdim.md)).
-
 The model must be loaded with [semload](semload.md). Models with global time pooling impose
-no sequence cap — load them with `maxlen = -1` ("full"). Embedding runs **once at init**
+no sequence cap. Load them with `maxlen = -1` ("full"). Embedding runs **once at init**
 (i-rate), off the audio thread, so blocking there is harmless.
-
 Only **PCM16 WAV** is accepted. For mp3/flac/ogg, convert to WAV first, or load the audio
 into a function table and use [semembedaudioft](semembedaudioft.md). For live a-rate audio,
 use [semembedaudio](semembedaudio.md).

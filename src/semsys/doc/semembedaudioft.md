@@ -11,13 +11,7 @@ at the **engine sample rate**), resamples them to the model's rate (32 kHz for P
 and runs them through an end-to-end audio embedding model, returning a **2D array
 `[nchunks, ldim]`**. The audio is split into fixed **~10 s windows**; each is embedded and
 **L2-normalized** into one **row per window**. A table shorter than one window yields a
-single row.
-
-It is the function-table counterpart of [semembedaudiofile](semembedaudiofile.md) — use it
-when the audio is already in an ftable (e.g. loaded with GEN01), avoiding the PCM16 WAV
-restriction of the file opcode. semsys selects the graph output named `embedding` (see
-[semdim](semdim.md)).
-
+single row. semsys selects the graph output named `embedding` (see [semdim](semdim.md)).
 The model must be loaded with [semload](semload.md); models with global time pooling take
 `maxlen = -1` ("full"). Embedding runs **once at init** (i-rate), off the audio thread.
 

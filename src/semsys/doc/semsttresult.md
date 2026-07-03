@@ -11,15 +11,8 @@ result queue and removes it, along with the transcription's **length** in charac
 result is waiting it returns an empty string with length `0`, so gate it with
 [semsttready](semsttready.md).
 
-The `length` output is handy to tell whether a window actually contained speech: a silent or
-speechless window transcribes to an empty string (`length == 0`), which you can skip.
-
-Each call **consumes** one result. To drain several pending results, call it once per
-control pass while [semsttready](semsttready.md) is `1`. The results come out in the same
-order the audio was submitted.
-
 The queue is **shared by the whole handle**: a result is not tied to the submit (or the
-instrument) that produced it — `semsttresult` just returns the next finished one. If several
+instrument) that produced it, `semsttresult` just returns the next finished one. If several
 instruments submit to the same handle, the texts interleave in FIFO order. For independent
 flows, use a separate handle per flow (see [semsttload](semsttload.md)).
 

@@ -472,19 +472,14 @@ int sem_init(CSOUND *csound, SEM_INIT *p) {
     snprintf(ctx->model_path, sizeof(ctx->model_path), "%s%smodel.onnx", mdir, sep);
 
     // check if model files exists and are valid
-    char model_data_path[1024];
-    snprintf(model_data_path, sizeof(model_data_path), "%s%smodel.onnx.data", mdir, sep);
     FILE *fmcheck = fopen(ctx->model_path, "rb");
-    FILE *fdcheck = fopen(model_data_path, "rb");
-    if (fmcheck == NULL || fdcheck == NULL) {
+    if (fmcheck == NULL) {
         if (fmcheck != NULL) fclose(fmcheck);
-        if (fdcheck != NULL) fclose(fdcheck);
-        ret = csound->InitError(csound, "[semload] Missing model file: need model.onnx and model.onnx.data in %s", mdir);
+        ret = csound->InitError(csound, "[semload] Missing model file: need model.onnx in %s", mdir);
         goto fail;
     }
 
     fclose(fmcheck);
-    fclose(fdcheck);
     // ---
 
     ctx->api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
@@ -1504,7 +1499,8 @@ static int sem_space_build_text(CSOUND *csound, SEM_SPACE_BUILD *p) {
     char *single_arr[1];
     char **list;
 
-    if (is_dir(src)) {
+    int src_is_dir = is_dir(src);
+    if (src_is_dir) {
         if (list_files_ext(src, ".txt", &files, &nfiles) != 0) {
             return csound->InitError(csound, "[semspacebuild] Cannot open directory");
         }
@@ -1531,22 +1527,48 @@ static int sem_space_build_text(CSOUND *csound, SEM_SPACE_BUILD *p) {
     p->pmb = csound->Calloc(csound, sizeof(MYFLT) * ctx->ldim);
     p->pool = (float *) calloc(ctx->ldim, sizeof(float));
 
-    int failed = 0; /* 0 = ok, 1 = open error, 2 = embedding error */
+    int failed = 0; /* 0 = ok, 1 = open error, 2 = embedding error, 3 = write error */
     char failpath[1024] = { 0 };
     for (size_t i = 0; i < nfiles; i++) {
         FILE *cf = fopen(list[i], "rb");
         if (cf == NULL) {
+            if (src_is_dir) {
+                csound->Message(csound,
+                    "[semspacebuild warning] Skipping unreadable text file: %s\n",
+                    list[i]);
+                continue;
+            }
             failed = 1;
             snprintf(failpath, sizeof(failpath), "%s", list[i]);
             break;
         }
-        uint64_t _count = sem_space_create_helper(cf, fptr, NULL, ctx, p->pmb, p->pool);
+
+        float *file_vecs = NULL;
+        uint64_t _count = sem_space_create_helper(cf, src_is_dir ? NULL : fptr,
+                                                  src_is_dir ? &file_vecs : NULL,
+                                                  ctx, p->pmb, p->pool);
         fclose(cf);
         if ((int) _count == NOTOK) {
+            free(file_vecs);
+            if (src_is_dir) {
+                csound->Message(csound,
+                    "[semspacebuild warning] Skipping text file after embedding error: %s\n",
+                    list[i]);
+                continue;
+            }
             failed = 2;
             snprintf(failpath, sizeof(failpath), "%s", list[i]);
             break;
         }
+        if (src_is_dir && _count > 0) {
+            if (fwrite(file_vecs, sizeof(float) * ctx->ldim, _count, fptr) != _count) {
+                free(file_vecs);
+                failed = 3;
+                snprintf(failpath, sizeof(failpath), "%s", list[i]);
+                break;
+            }
+        }
+        free(file_vecs);
         ch.count += _count;
     }
 
@@ -1556,6 +1578,9 @@ static int sem_space_build_text(CSOUND *csound, SEM_SPACE_BUILD *p) {
         sem_space_build_deinit(csound, p, fptr, NULL);
         if (failed == 1) {
             return csound->InitError(csound, "[semspacebuild] Cannot open source file: %s", failpath);
+        }
+        if (failed == 3) {
+            return csound->InitError(csound, "[semspacebuild] Write error for: %s", failpath);
         }
         return csound->InitError(csound, "[semspacebuild] Embedding error in: %s", failpath);
     }
@@ -1666,8 +1691,7 @@ int sem_space_init_vs(CSOUND *csound, SEM_SPACE_INIT_VS *p) {
 /* resolve the per-op model handle and check it fits the space: same ldim, and the right
    modality (want_audio) for the txt/audio opcode. returns the model in *out, or an
    InitError. */
-static int sem_space_resolve_model(CSOUND *csound, SEMSYS_SPACE *spc, MYFLT *handle,
-                                   int want_audio, const char *tag, SEMSYS **out) {
+static int sem_space_resolve_model(CSOUND *csound, SEMSYS_SPACE *spc, MYFLT *handle, int want_audio, const char *tag, SEMSYS **out) {
     if (spc == NULL) {
         return csound->InitError(csound, "[%s] Null space context", tag);
     }
@@ -1686,6 +1710,42 @@ static int sem_space_resolve_model(CSOUND *csound, SEMSYS_SPACE *spc, MYFLT *han
         return csound->InitError(csound, "[%s] expected a text model handle", tag);
     }
     *out = m;
+    return OK;
+}
+
+static int sem_space_resolve_top_k(CSOUND *csound, MYFLT *top_k, const char *tag, int *out) {
+    int tkn = (int) *top_k;
+    if (tkn <= 0) {
+        return csound->InitError(csound, "[%s] topk must be > 0", tag);
+    }
+    *top_k = (MYFLT) tkn;
+    *out = tkn;
+    return OK;
+}
+
+int sem_space_clear_i(CSOUND *csound, SEM_SPACE_CLEAR_I *p) {
+    SEMSYS_SPACE *spc = FLT_TO_SPC(p);
+    CHECK_PTR_CTX(csound, spc, "semspaceclear");
+    spc->count = 0;
+
+    return OK;
+}
+
+int sem_space_clear_k_init(CSOUND *csound, SEM_SPACE_CLEAR_K *p) {
+    SEMSYS_SPACE *spc = FLT_TO_SPC(p);
+    CHECK_PTR_CTX(csound, spc, "semspaceclear");
+    p->spc = spc;
+    p->last_trig = FL(0.0);
+    return OK;
+}
+
+int sem_space_clear_k(CSOUND *csound, SEM_SPACE_CLEAR_K *p) {
+    (void) csound;
+    MYFLT trig = *p->trig;
+    if (trig > FL(0.0) && p->last_trig <= FL(0.0)) {
+        p->spc->count = 0;
+    }
+    p->last_trig = trig;
     return OK;
 }
 
@@ -1793,11 +1853,10 @@ static int sem_space_query_setup(CSOUND *csound, SEM_SPACE_QUERY *p, int model_k
     int rc = sem_space_resolve_model(csound, spc, p->handle, model_kind, opcode, &m);
     if (rc != OK) return rc;
 
-    *p->top_k = *p->top_k <= (MYFLT) spc->count ? *p->top_k : (MYFLT) spc->count;
-
     p->ctx = m;
     p->spc = spc;
-    p->top_k_neighs = (int) *p->top_k;
+    rc = sem_space_resolve_top_k(csound, p->top_k, opcode, &p->top_k_neighs);
+    if (rc != OK) return rc;
     tabinit_compat(csound, p->scores, p->top_k_neighs, &(p->h));
     tabinit2d(csound, p->neighs, p->top_k_neighs, spc->ldim, &(p->h));
 
@@ -1829,11 +1888,10 @@ static int sem_space_query_k_setup(CSOUND *csound, SEM_SPACE_QUERY_K *p, int mod
     int rc = sem_space_resolve_model(csound, spc, p->handle, model_kind, opcode, &m);
     if (rc != OK) return rc;
 
-    *p->top_k = *p->top_k <= (MYFLT) spc->count ? *p->top_k : (MYFLT) spc->count;
-
     p->ctx = m;
     p->spc = spc;
-    p->top_k_neighs = (int) *p->top_k;
+    rc = sem_space_resolve_top_k(csound, p->top_k, opcode, &p->top_k_neighs);
+    if (rc != OK) return rc;
     tabinit_compat(csound, p->scores, p->top_k_neighs, &(p->h));
     tabinit2d(csound, p->neighs, p->top_k_neighs, spc->ldim, &(p->h));
     *p->gate = FL(0.0);
@@ -2392,7 +2450,8 @@ static int sem_space_build_audio(CSOUND *csound, SEM_SPACE_BUILD *p) {
     size_t nfiles = 0;
     char *single_arr[1];
     char **list;
-    if (is_dir(src)) {
+    int src_is_dir = is_dir(src);
+    if (src_is_dir) {
         if (list_files_ext(src, ".wav", &files, &nfiles) != 0) {
             return csound->InitError(csound, "[semspacebuildaudio] Cannot open directory");
         }
@@ -2422,6 +2481,13 @@ static int sem_space_build_audio(CSOUND *csound, SEM_SPACE_BUILD *p) {
         float *vecs = NULL;
         uint64_t count = 0;
         if (audio_file_to_vectors(actx, list[i], &vecs, &count) != OK) {
+            if (src_is_dir) {
+                csound->Message(csound,
+                    "[semspacebuildaudio warning] Skipping unreadable audio file (PCM16 WAV only): %s\n",
+                    list[i]);
+                free(vecs);
+                continue;
+            }
             failed = 1;
             snprintf(failpath, sizeof(failpath), "%s", list[i]);
             break;
@@ -2646,8 +2712,8 @@ int sem_space_query_audio_deinit(CSOUND *csound, SEM_SPACE_QUERY_K *p) {
 
 /* ---- real-time audio query from an ftable ---- */
 
-/* resolve the audio model, clamp top-k, size outputs, allocate scratch. shared setup for
-   the i and k ftable-query forms. writes back the clamped top-k into *topk. */
+/* resolve the audio model, size outputs, allocate scratch. shared setup for
+   the i and k ftable-query forms. */
 static int space_query_ft_setup(CSOUND *csound, SEMSYS_SPACE *spc, MYFLT *handle, MYFLT *topk,
                                 ARRAYDAT *scores, ARRAYDAT *neighs, AUXCH *query_buf, AUXCH *mheap,
                                 SEMSYS **ctx_out, int *tkn_out, OPDS *hh) {
@@ -2656,8 +2722,9 @@ static int space_query_ft_setup(CSOUND *csound, SEMSYS_SPACE *spc, MYFLT *handle
     if (rc != OK) return rc;
     *ctx_out = m;
 
-    *topk = (*topk <= (MYFLT) spc->count) ? *topk : (MYFLT) spc->count;
-    int tkn = (int) *topk;
+    int tkn = 0;
+    rc = sem_space_resolve_top_k(csound, topk, "semspacequeryaudioft", &tkn);
+    if (rc != OK) return rc;
     *tkn_out = tkn;
 
     tabinit_compat(csound, scores, tkn, hh);
@@ -2936,19 +3003,14 @@ int sem_stt_init(CSOUND *csound, SEM_STT_INIT *p) {
     snprintf(ctx->model_path, sizeof(ctx->model_path), "%s%smodel.onnx", mdir, sep);
 
     // check if model files exists and are valid
-    char model_data_path[1024];
-    snprintf(model_data_path, sizeof(model_data_path), "%s%smodel.onnx.data", mdir, sep);
     FILE *fmcheck = fopen(ctx->model_path, "rb");
-    FILE *fdcheck = fopen(model_data_path, "rb");
-    if (fmcheck == NULL || fdcheck == NULL) {
+    if (fmcheck == NULL) {
         if (fmcheck != NULL) fclose(fmcheck);
-        if (fdcheck != NULL) fclose(fdcheck);
-        ret = csound->InitError(csound, "[semsttload] Missing model file: need model.onnx and model.onnx.data in %s", mdir);
+        ret = csound->InitError(csound, "[semsttload] Missing model file: need model.onnx in %s", mdir);
         goto fail;
     }
 
     fclose(fmcheck);
-    fclose(fdcheck);
     // ---
 
     ctx->api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
@@ -3988,6 +4050,8 @@ static OENTRY localops[] = {
     { "semspace",               S(SEM_SPACE_INIT),             0, "i",         "i",      (SUBR)sem_space_init,                NULL,                                (SUBR)sem_space_deinit,                NULL, 0 },
     { "semspace.f",             S(SEM_SPACE_INIT),             0, "i",         "iS",     (SUBR)sem_space_init,                NULL,                                (SUBR)sem_space_deinit,                NULL, 0 },
     { "semspace.vs",            S(SEM_SPACE_INIT_VS),          0, "i",         "iS[]",   (SUBR)sem_space_init_vs,             NULL,                                (SUBR)sem_space_deinit,                NULL, 0 },
+    { "semspaceclear",          S(SEM_SPACE_CLEAR_I),          0, "",          "i",      (SUBR)sem_space_clear_i,             NULL,                                NULL,                                  NULL, 0 },
+    { "semspaceclear.k",        S(SEM_SPACE_CLEAR_K),          0, "",          "ik",     (SUBR)sem_space_clear_k_init,        (SUBR)sem_space_clear_k,             NULL,                                  NULL, 0 },
     { "semspacebuild",          S(SEM_SPACE_BUILD),            0, "",          "iSS",    (SUBR)sem_space_build,               NULL,                                NULL,                                  NULL, 0 },
     { "semspaceaddtxt",         S(SEM_SPACE_ADD),              0, "",          "iiS",    (SUBR)sem_space_add,                 NULL,                                NULL,                                  NULL, 0 },
     { "semspaceaddtxt.k",       S(SEM_SPACE_ADD),              0, "",          "iiSk",   (SUBR)sem_space_add_init,            (SUBR)sem_space_add_perf,            NULL,                                  NULL, 0 },

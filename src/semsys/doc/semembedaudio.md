@@ -10,37 +10,11 @@ Embed live a-rate audio into a semantic vector, computed on a background worker 
 (`iwindow` seconds, default 10, minimum 1) and runs each full window through an end-to-end
 audio embedding model (e.g. **PANNs CNN14**), returning the model's pooled **embedding** as
 a 1D array `k[]` of length = embedding dimension (see [semdim](semdim.md)). The vector is
-**L2-normalized**. This is audio embedding, not classification.
-
-Inference runs on a **per-instance background worker thread** — the same approach as the
-speech-to-text opcodes — so the audio thread is **never blocked** and there are no dropouts,
-even with a heavy model. The perf pass only accumulates samples (cheap) and hands full
-windows to the worker; the worker resamples to the model's rate (32 kHz for PANNs) and runs
-the model off the audio thread.
-
-`gate` pulses **`1`** on the single k-pass a fresh embedding is published, and `0`
-otherwise; `emb` holds the last embedding until the next one arrives. Poll `gate` to react
-only to new vectors. Near-**silent** windows (below an RMS floor) are **skipped** — no
-inference, no gate pulse.
-
+**L2-normalized**. This is audio embedding, not classification. Near-**silent** windows (below an RMS floor) are **skipped**, no inference and no gate pulse.
 Load the model with [semload](semload.md). Models with global time pooling impose no
-sequence cap — load them with `maxlen = -1` ("full").
-
-### Latency and coverage
-
-Embeddings arrive **behind real time** by roughly the inference time `T_inf` of one window
-(the gate pulses `T_inf` after the window closes, not a full window later). Two regimes:
-
-* **`T_inf < iwindow`** (the normal case: PANNs on ~10 s windows runs in well under 10 s):
-  every window is embedded, latency ≈ `T_inf`.
-* **`T_inf > iwindow`** (very short windows and/or a slow machine): the worker cannot keep
-  up. The design is **latest-wins** — a new full window replaces an un-started one, so the
-  published embedding stays **fresh** (bounded latency) but some intermediate windows are
-  **skipped** (coverage gaps), rather than building an ever-growing backlog.
-
-Keep `iwindow` comfortably larger than `T_inf`. If you need **every** window with no gaps,
+sequence cap. Load them with `maxlen = -1` ("full").
+Keep `iwindow` comfortably larger. If you need **every** window with no gaps,
 prefer the i-rate [semembedaudiofile](semembedaudiofile.md) / [semembedaudioft](semembedaudioft.md)
-paths (which return every window as a row).
 
 ## Syntax
 
@@ -86,8 +60,8 @@ instr 1
     sig:a = inch(1)                                     ; live mic
     kemb:k[], kgate:k = semembedaudio(handle, sig, 4)   ; 4 s windows
     if (kgate == 1) then
-        println("fresh embedding, coeff[0] = %f", kemb[0])
-        ; patch kemb into your synthesis: map coords -> params, similarity, ...
+        check_coeffs:k = sqrt(sum(kemb^2))
+        println("fresh audio embedding ready (dim %d) | coeffs check: %.3f", lenarray(kemb), check_coeffs)
     endif
 endin
 

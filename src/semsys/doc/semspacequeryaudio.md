@@ -8,29 +8,10 @@ Find the nearest stored vectors to a query audio file (k-nearest neighbours).
 
 `semspacequeryaudio` decodes a **PCM16 WAV** file, embeds it with the **audio model** passed
 as `handle`, and compares the result against every vector in the space (opened with
-[semspace](semspace.md)) by **cosine similarity**, returning the `top-k` closest entries. It
-is the audio counterpart of [semspacequerytxt](semspacequerytxt.md).
+[semspace](semspace.md)) by **cosine similarity**, returning the `top-k` closest entries.
 
-The model is chosen **per call** — the space holds no model, only vectors. `handle` must be
+The model is chosen **per call**. The space holds no model, only vectors. `handle` must be
 an **audio** model whose dim equals the space's dim.
-
-The query file is split into ~10 s windows, each window is embedded, and the per-window
-embeddings are **mean-pooled** into one centroid query vector — so the whole file
-contributes to the search (a short file embeds to a single vector). `query` holds the
-**file path** here.
-
-Search is **brute force**: a linear scan over the whole space, in RAM, with a bounded
-min-heap keeping the `top-k` best. `top-k` is clamped to the number of stored vectors. The
-result is the matching **vectors and scores**, not any source (see [semspace](semspace.md)).
-
-Two forms, selected by the **rate of the output variables**:
-
-* **i-rate** (`i[][]`, `i[]` outputs) — query **once at init**.
-* **k-rate** (`k[][]`, `k[]`, `k` outputs) — real time, **self-gated**: re-embeds and
-  re-searches only when the file **path** changes. `kgate` pulses to 1 when a fresh
-  worker result has been published, else it is 0. Work runs on a per-instance background
-  thread with latest-wins scheduling: if path changes arrive faster than processing,
-  intermediate jobs are discarded and stale results are not published.
 
 ## Syntax
 
@@ -44,12 +25,13 @@ neighs:k[][], scores:k[], kgate:k = semspacequeryaudio(space:i, handle:i, path:S
 * `space:i`: handle returned by [semspace](semspace.md).
 * `handle:i`: an **audio** embedding model from [semload](semload.md) (dim must match the space).
 * `path:S`: path to a PCM16 WAV file to use as the query.
-* `topk:i`: number of neighbours to return (clamped to the space size).
+* `topk:i`: number of output neighbour slots to return. Must be greater than `0`.
 
 ## Output
 
 * `neighs[][]`: nearest vectors (`topk × dim`).
-* `scores[]`: their cosine similarity scores (length `topk`, descending).
+* `scores[]`: their cosine similarity scores (length `topk`, descending). If the space
+  contains fewer than `topk` matches, the remaining rows/scores stay zero.
 * `kgate:k`: k-rate form only. `1` for the k-pass where a fresh async result is ready,
   otherwise `0`.
 

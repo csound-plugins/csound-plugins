@@ -7,11 +7,7 @@ that don't come from a file.
 
 ## Description
 
-`semspacequeryaudioft` is the real-time counterpart of
-[semspacequeryaudio](semspacequeryaudio.md): instead of decoding a WAV file, it embeds the
-audio currently held in function table `ftable` (mono samples at the **engine sample rate**)
-with the **audio model** `handle`, mean-pools the per-window vectors into one centroid query,
-and returns the `top-k` nearest stored vectors by cosine similarity.
+`semspacequeryaudioft` is the real-time counterpart of [semspacequeryaudio](semspacequeryaudio.md): instead of decoding a WAV file, it embeds the audio currently held in function table `ftable` (mono samples at the **engine sample rate**) with the **audio model** `handle`, mean-pools the per-window vectors into one centroid query, and returns the `top-k` nearest stored vectors by cosine similarity.
 
 Typical use: continuously capture live input into a **circular table**, then query the space
 on a trigger. Because the model is passed per call and the space is a pure store, the same
@@ -21,16 +17,6 @@ space can also be queried by text or by file.
 table holds less than `iminsec` of audio the call is a no-op that leaves the outputs zeroed
 (it does **not** error), so a live loop reaching for a partly-filled buffer stays safe. A
 near-silent table likewise yields no match. `iminsec = 0` (or omitted) means no minimum.
-
-Two forms:
-
-* **i-rate** (`i[][]`, `i[]` outputs) — query **once at init** from the table.
-* **k-rate** (`k[][]`, `k[]`, `k` outputs) — query on the **rising edge** of `ktrig` (e.g.
-  from a `metro`). Inference runs on a per-instance worker thread with latest-wins
-  scheduling: if triggers arrive faster than processing, intermediate table snapshots are
-  discarded. `kgate` pulses to 1 when a fresh worker result has been published, else it is 0.
-  The table is copied into a job buffer at submit time, so a circular recorder can keep
-  overwriting the live ftable while the worker processes a stable snapshot.
 
 ## Syntax
 
@@ -44,14 +30,15 @@ neighs:k[][], scores:k[], kgate:k = semspacequeryaudioft(space:i, handle:i, ftab
 * `space:i`: handle returned by [semspace](semspace.md).
 * `handle:i`: an **audio** embedding model from [semload](semload.md) (dim must match the space).
 * `ftable:i`: a function table of mono audio samples at the engine sample rate.
-* `topk:i`: number of neighbours to return (clamped to the space size).
+* `topk:i`: number of output neighbour slots to return. Must be greater than `0`.
 * `ktrig:k`: k-rate form only. A query runs on the rising edge of this signal.
-* `iminsec:i` (optional): minimum table duration, in seconds, to run a query. Default `0`.
+* `iminsec:i` (optional): minimum table duration, in seconds, to run a query. Default `0`. `iminsec = 0` (or omitted) means no minimum.
 
 ## Output
 
 * `neighs[][]`: nearest vectors (`topk × dim`), zeroed when the query is skipped.
-* `scores[]`: their cosine similarity scores (length `topk`, descending).
+* `scores[]`: their cosine similarity scores (length `topk`, descending). If the space
+  contains fewer than `topk` matches, the remaining rows/scores stay zero.
 * `kgate:k`: k-rate form only. `1` for the k-pass where a fresh async result is ready,
   otherwise `0`.
 

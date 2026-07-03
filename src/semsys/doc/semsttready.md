@@ -10,10 +10,8 @@ Poll whether a finished transcription is waiting to be read.
 the result queue, else `0`. It is a cheap, non-blocking k-rate poll used to gate
 [semsttresult](semsttresult.md): submit audio with a `semsttsubmit*` opcode, poll
 `semsttready`, and read the text when it turns `1`.
-
 Because results are queued FIFO on the handle configured by [semsttload](semsttload.md),
-`semsttready` stays `1` while more than one result is pending — read one per pass with
-[semsttresult](semsttresult.md) until it returns `0`.
+`semsttready` stays `1` while more than one result is pending, read one per pass with [semsttresult](semsttresult.md) until it returns `0`.
 
 ## Syntax
 

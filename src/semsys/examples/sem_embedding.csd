@@ -10,7 +10,7 @@ nchnls = 2
 
 #define MODEL_DIR # "/Users/pm/AcaHub/Coding/csound-repo/semsys-models/all-MiniLM-L6-v2/all-MiniLM-L6-v2-e2e" #
 
-// load the end-to-end embedding model (dir must contain model.onnx + model.onnx.data)
+// load the end-to-end embedding model (dir must contain model.onnx; keep model.onnx.data there too if present)
 handle@global:i = semload(256, $MODEL_DIR)
 
 instr 1

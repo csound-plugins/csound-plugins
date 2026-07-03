@@ -10,27 +10,18 @@ Embed a text sentence and append its vector(s) to a semantic space.
 tokenizes internally), normalizes, and appends the vector to the **in-memory** space opened
 with [semspace](semspace.md). The add is RAM-only; nothing is written to disk. To persist,
 call [semspacesave](semspacesave.md).
-
-The model is chosen **per call** — the space itself holds no model, only vectors. `handle`
+The model is chosen **per call**. The space itself holds no model, only vectors. `handle`
 must be a **text** model whose embedding dim equals the space's dim, otherwise an init error
 is raised. To add audio instead, use [semspaceaddaudio](semspaceaddaudio.md); vectors from
 both share one space as long as the dimensions match.
-
 Text longer than the model window is **chunked** (the same token-window chunker as
-[semspacebuild](semspacebuild.md)) and **each chunk is added as a separate entry** — a long
+[semspacebuild](semspacebuild.md)) and **each chunk is added as a separate entry**. A long
 sentence grows the space by several vectors, not one. Short text adds a single vector.
-
-A **consecutive self-gate** skips the add — before embedding — when `sentence` is unchanged
+A **consecutive self-gate** skips the add, before embedding, when `sentence` is unchanged
 from the previous add, so a repeated k-rate trigger with the same text does not re-embed.
 After embedding, vectors already present in the space are skipped, so re-adding content
 from an already-loaded `.espc` or from an earlier add does not duplicate entries. Empty
 input adds nothing.
-
-Two forms, distinguished by whether a trigger is given:
-
-* **i-rate** (`semspaceaddtxt ispace, ihandle, Ssentence`) — add **once, at init**.
-* **k-rate** (`semspaceaddtxt ispace, ihandle, Ssentence, ktrig`) — add during performance
-  on the **rising edge** of `ktrig` (`ktrig > 0` while the previous value was `<= 0`).
 
 ## Syntax
 
@@ -48,8 +39,8 @@ semspaceaddtxt(space:i, handle:i, sentence:S, trig:k)   ; k-rate, on rising edge
 
 ## Execution Time
 
-* Init (i-rate form)
-* Performance (k-rate form)
+* Init
+* Performance
 
 ## Examples
 

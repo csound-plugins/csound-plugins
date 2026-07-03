@@ -7,24 +7,8 @@ Create an in-memory semantic vector space, optionally loading `.espc` files.
 ## Description
 
 `semspace` returns a handle to a **semantic space**: a collection of embedding vectors held **in RAM**. The space is populated with [semspaceaddtxt](semspaceaddtxt.md) / [semspaceaddaudio](semspaceaddaudio.md) or [semspacebuild](semspacebuild.md), searched with [semspacequerytxt](semspacequerytxt.md) / [semspacequeryaudio](semspacequeryaudio.md), and persisted with [semspacesave](semspacesave.md).
-
-The space is a **pure vector store**: it does **not** embed. The embedding model is passed by the user to each add/query call, so text and audio vectors can share one space as long as they have the same dimension. The `handle` given to `semspace` only fixes the space's dimension (`ldim`); the per-op models must match it.
-
-Three forms:
-
-* `semspace(handle:i)` — start an empty space in memory.
-* `semspace(handle:i, path:S)` — load from a path. If it is a `.espc` **file**, that file is loaded; if it is a **directory**, every `.espc` inside it is loaded and merged into one space (auto-detected).
-* `semspace(handle:i, paths:S[])` — load and merge an array of `.espc` files.
-
-Every loaded file is validated: its magic tags must be valid and its embedding dimension
-**must match** the model loaded with [semload](semload.md); otherwise an init error is
-raised. Loading a directory or array **merges** all vectors into a single space and skips
-vectors already present in that space. Duplicate detection is vector-based: normalized
-vectors that match an existing row are not inserted again.
-
-Files are read once into RAM and then **closed**; semsys never writes back to them. Adds happen in memory only — to persist, call [semspacesave](semspacesave.md) (which always writes a fresh file). The RAM buffer grows automatically as vectors are added.
-
-The space stores **vectors only**, no source text. It is a brute-force store, not an index: queries scan every vector linearly. Memory and vectors are freed automatically when the instance is deinitialised.
+The space is a **pure vector store**. The embedding model is passed by the user to each add/query call, so text and audio vectors can share one space as long as they have the same dimension.
+The space stores **vectors only**, no source text.
 
 ## Syntax
 
@@ -81,6 +65,7 @@ i 1 0 1
 * [semspaceaddtxt](semspaceaddtxt.md)
 * [semspaceaddaudio](semspaceaddaudio.md)
 * [semspacebuild](semspacebuild.md)
+* [semspaceclear](semspaceclear.md)
 * [semspacequerytxt](semspacequerytxt.md)
 * [semspacequeryaudio](semspacequeryaudio.md)
 * [semspacequeryaudioft](semspacequeryaudioft.md)

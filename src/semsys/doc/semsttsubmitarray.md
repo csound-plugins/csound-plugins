@@ -10,21 +10,12 @@ Submit a buffer of audio samples for transcription (asynchronous, non-blocking).
 in-RAM WAV (engine `sr`, mono) and handed to the background worker started by
 [semsttload](semsttload.md); the graph resamples to the model rate internally.
 
-The array length is whatever you filled — it is **not** limited by `ksmps`. To transcribe a
+The array length is whatever you filled, it is **not** limited by `ksmps`. To transcribe a
 live signal captured sample-by-sample, use [semsttsubmitlive](semsttsubmitlive.md) instead,
 which accumulates an a-rate signal into a window.
 
-Like all `semstt*` submits it is **asynchronous**: it only **enqueues** the audio and
-returns immediately. Read the result with [semsttready](semsttready.md) /
-[semsttresult](semsttresult.md). If the queue is full, the newest submit is dropped with a
-warning and already queued jobs stay queued.
-
-The samples must be at **engine `sr`** (the rate at which Csound arrays/signals are
-produced); the WAV header records that rate so the model's decoder resamples correctly.
-
 Audio longer than the model window (~30 s for Whisper) is **segmented automatically**: the
-buffer is split into ≤30 s chunks — each cut snapped to the quietest point near the boundary
-so words are not clipped — every chunk is transcribed, and the texts are joined into a single
+buffer is split into max 30 s chunks, every chunk is transcribed, and the texts are joined into a single
 result. One submit yields one combined transcription regardless of length.
 
 ## Syntax
@@ -39,8 +30,6 @@ semsttsubmitarray(handle:i, samples:i[])
 * `samples:i[]`: mono audio samples (engine `sr`, range -1..1).
 
 ## Output
-
-* none. The transcription is retrieved with [semsttresult](semsttresult.md).
 
 ## Execution Time
 

@@ -9,26 +9,14 @@ Embed an audio file and append its per-window vector(s) to a semantic space.
 `semspaceaddaudio` decodes a **PCM16 WAV** file, embeds it with the **audio model** passed
 as `handle`, normalizes, and appends the vector(s) to the **in-memory** space opened with
 [semspace](semspace.md). The add is RAM-only; call [semspacesave](semspacesave.md) to
-persist. It is the audio counterpart of [semspaceaddtxt](semspaceaddtxt.md).
-
-The model is chosen **per call** — the space holds no model, only vectors. `handle` must be
+persist.
+The model is chosen **per call**. The space holds no model, only vectors. `handle` must be
 an **audio** model whose embedding dim equals the space's dim, otherwise an init error is
 raised. Audio and text vectors coexist in one space when their dimensions match.
-
-The audio is split into fixed **~10 s windows** (the model's training length); each window
-is embedded into a separate, L2-normalized entry — a long file grows the space by several
-vectors. Near-silent windows are skipped. `sentence` holds the **file path** here.
-
 A **consecutive self-gate** skips the add when the path is unchanged from the previous add.
 After embedding, vectors already present in the space are skipped, so re-adding content
 from an already-loaded `.espc` or from an earlier add does not duplicate entries. Empty
 input adds nothing. Only PCM16 WAV is accepted (convert other formats first).
-
-Two forms:
-
-* **i-rate** (`semspaceaddaudio ispace, ihandle, Spath`) — add **once, at init**.
-* **k-rate** (`semspaceaddaudio ispace, ihandle, Spath, ktrig`) — add on the **rising edge**
-  of `ktrig`.
 
 ## Syntax
 
@@ -62,7 +50,6 @@ ksmps = 32
 nchnls = 2
 0dbfs = 1
 
-; audio embedder (e.g. PANNs CNN14): -1 = no sequence cap
 a_handle@global:i = semload(-1, "path/to/audio_model_dir")
 s_handle@global:i = semspace(a_handle)          // empty in-memory space
 

@@ -91,11 +91,11 @@
     getenv("SEMSYS_STT_DEBUG")[0] != '0')       \
 
 
-#define CHECK_PTR_CTX(csound, ctx, ctx_string)                                    \
-    do {                                                                      \
-        if (ctx == NULL) {                                                    \
+#define CHECK_PTR_CTX(csound, ctx, ctx_string)                                  \
+    do {                                                                        \
+        if (ctx == NULL) {                                                      \
             return csound->InitError(csound, "[%s] Null context", ctx_string);  \
-        }                                                                     \
+        }                                                                       \
     } while(0)
 
 #define ONNX_CHECK_INIT(api, expr)                                \
@@ -513,6 +513,21 @@ typedef struct {
     QUERY_ASYNC async;
 } SEM_SPACE_QUERY_FT_K;
 
+typedef struct {
+    OPDS h;
+    // inputs
+    MYFLT *s_handle; // space handle
+    MYFLT *trig;
+    // private
+    SEMSYS_SPACE *spc;
+    MYFLT last_trig;
+} SEM_SPACE_CLEAR_K;
+
+typedef struct {
+    OPDS h;
+    // inputs
+    MYFLT *s_handle; // space handle
+} SEM_SPACE_CLEAR_I;
 
 // SEMSYS STT
 
@@ -597,11 +612,11 @@ typedef struct {
     MYFLT *ktrig;     // optional: also submit on rising edge (default 0 -> auto only)
     // state
     SEMSYS_STT *ctx;
-    AUXCH buf;        // accumulation buffer (MYFLT, engine sr, mono)
-    size_t target;    // preferred window length in samples
-    size_t cap;       // hard capacity in samples
+    AUXCH buf;         // accumulation buffer (MYFLT, engine sr, mono)
+    size_t target;     // preferred window length in samples
+    size_t cap;        // hard capacity in samples
     size_t next_check; // next automatic VAD boundary check
-    size_t len;       // samples written so far
+    size_t len;        // samples written so far
     MYFLT prev_trig;
 } SEM_STT_SUBMIT_LIVE;
 
@@ -650,6 +665,8 @@ int sem_embed_audio_func_i(CSOUND *csound, SEM_EMBED_AUDIO_FUNC_I *p);
 // SEMSYS SPACE
 int sem_space_init(CSOUND *csound, SEM_SPACE_INIT *p);
 int sem_space_init_vs(CSOUND *csound, SEM_SPACE_INIT_VS *p);
+int sem_space_clear_i(CSOUND *csound, SEM_SPACE_CLEAR_I *p);
+int sem_space_clear_k(CSOUND *csound, SEM_SPACE_CLEAR_K *p);
 // build is universal: it dispatches text vs audio on the model kind (semload-detected)
 int sem_space_build(CSOUND *csound, SEM_SPACE_BUILD *p);
 // text (add/query take the model handle per-op; audio forms differ only in the model used)
@@ -677,6 +694,7 @@ int sem_space_query_audio_ft_deinit(CSOUND *csound, SEM_SPACE_QUERY_FT_K *p);
 int sem_space_save(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_save_kset(CSOUND *csound, SEM_SPACE_SAVE *p);
 int sem_space_save_kperf(CSOUND *csound, SEM_SPACE_SAVE *p);
+
 
 // SEMSYS STT
 int sem_stt_init(CSOUND *csound, SEM_STT_INIT *p);

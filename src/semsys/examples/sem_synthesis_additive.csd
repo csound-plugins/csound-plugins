@@ -48,7 +48,7 @@ opcode osc_bank(amp:k[], freq:k[], dim:i, cnt:o):(a)
     endif
 endop
 
-// load model dir (must contain model.onnx + model.onnx.data)
+// load model dir (must contain model.onnx; keep model.onnx.data there too if present)
 e_handle@global:i = semload(256, $MODEL_DIR)
 sdim@global:i = semdim(e_handle)
 

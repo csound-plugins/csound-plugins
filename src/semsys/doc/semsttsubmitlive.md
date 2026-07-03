@@ -10,8 +10,7 @@ Capture a live a-rate signal and submit usable speech windows for transcription
 `semsttsubmitlive` accumulates an a-rate mono signal across control blocks and submits
 speech windows to the background worker created by [semsttload](semsttload.md).
 
-`maxdur` is a **preferred** window length, not a hard periodic cut. After `maxdur`, the
-backend analyzes the buffer with a lightweight energy gate:
+The backend analyzes the buffer with a lightweight energy gate:
 
 * silent windows are dropped;
 * windows with too little detected speech are held and merged with following audio when
@@ -20,22 +19,11 @@ backend analyzes the buffer with a lightweight energy gate:
 * a window is submitted when there is enough detected speech and a useful trailing silence
   boundary;
 * submitted audio is trimmed around detected speech with a small pre/post pad;
-* a hard safety cap prevents unbounded live accumulation (`max(maxdur, ~30 s)`).
+* a hard safety cap prevents unbounded live accumulation.
 
 The optional `trig` input forces a boundary on a rising edge. Even then, the backend still
 checks whether there is enough speech before submitting. Use `trig` for explicit phrase
 ends, manual gates, or an external VAD; omit it to use only the built-in gate.
-
-Like all `semstt*` submits, the opcode only enqueues work and returns. Read results with
-[semsttready](semsttready.md) and [semsttresult](semsttresult.md). If the fixed queue is
-full, the newest window is dropped with a warning while already queued jobs stay queued.
-When the live instrument instance deinitializes, any remaining buffered speech is flushed if
-it is functional; insufficient speech is dropped. When the STT handle itself is destroyed,
-pending jobs/results are discarded rather than drained.
-
-With `SEMSYS_STT_DEBUG=1`, the opcode prints window decisions such as submitted speech
-duration, dropped insufficient-speech windows, queue drops, and `job#` enqueue/dequeue/result
-tracking.
 
 `semsttsubmitlive` is not equivalent to [semsttsubmitfile](semsttsubmitfile.md) unless the
 live window covers the same audio span. For file-style tests through the live path, use a
@@ -55,11 +43,9 @@ semsttsubmitlive(handle:i, asig:a, maxdur:i, trig:k)
 * `maxdur:i`: preferred speech-window length in seconds. After this duration, the backend
   starts checking for a usable boundary; speech can continue accumulating up to the hard
   safety cap.
-* `trig:k` (optional, default `0`): rising edge requests a forced boundary.
+* `trig:k` (optional, default `0`): rising edge requests a forced boundary. Forces a boundary on a rising edge. Even then, the backend still checks whether there is enough speech before submitting. Use `trig` for explicit phrase ends or manual gates; omit it to use only the built-in gate.
 
 ## Output
-
-* none. The transcription is retrieved with [semsttresult](semsttresult.md).
 
 ## Execution Time
 

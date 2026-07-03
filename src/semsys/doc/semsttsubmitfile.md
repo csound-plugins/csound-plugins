@@ -14,12 +14,8 @@ raises an init error (convert to WAV first, or load it into a function table and
 The opcode only enqueues the job and returns. Poll with [semsttready](semsttready.md), then
 read the transcription with [semsttresult](semsttresult.md).
 
-The job goes into the handle's bounded FIFO. If the queue is full, the newest submit is
-dropped with a warning and already queued jobs stay queued.
-
 Audio longer than the model window (~30 s for Whisper) is **segmented automatically**: the
-file is split into ≤30 s chunks — each cut snapped to the quietest point near the boundary
-so words are not clipped — every chunk is transcribed, and the texts are joined into a
+file is split into max 30 s chunks, every chunk is transcribed, and the texts are joined into a
 single result. So one `semsttsubmitfile` call yields one combined transcription regardless
 of length.
 
@@ -35,8 +31,6 @@ semsttsubmitfile(handle:i, path:S)
 * `path:S`: path to an audio file.
 
 ## Output
-
-* none. The transcription is retrieved with [semsttresult](semsttresult.md).
 
 ## Execution Time
 
