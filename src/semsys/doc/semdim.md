@@ -8,8 +8,7 @@ Return the embedding dimension of a loaded model.
 
 `semdim` returns the dimensionality of the embedding vectors produced by the model
 loaded with [semload](semload.md). The value is detected automatically from the
-model output at load time (for example, `384` for
-`sentence-transformers/all-MiniLM-L6-v2`).
+model output at load time (for example, `384` for `sentence-transformers/all-MiniLM-L6-v2`).
 
 Use it to size arrays that hold embeddings, or to verify the model you loaded.
 
@@ -37,25 +36,34 @@ dim:i = semdim(handle:i)
 ```csound
 <CsoundSynthesizer>
 <CsOptions>
+-n
 </CsOptions>
 <CsInstruments>
 
+; -----------------------------------------------------------------------------
+; semdim.csd
+;
+; semdim reports the embedding (latent) dimension of a loaded model. Use it to
+; size the arrays that hold embeddings, or to verify the model you loaded.
+; -----------------------------------------------------------------------------
+
 sr = 44100
-ksmps = 1
-nchnls = 2
+ksmps = 32
 0dbfs = 1
 
-handle@global:i = semload(256, "path/to/model_dir")
+#define MODEL_DIR # "path/to/text_model_dir" #
+
+handle@global:i = semload(256, $MODEL_DIR)
 
 instr 1
     ldim:i = semdim(handle)
-    prints("Latent dimension size: %d\n", ldim)
+    prints("latent dimension = %d\n", ldim)
     turnoff
 endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 1
+i 1 0 0.1
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -68,6 +76,4 @@ i 1 0 1
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026

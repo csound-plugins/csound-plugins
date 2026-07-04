@@ -39,26 +39,41 @@ chunks:i[][] = semembedaudioft(handle:i, ftable:i)
 ```csound
 <CsoundSynthesizer>
 <CsOptions>
+-o dac
 </CsOptions>
 <CsInstruments>
+
+; -----------------------------------------------------------------------------
+; semembedaudioft.csd
+;
+; semembedaudioft embeds the samples of a function table (mono, engine sr) at
+; init, returning a 2D array [nchunks, ldim]: split into ~10 s windows, each
+; embedded and L2-normalized into one row. Load an end-to-end audio model
+; (e.g. PANNs CNN14) with maxlen = -1 ("full").
+; -----------------------------------------------------------------------------
 
 sr = 44100
 ksmps = 32
 nchnls = 2
 0dbfs = 1
 
-handle@global:i = semload(-1, "path/to/audio_model_dir")
+#define AUDIO_EMB_DIR # "path/to/audio_model_dir" #
+#define AUDIO_TEST_FILE # "sound.wav" #
 
-instr 1
-    emb:i[][] = semembedaudioft(handle, 1)
+audio_table@global:i = ftgen(0, 0, 0, 1, $AUDIO_TEST_FILE, 0, 0, 0)
+
+; audio embedder: -1 = run full, no sequence cap (PANNs CNN14 pools over time)
+h_aemb@global:i = semload(-1, $AUDIO_EMB_DIR)
+
+instr FTABLE
+    emb:i[][] = semembedaudioft(h_aemb, audio_table)
     printarray(emb)
     turnoff
 endin
 
 </CsInstruments>
 <CsScore>
-f 1 0 0 1 "sound.wav" 0 0 1   ; load audio into an ftable (GEN01)
-i 1 0 0.1
+i "FTABLE" 0 1
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -72,6 +87,4 @@ i 1 0 0.1
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-July 2026.
+Pasquale Mainolfi, 2026

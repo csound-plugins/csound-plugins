@@ -42,8 +42,8 @@ pool:k[], changed:k = semembedtxt:k(handle:i, text:S)   ; k-rate, real-time
 
 ## Execution Time
 
-* Init (i-rate form)
-* Init + Performance (k-rate form)
+* Init
+* Init + Performance
 
 ## Examples
 
@@ -53,21 +53,58 @@ pool:k[], changed:k = semembedtxt:k(handle:i, text:S)   ; k-rate, real-time
 </CsOptions>
 <CsInstruments>
 
+; -----------------------------------------------------------------------------
+; semembedtxt.csd
+;
+; semembedtxt turns text into its mean-pooled sentence embedding. Two forms,
+; selected automatically by the output rate:
+;   k-rate (k[] + changed flag) : real-time, self-gated (re-runs only when the
+;                                 text changes); returns one pooled vector.
+;   i-rate (i[][])              : once at init; text longer than the model window
+;                                 is chunked, one embedding row per chunk.
+; -----------------------------------------------------------------------------
+
 sr = 44100
 ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-handle@global:i = semload(256, "path/to/model_dir")
+#define MODEL_DIR # "path/to/text_model_dir" #
+
+// load the end-to-end embedding model (dir must contain model.onnx; keep model.onnx.data there too if present)
+handle@global:i = semload(256, $MODEL_DIR)
 
 instr 1
+    ldim:i = semdim(handle) // get latent dimension
+    prints("Latent dimension size: %d\n", ldim)
+    turnoff
+endin
+
+instr SENTENCE_K
     sentence:S = "sound synthesis in blue sky"
+    // pool_embed = mean-pooled sentence vector; changed = 1 on the pass the text changes
     pool_embed:k[], changed:k = semembedtxt:k(handle, sentence)
+    printarray(pool_embed, -1)
+endin
+
+instr SENTENCE_I
+    sentence:S = "On a quiet autumn morning, Emma decided to take a different path to work.  \
+        Instead of following the busy streets, she wandered through an old park she had       \
+        never noticed before. The trees were covered in golden leaves, and the air smelled    \
+        fresh after the night's rain. As she walked, she discovered a small wooden bench       \
+        with a notebook resting on it, filled with short messages written by strangers."
+
+    // longer than the model window -> i-rate returns one row per chunk
+    pool_embed:i[][] = semembedtxt:i(handle, sentence)
+    printarray(pool_embed)
+    turnoff
 endin
 
 </CsInstruments>
 <CsScore>
 i 1 0 1
+i "SENTENCE_K" 2 1
+i "SENTENCE_I" 3 1
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -82,6 +119,4 @@ i 1 0 1
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026

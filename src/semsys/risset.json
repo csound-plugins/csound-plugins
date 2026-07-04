@@ -13,6 +13,8 @@
     "semspace",
     "semspace.f",
     "semspace.vs",
+    "semspaceclear",
+    "semspaceclear.k",
     "semspacebuild",
     "semspaceaddtxt",
     "semspaceaddtxt.k",
@@ -35,7 +37,7 @@
     "semsttresult"
   ],
   "short_description": "Semantic synthesis and latent-space tools for Csound",
-  "long_description": "A Csound plugin for embeddings, semantic spaces, similarity search, speech-to-text, and latent-space composition",
+  "long_description": "A Csound plugin for embeddings, semantic spaces, similarity search, speech-to-text, and latent-space exploration",
   "author": "Pasquale Mainolfi",
   "email": "mnlpql@gmail.com",
   "license": "LGPL",

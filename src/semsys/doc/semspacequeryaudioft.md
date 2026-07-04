@@ -2,8 +2,7 @@
 
 ## Abstract
 
-Query a semantic space with audio from a **function table** — for real-time audio queries
-that don't come from a file.
+Query a semantic space with audio from a **function table**, for real-time audio queries that don't come from a file.
 
 ## Description
 
@@ -44,8 +43,8 @@ neighs:k[][], scores:k[], kgate:k = semspacequeryaudioft(space:i, handle:i, ftab
 
 ## Execution Time
 
-* Init (i-rate form)
-* Init + Performance (k-rate form)
+* Init
+* Init + Performance
 
 ## Examples
 
@@ -56,28 +55,48 @@ neighs:k[][], scores:k[], kgate:k = semspacequeryaudioft(space:i, handle:i, ftab
 </CsOptions>
 <CsInstruments>
 
+; -----------------------------------------------------------------------------
+; semspacequeryaudioft.csd
+;
+; semspacequeryaudioft is the real-time counterpart of semspacequeryaudio: it
+; embeds the audio held in a function table (mono, engine sr), mean-pools it into
+; one query vector, and returns the top-k nearest stored vectors. Here: capture
+; live mic into a circular table and query the space on a trigger.
+; -----------------------------------------------------------------------------
+
 sr = 44100
 ksmps = 32
 nchnls = 2
 0dbfs = 1
 
-a_handle@global:i = semload(-1, "path/to/audio_model_dir")
+#define AUDIO_MODEL # "path/to/audio_model_dir" #
+#define AUDIO_DIR # "path/to/wav_dir" #
+#define TLEN # sr * 3 #
+
+rec@global:i = ftgen(0, 0, $TLEN, 2, 0)
+
+a_handle@global:i = semload(-1, $AUDIO_MODEL)
+; build an .espc from every .wav in a directory (audio model -> audio embedding)
+semspacebuild(a_handle, "sounds.espc", $AUDIO_DIR)
+
+; load it back into RAM (handle only fixes the dimension)
 s_handle@global:i = semspace(a_handle, "sounds.espc")
 
-; ~11.9 s circular capture buffer
-girec ftgen 0, 0, 524288, 2, 0
-
+; RECORD continuously overwrites the circular table `rec` with the mic input.
 instr RECORD
     a1:a = inch(1)
-    andx:a = phasor(sr / ftlen(girec))
-    tablew(a1, andx, girec, 1)
+    andx:a = phasor(sr / ftlen(rec))     ; 0..1 ramp, wraps once per table length
+    tablew(a1, andx, rec, 1)             ; ixmode 1 -> normalized index
 endin
 
+; LIVE_QUERY queries the space from the capture table every ~4 s; iminsec = 2 skips the
+; query until at least 2 s of audio has been captured. The k-rate form snapshots the table
+; on trigger and runs inference/search on a worker thread.
 instr LIVE_QUERY
-    ktrig:k = metro(0.25)   ; every ~4 s
-    neighs:k[][], scores:k[], kgate:k = semspacequeryaudioft(s_handle, a_handle, girec, 3, ktrig, 8)
+    ktrig:k = metro(0.25) ; ~ every 4 s
+    neighs:k[][], scores:k[], kgate:k = semspacequeryaudioft(s_handle, a_handle, rec, 3, ktrig, 2)
     if (kgate == 1) then
-        println("nearest score = %f", scores[0])
+        println("nearest match score = %f", scores[0])
     endif
 endin
 
@@ -98,6 +117,4 @@ i "LIVE_QUERY" 0 30
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-July 2026.
+Pasquale Mainolfi, 2026

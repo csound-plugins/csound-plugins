@@ -39,25 +39,60 @@ semsttsubmitfile(handle:i, path:S)
 ## Examples
 
 ```csound
+<CsoundSynthesizer>
+<CsOptions>
+-o dac2
+</CsOptions>
+<CsInstruments>
+
+; -----------------------------------------------------------------------------
+; semsttsubmitfile.csd
+;
+; semsttsubmitfile reads a PCM16 WAV and hands it to the STT worker (non-blocking).
+; Audio longer than the model window is segmented automatically. Offline flow:
+; submit -> poll semsttready -> read semsttresult. The commented lines show the
+; array / function-table submit paths that reach the same worker.
+; -----------------------------------------------------------------------------
+
 sr = 44100
 ksmps = 128
 nchnls = 1
 0dbfs = 1
 
-h@global:i = semsttload("path/to/model_e2e", 448, 256)
+; end-to-end STT model dir: must contain model.onnx; keep model.onnx.data there too if present
+#define STT_DIR # "path/to/model_e2e" #
+#define AUDIO   # "path/to/spoken.wav" #
 
+faudio@global:i = ftgen(0, 0, 0, 1, $AUDIO, 0, 0, 0)
+
+h@global:i = semsttload($STT_DIR, 448, 64)
+
+; submit the file once at init; transcription runs on the worker thread
 instr SUBMIT
-    semsttsubmitfile(h, "speech.wav")
+    semsttsubmitfile(h, $AUDIO)
+    ; alternative submit paths (same async result):
+    ; audio_arr:i[] = init(ftlen(faudio))
+    ; copyf2array(audio_arr, faudio)
+    ; semsttsubmitarray(h, audio_arr)
+    ; semsttsubmitft(h, faudio)
 endin
 
+; poll until the transcription is ready, print it, stop
 instr POLL
-    ready:k = semsttready(h)
-    if (ready == 1) then
+    r:k = semsttready(h)
+    if (r == 1) then
         text:S, len:k = semsttresult(h)
-        println("TRANSCRIPTION: %s", text)
+        println("TRANSCRIPTION: %s\n", text)
         turnoff
     endif
 endin
+
+</CsInstruments>
+<CsScore>
+i "SUBMIT" 0 0.1
+i "POLL"   0 120
+</CsScore>
+</CsoundSynthesizer>
 ```
 
 ## See also
@@ -71,6 +106,4 @@ endin
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026

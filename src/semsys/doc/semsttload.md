@@ -96,35 +96,57 @@ handle:i = semsttload(model_dir:S, maxlen:i [, queue:i])
 ```csound
 <CsoundSynthesizer>
 <CsOptions>
--odac
+-o dac
 </CsOptions>
 <CsInstruments>
 
+; -----------------------------------------------------------------------------
+; semsttload.csd
+;
+; semsttload loads an end-to-end speech-to-text model and starts its background
+; worker (used with semsttsubmit* / semsttready / semsttresult). Offline flow:
+;   semsttsubmitfile -> enqueue the file (returns immediately, no text yet)
+;   semsttready      -> poll until the worker has finished
+;   semsttresult     -> read the transcription
+; -----------------------------------------------------------------------------
+
 sr = 44100
-ksmps = 64
-nchnls = 2
+ksmps = 128
+nchnls = 1
 0dbfs = 1
 
-; the directory must contain model.onnx; keep model.onnx.data here too if present
-h@global:i = semsttload("path/to/model_e2e", 448, 256)
+; end-to-end STT model dir: must contain model.onnx; keep model.onnx.data there too if present
+#define STT_DIR # "path/to/model_e2e" #
+#define AUDIO   # "path/to/spoken.wav" #
 
-instr transcribe
-    semsttsubmitfile(h, "speech.wav")     ; returns immediately
+faudio@global:i = ftgen(0, 0, 0, 1, $AUDIO, 0, 0, 0)
+
+h@global:i = semsttload($STT_DIR, 448, 64)
+
+; submit the file once at init; transcription runs on the worker thread
+instr SUBMIT
+    semsttsubmitfile(h, $AUDIO)
+    ; alternative submit paths (same async result):
+    ; audio_arr:i[] = init(ftlen(faudio))
+    ; copyf2array(audio_arr, faudio)
+    ; semsttsubmitarray(h, audio_arr)
+    ; semsttsubmitft(h, faudio)
 endin
 
-instr poll
-    ready:k = semsttready(h)
-    if (ready == 1) then
+; poll until the transcription is ready, print it, stop
+instr POLL
+    r:k = semsttready(h)
+    if (r == 1) then
         text:S, len:k = semsttresult(h)
-        printf("%s\n", ready, text)
+        println("TRANSCRIPTION: %s\n", text)
         turnoff
     endif
 endin
 
 </CsInstruments>
 <CsScore>
-i "transcribe" 0 0.1
-i "poll" 0 30
+i "SUBMIT" 0 0.1
+i "POLL"   0 120
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -141,6 +163,4 @@ i "poll" 0 30
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026

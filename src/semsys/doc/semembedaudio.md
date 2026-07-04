@@ -48,17 +48,29 @@ emb:k[], gate:k = semembedaudio(handle:i, asig:a [, iwindow:i])
 </CsOptions>
 <CsInstruments>
 
+; -----------------------------------------------------------------------------
+; semembedaudio.csd
+;
+; semembedaudio accumulates a-rate audio into fixed windows (iwindow seconds) and
+; runs each through an end-to-end audio model on a BACKGROUND worker, returning the
+; L2-normalized embedding as k[]. kgate == 1 the pass a fresh embedding arrives;
+; near-silent windows are skipped. Load the model with maxlen = -1 ("full").
+; -----------------------------------------------------------------------------
+
 sr = 44100
 ksmps = 32
 nchnls = 2
 0dbfs = 1
 
-; audio embedder: -1 = run full, no sequence cap (e.g. PANNs CNN14)
-handle@global:i = semload(-1, "path/to/audio_model_dir")
+#define AUDIO_EMB_DIR # "path/to/audio_model_dir" #
+#define AUDIO_TEST_FILE # "sound.wav" #
 
-instr 1
-    sig:a = inch(1)                                     ; live mic
-    kemb:k[], kgate:k = semembedaudio(handle, sig, 4)   ; 4 s windows
+; audio embedder: -1 = run full, no sequence cap (PANNs CNN14 pools over time)
+h_aemb@global:i = semload(-1, $AUDIO_EMB_DIR)
+
+instr LIVE
+    sig:a = diskin2($AUDIO_TEST_FILE, 1)                ; or inch(1) for a live mic
+    kemb:k[], kgate:k = semembedaudio(h_aemb, sig, 2)   ; 2 s windows
     if (kgate == 1) then
         check_coeffs:k = sqrt(sum(kemb^2))
         println("fresh audio embedding ready (dim %d) | coeffs check: %.3f", lenarray(kemb), check_coeffs)
@@ -67,7 +79,7 @@ endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 60
+i "LIVE" 0 20
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -82,6 +94,4 @@ i 1 0 60
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-July 2026.
+Pasquale Mainolfi, 2026

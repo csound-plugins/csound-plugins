@@ -34,39 +34,41 @@ semspacesave(space:i, file:S, trig:k)
 </CsOptions>
 <CsInstruments>
 
+; -----------------------------------------------------------------------------
+; semspacesave.csd
+;
+; semspacesave writes a full snapshot of the in-memory space to a .espc file
+; (overwrites). Here: fill the space during instr "build", then persist it from
+; instr "save" scheduled AFTER it, so the i-time save sees every add.
+; -----------------------------------------------------------------------------
+
 sr = 44100
 ksmps = 1
 nchnls = 2
 0dbfs = 1
 
-e_handle@global:i = semload(256, "path/to/model_dir")
-s_handle@global:i = semspace(e_handle)   ; RAM-only space
+#define MODEL_DIR # "path/to/text_model_dir" #
 
-; instr 1 fills the space during its performance
-instr 1
-    text:S, line:k = readf("space_text.txt")
-    if (line == -1) then
-        turnoff
-    endif
-    semspaceaddtxt(s_handle, e_handle, text)
-endin
+e_handle@global:i = semload(256, $MODEL_DIR)
+s_handle@global:i = semspace(e_handle)          // RAM-only space
 
-; instr 2 is scheduled later, so its i-time save sees all the adds
-instr 2
-    semspacesave(s_handle, "space.espc")
+instr build
+    semspaceaddtxt(s_handle, e_handle, "deep blue ocean under a calm evening sky")
+    semspaceaddtxt(s_handle, e_handle, "rockets roar as they climb into orbit")
+    semspaceaddtxt(s_handle, e_handle, "a lone violin sings a slow melancholic tune")
     turnoff
 endin
 
-; alternatively, save on a trigger during performance
-instr 3
-    ktrig = metro(0.5)
-    semspacesave(s_handle, "space.espc", ktrig)
+instr save
+    semspacesave(s_handle, "space.espc")
+    prints("space saved to space.espc\n")
+    turnoff
 endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 4
-i 2 4 0.1
+i "build" 0 0.1
+i "save"  1 0.1
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -79,6 +81,4 @@ i 2 4 0.1
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026

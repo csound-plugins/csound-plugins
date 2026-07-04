@@ -38,15 +38,54 @@ text:S, length:k = semsttresult(handle:i)
 ## Examples
 
 ```csound
-instr poll
-    ready:k = semsttready(h)
-    if (ready == 1) then
+<CsoundSynthesizer>
+<CsOptions>
+-o dac2
+</CsOptions>
+<CsInstruments>
+
+; -----------------------------------------------------------------------------
+; semsttresult.csd
+;
+; semsttresult pops the oldest finished transcription (FIFO) from the STT worker,
+; plus its length in characters; gate it with semsttready. Here: submit a file,
+; poll, then read and print the transcription.
+; -----------------------------------------------------------------------------
+
+sr = 44100
+ksmps = 128
+nchnls = 1
+0dbfs = 1
+
+; end-to-end STT model dir: must contain model.onnx; keep model.onnx.data there too if present
+#define STT_DIR # "path/to/model_e2e" #
+#define AUDIO   # "path/to/spoken.wav" #
+
+h@global:i = semsttload($STT_DIR, 448, 64)
+
+; submit the file once at init; transcription runs on the worker thread
+instr SUBMIT
+    semsttsubmitfile(h, $AUDIO)
+endin
+
+; poll until the transcription is ready, read it, stop
+instr POLL
+    r:k = semsttready(h)
+    if (r == 1) then
         text:S, len:k = semsttresult(h)   ; pops the oldest result
-        if (len > 0) then                 ; skip empty (silent) windows
-            printf("%s\n", ready, text)
+        if (len > 0) then                 ; skip empty (no-speech) windows
+            println("TRANSCRIPTION: %s\n", text)
         endif
+        turnoff
     endif
 endin
+
+</CsInstruments>
+<CsScore>
+i "SUBMIT" 0 0.1
+i "POLL"   0 120
+</CsScore>
+</CsoundSynthesizer>
 ```
 
 ## See also
@@ -58,6 +97,4 @@ endin
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026

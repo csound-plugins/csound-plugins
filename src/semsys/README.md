@@ -138,6 +138,43 @@ This is a deliberate limitation, not a TODO:
   Boundaries are approximate (word-based, not token-exact). Blank lines are hard
   boundaries; a window never crosses one.
 
+## ONNX models
+
+semsys **never ships models**. Every opcode that loads one (`semload`, `semsttload`)
+expects an **end-to-end ONNX graph** in a model directory: a single `model.onnx` (plus
+`model.onnx.data` if the graph stores weights externally) that does **everything inside the
+graph** — for text, tokenization (via onnxruntime-extensions) + encoder + mean-pooling; for
+audio, feature extraction + network + pooling; for STT, audio decode + encoder + decoding.
+semsys feeds it a raw string or raw audio and reads the vector (or text) straight out. A
+plain PyTorch/transformers checkpoint is **not** enough on its own — the pre/post-processing
+must be baked into the graph.
+
+You obtain such a graph in one of two ways:
+
+- **Download** a ready-made end-to-end export, when one exists for the model you want.
+- **Create** one yourself from any compatible base model, by exporting it *end-to-end* (the
+  tokenizer / feature-extractor fused into the graph, not just the bare encoder).
+
+The export is model-specific, but the shape of the procedure is always the same:
+
+```
+base model (e.g. sentence-transformers/all-MiniLM-L6-v2, Whisper, PANNs CNN14)
+   │
+   │  export end-to-end: fuse tokenizer / feature-extractor + encoder + pooling
+   |
+   .
+model.onnx   (+ model.onnx.data if the weights are external)
+   │
+   .
+a model directory  ->  semload(maxlen, "path/to/model_dir")
+```
+
+Concrete, tested export recipes and the exact tensor I/O each graph must expose are in the
+opcode docs — use them to build a model, or to check one you downloaded against the contract:
+
+- text / audio embedding → [doc/semload.md](doc/semload.md)
+- speech-to-text → [doc/semsttload.md](doc/semsttload.md)
+
 ## Model and token limits — read before choosing `maxlen`
 
 `maxlen` (the sequence length you pass to `semload`) is **not** free. It is bound
@@ -217,32 +254,19 @@ See `doc/` for the per-opcode reference.
 
 ## Examples
 
-The `examples/` directory holds working `.csd` files: usage examples for the opcodes
-(`sem_embedding.csd`, `sem_embed_audio.csd`, `sem_space.csd`, `sem_space_build.csd`,
-`sem_space_audio.csd`) plus two small **semantic synthesis** demos that turn a query into
-sound:
+The `examples/` directory holds **one working `.csd` per opcode**, named after it
+(`semembedtxt.csd`, `semspacebuild.csd`, `semspacequeryaudio.csd`, `semsttsubmitfile.csd`, …)
+— the same code shown in that opcode's page under `doc/`. A few go end-to-end on a whole
+flow: `semspacequerytxt.csd` drives **additive synthesis** from a text query (embedding
+coordinates → amplitudes of a sine-partial bank), and `semsttsubmitlive.csd` is a
+**voice-controlled latent space** (speak → transcribe → query → sound). The small corpora
+they use (`corpus.txt`, `corpus.espc`, `sounds.espc`) sit in the same directory.
 
-- `sem_synthesis.csd` — builds a filter **impulse response** from the query embedding
-  and convolves a source with it (`semspacequerytxt` → IR → `ftconv`).
-- `sem_synthesis_additive.csd` — **additive synthesis**: the embedding coordinates
-  become the amplitudes of a bank of sine partials.
-
-two **audio** demos:
-
-- `sem_embed_audio.csd` — embed a file into per-window vectors (`semembedaudiofile`,
-  `semembedaudioft`) and stream live a-rate audio into embeddings on a worker thread
-  (`semembedaudio`, gated).
-- `sem_space_audio.csd` — an **audio semantic space**: build a `.espc` from a folder of
-  `.wav`, then retrieve the nearest sounds to a query sound (`semspacebuild` →
-  `semspaceaddaudio` → `semspacequeryaudio`).
-
-and two **speech-to-text** demos:
-
-- `sem_stt_file.csd` — transcribe an audio file (`semsttsubmitfile` → `semsttready` →
-  `semsttresult`).
-- `sem_stt_live.csd` — **voice-controlled latent space**: speak into the mic, each usable
-  speech window is transcribed and used as a query into a semantic space, and the match
-  drives sound.
+> **Load your own model.** The examples — and the `## Examples` block on every `doc/` page —
+> use **placeholder** paths: `"path/to/text_model_dir"`, `"path/to/audio_model_dir"`,
+> `"path/to/model_e2e"`. semsys ships **no** models, so before running anything, replace
+> those with the directory of an end-to-end `model.onnx` you downloaded or exported (see
+> [ONNX models](#onnx-models)). The audio/STT examples also expect your own `.wav` inputs.
 
 ## Tests
 

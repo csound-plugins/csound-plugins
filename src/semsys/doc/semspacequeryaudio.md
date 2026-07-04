@@ -37,27 +37,44 @@ neighs:k[][], scores:k[], kgate:k = semspacequeryaudio(space:i, handle:i, path:S
 
 ## Execution Time
 
-* Init (i-rate form)
-* Init + Performance (k-rate form)
+* Init
+* Init + Performance
 
 ## Examples
 
 ```csound
 <CsoundSynthesizer>
 <CsOptions>
+-o dac
 </CsOptions>
 <CsInstruments>
+
+; -----------------------------------------------------------------------------
+; semspacequeryaudio.csd
+;
+; semspacequeryaudio decodes a PCM16 WAV, embeds it with the audio model and
+; returns the top-k nearest stored vectors by cosine similarity. Here: build an
+; audio space from a folder of .wav, load it, then query it with a sound file.
+; -----------------------------------------------------------------------------
 
 sr = 44100
 ksmps = 32
 nchnls = 2
 0dbfs = 1
 
-a_handle@global:i = semload(-1, "path/to/audio_model_dir")
+#define AUDIO_MODEL # "path/to/audio_model_dir" #
+#define AUDIO_DIR # "path/to/wav_dir" #
+
+a_handle@global:i = semload(-1, $AUDIO_MODEL)
+; build an .espc from every .wav in a directory (audio model -> audio embedding)
+semspacebuild(a_handle, "sounds.espc", $AUDIO_DIR)
+
+; load it back into RAM (handle only fixes the dimension)
 s_handle@global:i = semspace(a_handle, "sounds.espc")
 
-instr 1
-    ; find the 3 stored sounds most similar to a query sound
+instr QUERY
+    ; 3 stored sounds most similar to a query sound (file split into ~10s windows,
+    ; embedded, mean-pooled into one query vector, then top-k cosine search)
     neighs:i[][], scores:i[] = semspacequeryaudio(s_handle, a_handle, "query.wav", 3)
     printarray(scores)
     turnoff
@@ -65,7 +82,7 @@ endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 0.1
+i "QUERY" 0 0.1
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -80,6 +97,4 @@ i 1 0 0.1
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-July 2026.
+Pasquale Mainolfi, 2026

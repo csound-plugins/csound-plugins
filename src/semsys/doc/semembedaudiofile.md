@@ -44,27 +44,44 @@ chunks:i[][] = semembedaudiofile(handle:i, path:S)
 ```csound
 <CsoundSynthesizer>
 <CsOptions>
+-o dac
 </CsOptions>
 <CsInstruments>
+
+; -----------------------------------------------------------------------------
+; semembedaudiofile.csd
+;
+; semembedaudiofile embeds a PCM16 WAV at init, returning a 2D array
+; [nchunks, ldim]: the file is split into ~10 s windows, each embedded and
+; L2-normalized into one row. Runs in the init pass, off the audio thread.
+; Load an end-to-end audio model (e.g. PANNs CNN14) with maxlen = -1 ("full").
+; -----------------------------------------------------------------------------
 
 sr = 44100
 ksmps = 32
 nchnls = 2
 0dbfs = 1
 
-; audio embedder: -1 = run full, no sequence cap (e.g. PANNs CNN14)
-handle@global:i = semload(-1, "path/to/audio_model_dir")
+#define AUDIO_EMB_DIR # "path/to/audio_model_dir" #
+#define AUDIO_TEST_FILE # "sound.wav" #
 
-instr 1
-    emb:i[][] = semembedaudiofile(handle, "sound.wav")
-    prints("windows=%d  dim=%d\n", lenarray(emb), semdim(handle))
+; audio embedder: -1 = run full, no sequence cap (PANNs CNN14 pools over time)
+h_aemb@global:i = semload(-1, $AUDIO_EMB_DIR)
+
+; PCM16 WAV only (convert mp3/flac/ogg first, or load into an ftable -> semembedaudioft)
+instr FILE
+    ldim:i = semdim(h_aemb)
+    prints("audio latent dim: %d\n", ldim)
+
+    emb:i[][] = semembedaudiofile(h_aemb, $AUDIO_TEST_FILE)
+    prints("file embedded: %d window(s) x %d dims\n", lenarray(emb), ldim)
     printarray(emb)
     turnoff
 endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 0.1
+i "FILE" 0 1
 </CsScore>
 </CsoundSynthesizer>
 ```
@@ -79,6 +96,4 @@ i 1 0 0.1
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-July 2026.
+Pasquale Mainolfi, 2026

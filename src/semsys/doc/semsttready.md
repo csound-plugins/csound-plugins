@@ -34,13 +34,50 @@ ready:k = semsttready(handle:i)
 ## Examples
 
 ```csound
-instr poll
-    ready:k = semsttready(h)
-    if (ready == 1) then
+<CsoundSynthesizer>
+<CsOptions>
+-o dac2
+</CsOptions>
+<CsInstruments>
+
+; -----------------------------------------------------------------------------
+; semsttready.csd
+;
+; semsttready is a cheap non-blocking k-rate poll: 1 when a finished transcription
+; is waiting in the result queue. Use it to gate semsttresult. Here: submit a file,
+; poll every k-pass, read the text when it turns 1.
+; -----------------------------------------------------------------------------
+
+sr = 44100
+ksmps = 128
+nchnls = 1
+0dbfs = 1
+
+; end-to-end STT model dir: must contain model.onnx; keep model.onnx.data there too if present
+#define STT_DIR # "path/to/model_e2e" #
+#define AUDIO   # "path/to/spoken.wav" #
+
+h@global:i = semsttload($STT_DIR, 448, 64)
+
+instr SUBMIT
+    semsttsubmitfile(h, $AUDIO)
+endin
+
+instr POLL
+    r:k = semsttready(h)              ; non-blocking poll
+    if (r == 1) then
         text:S, len:k = semsttresult(h)
-        printf("%s\n", ready, text)
+        println("TRANSCRIPTION: %s\n", text)
+        turnoff
     endif
 endin
+
+</CsInstruments>
+<CsScore>
+i "SUBMIT" 0 0.1
+i "POLL"   0 120
+</CsScore>
+</CsoundSynthesizer>
 ```
 
 ## See also
@@ -52,6 +89,4 @@ endin
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026

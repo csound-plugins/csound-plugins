@@ -51,33 +51,102 @@ neighs:k[][], scores:k[], kgate:k = semspacequerytxt(space:i, handle:i, query:S,
 ```csound
 <CsoundSynthesizer>
 <CsOptions>
+-o dac
 </CsOptions>
 <CsInstruments>
 
+; -----------------------------------------------------------------------------
+; semspacequerytxt.csd
+;
+; semspacequerytxt finds the nearest stored vectors to a query text (cosine top-k).
+; This example turns the match into SOUND: a text query -> nearest embedding ->
+; an additive sine bank, where each embedding coordinate is the amplitude of a
+; partial at a fixed center frequency. The query's MEANING shapes the timbre.
+; -----------------------------------------------------------------------------
+
 sr = 44100
-ksmps = 1
+ksmps = 2
 nchnls = 2
 0dbfs = 1
 
-e_handle@global:i = semload(256, "path/to/text_model_dir")
-s_handle@global:i = semspace(e_handle, "space.espc")
+#define EPS # pow(10, -12) #
+#define MODEL_DIR # "path/to/text_model_dir" #
+
+seed(0)
+
+// center frequencies for the partial bank (constant -> i-array)
+opcode get_center_freqs(minf:i, maxf:i, nfreqs:i):(i[])
+    f:i[] = init(nfreqs)
+    step:i = (maxf - minf) / nfreqs
+    idx:i = 0
+    while (idx < nfreqs) do
+        f[idx] = minf + step * idx
+        idx += 1
+    od
+    xout(f)
+endop
+
+// random partial mask -> sparse spectra avoid beating
+opcode get_partials_mask(npart:i, dim:i):(i[])
+    mask:i[] = init(npart)
+    i:i = 0
+    while (i < npart) do
+        ndx:i = random(0, dim - 1)
+        mask[i] = ndx
+        i += 1
+    od
+    xout(mask)
+endop
+
+opcode osc_bank(amp:k[], freq:k[], dim:i, cnt:o):(a)
+    sig:a = poscil(amp[cnt], freq[cnt]) * 0.81
+    if (cnt < (dim - 1)) then
+        rsig:a = osc_bank(amp, freq, dim, cnt + 1)
+        xout(sig + rsig)
+    else
+        xout(sig)
+    endif
+endop
+
+// load model dir (must contain model.onnx; keep model.onnx.data there too if present)
+e_handle@global:i = semload(256, $MODEL_DIR)
+sdim@global:i = semdim(e_handle)
+
+// build a .espc space from a corpus once, then load it
+semspacebuild(e_handle, "corpus.espc", "corpus.txt")
+s@global:i = semspace(e_handle, "corpus.espc")
 
 instr 1
-    top_k:i = 3
-    query:S = "blue marine in red sky"
-    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s_handle, e_handle, query, top_k)
+    neighs:k[][], scores:k[], kgate:k = semspacequerytxt(s, e_handle, "warm analog texture", 3)
+    cfreqs:i[] = get_center_freqs(90, 2500, sdim)
+
+    npart:i = 30
+    mask:i[] = get_partials_mask(npart, sdim)
+
+    amp:k[] = init(npart)
+    frq:k[] = init(npart)
+    kidx:k = 0
+    while (kidx < npart) do
+        endx:k = mask[kidx]
+        amp[kidx] = abs(neighs[0][endx])   // amplitude = |embedding coordinate|
+        frq[kidx] = cfreqs[endx]
+        kidx += 1
+    od
+
+    // normalize so the amplitudes sum to 1 -> the summed partials peak at <= 1
+    asum:k = sumarray(amp)
+    amp = amp / (asum + $EPS)
+
+    add_sig:a = osc_bank(amp, frq, npart) * expseg(0.001, p3 / 2, 1, p3 / 2, 0.001)
+    out(add_sig, add_sig)
 endin
 
 </CsInstruments>
 <CsScore>
-i 1 0 1
+i 1 0 5
 </CsScore>
 </CsoundSynthesizer>
 ```
-
-For full **semantic synthesis** demos driven by a query, see `examples/sem_synthesis.csd`
-(query → filter impulse response → `ftconv`) and `examples/sem_synthesis_additive.csd`
-(query → additive sine bank).
 
 ## See also
 
@@ -89,6 +158,4 @@ For full **semantic synthesis** demos driven by a query, see `examples/sem_synth
 
 ## Credits
 
-Author: Pasquale Mainolfi<br>
-Italy<br>
-June 2026.
+Pasquale Mainolfi, 2026
