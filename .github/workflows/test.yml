@@ -162,6 +162,8 @@ jobs:
           choco install -y winflexbison3
           .\vcpkg\bootstrap-vcpkg.bat
           cmake -B build -S . `
+            -G "Visual Studio 17 2022" `
+            -A x64 `
             -DBUILD_TESTS=0 `
             -DUSE_VCPKG=1 `
             -DCUSTOM_CMAKE="./platform/windows/Custom-vs.cmake" `
