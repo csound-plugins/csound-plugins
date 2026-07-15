@@ -1,7 +1,8 @@
 /*
-   risset.c
-
-  Copyright (C) 2020 Eduardo Moguillansky
+  
+  pyin.c 
+  
+  Copyright (C) 2026 Eduardo Moguillansky
 
   This file is part of Csound.
 
@@ -31,11 +32,6 @@
 
 #include "../../common/_common.h"
 #include "pyinlib.h"
-
-
-#if defined WIN32 || defined __MINGW32__ || defined _WIN32 || defined _WIN64
-    #define OS_WINDOWS
-#endif
 
 
 // -------------------------------------------------------------------------------------

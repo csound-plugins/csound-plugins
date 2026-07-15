@@ -1,6 +1,6 @@
 {
   "name": "klib",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "opcodes": [
     "dict_new",
     "dict_dump",

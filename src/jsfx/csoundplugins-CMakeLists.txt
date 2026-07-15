@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 2.7)
+cmake_minimum_required(VERSION 3.5)
 project (jsusfx_csound)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_SUPPRESS_REGENERATION true)
 set(CMAKE_MACOSX_RPATH Off)
 #set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
-set(CMAKE_OSX_ARCHITECTURES "i386;x86_64")
+set(CMAKE_OSX_ARCHITECTURES "arm64")
 
 # add_subdirectory(${PROJECT_SOURCE_DIR}/../src ${PROJECT_SOURCE_DIR}/../src)
 

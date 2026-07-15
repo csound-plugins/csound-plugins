@@ -4,7 +4,7 @@ if(NOT(BUILD_JSUSFX_OPCODES))
   return()
 endif()
 
-cmake_minimum_required(VERSION 2.7)
+cmake_minimum_required(VERSION 3.5)
 project (jsusfx_csound)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
