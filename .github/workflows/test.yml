@@ -151,6 +151,12 @@ jobs:
           key: vcpkg-windows-${{ steps.csound-sha.outputs.sha }}
           restore-keys: vcpkg-windows-
 
+      - name: Set up MSVC dev environment
+        if: matrix.csound-version == '7' && steps.csound-cache.outputs.cache-hit != 'true'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Install csound 7 from source
         if: matrix.csound-version == '7' && steps.csound-cache.outputs.cache-hit != 'true'
         env:
@@ -162,17 +168,19 @@ jobs:
           choco install -y winflexbison3
           .\vcpkg\bootstrap-vcpkg.bat
           cmake -B build -S . `
+            -G "Ninja" `
+            -DCMAKE_BUILD_TYPE=Release `
             -DBUILD_TESTS=0 `
             -DUSE_VCPKG=1 `
-            -DCUSTOM_CMAKE="./platform/windows/Custom-vs.cmake" `
             -DBUILD_JAVA_INTERFACE=OFF `
             -DBUILD_INSTALLER=OFF `
             -DBUILD_DOCUMENTATION=OFF `
             -DUSE_PYTHON=OFF `
             -DUSE_LUA=OFF
-          cmake --build build --config Release --parallel
+          cmake --build build --parallel
           New-Item -Type Directory -Force ../csound-build-artifacts
-          cp build\Release\* ..\csound-build-artifacts
+          Get-ChildItem build -Filter "*.exe" | Copy-Item -Destination ../csound-build-artifacts
+          Get-ChildItem build -Filter "*.dll" | Copy-Item -Destination ../csound-build-artifacts
 
       - name: Install Csound 7 (from cache or fresh build)
         if: matrix.csound-version == '7'
