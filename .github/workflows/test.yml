@@ -244,7 +244,7 @@ jobs:
           Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
           mkdir build-windows
           cd build-windows
-          cmake -DAPIVERSION="6.0" -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -DAPIVERSION="6.0" -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF ..
           cmake --build . --parallel --config Release
           cmake --install .
           $Env:Path = $Env:Path + ";C:/Program Files/csound-binaries/build/Release"
