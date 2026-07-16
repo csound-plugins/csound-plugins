@@ -46,9 +46,18 @@ controlled inside csound
 plugins ported from faust or based on faust effects (zitarev, fofcyclevoc, ...)
 
 
+### risset
+
+opcodes to access risset package metadata
+
+
 ## pathtools
 
 opcodes to handle paths and filenames in a cross-platform manner
+
+### pitchtrack
+
+fundamental pitch tracking implementing the pYIN algorithm
 
 ## sndmeta
 
