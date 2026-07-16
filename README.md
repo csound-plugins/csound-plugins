@@ -51,7 +51,7 @@ plugins ported from faust or based on faust effects (zitarev, fofcyclevoc, ...)
 opcodes to access risset package metadata
 
 
-## pathtools
+### pathtools
 
 opcodes to handle paths and filenames in a cross-platform manner
 
@@ -59,7 +59,7 @@ opcodes to handle paths and filenames in a cross-platform manner
 
 fundamental pitch tracking implementing the pYIN algorithm
 
-## sndmeta
+### sndmeta
 
 opcodes to read soundfile metadata
 
