@@ -219,6 +219,7 @@ jobs:
         run: |
           cmake -B plugins-build -S . \
             -DAPIVERSION=7.0 \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
