@@ -68,8 +68,8 @@ jobs:
   buildlinuxportable:
     name: Build portable Linux Csound with plugins
     runs-on: ubuntu-22.04
-    container:
-      image: ubuntu:20.04
+    #container:
+    #  image: ubuntu:20.04
     env:
       DEBIAN_FRONTEND: noninteractive
       DEPS_PREFIX: /opt/static-deps
