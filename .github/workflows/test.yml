@@ -162,9 +162,19 @@ jobs:
         env:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
         run: |
+          # The vcpkg cache restore may have placed files in csound/vcpkg/, making the
+          # csound/ directory non-empty and causing git clone to fail. Move vcpkg data
+          # out of the way, remove the directory, clone fresh, then restore vcpkg data.
+          if (Test-Path "csound\vcpkg") {
+            Move-Item "csound\vcpkg" "vcpkg-temp"
+          }
+          Remove-Item -Recurse -Force "csound" -ErrorAction SilentlyContinue
           git clone -b develop https://github.com/csound/csound --depth 1
           cd csound
           git submodule update --init --recursive
+          if (Test-Path "..\vcpkg-temp") {
+            Move-Item "..\vcpkg-temp" "vcpkg"
+          }
           choco install -y winflexbison3
           .\vcpkg\bootstrap-vcpkg.bat
           cmake -B build -S . `
