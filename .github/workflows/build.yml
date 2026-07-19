@@ -127,6 +127,7 @@ jobs:
         run: |
           curl -fsSL "https://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VERSION}.tar.gz" | tar -xz -C /tmp
           cmake -B /tmp/ogg-build -S "/tmp/libogg-${LIBOGG_VERSION}" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${DEPS_PREFIX}" \
             -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DINSTALL_DOCS=OFF
           cmake --build /tmp/ogg-build -j"$(nproc)"
@@ -134,6 +135,7 @@ jobs:
 
           curl -fsSL "https://downloads.xiph.org/releases/vorbis/libvorbis-${LIBVORBIS_VERSION}.tar.gz" | tar -xz -C /tmp
           cmake -B /tmp/vorbis-build -S "/tmp/libvorbis-${LIBVORBIS_VERSION}" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${DEPS_PREFIX}" \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" -DBUILD_SHARED_LIBS=OFF \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON
@@ -142,6 +144,7 @@ jobs:
 
           curl -fsSL "https://downloads.xiph.org/releases/opus/opus-${LIBOPUS_VERSION}.tar.gz" | tar -xz -C /tmp
           cmake -B /tmp/opus-build -S "/tmp/opus-${LIBOPUS_VERSION}" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${DEPS_PREFIX}" \
             -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF
@@ -150,6 +153,7 @@ jobs:
 
           curl -fsSL "https://downloads.xiph.org/releases/flac/flac-${LIBFLAC_VERSION}.tar.xz" | tar -xJ -C /tmp
           cmake -B /tmp/flac-build -S "/tmp/flac-${LIBFLAC_VERSION}" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${DEPS_PREFIX}" \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" -DBUILD_SHARED_LIBS=OFF \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_OGG=ON \
@@ -159,6 +163,7 @@ jobs:
 
           curl -fsSL "https://github.com/libsndfile/libsndfile/releases/download/${LIBSNDFILE_VERSION}/libsndfile-${LIBSNDFILE_VERSION}.tar.xz" | tar -xJ -C /tmp
           cmake -B /tmp/sndfile-build -S "/tmp/libsndfile-${LIBSNDFILE_VERSION}" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${DEPS_PREFIX}" \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" -DBUILD_SHARED_LIBS=OFF \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_PROGRAMS=OFF \
