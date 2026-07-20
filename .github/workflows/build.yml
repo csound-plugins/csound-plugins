@@ -283,8 +283,75 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: release-plugins-csound7-linux-portable
+          name: csound7-linux-portable-with-plugins
           path: csound7-linux-portable-with-plugins.zip
+          if-no-files-found: error
+
+  buildwasmplugins:
+    name: Build Csound WASM plugins
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v17
+
+      - name: Build Csound WASM SDK
+        working-directory: csound/wasm
+        run: |
+          source scripts/nixpkgs-pin.sh
+          GIT_HASH=$(git -C .. rev-parse HEAD)
+          BUILD_DATE=$(LC_ALL=C date "+%Y-%m-%d")
+          nix-build --impure -E "(with import <nixpkgs> {}; callPackage ./src/csound.nix { static = false; gitHash = \"$GIT_HASH\"; buildDate = \"$BUILD_DATE\"; })" -o result --show-trace
+
+      - name: Build else and klib WASM plugins
+        run: |
+          source csound/wasm/scripts/nixpkgs-pin.sh
+          nix-build --impure -E '(with import <nixpkgs> {}; callPackage ./ci/wasm-plugins.nix { csoundSdkArchive = ./csound/wasm/result/lib/csound-plugin-sdk.tar.gz; })' -o wasm-plugins --show-trace
+          mkdir artifacts
+          cp wasm-plugins/lib/*.wasm artifacts/
+          cat > artifacts/README.md <<'EOF'
+          # Csound 7 WASM plugins
+
+          This archive contains WebAssembly builds of the `else` and `klib`
+          Csound plugin libraries. They require a compatible Csound 7 WASM
+          distribution and are not usable with native Csound installations.
+
+          ## Loading with @csound/browser
+
+          Extract this archive and serve the files from your web application.
+          Pass the URLs of both plugin files in `withPlugins` when creating the
+          Csound instance:
+
+          ```js
+          const csound = await Csound({
+            withPlugins: [
+              "/plugins/else.wasm",
+              "/plugins/klib.wasm",
+            ],
+          });
+          ```
+
+          `withPlugins` must be supplied before compiling a CSD that uses these
+          opcodes. The plugin files must be served over HTTP(S), not loaded with
+          `file://` URLs.
+
+          These plugins are built against the Csound WASM SDK from this build.
+          Use the corresponding Csound 7 WASM distribution to ensure ABI
+          compatibility.
+          EOF
+          (
+            cd artifacts
+            zip -r -y "../plugins-csound7-wasm.zip" .
+          )
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugins-csound7-wasm
+          path: plugins-csound7-wasm.zip
           if-no-files-found: error
 
   buildjob7:
@@ -501,7 +568,7 @@ jobs:
   publish:
     name: Publish artifacts as a Pre-Release
     # if: contains(github.ref, 'tags/v')
-    needs: [buildjob6, buildjob7, buildmacuniversal, buildlinuxportable]
+    needs: [buildjob6, buildjob7, buildmacuniversal, buildlinuxportable, buildwasmplugins]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -515,7 +582,7 @@ jobs:
       - name: Load portable Linux release archive
         uses: actions/download-artifact@v4.1.7
         with:
-          name: release-plugins-csound7-linux-portable
+          name: csound7-linux-portable-with-plugins
           path: plugins
 
       - name: List files
