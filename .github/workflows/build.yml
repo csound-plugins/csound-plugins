@@ -80,6 +80,7 @@ jobs:
       LIBSNDFILE_VERSION: "1.2.2"
       LIBLO_VERSION: "0.35"
       PORTMIDI_VERSION: "2.0.8"
+      PORTAUDIO_VERSION: "19.7.0"
     steps:
       - name: Install build toolchain and audio backend headers
         run: |
@@ -121,7 +122,8 @@ jobs:
             -sndfile${{ env.LIBSNDFILE_VERSION }}
             -lo${{ env.LIBLO_VERSION }}
             -portmidi${{ env.PORTMIDI_VERSION }}
-            -v2
+            -portaudio${{ env.PORTAUDIO_VERSION }}
+            -v3
 
       - name: Build static dependencies
         if: steps.cache-static-deps.outputs.cache-hit != 'true'
@@ -185,6 +187,16 @@ jobs:
           cmake --build /tmp/portmidi-build -j"$(nproc)"
           cmake --install /tmp/portmidi-build
 
+          curl -fsSL "https://github.com/PortAudio/portaudio/archive/refs/tags/v${PORTAUDIO_VERSION}.tar.gz" | tar -xz -C /tmp
+          cmake -B /tmp/portaudio-build -S "/tmp/portaudio-${PORTAUDIO_VERSION}" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${DEPS_PREFIX}" \
+            -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DPA_BUILD_STATIC=ON -DPA_BUILD_SHARED=OFF \
+            -DPA_USE_ALSA=ON -DPA_ALSA_DYNAMIC=OFF -DPA_USE_JACK=ON
+          cmake --build /tmp/portaudio-build -j"$(nproc)"
+          cmake --install /tmp/portaudio-build
+
       - name: Build static liblo
         run: |
           curl -fsSL "https://github.com/radarsat1/liblo/releases/download/${LIBLO_VERSION}/liblo-${LIBLO_VERSION}.tar.gz" | tar -xz -C /tmp
@@ -209,14 +221,14 @@ jobs:
             -DCMAKE_CXX_FLAGS="-march=x86-64-v3" \
             -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
             -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,--no-as-needed -lasound -Wl,--as-needed" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,--no-as-needed -lasound -ljack -Wl,--as-needed" \
             -DBUILD_PLUGINS=ON \
             -DUSE_AVX2=ON \
             -DUSE_LIBLO=ON \
             -DUSE_ALSA=ON \
             -DUSE_JACK=ON \
             -DUSE_PORTMIDI=ON \
-            -DUSE_PORTAUDIO=OFF \
+            -DUSE_PORTAUDIO=ON \
             -DUSE_PULSEAUDIO=OFF \
             -DUSE_FLTK=OFF \
             -DBUILD_VIRTUAL_KEYBOARD=OFF \
@@ -231,6 +243,12 @@ jobs:
       - name: Check PortMidi is linked statically
         run: |
           ! ldd csound-build/libpmidi.so | grep -F 'libportmidi.so'
+
+      - name: Check PortAudio is linked statically
+        run: |
+          ! ldd csound-build/librtpa.so | grep -F 'libportaudio.so'
+          ldd csound-build/librtpa.so | grep -F 'libasound.so'
+          ldd csound-build/librtpa.so | grep -F 'libjack.so'
 
       - name: Configure and build repository plugins
         run: |
