@@ -318,7 +318,7 @@ jobs:
 
           This archive contains WebAssembly builds of the `else` and `klib`
           Csound plugin libraries. They require a compatible Csound 7 WASM
-          distribution and are not usable with native Csound installations.
+          distribution.
 
           ## Loading with @csound/browser
 
@@ -343,6 +343,7 @@ jobs:
           Use the corresponding Csound 7 WASM distribution to ensure ABI
           compatibility.
           EOF
+          
           (
             cd artifacts
             zip -r -y "../plugins-csound7-wasm.zip" .
@@ -568,7 +569,7 @@ jobs:
   publish:
     name: Publish artifacts as a Pre-Release
     # if: contains(github.ref, 'tags/v')
-    needs: [buildjob6, buildjob7, buildmacuniversal, buildlinuxportable, buildwasmplugins]
+    needs: [buildjob6, buildjob7, buildmacuniversal, buildlinuxportable]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
