@@ -276,11 +276,17 @@ jobs:
           find csound-build -name '*.so' ! -name 'libcsound*' -exec cp {} dist/plugins/ \;
           find plugins-build -maxdepth 1 -type f -name '*.so' -exec cp {} dist/plugins/ \;
           cp assets/README.txt dist/plugins/
+          chmod a+rx dist/csound dist/libcsound64.so.7.0
+          ln -sf libcsound64.so.7.0 dist/libcsound64.so
+          (
+            cd dist
+            zip -r -y ../csound7-linux-portable-with-plugins.zip .
+          )
 
       - uses: actions/upload-artifact@v4
         with:
           name: csound7-linux-portable-with-plugins
-          path: dist
+          path: csound7-linux-portable-with-plugins.zip
           if-no-files-found: error
 
 #   buildwasmplugins:
@@ -581,14 +587,6 @@ jobs:
         with:
           name: csound7-linux-portable-with-plugins
           path: plugins/portable
-
-      - name: Package portable Linux release archive
-        run: |
-          ln -sf libcsound64.so.7.0 plugins/portable/libcsound64.so
-          (
-            cd plugins/portable
-            zip -r -y "../csound7-linux-portable-with-plugins.zip" .
-          )
 
       - name: List files
         run: |
