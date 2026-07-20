@@ -284,7 +284,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: release-plugins-csound7-linux-portable
-          path: plugins-csound7-linux-portable.zip
+          path: csound7-linux-portable-with-plugins.zip
           if-no-files-found: error
 
   buildjob7:
