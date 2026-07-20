@@ -221,12 +221,14 @@ jobs:
             -DCMAKE_CXX_FLAGS="-march=x86-64-v3" \
             -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
             -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,--no-as-needed -lasound -ljack -Wl,--as-needed" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
+            -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="${{ github.workspace }}/.github/cmake/linux-portable.cmake" \
             -DBUILD_PLUGINS=ON \
             -DUSE_AVX2=ON \
             -DUSE_LIBLO=ON \
             -DUSE_ALSA=ON \
             -DUSE_JACK=ON \
+            -DUSE_PIPEWIRE=OFF \
             -DUSE_PORTMIDI=ON \
             -DUSE_PORTAUDIO=ON \
             -DUSE_PULSEAUDIO=OFF \
@@ -249,6 +251,10 @@ jobs:
           ! ldd csound-build/librtpa.so | grep -F 'libportaudio.so'
           ldd csound-build/librtpa.so | grep -F 'libasound.so'
           ldd csound-build/librtpa.so | grep -F 'libjack.so'
+
+      - name: Check unrelated built-in plugins have no audio backend dependencies
+        run: |
+          ! ldd csound-build/libemugens.so | grep -E 'lib(pipewire|asound|jack)\.so'
 
       - name: Configure and build repository plugins
         run: |
@@ -283,7 +289,9 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: csound7-linux-portable-with-plugins
+          # Keep the Actions artifact distinct from the release asset it contains.
+          # Otherwise the artifact download is a ZIP containing a same-named ZIP.
+          name: release-csound7-linux-portable-with-plugins
           path: csound7-linux-portable-with-plugins.zip
           if-no-files-found: error
 
@@ -583,7 +591,7 @@ jobs:
       - name: Load portable Linux release archive
         uses: actions/download-artifact@v4.1.7
         with:
-          name: csound7-linux-portable-with-plugins
+          name: release-csound7-linux-portable-with-plugins
           path: plugins
 
       - name: List files
