@@ -194,8 +194,8 @@ jobs:
           make -j"$(nproc)"
           make install
 
-      - name: Remove shared liblo
-        run: find / -xdev -name 'liblo.so*' -delete 2>/dev/null || true
+      # - name: Remove shared liblo
+      #   run: find / -xdev -name 'liblo.so*' -delete 2>/dev/null || true
 
       - name: Configure and build Csound
         env:
