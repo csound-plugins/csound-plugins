@@ -79,6 +79,7 @@ jobs:
       LIBFLAC_VERSION: "1.4.3"
       LIBSNDFILE_VERSION: "1.2.2"
       LIBLO_VERSION: "0.35"
+      PORTMIDI_VERSION: "2.0.8"
     steps:
       - name: Install build toolchain and audio backend headers
         run: |
@@ -96,8 +97,7 @@ jobs:
             xz-utils \
             zip \
             libasound2-dev \
-            libjack-jackd2-dev \
-            libportmidi-dev
+            libjack-jackd2-dev
 
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -107,22 +107,23 @@ jobs:
 
       - uses: lukka/get-cmake@v4.3.3
 
-      - name: Cache static codec chain
+      - name: Cache static dependencies
         id: cache-static-deps
         uses: actions/cache@v4
         with:
           path: ${{ env.DEPS_PREFIX }}
           key: |
-            static-deps-ubuntu20
+            static-deps-ubuntu22
             -ogg${{ env.LIBOGG_VERSION }}
             -vorbis${{ env.LIBVORBIS_VERSION }}
             -opus${{ env.LIBOPUS_VERSION }}
             -flac${{ env.LIBFLAC_VERSION }}
             -sndfile${{ env.LIBSNDFILE_VERSION }}
             -lo${{ env.LIBLO_VERSION }}
-            -v1
+            -portmidi${{ env.PORTMIDI_VERSION }}
+            -v2
 
-      - name: Build static codec chain
+      - name: Build static dependencies
         if: steps.cache-static-deps.outputs.cache-hit != 'true'
         run: |
           curl -fsSL "https://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VERSION}.tar.gz" | tar -xz -C /tmp
@@ -177,6 +178,13 @@ jobs:
           ar -M < /tmp/merge.mri
           mv "${DEPS_PREFIX}/lib/libsndfile_merged.a" "${DEPS_PREFIX}/lib/libsndfile.a"
 
+          curl -fsSL "https://github.com/PortMidi/portmidi/archive/refs/tags/v${PORTMIDI_VERSION}.tar.gz" | tar -xz -C /tmp
+          cmake -B /tmp/portmidi-build -S "/tmp/portmidi-${PORTMIDI_VERSION}" \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${DEPS_PREFIX}" \
+            -DBUILD_SHARED_LIBS=OFF -DBUILD_PORTMIDI_TESTS=OFF
+          cmake --build /tmp/portmidi-build -j"$(nproc)"
+          cmake --install /tmp/portmidi-build
+
       - name: Build static liblo
         run: |
           curl -fsSL "https://github.com/radarsat1/liblo/releases/download/${LIBLO_VERSION}/liblo-${LIBLO_VERSION}.tar.gz" | tar -xz -C /tmp
@@ -196,6 +204,7 @@ jobs:
           cmake -B csound-build -S csound \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" \
+            -DPortMidi_DIR="${DEPS_PREFIX}/lib/cmake/PortMidi" \
             -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
             -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
             -DBUILD_PLUGINS=ON \
@@ -214,6 +223,10 @@ jobs:
             -DBUILD_CSBEATS=OFF \
             -DBUILD_TESTS=OFF
           cmake --build csound-build -j"$(nproc)"
+
+      - name: Check PortMidi is linked statically
+        run: |
+          ! ldd csound-build/libpmidi.so | grep -F 'libportmidi.so'
 
       - name: Configure and build repository plugins
         run: |
