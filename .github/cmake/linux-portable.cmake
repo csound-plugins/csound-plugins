@@ -1,6 +1,6 @@
 function(configure_portable_audio_plugins)
-  target_link_libraries(rtpa PRIVATE ALSA::ALSA Jack::jack)
-  target_link_libraries(pmidi PRIVATE ALSA::ALSA)
+  target_link_libraries(rtpa PRIVATE asound jack)
+  target_link_libraries(pmidi PRIVATE asound)
 endfunction()
 
 # This file is loaded immediately after Csound's top-level project() call.
