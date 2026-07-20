@@ -278,7 +278,7 @@ jobs:
           cp assets/README.txt dist/plugins/
           (
             cd dist
-            zip -r -y "../csound7-linux-portable-with-plugins.zip" .
+            zip -r -y "../portable-release.zip" .
           )
 
       - uses: actions/upload-artifact@v4
@@ -289,10 +289,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          # Keep the Actions artifact distinct from the release asset it contains.
-          # Otherwise the artifact download is a ZIP containing a same-named ZIP.
-          name: release-csound7-linux-portable-with-plugins
-          path: csound7-linux-portable-with-plugins.zip
+          name: csound7-linux-portable-with-plugins
+          path: portable-release.zip
           if-no-files-found: error
 
 #   buildwasmplugins:
@@ -591,8 +589,11 @@ jobs:
       - name: Load portable Linux release archive
         uses: actions/download-artifact@v4.1.7
         with:
-          name: release-csound7-linux-portable-with-plugins
+          name: csound7-linux-portable-with-plugins
           path: plugins
+
+      - name: Name portable Linux release archive
+        run: mv plugins/portable-release.zip plugins/csound7-linux-portable-with-plugins.zip
 
       - name: List files
         run: |
