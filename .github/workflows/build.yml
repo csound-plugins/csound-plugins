@@ -272,7 +272,7 @@ jobs:
           cp assets/README.txt dist/plugins/
           (
             cd dist
-            zip -r -y "../plugins-csound7-linux-portable.zip" .
+            zip -r -y "../csound7-linux-portable-with-plugins.zip" .
           )
 
       - uses: actions/upload-artifact@v4
@@ -531,3 +531,4 @@ jobs:
           prerelease: True
           files: |
             plugins/**/plugins*.zip
+            plugins/**/csound7-linux-portable-with-plugins.zip
