@@ -268,7 +268,7 @@ jobs:
             -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
           cmake --build plugins-build -j"$(nproc)"
 
-      - name: Create portable archive
+      - name: Stage portable distribution
         run: |
           mkdir -p dist/plugins
           cp csound-build/csound dist/
@@ -276,21 +276,11 @@ jobs:
           find csound-build -name '*.so' ! -name 'libcsound*' -exec cp {} dist/plugins/ \;
           find plugins-build -maxdepth 1 -type f -name '*.so' -exec cp {} dist/plugins/ \;
           cp assets/README.txt dist/plugins/
-          (
-            cd dist
-            zip -r -y "../portable-release.zip" .
-          )
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: plugins-csound7-linux-portable
-          path: dist
-          if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
           name: csound7-linux-portable-with-plugins
-          path: portable-release.zip
+          path: dist
           if-no-files-found: error
 
 #   buildwasmplugins:
@@ -590,10 +580,14 @@ jobs:
         uses: actions/download-artifact@v4.1.7
         with:
           name: csound7-linux-portable-with-plugins
-          path: plugins
+          path: plugins/portable
 
-      - name: Name portable Linux release archive
-        run: mv plugins/portable-release.zip plugins/csound7-linux-portable-with-plugins.zip
+      - name: Package portable Linux release archive
+        run: |
+          (
+            cd plugins/portable
+            zip -r -y "../csound7-linux-portable-with-plugins.zip" .
+          )
 
       - name: List files
         run: |
