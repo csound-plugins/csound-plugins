@@ -205,10 +205,13 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" \
             -DPortMidi_DIR="${DEPS_PREFIX}/lib/cmake/PortMidi" \
+            -DCMAKE_C_FLAGS="-march=x86-64-v3" \
+            -DCMAKE_CXX_FLAGS="-march=x86-64-v3" \
             -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
             -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
             -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++ -Wl,--no-as-needed -lasound -Wl,--as-needed" \
             -DBUILD_PLUGINS=ON \
+            -DUSE_AVX2=ON \
             -DUSE_LIBLO=ON \
             -DUSE_ALSA=ON \
             -DUSE_JACK=ON \
@@ -236,6 +239,8 @@ jobs:
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+            -DCMAKE_C_FLAGS="-march=x86-64-v3" \
+            -DCMAKE_CXX_FLAGS="-march=x86-64-v3" \
             -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
           cmake --build plugins-build -j"$(nproc)"
 
@@ -249,7 +254,7 @@ jobs:
           cp assets/README.txt dist/plugins/
           (
             cd dist
-            zip -r "../plugins-csound7-linux-portable.zip" .
+            zip -r -y "../plugins-csound7-linux-portable.zip" .
           )
 
       - uses: actions/upload-artifact@v4
