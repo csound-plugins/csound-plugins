@@ -40,4 +40,5 @@ target_link_libraries(jsusfx_csound_project jsusfx)
 
 if(LINUX)
   target_include_directories(jsusfx_csound_project PRIVATE /usr/local/include/csound)
+  set_property(TARGET jsusfx_csound_project APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-z,noexecstack")
 endif()
