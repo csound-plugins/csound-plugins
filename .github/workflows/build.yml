@@ -584,6 +584,7 @@ jobs:
 
       - name: Package portable Linux release archive
         run: |
+          ln -sf libcsound64.so.7.0 plugins/portable/libcsound64.so
           (
             cd plugins/portable
             zip -r -y "../csound7-linux-portable-with-plugins.zip" .
