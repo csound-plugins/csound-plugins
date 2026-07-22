@@ -590,7 +590,8 @@ jobs:
         run: |
           cd plugins/portable
           ln -sf libcsound64.so.7.0 libcsound64.so
-          zip -r -y ../csound7-linux-portable-with-plugins.zip .
+          chmod a+rx csound libcsound64.so.7.0
+          zip -r -y ../csound7-linux-full.zip .
 
       - name: List files
         run: |
