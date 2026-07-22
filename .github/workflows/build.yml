@@ -278,25 +278,14 @@ jobs:
           find plugins-build -maxdepth 1 -type f -name '*.so' -exec cp {} dist/plugins/ \;
           cp assets/README.txt dist/plugins/
           chmod a+rx dist/csound dist/libcsound64.so.7.0
-          ln -sf libcsound64.so.7.0 dist/libcsound64.so
+          # ln -sf libcsound64.so.7.0 dist/libcsound64.so
           patchelf --set-rpath '$ORIGIN' dist/csound
-          # (
-          #   cd dist
-          #   zip -r -y ../csound7-linux-portable-with-plugins.zip .
-          # )
 
       - uses: actions/upload-artifact@v4
         with:
           name: csound7-linux-portable-with-plugins
           path: dist/**
 
-
-
-      # - uses: actions/upload-artifact@v4
-      #   with:
-      #     name: csound7-linux-portable-with-plugins
-      #     path: csound7-linux-portable-with-plugins.zip
-      #     if-no-files-found: error
 
 #   buildwasmplugins:
 #     name: Build Csound WASM plugins
@@ -579,7 +568,6 @@ jobs:
 
   publish:
     name: Publish artifacts as a Pre-Release
-    # if: contains(github.ref, 'tags/v')
     needs: [buildjob6, buildjob7, buildmacuniversal, buildlinuxportable]
     runs-on: ubuntu-latest
     steps:
@@ -600,6 +588,7 @@ jobs:
       - name: Create release zip
         run: |
           cd plugins/portable
+          ln -sf libcsound64.so.7.0 libcsound64.so
           zip -r -y ../csound7-linux-portable-with-plugins.zip .
 
       - name: List files
@@ -615,5 +604,4 @@ jobs:
           prerelease: True
           files: |
             plugins/**/plugins*.zip
-            # plugins/**/csound7-linux-portable-with-plugins.zip
             plugins/csound7-linux-portable-with-plugins.zip
