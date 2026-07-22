@@ -277,9 +277,10 @@ jobs:
           find csound-build -name '*.so' ! -name 'libcsound*' -exec cp {} dist/plugins/ \;
           find plugins-build -maxdepth 1 -type f -name '*.so' -exec cp {} dist/plugins/ \;
           cp assets/README.txt dist/plugins/
+          cp assets/install.sh dist
           chmod a+rx dist/csound dist/libcsound64.so.7.0
-          # ln -sf libcsound64.so.7.0 dist/libcsound64.so
           patchelf --set-rpath '$ORIGIN' dist/csound
+
 
       - uses: actions/upload-artifact@v4
         with:
