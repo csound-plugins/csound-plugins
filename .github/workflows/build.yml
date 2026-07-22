@@ -279,16 +279,24 @@ jobs:
           cp assets/README.txt dist/plugins/
           chmod a+rx dist/csound dist/libcsound64.so.7.0
           ln -sf libcsound64.so.7.0 dist/libcsound64.so
-          (
-            cd dist
-            zip -r -y ../csound7-linux-portable-with-plugins.zip .
-          )
+          patchelf --set-rpath '$ORIGIN' dist/csound
+          # (
+          #   cd dist
+          #   zip -r -y ../csound7-linux-portable-with-plugins.zip .
+          # )
 
       - uses: actions/upload-artifact@v4
         with:
           name: csound7-linux-portable-with-plugins
-          path: csound7-linux-portable-with-plugins.zip
-          if-no-files-found: error
+          path: dist/**
+
+
+
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: csound7-linux-portable-with-plugins
+      #     path: csound7-linux-portable-with-plugins.zip
+      #     if-no-files-found: error
 
 #   buildwasmplugins:
 #     name: Build Csound WASM plugins
@@ -589,6 +597,11 @@ jobs:
           name: csound7-linux-portable-with-plugins
           path: plugins/portable
 
+      - name: Create release zip
+        run: |
+          cd plugins/portable
+          zip -r -y ../csound7-linux-portable-with-plugins.zip .
+
       - name: List files
         run: |
           ls -R
@@ -602,4 +615,5 @@ jobs:
           prerelease: True
           files: |
             plugins/**/plugins*.zip
-            plugins/**/csound7-linux-portable-with-plugins.zip
+            # plugins/**/csound7-linux-portable-with-plugins.zip
+            plugins/csound7-linux-portable-with-plugins.zip
