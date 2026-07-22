@@ -197,7 +197,7 @@ static inline int32_t _StringArg2Insno(CSOUND *csound, char *arg, int32_t isstr)
 }
 static inline CS_VARIABLE* arrayCreateVariableSameType(CSOUND *csound, ARRAYDAT *arr, OPDS *ctx) {
 #ifdef CSOUNDAPI7
-    return arr->arrayType->createVariable(csound, NULL, ctx->insdshead);
+    return arr->arrayType->createVariable(csound, arr->arrayType, NULL, ctx->insdshead);
 #else
     IGN(ctx);
     return arr->arrayType->createVariable(csound, NULL);
