@@ -21,8 +21,6 @@ jobs:
       - name: build
         run: |
           set -x
-          # brew install libsndfile
-          # brew install fluidsynth
 
           ln -s csound/Android/CsoundAndroid/jni/version.h csound/include
 
@@ -239,7 +237,10 @@ jobs:
             -DINSTALL_PYTHON_INTERFACE=OFF \
             -DBUILD_LUA_INTERFACE=OFF \
             -DBUILD_CSBEATS=OFF \
-            -DBUILD_TESTS=OFF
+            -DBUILD_TESTS=OFF \
+            -DCMAKE_INSTALL_RPATH='$ORIGIN' \
+            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+
           cmake --build csound-build -j"$(nproc)"
 
       - name: Check PortMidi is linked statically
