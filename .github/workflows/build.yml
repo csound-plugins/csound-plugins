@@ -277,7 +277,8 @@ jobs:
           find csound-build -name '*.so' ! -name 'libcsound*' -exec cp {} dist/plugins/ \;
           find plugins-build -maxdepth 1 -type f -name '*.so' -exec cp {} dist/plugins/ \;
           cp assets/README.txt dist/plugins/
-          cp assets/install.sh dist
+          cp assets/csound7-linux-install.sh dist
+          mv dist/csound7-linux-install.sh dist/install.sh
           chmod a+rx dist/install.sh
           chmod a+rx dist/csound dist/libcsound64.so.7.0
           patchelf --set-rpath '$ORIGIN' dist/csound
@@ -594,6 +595,10 @@ jobs:
           chmod a+rx csound libcsound64.so.7.0
           zip -r -y ../csound7-linux-full.zip .
 
+      - name: Generate SHA-256 checksum
+        working-directory: plugins
+        run: sha256sum csound7-linux-full.zip > csound7-linux-full.zip.sha256
+
       - name: List files
         run: |
           ls -R
@@ -608,3 +613,4 @@ jobs:
           files: |
             plugins/**/plugins*.zip
             plugins/csound7-linux-full.zip
+            plugins/csound7-linux-full.zip.sha256

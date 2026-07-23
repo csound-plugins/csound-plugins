@@ -20,9 +20,61 @@ warn()    { printf "${YELLOW}⚠ %s${NC}\n" "$*"; }
 error()   { printf "${RED}✖ %s${NC}\n" "$*" >&2; }
 header()  { printf "${CYAN}%s${NC}\n" "$*"; }
 
+# ─── Command-line options ─────────────────────────────────────
+INSTALL_MODE_ARG=""
+AUTO_YES=false
+
+usage() {
+    cat <<EOF
+Usage: ${0##*/} [OPTIONS]
+
+Installs csound7 (static build, no dependencies, glibc>=2.2.5, avx2)
+
+Options:
+  --user    Install for the current user only (installs csound in ~/.local/csound, 
+            plugins in ~/.local/lib/csound/7.0/plugins64)
+  --system  Install system-wide (/usr/local, requires sudo)
+  -y        Answer yes to all yes/no questions
+  --help    Show this help message and exit
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --user)
+            INSTALL_MODE_ARG="user"
+            shift
+            ;;
+        --system)
+            INSTALL_MODE_ARG="system"
+            shift
+            ;;
+        -y)
+            AUTO_YES=true
+            shift
+            ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        *)
+            error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [[ -n "$INSTALL_MODE_ARG" ]]; then
+    INSTALL_MODE="$INSTALL_MODE_ARG"
+fi
+
 # ─── Helpers ──────────────────────────────────────────────────
 ask_yes_no() {
     local prompt="$1" response
+    if [ "$AUTO_YES" = true ]; then
+        return 0
+    fi
     while true; do
         read -rp "$prompt [y/N]: " response
         case "$response" in
@@ -37,11 +89,11 @@ ask_choice() {
     local prompt="$1"
     local response
     while true; do
-        read -rp "$prompt (user/system): " response
+        read -rp "$prompt [(u)ser / (s)ystem]: " response
         case "$response" in
             [Uu]* | user | USER ) echo "user"; return ;;
             [Ss]* | system | SYSTEM ) echo "system"; return ;;
-            * ) echo "Please enter 'user' or 'system'." ;;
+            * ) echo "Please enter 'user' (or 'u') / 'system' (or 's')." ;;
         esac
     done
 }
@@ -149,11 +201,13 @@ header "  Csound 7 Portable Installer"
 header "═══════════════════════════════════════════════════════"
 echo ""
 echo "  Install for:"
-echo "    user   - Current user only (~/.local)"
-echo "    system - All users (/usr/local, requires sudo)"
+echo "    (u)ser   - Current user only (~/.local)"
+echo "    (s)ystem - All users (/usr/local, requires sudo)"
 echo ""
 
-INSTALL_MODE=$(ask_choice "Installation mode")
+if [ -z "${INSTALL_MODE:-}" ]; then
+    INSTALL_MODE=$(ask_choice "Installation mode")
+fi
 
 # ─── System-wide installation ─────────────────────────────────
 if [ "$INSTALL_MODE" = "system" ]; then
