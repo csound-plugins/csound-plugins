@@ -23,6 +23,7 @@ header()  { printf "${CYAN}%s${NC}\n" "$*"; }
 # ─── Command-line options ─────────────────────────────────────
 INSTALL_MODE_ARG=""
 AUTO_YES=false
+INSTALL_RISSET=false
 
 usage() {
     cat <<EOF
@@ -34,6 +35,7 @@ Options:
   --user    Install for the current user only (installs csound in ~/.local/csound, 
             plugins in ~/.local/lib/csound/7.0/plugins64)
   --system  Install system-wide (/usr/local, requires sudo)
+  --risset  Also install risset (csound package manager) via uv
   -y        Answer yes to all yes/no questions
   --help    Show this help message and exit
 EOF
@@ -51,6 +53,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -y)
             AUTO_YES=true
+            shift
+            ;;
+        --risset)
+            INSTALL_RISSET=true
             shift
             ;;
         --help)
@@ -100,6 +106,30 @@ ask_choice() {
 
 command_exists() {
     command -v "$1" >/dev/null 2>&1
+}
+
+# ─── risset installation ──────────────────────────────────────
+install_risset() {
+    # risset is a python package, installed via uv
+    if ! command_exists uv; then
+        info "uv is not installed, installing it first..."
+        if ! command_exists curl; then
+            error "curl is required to install uv but is not installed."
+            error "Please install curl, or install uv manually: https://docs.astral.sh/uv/"
+            return 1
+        fi
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        # Make uv available in this session (the installer puts it in ~/.local/bin)
+        export PATH="$HOME/.local/bin:$PATH"
+        if ! command_exists uv; then
+            error "uv installation failed."
+            return 1
+        fi
+        ok "uv installed: $(uv --version)"
+    fi
+    info "Installing risset..."
+    uv tool install risset
+    ok "risset installed. Run 'risset --help' to get started."
 }
 
 # ─── Detect shell ─────────────────────────────────────────────
@@ -396,4 +426,10 @@ else
     echo "    csound --version"
     echo "═══════════════════════════════════════════════════════"
 
+fi
+
+# ─── Optional: install risset ─────────────────────────────────
+echo ""
+if [ "$INSTALL_RISSET" = true ] || ask_yes_no "Install risset (csound package manager)?"; then
+    install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
 fi
