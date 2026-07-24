@@ -130,6 +130,7 @@ install_risset() {
     info "Installing risset..."
     uv tool install risset
     ok "risset installed. Run 'risset --help' to get started."
+    info "To uninstall risset later: uv tool uninstall risset"
 }
 
 # ─── Detect shell ─────────────────────────────────────────────
@@ -331,6 +332,12 @@ if [ "$INSTALL_MODE" = "system" ]; then
     echo "  plugins         → $PLUGIN_DIR"
     echo ""
     echo "  Run 'csound --version' to verify."
+    echo ""
+    echo "  To uninstall, run:"
+    echo "    sudo rm -f $BIN_DIR/csound"
+    echo "    sudo rm -f $LIB_DIR/$LIB_NAME $LIB_DIR/libcsound64.so"
+    echo "    sudo rm -rf $PLUGIN_DIR"
+    echo "    sudo ldconfig"
 
 # ─── User-local installation ──────────────────────────────────
 else
@@ -425,6 +432,12 @@ else
     echo "  Test with:"
     echo "    csound --version"
     echo "═══════════════════════════════════════════════════════"
+    echo ""
+    echo "  To uninstall, run:"
+    echo "    rm -rf $INSTALL_DIR"
+    echo "    rm -rf $PLUGIN_DIR"
+    echo "  And remove the '# Added by Csound 7 installer' block"
+    echo "  (2 lines) from $SHELL_RC"
 
 fi
 
