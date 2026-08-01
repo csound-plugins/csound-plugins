@@ -361,7 +361,7 @@ jobs:
   buildjob7:
     name: Build plugins on ${{ matrix.os }} (csound 7)
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
+    # continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
