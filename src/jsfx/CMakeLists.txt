@@ -18,6 +18,9 @@ set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
 # add_subdirectory(${PROJECT_SOURCE_DIR}/jsfx-src ${PROJECT_SOURCE_DIR}/jsfx-src)
 # add_subdirectory(jsfx-src jsfx-src)
+if(LINUX AND CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+    set(PORTABLE ON CACHE BOOL "build a portable eel2" FORCE)
+endif()
 add_subdirectory(jsusfx/src)
 
 

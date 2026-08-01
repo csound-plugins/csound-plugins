@@ -361,9 +361,14 @@ jobs:
   buildjob7:
     name: Build plugins on ${{ matrix.os }} (csound 7)
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-22.04]
+        os: [windows-latest, ubuntu-22.04, ubuntu-22.04-arm]
+        include:
+          - os: ubuntu-22.04-arm
+            experimental: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -447,13 +452,21 @@ jobs:
           cp assets/README.txt artifacts
 
           # Make zip for release
-          ARCHIVE=plugins-csound7-linux.zip
+          ARCH=$(uname -m)
+          ARCHIVE=plugins-csound7-linux-$ARCH.zip
           7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
 
       - uses: actions/upload-artifact@v4
+        if: runner.os == 'windows'
         with:
-          name: plugins-csound7-${{ runner.os }}
+          name: plugins-csound7-windows-latest
+          path: artifacts/*
+
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'linux'
+        with:
+          name: plugins-csound7-linux-${{ runner.arch == 'X64' && 'x86_64' || 'aarch64' }}
           path: artifacts/*
 
   buildjob6:
@@ -593,11 +606,11 @@ jobs:
           cd plugins/portable
           ln -sf libcsound64.so.7.0 libcsound64.so
           chmod a+rx csound libcsound64.so.7.0
-          zip -r -y ../csound7-linux-full.zip .
+          zip -r -y ../csound7-linux-x86_64.zip .
 
       - name: Generate SHA-256 checksum
         working-directory: plugins
-        run: sha256sum csound7-linux-full.zip > csound7-linux-full.zip.sha256
+        run: sha256sum csound7-linux-x86_64.zip > csound7-linux-x86_64.zip.sha256
 
       - name: List files
         run: |
@@ -612,5 +625,5 @@ jobs:
           prerelease: True
           files: |
             plugins/**/plugins*.zip
-            plugins/csound7-linux-full.zip
-            plugins/csound7-linux-full.zip.sha256
+            plugins/csound7-linux-x86_64.zip
+            plugins/csound7-linux-x86_64.zip.sha256

@@ -65,7 +65,7 @@ option(USE_FMATH "Use fmath to accelerate exp and log functions" ON)
 
 set(BUILDING_CSOUND_PLUGINS ON)
 
-if(APPLE)
+if(APPLE OR NOT(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|i[3-6]86|AMD64"))
     set(USE_FMATH OFF)
 endif()
 
@@ -139,7 +139,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
     include(CheckCCompilerFlag)
     include(CheckCXXCompilerFlag)
 
-    addflag(-mfgpath=sse HAS_FPMATH_SSE)
+    addflag(-mfpmath=sse HAS_FPMATH_SSE)
 
     if(LINUX AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|i[3-6]86|AMD64")
         addflag(-mavx2 HAS_AVX2)
