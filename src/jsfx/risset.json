@@ -1,6 +1,6 @@
 {
   "name": "jsfx",
-  "version": "2.3.5",
+  "version": "2.4.0",
   "opcodes": [
     "jsfx",
     "jsfx_new",
@@ -25,7 +25,7 @@
     },
     {
       "platform": "linux",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux-x86_64.zip",
       "extractpath": "libjsfx.so",
       "csound_version": ">=7.0"
     },
