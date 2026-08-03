@@ -33,13 +33,20 @@ For csound 7 substitute "6.0" for "7.0":
 
     ~/Library/csound/7.0/plugins64
 
-Since macOS 10.14 apple requests all binaries (libraries
-and plugins included) to be signed from a paid developer
-account. As an alternative, the user can be authorized
-by the user in an ad-hoc manner, using the script
-"macos-codesign". Run it as "python macos-codesign.py *.dylib"
-to generate an entitlements file and ad an ad-hoc signature
-to the binaries.
+macOS only loads code that has been signed, and since these plugins are
+not notarized, browsers additionally mark downloaded files as
+quarantined, which makes macOS refuse to load them. The
+"macos-codesign" script fixes both: it removes the quarantine attribute,
+adds an ad-hoc signature, and verifies the result. Run it in the folder
+containing the plugins:
+
+    python macos-codesign.py *.dylib
+
+Note: if your csound build was hardened with library validation enabled,
+ad-hoc signed plugins will still be rejected — the csound binary itself
+must carry the "com.apple.security.cs.disable-library-validation"
+entitlement, or the plugins must be signed with the same Apple Developer
+identity as csound.
 
 ----------------------------------------------------------
 

@@ -1,80 +1,87 @@
 import argparse
-import subprocess
-import os
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
-
-DEBUG = False
-
-
-def _debug(*msgs: str):
-    if DEBUG:
-        for s in msgs:
-            print(f"DEBUG:{s}")
+QUARANTINE = "com.apple.quarantine"
 
 
-_entitlements = r"""
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>com.apple.security.cs.disable-library-validation</key>
-    <true/>
-    <key>com.apple.security.device.audio-input</key>
-    <true/>
-    <key>com.apple.security.device.camera</key>
-    <true/>
-</dict>
-</plist>
-"""
+def run(cmd, verbose=False):
+    """Run a command, failing loudly if it exits non-zero."""
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Command failed with exit code {result.returncode}: {' '.join(cmd)}\n"
+            f"{result.stdout.strip()}\n{result.stderr.strip()}"
+        )
+    if verbose and result.stdout.strip():
+        print(result.stdout.strip())
+    return result
 
 
-def save_entitlements(target: str, appname='adhoc-codesign', force=False) -> Path:
-    path = Path(f"~/Library/Application Support/{appname}/{target}.entitlements").expanduser()
-    _debug(f"Entitlements path: {path}")
-    if path.exists() and not force:
-        contents = open(path).read()
-        if contents == _entitlements:
-            _debug("Entitlements already saved, do not need to save again")
-            return path
-    path.parent.mkdir(parents=True, exist_ok=True)
-    assert path.parent.exists()
-    _debug(f"Opening {path} to write entitlements to")
-    with open(path, 'w') as f:
-        f.write(_entitlements)
-    plutil = shutil.which('plutil')
-    if plutil:
-        subprocess.call([plutil, path.as_posix()])
-    return path
+def strip_quarantine(paths, verbose=False):
+    """Remove the quarantine attribute set by web browsers.
 
-
-def codesign(dylibpaths: list[str], target: str, signature='-') -> Path:
+    macOS tags downloads with com.apple.quarantine; Gatekeeper then refuses
+    to load them in any process ("Apple cannot check it for malicious
+    software"). Removing it is what actually makes the plugins runnable.
     """
-    Codesign the given library binaries using entitlements
+    xattr = shutil.which("xattr")
+    if xattr is None:
+        print("WARNING: 'xattr' not found, quarantine attributes will not be removed",
+              file=sys.stderr)
+        return
+    for d in sorted({str(Path(p).parent) for p in paths}):
+        try:
+            run([xattr, "-dr", QUARANTINE, d], verbose=verbose)
+        except RuntimeError as e:
+            if "No such xattr" not in str(e):
+                print(f"WARNING: could not clear quarantine on {d}: {e}", file=sys.stderr)
+    for p in paths:
+        try:
+            run([xattr, "-d", QUARANTINE, p], verbose=verbose)
+        except RuntimeError as e:
+            if "No such xattr" not in str(e):
+                print(f"WARNING: could not clear quarantine on {p}: {e}", file=sys.stderr)
 
-    Args:
-        dylibpaths: a list of paths to codesign
-        signature: the signature used. '-' indicates to sign it locally
+
+def codesign(paths, signature="-", verbose=False):
+    """Ad-hoc sign the dylibs and verify the signatures.
+
+    Signing ad-hoc ('-') is required on Apple Silicon, where the kernel
+    refuses unsigned code. No entitlements are attached: entitlements only
+    take effect on a main executable, so putting them on a library does
+    nothing useful (and can even cause signing crashes).
+
+    Note: an ad-hoc signature carries no Team ID, so a csound hardened with
+    library validation enabled will still reject these plugins; in that case
+    the *host* needs the com.apple.security.cs.disable-library-validation
+    entitlement.
     """
-    if not shutil.which('codesign'):
+    if shutil.which("codesign") is None:
         raise RuntimeError("Could not find the binary 'codesign' in the path")
-    entitlements_path = save_entitlements(target=target)
-    assert os.path.exists(entitlements_path)
-    for dylibpath in dylibpaths:
-        subprocess.call(['codesign', '--force', '--sign', signature, '--entitlements', entitlements_path, dylibpath])
-        subprocess.call(['codesign', '--display', '--verbose', dylibpath])
-    return entitlements_path
+    failed = []
+    for p in paths:
+        try:
+            run(["codesign", "--force", "--sign", signature, str(p)], verbose=verbose)
+            run(["codesign", "--verify", "--strict", "--verbose=2", str(p)], verbose=verbose)
+        except RuntimeError as e:
+            print(f"FAILED: {p}: {e}", file=sys.stderr)
+            failed.append(p)
+    if failed:
+        raise RuntimeError(f"codesigning failed for {len(failed)} of {len(paths)} files")
+    print(f"OK: signed and verified {len(paths)} plugin(s)")
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--signature', default='-')
-    parser.add_argument('-t', '--target', default='generic', help="Will be the name of the entitlements file")
-    parser.add_argument("dylibs", nargs="+")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Sign the Csound plugin dylibs so macOS will run them.")
+    parser.add_argument("--verbose", action="store_true", help="print codesign output")
+    parser.add_argument("--signature", default="-",
+                        help="identity to sign with ('-' = ad-hoc, the default)")
+    parser.add_argument("dylibs", nargs="+", help="paths to the .dylib files to sign")
     args = parser.parse_args()
-    if args.verbose:
-        DEBUG = True
-    entitlements_path = codesign(args.dylibs, target=args.target, signature=args.signature)
-    _debug(f"Saved entitlements file to '{entitlements_path}'")
+
+    strip_quarantine(args.dylibs, verbose=args.verbose)
+    codesign(args.dylibs, signature=args.signature, verbose=args.verbose)
