@@ -269,10 +269,11 @@ jobs:
       - name: Stage portable distribution
         run: |
           mkdir -p dist/plugins
+          mkdir -p dist/external-plugins
           cp csound-build/csound dist/
           find csound-build -name 'libcsound*.so*' -exec cp -P {} dist/ \;
           find csound-build -name '*.so' ! -name 'libcsound*' -exec cp {} dist/plugins/ \;
-          find plugins-build -maxdepth 1 -type f -name '*.so' -exec cp {} dist/plugins/ \;
+          find plugins-build -maxdepth 1 -type f -name '*.so' -exec cp {} dist/external-plugins/ \;
           cp assets/README.txt dist/plugins/
           cp assets/csound7-linux-install.sh dist
           mv dist/csound7-linux-install.sh dist/install.sh

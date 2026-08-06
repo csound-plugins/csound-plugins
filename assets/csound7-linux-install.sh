@@ -20,11 +20,20 @@ warn()    { printf "${YELLOW}⚠ %s${NC}\n" "$*"; }
 error()   { printf "${RED}✖ %s${NC}\n" "$*" >&2; }
 header()  { printf "${CYAN}%s${NC}\n" "$*"; }
 
+debug() {
+    if [ "$VERBOSE" = true ]; then
+        printf "[debug] $*"
+    fi
+}
+
 # ─── Command-line options ─────────────────────────────────────
 INSTALL_MODE_ARG=""
 AUTO_YES=false
+VERBOSE=false
 INSTALL_RISSET=false
+INSTALL_EXTERNALS=false
 USER_CSOUND_PATH="$HOME/.local/csound"
+USER_PLUGINS_DIR="$HOME/.local/lib/csound/7.0/plugins64"
 
 usage() {
     cat <<EOF
@@ -33,23 +42,33 @@ Usage: ${0##*/} [OPTIONS]
 Installs csound7 (static build, no dependencies, glibc>=2.2.5, avx2)
 
 Options:
-  --user    Install for the current user only (installs csound in ~/.local/csound, 
+  --user    Install for the current user only (installs csound in ~/.local/csound,
             plugins in ~/.local/lib/csound/7.0/plugins64)
   --system  Install system-wide (/usr/local, requires sudo)
   --risset  Also install risset (csound package manager) via uv
+  --plugins Install external plugins
   -y        Answer yes to all questions (defaults to a system installation)
+  --verbose Output extra information
   --help    Show this help message and exit
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --verbose)
+            VERBOSE=true
+            shift
+            ;;
         --user)
             INSTALL_MODE_ARG="user"
             shift
             ;;
         --system)
             INSTALL_MODE_ARG="system"
+            shift
+            ;;
+        --plugins)
+            INSTALL_EXTERNALS=true
             shift
             ;;
         -y)
@@ -134,6 +153,12 @@ install_risset() {
     info "To uninstall risset later: uv tool uninstall risset"
 }
 
+install_externals() {
+    mkdir -p "$USER_PLUGINS_DIR"
+    cp -a "$SOURCE_EXTERNALS/." "$USER_PLUGINS_DIR/"
+    info "Installing external plugins to $USER_PLUGINS_DIR"
+}
+
 # ─── Detect shell ─────────────────────────────────────────────
 detect_shell() {
     if [ -n "${SHELL:-}" ]; then
@@ -214,7 +239,8 @@ info "Source directory: $SCRIPT_DIR"
 CSOUND_BIN="$SCRIPT_DIR/csound"
 LIB_NAME="libcsound64.so.7.0"
 LIB_FILE="$SCRIPT_DIR/$LIB_NAME"
-PLUGINS_DIR="$SCRIPT_DIR/plugins"
+SOURCE_PLUGINS_DIR="$SCRIPT_DIR/plugins"
+SOURCE_EXTERNALS="$SCRIPT_DIR/external-plugins"
 
 if [ ! -f "$CSOUND_BIN" ]; then
     error "csound executable not found in $SCRIPT_DIR"
@@ -334,8 +360,8 @@ if [ "$INSTALL_MODE" = "system" ]; then
     $SUDO cp "$LIB_FILE" "$LIB_DIR/$LIB_NAME"
     $SUDO ln -sf "$LIB_DIR/$LIB_NAME" "$LIB_DIR/libcsound64.so"
 
-    if [ -d "$PLUGINS_DIR" ]; then
-        $SUDO cp -a "$PLUGINS_DIR/." "$PLUGIN_DIR/"
+    if [ -d "$SOURCE_PLUGINS_DIR" ]; then
+        $SUDO cp -a "$SOURCE_PLUGINS_DIR/." "$PLUGIN_DIR/"
     fi
 
     # Update ldconfig
@@ -365,7 +391,7 @@ else
     header ""
 
     INSTALL_DIR="$USER_CSOUND_PATH"
-    PLUGIN_DIR="$HOME/.local/lib/csound/7.0/plugins64"
+    PLUGIN_DIR="$USER_PLUGINS_DIR"
 
     # Check for conflicts
     CONFLICT=false
@@ -400,8 +426,8 @@ else
     rm -rf "$PLUGIN_DIR"
     mkdir -p "$PLUGIN_DIR"
 
-    if [ -d "$PLUGINS_DIR" ]; then
-        cp -a "$PLUGINS_DIR/." "$PLUGIN_DIR/"
+    if [ -d "$SOURCE_PLUGINS_DIR" ]; then
+        cp -a "$SOURCE_PLUGINS_DIR/." "$PLUGIN_DIR/"
     fi
 
     ok "Files installed."
@@ -463,4 +489,10 @@ fi
 echo ""
 if [ "$INSTALL_RISSET" = true ] || ask_yes_no "Install risset (csound package manager)?"; then
     install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
+fi
+
+# ─── Optional: install externals ─────────────────────────────────
+echo ""
+if [ "$INSTALL_EXTERNALS" = true ] || ask_yes_no "Install external plugins?"; then
+    install_externals || warn "External plugins installation failed. You can install them via risset"
 fi
