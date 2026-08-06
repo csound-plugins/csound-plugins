@@ -233,7 +233,7 @@ path_already_in_config() {
 # ─── Determine script location ────────────────────────────────
 # The zip is extracted; we need to find where this script lives
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-info "Source directory: $SCRIPT_DIR"
+debug "Source directory: $SCRIPT_DIR"
 
 # ─── Validate source files ────────────────────────────────────
 CSOUND_BIN="$SCRIPT_DIR/csound"
@@ -487,7 +487,9 @@ fi
 
 # ─── Optional: install risset ─────────────────────────────────
 echo ""
-if [ "$INSTALL_RISSET" = true ] || ask_yes_no "Install risset (csound package manager)?"; then
+if command_exists risset; then
+    info "risset is already available at $(command -v risset); skipping installation."
+elif [ "$INSTALL_RISSET" = true ] || ask_yes_no "Install risset (csound package manager)?"; then
     install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
 fi
 
