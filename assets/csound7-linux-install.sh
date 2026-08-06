@@ -37,7 +37,7 @@ Options:
             plugins in ~/.local/lib/csound/7.0/plugins64)
   --system  Install system-wide (/usr/local, requires sudo)
   --risset  Also install risset (csound package manager) via uv
-  -y        Answer yes to all questions (defaults to a user installation)
+  -y        Answer yes to all questions (defaults to a system installation)
   --help    Show this help message and exit
 EOF
 }
@@ -238,7 +238,7 @@ echo "    (s)ystem - All users (/usr/local, requires sudo)"
 echo ""
 
 if [ -z "${INSTALL_MODE:-}" ] && [ "$AUTO_YES" = true ]; then
-    INSTALL_MODE="user"
+    INSTALL_MODE="system"
 elif [ -z "${INSTALL_MODE:-}" ]; then
     INSTALL_MODE=$(ask_choice "Installation mode")
 fi
