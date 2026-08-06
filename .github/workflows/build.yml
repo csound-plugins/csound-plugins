@@ -64,7 +64,7 @@ jobs:
           path: artifacts/*
 
   buildlinuxportable:
-    name: Build portable Linux Csound with plugins
+    name: Build portable Linux Csound with externals
     runs-on: ubuntu-22.04
     #container:
     #  image: ubuntu:20.04
