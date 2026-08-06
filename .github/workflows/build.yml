@@ -204,9 +204,6 @@ jobs:
           make -j"$(nproc)"
           make install
 
-      # - name: Remove shared liblo
-      #   run: find / -xdev -name 'liblo.so*' -delete 2>/dev/null || true
-
       - name: Configure and build Csound
         env:
           PKG_CONFIG_PATH: "${{ env.DEPS_PREFIX }}/lib/pkgconfig"
@@ -564,8 +561,6 @@ jobs:
           cmake --build . --parallel --config Release
           cd ..
           ls build/Release
-
-          # rm -ErrorAction Ignore Release/FLAC.dll, Release/ogg.dll, Release/opus.dll, Release/sndfile.dll, Release/vorbis*
 
           New-Item artifacts -ItemType Directory -ea 0
           Copy-Item -Path "build/Release/*.dll" -Destination "artifacts"
