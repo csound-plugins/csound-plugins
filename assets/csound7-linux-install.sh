@@ -24,6 +24,7 @@ header()  { printf "${CYAN}%s${NC}\n" "$*"; }
 INSTALL_MODE_ARG=""
 AUTO_YES=false
 INSTALL_RISSET=false
+USER_CSOUND_PATH="$HOME/.local/csound"
 
 usage() {
     cat <<EOF
@@ -36,7 +37,7 @@ Options:
             plugins in ~/.local/lib/csound/7.0/plugins64)
   --system  Install system-wide (/usr/local, requires sudo)
   --risset  Also install risset (csound package manager) via uv
-  -y        Answer yes to all yes/no questions
+  -y        Answer yes to all questions (defaults to a user installation)
   --help    Show this help message and exit
 EOF
 }
@@ -236,8 +237,25 @@ echo "    (u)ser   - Current user only (~/.local)"
 echo "    (s)ystem - All users (/usr/local, requires sudo)"
 echo ""
 
-if [ -z "${INSTALL_MODE:-}" ]; then
+if [ -z "${INSTALL_MODE:-}" ] && [ "$AUTO_YES" = true ]; then
+    INSTALL_MODE="user"
+elif [ -z "${INSTALL_MODE:-}" ]; then
     INSTALL_MODE=$(ask_choice "Installation mode")
+fi
+
+# ─── Check for an existing Csound installation ────────────────
+if command_exists csound; then
+    EXISTING_CSOUND=$(command -v csound)
+    USER_CSOUND="$USER_CSOUND_PATH/csound"
+
+    warn "csound is already available at $EXISTING_CSOUND"
+
+    if [ "$INSTALL_MODE" = "user" ] && [ "$EXISTING_CSOUND" = "$USER_CSOUND" ]; then
+        info "The existing csound is the user-local installation target."
+    elif ! ask_yes_no "A new installation might conflict with the existing csound. Proceed?"; then
+        info "Installation cancelled."
+        exit 0
+    fi
 fi
 
 # ─── System-wide installation ─────────────────────────────────
@@ -346,7 +364,7 @@ else
     header "User-local installation selected"
     header ""
 
-    INSTALL_DIR="$HOME/.local/csound"
+    INSTALL_DIR="$USER_CSOUND_PATH"
     PLUGIN_DIR="$HOME/.local/lib/csound/7.0/plugins64"
 
     # Check for conflicts
