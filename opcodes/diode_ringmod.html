@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2283,6 +2283,34 @@
   
   
     <li class="md-nav__item">
+      <a href="perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="picksource.html" class="md-nav__link">
         
   
@@ -2935,6 +2963,34 @@
     
   
     pyin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
   
 
     
@@ -3877,11 +3933,11 @@ stage.</p>
 <span class="vg">nchnls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
 <span class="vg">0dbfs</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
 
-<span class="nb">chn_k</span><span class="w"> </span><span class="s">&quot;modmidi&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span>
-<span class="nb">chn_k</span><span class="w"> </span><span class="s">&quot;feedback&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span>
-<span class="nb">chn_k</span><span class="w"> </span><span class="s">&quot;nonlinear&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span>
-<span class="nb">chn_k</span><span class="w"> </span><span class="s">&quot;oversample&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span>
-<span class="nb">chn_k</span><span class="w"> </span><span class="s">&quot;diode&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;r&quot;</span>
+<span class="nb">chn_k</span><span class="w"> </span><span class="s">"modmidi"</span><span class="p">,</span><span class="w"> </span><span class="s">"r"</span>
+<span class="nb">chn_k</span><span class="w"> </span><span class="s">"feedback"</span><span class="p">,</span><span class="w"> </span><span class="s">"r"</span>
+<span class="nb">chn_k</span><span class="w"> </span><span class="s">"nonlinear"</span><span class="p">,</span><span class="w"> </span><span class="s">"r"</span>
+<span class="nb">chn_k</span><span class="w"> </span><span class="s">"oversample"</span><span class="p">,</span><span class="w"> </span><span class="s">"r"</span>
+<span class="nb">chn_k</span><span class="w"> </span><span class="s">"diode"</span><span class="p">,</span><span class="w"> </span><span class="s">"r"</span>
 
 <span class="kt">ga</span><span class="n">Outs</span><span class="p">[]</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">2</span>
 
@@ -3902,14 +3958,14 @@ stage.</p>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">100</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">modmidi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="nb">chnget</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="s">&quot;modmidi&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">modmidi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="nb">chnget</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="s">"modmidi"</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">changed</span><span class="p">(</span><span class="kt">k</span><span class="n">modmidi</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
-<span class="w">    </span><span class="nb">outvalue</span><span class="w"> </span><span class="s">&quot;note&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">mton</span><span class="p">(</span><span class="kt">k</span><span class="n">modmidi</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">outvalue</span><span class="w"> </span><span class="s">"note"</span><span class="p">,</span><span class="w"> </span><span class="nb">mton</span><span class="p">(</span><span class="kt">k</span><span class="n">modmidi</span><span class="p">)</span>
 <span class="w">  </span><span class="k">endif</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">diode</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">&quot;diode&quot;</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">feedback</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">&quot;feedback&quot;</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">nonlinear</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">&quot;nonlinear&quot;</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">oversample</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">&quot;oversample&quot;</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">diode</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">"diode"</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">feedback</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">"feedback"</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">nonlinear</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">"nonlinear"</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">oversample</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">"oversample"</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">modfreq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">mtof</span><span class="p">:</span><span class="kt">k</span><span class="p">(</span><span class="kt">k</span><span class="n">modmidi</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">ga</span><span class="n">Outs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">2</span><span class="w"> </span><span class="n">diode_ringmod</span><span class="w"> </span><span class="kt">a</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">modfreq</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">diode</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">feedback</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">nonlinear</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">oversample</span>
@@ -3938,12 +3994,12 @@ stage.</p>
 <span class="w"> </span><span class="o">&lt;</span><span class="n">height</span><span class="o">&gt;</span><span class="mi">240</span><span class="o">&lt;/</span><span class="n">height</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;</span><span class="n">visible</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">visible</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;</span><span class="n">uuid</span><span class="o">/&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">"nobackground"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bgcolor</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBKnob&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBKnob"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">modmidi</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">19</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">19</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -3958,9 +4014,9 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">maximum</span><span class="o">&gt;</span><span class="mf">100.00000000</span><span class="o">&lt;/</span><span class="n">maximum</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="mf">66.14960000</span><span class="o">&lt;/</span><span class="n">value</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="nb">mode</span><span class="o">&gt;</span><span class="n">lin</span><span class="o">&lt;/</span><span class="nb">mode</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">mouseControl</span><span class="w"> </span><span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">mouseControl</span><span class="w"> </span><span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">""</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">resolution</span><span class="o">&gt;</span><span class="mf">0.01000000</span><span class="o">&lt;/</span><span class="n">resolution</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">"0"</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">245</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">124</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
@@ -3973,7 +4029,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBLabel&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBLabel"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">24</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">119</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -3995,7 +4051,7 @@ stage.</p>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">122</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">"nobackground"</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
@@ -4004,7 +4060,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderradius</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">borderradius</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderwidth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">borderwidth</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBKnob&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBKnob"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">eedback</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">134</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">19</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4019,9 +4075,9 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">maximum</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">maximum</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="mf">0.49000000</span><span class="o">&lt;/</span><span class="n">value</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="nb">mode</span><span class="o">&gt;</span><span class="n">lin</span><span class="o">&lt;/</span><span class="nb">mode</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">mouseControl</span><span class="w"> </span><span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">mouseControl</span><span class="w"> </span><span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">""</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">resolution</span><span class="o">&gt;</span><span class="mf">0.01000000</span><span class="o">&lt;/</span><span class="n">resolution</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">"0"</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">245</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">124</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
@@ -4034,7 +4090,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBLabel&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBLabel"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">139</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">119</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4056,7 +4112,7 @@ stage.</p>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">122</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">"nobackground"</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
@@ -4065,7 +4121,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderradius</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">borderradius</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderwidth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">borderwidth</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBCheckBox&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBCheckBox"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">diode</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">359</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">19</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4079,9 +4135,9 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">selected</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">selected</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">label</span><span class="o">/&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">pressedValue</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">pressedValue</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">"0"</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBLabel&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBLabel"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">399</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">24</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4103,7 +4159,7 @@ stage.</p>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">122</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">"nobackground"</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
@@ -4112,7 +4168,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderradius</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">borderradius</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderwidth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">borderwidth</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBCheckBox&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBCheckBox"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">oversample</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">359</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">64</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4126,9 +4182,9 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">selected</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="n">selected</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">label</span><span class="o">/&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">pressedValue</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">pressedValue</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">"0"</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBLabel&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBLabel"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">399</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">69</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4150,7 +4206,7 @@ stage.</p>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">122</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">"nobackground"</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
@@ -4159,7 +4215,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderradius</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">borderradius</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderwidth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">borderwidth</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBKnob&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBKnob"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">nonlinear</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">249</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">19</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4174,9 +4230,9 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">maximum</span><span class="o">&gt;</span><span class="mf">1.00000000</span><span class="o">&lt;/</span><span class="n">maximum</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span><span class="mf">0.63000000</span><span class="o">&lt;/</span><span class="n">value</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="nb">mode</span><span class="o">&gt;</span><span class="n">lin</span><span class="o">&lt;/</span><span class="nb">mode</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">mouseControl</span><span class="w"> </span><span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">mouseControl</span><span class="w"> </span><span class="kt">a</span><span class="n">ct</span><span class="o">=</span><span class="s">""</span><span class="o">&gt;</span><span class="n">continuous</span><span class="o">&lt;/</span><span class="n">mouseControl</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">resolution</span><span class="o">&gt;</span><span class="mf">0.01000000</span><span class="o">&lt;/</span><span class="n">resolution</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">&quot;0&quot;</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">randomizable</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="s">"0"</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="n">randomizable</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">245</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">124</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
@@ -4189,7 +4245,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span><span class="n">true</span><span class="o">&lt;/</span><span class="kt">f</span><span class="n">latstyle</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span><span class="kt">f</span><span class="n">alse</span><span class="o">&lt;/</span><span class="kt">i</span><span class="n">ntegerMode</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBLabel&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBLabel"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">/&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">254</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">119</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4211,7 +4267,7 @@ stage.</p>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">122</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">"nobackground"</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
@@ -4220,7 +4276,7 @@ stage.</p>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderradius</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">borderradius</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">borderwidth</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">borderwidth</span><span class="o">&gt;</span>
 <span class="w"> </span><span class="o">&lt;/</span><span class="n">bsbObject</span><span class="o">&gt;</span>
-<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&quot;BSBDisplay&quot;</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="o">&gt;</span>
+<span class="w"> </span><span class="o">&lt;</span><span class="n">bsbObject</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">"BSBDisplay"</span><span class="w"> </span><span class="n">version</span><span class="o">=</span><span class="s">"2"</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">objectName</span><span class="o">&gt;</span><span class="n">note</span><span class="o">&lt;/</span><span class="n">objectName</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">x</span><span class="o">&gt;</span><span class="mi">34</span><span class="o">&lt;/</span><span class="n">x</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;</span><span class="n">y</span><span class="o">&gt;</span><span class="mi">177</span><span class="o">&lt;/</span><span class="n">y</span><span class="o">&gt;</span>
@@ -4242,7 +4298,7 @@ stage.</p>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">170</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">0</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="o">&lt;/</span><span class="n">color</span><span class="o">&gt;</span>
-<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">&quot;nobackground&quot;</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="o">&lt;</span><span class="n">bgcolor</span><span class="w"> </span><span class="nb">mode</span><span class="o">=</span><span class="s">"nobackground"</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">r</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">r</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">g</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">g</span><span class="o">&gt;</span>
 <span class="w">   </span><span class="o">&lt;</span><span class="n">b</span><span class="o">&gt;</span><span class="mi">255</span><span class="o">&lt;/</span><span class="n">b</span><span class="o">&gt;</span>
@@ -4317,7 +4373,7 @@ stage.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

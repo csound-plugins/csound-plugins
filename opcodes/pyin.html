@@ -12,14 +12,14 @@
         <link rel="prev" href="pwriten.html">
       
       
-        <link rel="next" href="ramptrig.html">
+        <link rel="next" href="pyinf0.html">
       
       
         
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2120,6 +2120,34 @@
   
   
     <li class="md-nav__item">
+      <a href="perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="picksource.html" class="md-nav__link">
         
   
@@ -2865,6 +2893,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Arguments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#named-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Named arguments:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2926,6 +2971,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3706,6 +3779,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Arguments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#named-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Named arguments:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3782,36 +3872,39 @@
 
 <h1 id="pyin">pyin</h1>
 <h2 id="abstract">Abstract</h2>
-<p>fundamental (pitch) tracking using the probabilistic YIN method</p>
+<p>Fundamental tracking implementing the pYIN algorithm</p>
 <h2 id="description">Description</h2>
-<p>The pYIN algorithm is an advanced, two-stage pitch (fundamental frequency or F0) 
-tracking method that improves upon the conventional YIN algorithm by incorporating 
-probabilistic analysis and a Hidden Markov Model (HMM) to produce a smoother, 
-more accurate pitch track. The pYIN algorithm functions in two main stages. </p>
-<ol>
-<li>Pitch Candidate Generation: Unlike the original YIN algorithm, 
-  which outputs a single pitch estimate per frame, pYIN generates 
-  multiple potential pitch candidates along with associated probabilities. 
-  These probabilities are derived from a prior distribution on the YIN's internal 
-  threshold parameter, allowing for more robust post-processing.</li>
-<li>HMM-based Pitch Tracking: The probabilities and candidates are used 
-  as observations in a Hidden Markov Model (HMM). A Viterbi decoding process is then 
-  applied to determine the most likely sequence of pitches, which results in the 
-  improved pitch track. </li>
-</ol>
+<p>pYIN is a modificatin of the YIN algorithm for f0 estimation. In the first step 
+of pYIN, F0 candidates and their probabilities are computed using the YIN algorithm. 
+In the second step, Viterbi decoding is used to estimate the most likely F0 
+sequence and voicing flags. This streaming version uses only past observations 
+(no lookahead) and is thus somewhat less effective than offline pyin.  </p>
 <h2 id="syntax">Syntax</h2>
-<div class="language-csound highlight"><pre><span></span><code><span class="kt">k</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">confidence</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">voiced</span><span class="w"> </span><span class="n">pyin</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">minfreq</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">maxfreq</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bufsize</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">overlap</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">transprob</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">bins</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">drift</span><span class="o">=</span><span class="mi">5</span>
+<div class="language-csound highlight"><pre><span></span><code><span class="kt">k</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">confidence</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">voiced</span><span class="w"> </span><span class="n">pyin</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">arg1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">value1</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="kt">S</span><span class="n">arg2</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">value2</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">]</span>
 </code></pre></div>
 <h2 id="arguments">Arguments</h2>
 <ul>
 <li><strong>asig</strong>: audio signal</li>
-<li><strong>iminfreq</strong>: min. frequency for f0 (default=60)</li>
-<li><strong>imaxfreq</strong>: max. frequency for f0 (default=1000)</li>
-<li><strong>ibufsize</strong>: size of the analysis frame (default=2048)</li>
-<li><strong>ioverlap</strong>: overlapping frames. hopsize=bufsize/overlap (default=4)</li>
-<li><strong>ktransprob</strong>: hmm transition probability (default=0.99)</li>
-<li><strong>ibins</strong>: number of bins per semitone (default=4)</li>
-<li><strong>kdrift</strong>: pitch drift between frames, in semitones (default=5)</li>
+<li><strong>Sarg1</strong>: argument name, see below</li>
+<li><strong>ivalue1</strong>: argument value</li>
+</ul>
+<h3 id="named-arguments">Named arguments:</h3>
+<ul>
+<li><strong>framesize</strong>: 1024–8192 (2048). Analysis frame size in samples</li>
+<li><strong>hop</strong>: 64– (1/4 framesize). Hop size in samples</li>
+<li><strong>fmin</strong>: 20– (60). Min. frequency</li>
+<li><strong>fmax</strong>: 20- (1000). Max. frequency</li>
+<li><strong>bins</strong>: 2–50 (10). Subdivisions per semitone</li>
+<li><strong>transition_weight</strong>: 0–1 (0.1). Prob. of switching voiced↔unvoiced</li>
+<li><strong>minrms</strong>: 0–1. Mark sound with rms below this as silent</li>
+<li><strong>beta_a</strong>: 1–3. Param a for beta distr. prior over thresholds</li>
+<li><strong>beta_b</strong>: 1–20. Param b for beta distr. Lower = smoother track</li>
+<li><strong>drift</strong>: 10– (100). Pitch variation between frames, in cents</li>
+<li><strong>voiced_obs_floor</strong>: 0–1. Floor for voiced observations</li>
+<li><strong>octave_cost</strong>: 0–0.5 (0). Cost of jumping an octave between frames. 
+  Use if the algorithm falsely predicts the 2nd overtone as the fundamental</li>
+<li><strong>subharmonic_tresh</strong>: 4. Used together with octave_cost, controls the 
+  threshold of a downward octave jump</li>
 </ul>
 <h2 id="output">Output</h2>
 <ul>
@@ -3839,45 +3932,74 @@ more accurate pitch track. The pYIN algorithm functions in two main stages. </p>
 
 <span class="cm">Syntax:</span>
 
-<span class="cm">kfreq, kconfidence, kvoiced pyin asig, iminfreq=60, imaxfreq=1000, ibufsize=2048, ioverlap=4, ktransprob=0.99, ibins=4, kdrift=5 </span>
+<span class="cm">kfreq, kconfidence, kvoiced pyin asig, Sarg1, ivalue1, [Sarg2, ivalue2, ...]</span>
 
 <span class="cm">Args:</span>
 <span class="cm">    * asig: audio signal</span>
-<span class="cm">    * iminfreq: min. frequency for f0 (default=60)</span>
-<span class="cm">    * imaxfreq: max. frequency for f0 (default=1000)</span>
-<span class="cm">    * ibufsize: size of the analysis frame (default=2048)</span>
-<span class="cm">    * ioverlap: overlapping frames. hopsize=bufsize/overlap (default=4)</span>
-<span class="cm">    * ktransprob: hmm transition probability (default=0.99)</span>
-<span class="cm">    * ibins: number of bins per semitone (default=4)</span>
-<span class="cm">    * kdrift: pitch drift between frames, in semitones (default=5)</span>
+<span class="cm">    * Sarg1: an argument name, see below</span>
+<span class="cm">    * ivalue1: the argument value</span>
 
 <span class="cm">Output:</span>
 <span class="cm">    * kfreq: detected frequency. Only valid if confidence is &gt; ~0.4</span>
 <span class="cm">    * kconfidence: detection confidence</span>
 <span class="cm">    * kvoiced: is the sound voiced</span>
 
+
+<span class="cm">Parameter          Range          Default</span>
+<span class="cm">-----------------  ------------  -----------------</span>
+<span class="cm">framesize          1024 - 8192    2048</span>
+<span class="cm">hop                64 -           1/4 of framesize</span>
+<span class="cm">fmin               20 -           60</span>
+<span class="cm">fmax               20 -           1000</span>
+<span class="cm">bins               2 - 50         10</span>
+<span class="cm">transition_weight  0. - 1.        0.1</span>
+<span class="cm">minrms             0. - 1.        0.</span>
+<span class="cm">beta_a             1 - 3          2</span>
+<span class="cm">beta_b             1 - 20         3</span>
+<span class="cm">drift              10 -           100</span>
+<span class="cm">voiced_obs_floor   0-1            0.</span>
+<span class="cm">octave_cost        0.             0. - 0.5</span>
+<span class="cm">subharmonic_tresh  4              1 - 8</span>
+
 <span class="cm">*/</span>
 
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">1</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">sig1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">oscili</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">)</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">sig2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">buzz</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">sig3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pinker</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.1</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">sig4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">diskin2</span><span class="p">(</span><span class="s">&quot;finnegan01.flac&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="w">  </span><span class="kt">S</span><span class="n">names</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="s">&quot;sine &quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;buzz &quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pink &quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;finn &quot;</span>
+<span class="w">  </span><span class="c1">; asig2 = diskin2("../../beosc/examples/colours-german-male-mono.flac", 1, 0, 1)[0]</span>
+<span class="w">  </span><span class="c1">; asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">diskin2</span><span class="p">(</span><span class="s">"../../else/examples/voiceover-fragment-48k.flac"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">buzz</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pinker</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.1</span>
+<span class="w">  </span><span class="kt">S</span><span class="n">names</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="s">"sine  "</span><span class="p">,</span><span class="w"> </span><span class="s">"speech"</span><span class="p">,</span><span class="w"> </span><span class="s">"buzz  "</span><span class="p">,</span><span class="w"> </span><span class="s">"pink  "</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">source</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
 <span class="w">    </span><span class="kt">k</span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">k</span><span class="n">source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">4</span>
 <span class="w">  </span><span class="k">endif</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">picksource</span><span class="p">(</span><span class="kt">k</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig2</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig3</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig4</span><span class="p">)</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">pitch</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">conf</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">voiced</span><span class="w"> </span><span class="n">pyin</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.992</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">sound</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">schmitt</span><span class="p">(</span><span class="nb">dbamp</span><span class="p">(</span><span class="nb">rms</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">)),</span><span class="w">  </span><span class="o">-</span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">55</span><span class="p">)</span><span class="c1">;</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">schmitt</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="kt">k</span><span class="n">conf</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">k</span><span class="n">sound</span><span class="c1">;</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
-<span class="w">    </span><span class="nb">printsk</span><span class="w"> </span><span class="s">&quot;Source: </span><span class="si">%d</span><span class="s">, </span><span class="si">%s</span><span class="s">, pitch: </span><span class="si">%f</span><span class="s">, conf: </span><span class="si">%f</span><span class="s">, voiced: </span><span class="si">%f</span><span class="s">, sound: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">names</span><span class="p">[</span><span class="kt">k</span><span class="n">source</span><span class="p">],</span><span class="w"> </span><span class="kt">k</span><span class="n">pitch</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">conf</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">voiced</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">sound</span>
+<span class="w">  </span><span class="c1">; asig = picksource(ksource, asig1, asig2, asig3, asig4)</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">a</span><span class="n">sig2</span>
+<span class="w">  </span><span class="c1">; We compress the signal to get better detection</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sigpyin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">compress2</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">40</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.02</span><span class="p">)</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sigpyin</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">pitch</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">conf</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">voiced</span><span class="w"> </span><span class="n">pyin</span><span class="w"> </span><span class="kt">a</span><span class="n">sigpyin</span><span class="p">,</span><span class="w"> </span><span class="s">"framesize"</span><span class="p">,</span><span class="w"> </span><span class="mi">2048</span><span class="p">,</span><span class="w"> </span><span class="s">"hop"</span><span class="p">,</span><span class="w"> </span><span class="mi">256</span><span class="p">,</span><span class="w"> </span>\
+<span class="w">    </span><span class="s">"fmin"</span><span class="p">,</span><span class="w"> </span><span class="mi">70</span><span class="p">,</span><span class="w"> </span><span class="s">"fmax"</span><span class="p">,</span><span class="w"> </span><span class="mi">600</span><span class="p">,</span><span class="w"> </span><span class="s">"transition_weight"</span><span class="p">,</span><span class="w"> </span><span class="mf">0.01</span><span class="p">,</span><span class="w"> </span><span class="s">"beta_b"</span><span class="p">,</span><span class="w"> </span><span class="mf">1.6</span><span class="p">,</span><span class="w"> </span>\
+<span class="w">    </span><span class="s">"drift"</span><span class="p">,</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="s">"voiced_obs_floor"</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span>
+<span class="w">  </span><span class="c1">; akOOOOO</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">pllpitch</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">loc</span><span class="w"> </span><span class="nb">plltrack</span><span class="w"> </span><span class="kt">a</span><span class="n">sigpyin</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="mf">0.15</span><span class="p">,</span><span class="w"> </span><span class="mi">70</span><span class="p">,</span><span class="w"> </span><span class="mi">600</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0001</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">sound</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">schmitt</span><span class="p">(</span><span class="nb">dbamp</span><span class="p">(</span><span class="nb">rms</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">)),</span><span class="w">  </span><span class="o">-</span><span class="mi">45</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">60</span><span class="p">)</span><span class="c1">;</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">schmitt</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="kt">k</span><span class="n">conf</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">schmitt</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="kt">k</span><span class="n">pitch</span><span class="p">,</span><span class="w"> </span><span class="mi">90</span><span class="p">,</span><span class="w"> </span><span class="mi">75</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">schmitt</span><span class="p">:</span><span class="n">k</span><span class="p">(</span><span class="kt">k</span><span class="n">pitch</span><span class="p">,</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">))</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">k</span><span class="n">valid</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kt">k</span><span class="n">sound</span><span class="c1">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">48</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="kt">k</span><span class="n">env</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">printsk</span><span class="w"> </span><span class="s">"pitch: </span><span class="si">%.1f</span><span class="s">, conf: </span><span class="si">%d</span><span class="s">, voiced: </span><span class="si">%d</span><span class="s">, sound: </span><span class="si">%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pitch</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">conf</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">voiced</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">sound</span>
 <span class="w">  </span><span class="k">endif</span>
-<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span>
-<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nb">vco2</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pitch</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">a</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">lagud</span><span class="p">(</span><span class="nb">a</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">),</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span><span class="w"> </span><span class="mf">0.15</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">;; Switch these to compare pyin with plltrack</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">vco2</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">pitch</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">a</span><span class="p">(</span><span class="kt">k</span><span class="n">env</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">; aout = vco2(0.5, k(apllpitch)) * aenv</span>
+
+<span class="w">  </span><span class="kt">a</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">lpf18</span><span class="p">(</span><span class="kt">a</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="mi">1500</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sigpyin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.9</span>
+<span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">out</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -3888,10 +4010,9 @@ more accurate pitch track. The pYIN algorithm functions in two main stages. </p>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
 </code></pre></div>
-<p><img alt="" src="assets/pyin-spectrogram.png" />
-<a href="assets/pyin-test.mp3">LISTEN</a></p>
 <h2 id="see-also">See also</h2>
 <ul>
+<li><a href="pyin.html">pyinf0</a></li>
 <li><a href="https://csound.com/docs/manual/ptrack.html">ptrack</a></li>
 <li><a href="https://csound.com/docs/manual/plltrack.html">plltrack</a></li>
 <li><a href="pvsmagsum.html">pvsmagsum</a></li>
@@ -3901,8 +4022,8 @@ more accurate pitch track. The pYIN algorithm functions in two main stages. </p>
 <ul>
 <li>Author: Eduardo Moguillansky</li>
 <li>Year: 2026</li>
-<li>Plugin: else</li>
-<li>Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/else/src/else.c</li>
+<li>Plugin: pitchtrack</li>
+<li>Source: https://github.com/csound-plugins/csound-plugins/blob/master/src/pitchtrack/src/pyin.c</li>
 </ul>
 
 
@@ -3956,7 +4077,7 @@ more accurate pitch track. The pYIN algorithm functions in two main stages. </p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

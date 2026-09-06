@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2255,6 +2255,34 @@
   
   
     <li class="md-nav__item">
+      <a href="perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="picksource.html" class="md-nav__link">
         
   
@@ -2907,6 +2935,34 @@
     
   
     pyin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
   
 
     
@@ -3883,7 +3939,7 @@ not running anymore at this point.  </p>
 <span class="kd">instr</span><span class="w"> </span><span class="nf">10</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">0</span><span class="w"> </span><span class="nb">oscili</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">440</span>
 <span class="w">  </span><span class="nb">outs</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">0</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">"foo"</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">foo</span><span class="w"> </span>
@@ -3895,42 +3951,42 @@ not running anymore at this point.  </p>
 
 <span class="c1">; test simple case with optional pargs</span>
 <span class="kd">instr</span><span class="w"> </span><span class="nf">first</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;second&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;second&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">"second"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">"second"</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="mi">200</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">second</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;&gt;&gt;&gt; second!  p4 =</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="vi">p4</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"&gt;&gt;&gt; second!  p4 =</span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="vi">p4</span>
 <span class="w">  </span><span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">200</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;&gt;&gt;&gt;&gt; 200!</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"&gt;&gt;&gt;&gt; 200!</span><span class="se">\n</span><span class="s">"</span>
 <span class="w">  </span><span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="c1">; test atstop with k args</span>
 <span class="kd">instr</span><span class="w"> </span><span class="nf">_printCounter</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">counter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; counter: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">counter</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; counter: </span><span class="si">%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">counter</span>
 <span class="w">  </span><span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">kargs</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">counter</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">counter</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;_printCounter&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">counter</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">"_printCounter"</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">counter</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">strarg</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">&quot;printmsg&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;mymessage&quot;</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">tstop</span><span class="w"> </span><span class="s">"printmsg"</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">"mymessage"</span>
 <span class="w">  </span><span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">printmsg</span>
 <span class="w">  </span><span class="kt">S</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;message from printmsg: &#39;</span><span class="si">%s</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">msg</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"message from printmsg: '</span><span class="si">%s</span><span class="s">'</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">msg</span>
 <span class="w">  </span><span class="nb">turnoff</span>
 <span class="kd">endin</span>
 
@@ -3946,10 +4002,10 @@ not running anymore at this point.  </p>
 <span class="c1">; i 2 0 0.25 48</span>
 
 <span class="nb">i</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span>
-<span class="c1">; i &quot;StopPerformance&quot; 10 1</span>
-<span class="c1">; i &quot;first&quot; 1 0.5</span>
-<span class="c1">; i &quot;kargs&quot; 0 1</span>
-<span class="c1">; i &quot;strarg&quot; 0 1</span>
+<span class="c1">; i "StopPerformance" 10 1</span>
+<span class="c1">; i "first" 1 0.5</span>
+<span class="c1">; i "kargs" 0 1</span>
+<span class="c1">; i "strarg" 0 1</span>
 <span class="n">f</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">10</span>
 <span class="o">&lt;/</span><span class="n">CsScore</span><span class="o">&gt;</span>
 <span class="o">&lt;/</span><span class="n">CsoundSynthesizer</span><span class="o">&gt;</span>
@@ -4016,7 +4072,7 @@ not running anymore at this point.  </p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

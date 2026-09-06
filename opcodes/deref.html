@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2272,6 +2272,34 @@
   
   
     <li class="md-nav__item">
+      <a href="perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="picksource.html" class="md-nav__link">
         
   
@@ -2924,6 +2952,34 @@
     
   
     pyin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
   
 
     
@@ -3843,7 +3899,7 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 <span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="n">ref</span><span class="w"> </span><span class="kt">i</span><span class="n">X</span>
 <span class="w">  </span><span class="c1">; now iYs points to iXs</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">Y</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span>
-<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;instrument 1, iY&quot;</span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"instrument 1, iY"</span>
 
 
 <span class="w">  </span><span class="kt">i</span><span class="n">Z</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span>
@@ -3863,9 +3919,9 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 <span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="n">refvalid</span><span class="p">(</span><span class="kt">i</span><span class="n">ref</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
 <span class="w">    </span><span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span>
-<span class="w">    </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Zs</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;p1=2, iZs&quot;</span>
+<span class="w">    </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">i</span><span class="n">Zs</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"p1=2, iZs"</span>
 <span class="w">  </span><span class="k">else</span>
-<span class="w">    </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\n</span><span class="s">    The reference has become invalid</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nb">prints</span><span class="w"> </span><span class="s">"</span><span class="se">\n</span><span class="s">    The reference has become invalid</span><span class="se">\n</span><span class="s">"</span>
 <span class="w">  </span><span class="k">endif</span>
 <span class="w">  </span><span class="nb">turnoff</span>
 <span class="kd">endin</span>
@@ -3879,7 +3935,7 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 
 <span class="w">  </span><span class="c1">; In order to bridge the time gap between the end of life of the source</span>
 <span class="w">  </span><span class="c1">; of a ref and the scheduled event where a deref is taken, it is possible</span>
-<span class="w">  </span><span class="c1">; to create a forward reference, a &quot;promise&quot; that one deref has been scheduled</span>
+<span class="w">  </span><span class="c1">; to create a forward reference, a "promise" that one deref has been scheduled</span>
 <span class="w">  </span><span class="c1">; in the future.</span>
 
 <span class="w">  </span><span class="c1">; short lived event, ends before this event</span>
@@ -3891,14 +3947,14 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 <span class="w">  </span><span class="c1">; starts after we end, we need an extra reference </span>
 <span class="w">  </span><span class="nb">schedule</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">k</span><span class="n">Xs</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="mi">1</span>
 
-<span class="w">  </span><span class="n">defer</span><span class="w"> </span><span class="s">&quot;prints&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;  --- instr. 3 finished --- </span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="n">defer</span><span class="w"> </span><span class="s">"prints"</span><span class="p">,</span><span class="w"> </span><span class="s">"  --- instr. 3 finished --- </span><span class="se">\n</span><span class="s">"</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">4</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;instr. 4</span><span class="se">\n</span><span class="s">   &quot;</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"instr. 4</span><span class="se">\n</span><span class="s">   "</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">View</span><span class="p">[]</span><span class="w"> </span><span class="n">deref</span><span class="w"> </span><span class="vi">p4</span><span class="p">,</span><span class="w"> </span><span class="vi">p5</span>
 <span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">View</span>
-<span class="w">  </span><span class="n">defer</span><span class="w"> </span><span class="s">&quot;prints&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot; --- instr. 4 finished --- </span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="n">defer</span><span class="w"> </span><span class="s">"prints"</span><span class="p">,</span><span class="w"> </span><span class="s">" --- instr. 4 finished --- </span><span class="se">\n</span><span class="s">"</span>
 <span class="w">  </span><span class="c1">; At deinition time the memory of the `iView` array is marked as deallocated.</span>
 <span class="w">  </span><span class="c1">; The handle (a global structure created by the `ref` opcode) which owns the memory,</span>
 <span class="w">  </span><span class="c1">; is signaled that no other clients of this data are alive. It deallocates the</span>
@@ -3966,7 +4022,7 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 <span class="w">    </span><span class="kt">i</span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span>
 <span class="w">  </span><span class="k">od</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="nb">rtclock</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Dur UDO pass by value = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"Dur UDO pass by value = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span>
 
 <span class="w">  </span><span class="kt">i</span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref</span><span class="p">(</span><span class="kt">i</span><span class="n">Xs</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">t0</span><span class="w"> </span><span class="nb">rtclock</span>
@@ -3991,7 +4047,7 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 <span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">Y0</span><span class="w">   </span><span class="nf">arrayaddref</span><span class="w"> </span><span class="kt">i</span><span class="n">ref</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="nb">rtclock</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Dur UDO pass by ref input = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"Dur UDO pass by ref input = </span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span>
 
 <span class="w">  </span><span class="kt">i</span><span class="n">Zs</span><span class="p">[]</span><span class="w"> </span><span class="nb">genarray</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">num</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">Out</span><span class="p">[]</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="nb">lenarray</span><span class="p">(</span><span class="kt">i</span><span class="n">Zs</span><span class="p">)</span>
@@ -4020,7 +4076,7 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 <span class="w">  </span><span class="nf">arrayadd_byref_inout</span><span class="w"> </span><span class="kt">i</span><span class="n">refZ</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">refOut</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="nb">rtclock</span>
 
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;Dur UDO pass by ref in and out=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"Dur UDO pass by ref in and out=</span><span class="si">%.8f</span><span class="s"> </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">i</span><span class="n">t0</span>
 <span class="w">  </span><span class="c1">; printarray iOut</span>
 <span class="kd">endin</span>
 
@@ -4055,7 +4111,7 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
 <span class="c1">; schedule 1, 0, 1</span>
 <span class="c1">; schedule 3, 0, 1</span>
 <span class="c1">; schedule 5, 0, 0.1</span>
-<span class="nb">schedule</span><span class="w"> </span><span class="s">&quot;testUdoPerformance1&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span>
+<span class="nb">schedule</span><span class="w"> </span><span class="s">"testUdoPerformance1"</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span>
 <span class="c1">; schedule 8, 0, 4</span>
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
 
@@ -4128,7 +4184,7 @@ opcodes, allowing to modify an array inplace, skip copying memory, etc. </p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2266,6 +2266,34 @@
   
   
     <li class="md-nav__item">
+      <a href="perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="picksource.html" class="md-nav__link">
         
   
@@ -2918,6 +2946,34 @@
     
   
     pyin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
   
 
     
@@ -3800,13 +3856,13 @@ Possible properties are:</p>
 <p><strong>NB</strong>: the order in which keys and values are returned represents the corresponding pairs, so keys[i] and values[i] belong to the same pair.</p>
 <p><code>dict_query</code> executes at <strong>k-time</strong>. </p>
 <h2 id="syntax">Syntax</h2>
-<div class="language-text highlight"><pre><span></span><code>kexists   dict_query idict, &quot;exists&quot;
-ksize     dict_query idict, &quot;size&quot;
-ktype     dict_query idict, &quot;type&quot;
-SKeys[]   dict_query idict, &quot;keys&quot;
-kKeys[]   dict_query idict, &quot;keys&quot;
-kValues[] dict_query idict, &quot;values&quot;
-SValues[] dict_query idict, &quot;values&quot;
+<div class="language-text highlight"><pre><span></span><code>kexists   dict_query idict, "exists"
+ksize     dict_query idict, "size"
+ktype     dict_query idict, "type"
+SKeys[]   dict_query idict, "keys"
+kKeys[]   dict_query idict, "keys"
+kValues[] dict_query idict, "values"
+SValues[] dict_query idict, "values"
 </code></pre></div>
 <h2 id="arguments">Arguments</h2>
 <ul>
@@ -3832,44 +3888,44 @@ depending on the type definition of the array </p>
 
 <span class="cm">  ... dict_query idict, Scmd</span>
 
-<span class="cm">  where Scmd can be: &#39;size&#39;, &#39;type&#39;, &#39;exists&#39;, &#39;keys&#39;, &#39;values&#39;</span>
+<span class="cm">  where Scmd can be: 'size', 'type', 'exists', 'keys', 'values'</span>
 
 <span class="cm">*/</span>
 
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">1</span>
 <span class="w">  </span><span class="c1">; get all the keys as an array</span>
-<span class="w">  </span><span class="kt">i</span><span class="n">dict1</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;sf&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keyA&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keyB&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keyC&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict1</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">"sf"</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">"keyA"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">"keyB"</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">"keyC"</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span>
 <span class="w">  </span><span class="c1">; check that the dict exists</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">exists</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;exists&quot;</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">type</span><span class="w">   </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;type&quot;</span>
-<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;dict exists = </span><span class="si">%d</span><span class="s">, type = </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">exists</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">type</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">exists</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">"exists"</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">type</span><span class="w">   </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">"type"</span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">"dict exists = </span><span class="si">%d</span><span class="s">, type = </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">exists</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">type</span>
 
-<span class="w">  </span><span class="kt">S</span><span class="n">Keys</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keys&quot;</span>
+<span class="w">  </span><span class="kt">S</span><span class="n">Keys</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict1</span><span class="p">,</span><span class="w"> </span><span class="s">"keys"</span>
 <span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">S</span><span class="n">Keys</span>
 
 <span class="w">  </span><span class="c1">; now check a bogus handle</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">exists999</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="mi">999</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;exists&quot;</span>
-<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;dict 999 exists = </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">exists999</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">exists999</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="mi">999</span><span class="p">,</span><span class="w"> </span><span class="s">"exists"</span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">"dict 999 exists = </span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">exists999</span>
 
 <span class="w">  </span><span class="c1">; get the keys from a different dict</span>
-<span class="w">  </span><span class="kt">i</span><span class="n">dict2</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;if&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="mi">200</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">Keys</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;keys&quot;</span>
-<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">Keys</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;</span><span class="si">%.0f</span><span class="s">&quot;</span>
-<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;idict2 has size=</span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">dict_query</span><span class="p">(</span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;size&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict2</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">"if"</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="mi">200</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Keys</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">"keys"</span>
+<span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">Keys</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">"</span><span class="si">%.0f</span><span class="s">"</span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">"idict2 has size=</span><span class="si">%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">dict_query</span><span class="p">(</span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">"size"</span><span class="p">)</span>
 
 <span class="w">  </span><span class="c1">; get values as an array</span>
-<span class="w">  </span><span class="kt">i</span><span class="n">dict3</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">&quot;is&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;foo&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bar&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;baz&quot;</span>
-<span class="w">  </span><span class="kt">S</span><span class="n">vals</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict3</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;values&quot;</span>
+<span class="w">  </span><span class="kt">i</span><span class="n">dict3</span><span class="w"> </span><span class="n">dict_new</span><span class="w"> </span><span class="s">"is"</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="s">"foo"</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="s">"bar"</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="s">"baz"</span>
+<span class="w">  </span><span class="kt">S</span><span class="n">vals</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict3</span><span class="p">,</span><span class="w"> </span><span class="s">"values"</span>
 <span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">S</span><span class="n">vals</span>
 
 
-<span class="w">  </span><span class="kt">k</span><span class="n">Vals</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;values&quot;</span>
+<span class="w">  </span><span class="kt">k</span><span class="n">Vals</span><span class="p">[]</span><span class="w"> </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">"values"</span>
 <span class="w">  </span><span class="nb">printarray</span><span class="w"> </span><span class="kt">k</span><span class="n">Vals</span>
 
 <span class="w">  </span><span class="c1">; query the type of the dict</span>
-<span class="w">  </span><span class="kt">k</span><span class="n">type</span><span class="w">  </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;type&quot;</span>
-<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">&quot;the type of dict </span><span class="si">%d</span><span class="s"> is </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">type</span><span class="w">  </span>
+<span class="w">  </span><span class="kt">k</span><span class="n">type</span><span class="w">  </span><span class="n">dict_query</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="s">"type"</span>
+<span class="w">  </span><span class="nb">printf</span><span class="w"> </span><span class="s">"the type of dict </span><span class="si">%d</span><span class="s"> is </span><span class="si">%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">dict2</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">type</span><span class="w">  </span>
 
 <span class="w">  </span><span class="nb">turnoff</span>
 <span class="kd">endin</span>
@@ -3939,7 +3995,7 @@ depending on the type definition of the array </p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

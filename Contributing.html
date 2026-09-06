@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2128,6 +2128,34 @@
   
   
     <li class="md-nav__item">
+      <a href="opcodes/perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="opcodes/picksource.html" class="md-nav__link">
         
   
@@ -2780,6 +2808,34 @@
     
   
     pyin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="opcodes/pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
   
 
     
@@ -3577,20 +3633,20 @@ cmake --install .
 and make the opcode installable via risset. The manifest (named risset.json) is a .json file. 
 It should have the minimal form: </p>
 <div class="language-json highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mylib&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;opcodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">&quot;opcode1&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">&quot;opcode2&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mylib"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"opcodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"opcode1"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"opcode2"</span><span class="p">,</span>
 <span class="w">    </span><span class="err">...</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;short_description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A short description&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;long_description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A longer description&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;csound_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6.17&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Name Surname&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;email&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;name.surname@mail.com&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;license&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LGPL&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;repository&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://github.com/csound-plugins/csound-plugins&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"short_description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A short description"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"long_description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A longer description"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"csound_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6.17"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Name Surname"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"name.surname@mail.com"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LGPL"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"repository"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/csound-plugins/csound-plugins"</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 
@@ -3645,7 +3701,7 @@ It should have the minimal form: </p>
       <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

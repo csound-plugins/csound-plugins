@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2120,6 +2120,34 @@
   
   
     <li class="md-nav__item">
+      <a href="perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="picksource.html" class="md-nav__link">
         
   
@@ -2918,6 +2946,34 @@
     
   
     pyin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
   
 
     
@@ -3822,13 +3878,13 @@ the value to a decibel scale</p>
 <span class="cm">kflatness pvsflatness fsig</span>
 
 <span class="cm">  Given a pvs chain this calculates the Spectral Flatness measure, defined as a</span>
-<span class="cm">  power spectrum&#39;s geometric mean divided by its arithmetic mean. This gives a</span>
+<span class="cm">  power spectrum's geometric mean divided by its arithmetic mean. This gives a</span>
 <span class="cm">  measure which ranges from approx 0 for a pure sinusoid, to approx 1 for white noise.</span>
 
 <span class="cm">  The measure is calculated linearly. For some applications you may wish to convert</span>
 <span class="cm">  the value to a decibel scale</span>
 
-<span class="cm">  pvsflatness is a port of supercollider&#39;s SpecFlatness ugen</span>
+<span class="cm">  pvsflatness is a port of supercollider's SpecFlatness ugen</span>
 <span class="cm">*/</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">1</span>
@@ -3836,8 +3892,8 @@ the value to a decibel scale</p>
 <span class="w">  </span><span class="kt">a</span><span class="n">sig2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">buzz</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">sig3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pinker</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.1</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">sig4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">unirand</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">1.0</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">sig5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">diskin2</span><span class="p">(</span><span class="s">&quot;finnegan01.flac&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="w">  </span><span class="kt">S</span><span class="n">names</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="s">&quot;sine &quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;buzz &quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pink &quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;finn &quot;</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">sig5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">diskin2</span><span class="p">(</span><span class="s">"finnegan01.flac"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="w">  </span><span class="kt">S</span><span class="n">names</span><span class="p">[]</span><span class="w"> </span><span class="nb">fillarray</span><span class="w"> </span><span class="s">"sine "</span><span class="p">,</span><span class="w"> </span><span class="s">"buzz "</span><span class="p">,</span><span class="w"> </span><span class="s">"pink "</span><span class="p">,</span><span class="w"> </span><span class="s">"white"</span><span class="p">,</span><span class="w"> </span><span class="s">"finn "</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">source</span><span class="w"> </span><span class="nb">init</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
 <span class="w">    </span><span class="kt">k</span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">k</span><span class="n">source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">5</span>
@@ -3848,7 +3904,7 @@ the value to a decibel scale</p>
 <span class="w">  </span><span class="kt">k</span><span class="n">flatness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pvsflatness</span><span class="p">(</span><span class="kt">f</span><span class="n">sig</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">k</span><span class="n">flatness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">lag</span><span class="p">(</span><span class="kt">k</span><span class="n">flatness</span><span class="p">,</span><span class="w"> </span><span class="mf">0.3</span><span class="p">)</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="nb">metro</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">then</span>
-<span class="w">    </span><span class="nb">printsk</span><span class="w"> </span><span class="s">&quot;Source index: </span><span class="si">%d</span><span class="s">, signal: </span><span class="si">%s</span><span class="s">, Flatness: </span><span class="si">%.4f</span><span class="s">, (</span><span class="si">%d</span><span class="s"> dB)           </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">names</span><span class="p">[</span><span class="kt">k</span><span class="n">source</span><span class="p">],</span><span class="w"> </span><span class="kt">k</span><span class="n">flatness</span><span class="p">,</span><span class="w"> </span><span class="nb">dbamp</span><span class="p">(</span><span class="kt">k</span><span class="n">flatness</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">printsk</span><span class="w"> </span><span class="s">"Source index: </span><span class="si">%d</span><span class="s">, signal: </span><span class="si">%s</span><span class="s">, Flatness: </span><span class="si">%.4f</span><span class="s">, (</span><span class="si">%d</span><span class="s"> dB)           </span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">k</span><span class="n">source</span><span class="p">,</span><span class="w"> </span><span class="kt">S</span><span class="n">names</span><span class="p">[</span><span class="kt">k</span><span class="n">source</span><span class="p">],</span><span class="w"> </span><span class="kt">k</span><span class="n">flatness</span><span class="p">,</span><span class="w"> </span><span class="nb">dbamp</span><span class="p">(</span><span class="kt">k</span><span class="n">flatness</span><span class="p">)</span>
 <span class="w">  </span><span class="k">endif</span>
 <span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span>
 <span class="kd">endin</span>
@@ -3924,7 +3980,7 @@ the value to a decibel scale</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

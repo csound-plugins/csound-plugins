@@ -17,7 +17,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -25,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2118,6 +2118,34 @@
   
   
     <li class="md-nav__item">
+      <a href="perlin3hash.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    perlin3hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="picksource.html" class="md-nav__link">
         
   
@@ -2770,6 +2798,34 @@
     
   
     pyin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pyinf0.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyinf0
   
 
     
@@ -3939,14 +3995,14 @@ the cutoff frequency of a low-pass shelving filter.</p>
 <span class="w">  </span><span class="kt">i</span><span class="n">pitch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p4</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">amp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">db</span><span class="p">(</span><span class="vi">p5</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">pan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="vi">p6</span>
-<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">&quot;note </span><span class="si">%f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">pitch</span>
+<span class="w">  </span><span class="nb">prints</span><span class="w"> </span><span class="s">"note </span><span class="si">%f</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">pitch</span>
 <span class="w">  </span><span class="kt">i</span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">mtof</span><span class="p">:</span><span class="kt">i</span><span class="p">(</span><span class="kt">i</span><span class="n">pitch</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">vco2</span><span class="p">:</span><span class="kt">a</span><span class="p">(</span><span class="kt">i</span><span class="n">amp</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="p">)</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">lpf18</span><span class="p">(</span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">freq</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mf">0.85</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">4</span>
 <span class="w">  </span><span class="kt">a</span><span class="n">sig</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="nb">adsr</span><span class="p">(</span><span class="mf">0.005</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2</span><span class="p">,</span><span class="w"> </span><span class="vi">p3</span><span class="o">*</span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span>
 <span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="nb">pan2</span><span class="w"> </span><span class="kt">a</span><span class="n">sig</span><span class="p">,</span><span class="w"> </span><span class="kt">i</span><span class="n">pan</span>
-<span class="w">  </span><span class="nb">chnmix</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;rev1&quot;</span>
-<span class="w">  </span><span class="nb">chnmix</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;rev2&quot;</span>
+<span class="w">  </span><span class="nb">chnmix</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="s">"rev1"</span>
+<span class="w">  </span><span class="nb">chnmix</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">,</span><span class="w"> </span><span class="s">"rev2"</span>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">2</span>
@@ -3961,11 +4017,11 @@ the cutoff frequency of a low-pass shelving filter.</p>
 <span class="kd">endin</span>
 
 <span class="kd">instr</span><span class="w"> </span><span class="nf">10</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">&quot;rev1&quot;</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">&quot;rev2&quot;</span>
-<span class="w">  </span><span class="kt">a</span><span class="n">rev1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">rev2</span><span class="w"> </span><span class="n">zitarev</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;drywet&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;level&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;delayms&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;decaylow&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;decaymid&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">2.5</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;decaylfx&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;eq1level&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;eq2level&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">L</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">"rev1"</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">R</span><span class="w"> </span><span class="nb">chnget</span><span class="w"> </span><span class="s">"rev2"</span>
+<span class="w">  </span><span class="kt">a</span><span class="n">rev1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">rev2</span><span class="w"> </span><span class="n">zitarev</span><span class="w"> </span><span class="kt">a</span><span class="n">L</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">R</span><span class="p">,</span><span class="w"> </span><span class="s">"drywet"</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mf">0.25</span><span class="p">,</span><span class="w"> </span><span class="s">"level"</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="s">"delayms"</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="s">"decaylow"</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s">"decaymid"</span><span class="p">,</span><span class="w"> </span><span class="mf">2.5</span><span class="p">,</span><span class="w"> </span><span class="s">"decaylfx"</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="s">"eq1level"</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s">"eq2level"</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span>
 <span class="w">  </span><span class="nb">outch</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">rev1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="kt">a</span><span class="n">rev2</span>
-<span class="w">  </span><span class="nb">chnclear</span><span class="w"> </span><span class="s">&quot;rev1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;rev2&quot;</span>
+<span class="w">  </span><span class="nb">chnclear</span><span class="w"> </span><span class="s">"rev1"</span><span class="p">,</span><span class="w"> </span><span class="s">"rev2"</span>
 <span class="kd">endin</span>
 
 <span class="o">&lt;/</span><span class="n">CsInstruments</span><span class="o">&gt;</span>
@@ -4035,7 +4091,7 @@ the cutoff frequency of a low-pass shelving filter.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
