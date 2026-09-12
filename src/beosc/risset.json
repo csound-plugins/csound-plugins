@@ -1,6 +1,6 @@
 {
   "name": "beosc",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "opcodes": [
     "beosc",
     "beadsynt",
