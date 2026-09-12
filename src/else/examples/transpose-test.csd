@@ -9,7 +9,7 @@ ksmps  = 64
 nchnls = 2
 0dbfs  = 1
 
-giwindowtab = ftgen(0, 0, 4096, 20, 1, 1)
+giwindowtab = ftgen:i(0, 0, 4096, 20, 1, 1)
   
 
 

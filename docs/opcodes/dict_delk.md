@@ -18,7 +18,7 @@ end of an event, use [defer](defer.md)
 
 ## Syntax
 
-    dict_del idict, Skey      ; execution at k- time
+    dict_delk idict, Skey      ; execution at k- time
         
 
 ## Arguments

@@ -195,7 +195,9 @@ path_config_for_shell() {
     local dir="$1" shell_name="$2"
     case "$shell_name" in
         fish)
-            echo "fish_add_path $dir"
+            # If we don't use --global then the change remains across sessions
+            # making it rather difficult to remove (it needs to be removed from fish_variables)
+            echo "fish_add_path --global $dir"
             ;;
         *)
             echo "export PATH=\"$dir:\$PATH\""

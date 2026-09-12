@@ -11,7 +11,7 @@ to objects rendered in computer graphics. It is deterministic: for a given input
 always returns the same output value. To make audible noise you will typically need to define
 some trajectory through the co-ordinate space.
 
-`perlin3` is a fresh implementation using hashes to calculate the noise pattern. 
+`perlin3hash` is a fresh implementation using hashes to calculate the noise pattern. 
 **NB**: as opposed to perlin3, perlin3hash always produces a different noise pattern
 
 
