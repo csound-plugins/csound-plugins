@@ -47,7 +47,9 @@ Options:
   --system  Install system-wide (/usr/local, requires sudo)
   --risset  Also install risset (csound package manager) via uv
   --plugins Install external plugins
-  -y        Answer yes to all questions (defaults to a system installation)
+  -y        Non-interactive: answer yes to all questions and install csound
+            only (defaults to a system installation). Combine with --risset
+            and/or --plugins to also install those.
   --verbose Output extra information
   --help    Show this help message and exit
 EOF
@@ -491,12 +493,16 @@ fi
 echo ""
 if command_exists risset; then
     info "risset is already available at $(command -v risset); skipping installation."
-elif [ "$INSTALL_RISSET" = true ] || ask_yes_no "Install risset (csound package manager)?"; then
+elif [ "$INSTALL_RISSET" = true ]; then
+    install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
+elif [ "$AUTO_YES" = false ] && ask_yes_no "Install risset (csound package manager)?"; then
     install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
 fi
 
 # ─── Optional: install externals ─────────────────────────────────
 echo ""
-if [ "$INSTALL_EXTERNALS" = true ] || ask_yes_no "Install external plugins?"; then
+if [ "$INSTALL_EXTERNALS" = true ]; then
+    install_externals || warn "External plugins installation failed. You can install them via risset"
+elif [ "$AUTO_YES" = false ] && ask_yes_no "Install external plugins?"; then
     install_externals || warn "External plugins installation failed. You can install them via risset"
 fi
