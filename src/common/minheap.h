@@ -6,7 +6,7 @@
 // A min heap of doubles
 
 typedef struct {
-    MYFLT* arr;
+    cs_float* arr;
     // Current Size of the Heap
     int size;
     // Maximum capacity of the heap
@@ -27,27 +27,27 @@ inline int mh_right_child(int i) {
     return (2*i + 2);
 }
 
-inline MYFLT mh_get_min(MinHeap* heap) {
+inline cs_float mh_get_min(MinHeap* heap) {
     // Return the root node element,
     // since that's the minimum
     return heap->arr[0];
 }
 
-inline void swap(MYFLT *arr, int index1, int index2) {
-    MYFLT temp = arr[index1];
+inline void swap(cs_float *arr, int index1, int index2) {
+    cs_float temp = arr[index1];
     arr[index1] = arr[index2];
     arr[index2] = temp;
 }
 
 MinHeap* mh_new(int capacity) {
     MinHeap* minheap = (MinHeap*) calloc(1, sizeof(MinHeap));
-    minheap->arr = calloc(capacity, sizeof(MYFLT));
+    minheap->arr = calloc(capacity, sizeof(cs_float));
     minheap->capacity = capacity;
     minheap->size = 0;
     return minheap;
 }
 
-int mh_insert(MinHeap* heap, MYFLT element) {
+int mh_insert(MinHeap* heap, cs_float element) {
     // Inserts an element to the min heap
     // We first add it to the bottom (last level)
     // of the tree, and keep swapping with it's parent
@@ -66,8 +66,8 @@ int mh_insert(MinHeap* heap, MYFLT element) {
     int curr = heap->size - 1;
     // As long as you aren't in the root node, and while the 
     // parent of the last element is greater than it
-    MYFLT temp;
-    MYFLT *arr = heap->arr;
+    cs_float temp;
+    cs_float *arr = heap->arr;
     while (curr > 0 && arr[mh_parent(curr)] > arr[curr]) {
         // Swap
         int parentidx = mh_parent(curr);
@@ -120,7 +120,7 @@ int mh_delete_minimum(MinHeap* heap) {
     if (!heap || heap->size == 0)
         return 0;
 
-    MYFLT last_element = heap->arr[heap->size-1];
+    cs_float last_element = heap->arr[heap->size-1];
     
     // Update root value with the last element
     heap->arr[0] = last_element;
@@ -134,12 +134,12 @@ int mh_delete_minimum(MinHeap* heap) {
     return 0;
 }
 
-int mh_delete_minimum_and_insert(MinHeap* heap, MYFLT element) {
+int mh_delete_minimum_and_insert(MinHeap* heap, cs_float element) {
     // Deletes the minimum element, at the root
     if (!heap || heap->size == 0)
         return 1;
 
-    MYFLT last_element = heap->arr[heap->size-1];
+    cs_float last_element = heap->arr[heap->size-1];
     
     // Update root value with the last element
     heap->arr[0] = last_element;
@@ -159,7 +159,7 @@ int mh_delete_element(MinHeap* heap, int index) {
     // Now keep swapping, until we update the tree
     int curr = index;
     while (curr > 0 && heap->arr[mh_parent(curr)] > heap->arr[curr]) {
-        MYFLT temp = heap->arr[mh_parent(curr)];
+        cs_float temp = heap->arr[mh_parent(curr)];
         heap->arr[mh_parent(curr)] = heap->arr[curr];
         heap->arr[curr] = temp;
         curr = mh_parent(curr);

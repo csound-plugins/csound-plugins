@@ -35,45 +35,45 @@ using namespace csound;
 
 class RCLowpassFilter {
 public:
-  void initialize(MYFLT sampleRate, MYFLT cutoffHz, MYFLT initialValue) {
-    MYFLT tau = MYFLT(1.0) / (MYFLT(2.0) * M_PI * cutoffHz);
-    alpha = MYFLT(1.0) / (MYFLT(1.0) + (tau * sampleRate));
+  void initialize(cs_float sampleRate, cs_float cutoffHz, cs_float initialValue) {
+    cs_float tau = cs_float(1.0) / (cs_float(2.0) * M_PI * cutoffHz);
+    alpha = cs_float(1.0) / (cs_float(1.0) + (tau * sampleRate));
     value = initialValue;
   }
-  MYFLT update(MYFLT inputValue) {
+  cs_float update(cs_float inputValue) {
     value += alpha * (inputValue - value);
     return value;
   }
 
 protected:
-  MYFLT alpha;
-  MYFLT value;
+  cs_float alpha;
+  cs_float value;
 };
 
 class LinearInterpolator {
 public:
-  LinearInterpolator() : priorValue(MYFLT(0.0)), currentValue(MYFLT(0.0)) {}
-  virtual void put(MYFLT inputValue) {
+  LinearInterpolator() : priorValue(cs_float(0.0)), currentValue(cs_float(0.0)) {}
+  virtual void put(cs_float inputValue) {
     priorValue = currentValue;
     currentValue = inputValue;
   }
-  virtual MYFLT get(MYFLT fraction) {
+  virtual cs_float get(cs_float fraction) {
     return priorValue + (fraction * (currentValue - priorValue));
   }
   virtual ~LinearInterpolator(){};
 
 protected:
-  MYFLT priorValue;
-  MYFLT currentValue;
+  cs_float priorValue;
+  cs_float currentValue;
 };
 
-class DelayLine : public std::vector<MYFLT> {
+class DelayLine : public std::vector<cs_float> {
 public:
-  MYFLT sampleRate;
+  cs_float sampleRate;
   int32_t writingFrame;
   int32_t size_;
-  void initialize(size_t sampleRate_, MYFLT maximumDelay = 10.0) {
-    sampleRate = (MYFLT)sampleRate_;
+  void initialize(size_t sampleRate_, cs_float maximumDelay = 10.0) {
+    sampleRate = (cs_float)sampleRate_;
     size_ = (int32_t)std::ceil(maximumDelay * sampleRate);
     // std::cout << "DelayLine::initialize: size: " << size_ << std::endl;
     // std::cout << "DelayLine::initialize: sampleRate: " << sampleRate <<
@@ -81,7 +81,7 @@ public:
     resize(size_);
     writingFrame = 0;
   }
-  void write(MYFLT value) {
+  void write(cs_float value) {
     while (writingFrame >= size_) {
       writingFrame -= size_;
     }
@@ -90,11 +90,11 @@ public:
     // std::endl;
     writingFrame++;
   }
-  MYFLT delaySeconds(MYFLT delaySeconds) {
+  cs_float delaySeconds(cs_float delaySeconds) {
     int32_t delayFrames_ = (int32_t)(delaySeconds * sampleRate);
     return delayFrames(delayFrames_);
   }
-  MYFLT delayFrames(int32_t delayFrames_) {
+  cs_float delayFrames(int32_t delayFrames_) {
     // std::cout << "DelayLine::delayFrames: delayFrames: "
     //        << delayFrames_ << std::endl;
     int32_t readingFrame = writingFrame - delayFrames_;
@@ -113,24 +113,24 @@ public:
 class Doppler : public OpcodeNoteoffBase<Doppler> {
 public:
   // Csound opcode outputs.
-  MYFLT *audioOutput;
+  cs_float *audioOutput;
   // Csound opcode inputs.
-  MYFLT *audioInput;
-  MYFLT *kSourcePosition;     // usually meters
-  MYFLT *kMicPosition;        // usually meters
-  MYFLT *jSpeedOfSound;       // usually meters/second
-  MYFLT *jUpdateFilterCutoff; // Hz
+  cs_float *audioInput;
+  cs_float *kSourcePosition;     // usually meters
+  cs_float *kMicPosition;        // usually meters
+  cs_float *jSpeedOfSound;       // usually meters/second
+  cs_float *jUpdateFilterCutoff; // Hz
   // Doppler internal state.
-  MYFLT speedOfSound;          // usually meters/second
-  MYFLT smoothingFilterCutoff; // Hz
-  MYFLT sampleRate;            // Hz
-  MYFLT samplesPerDistance;    // usually samples/meter
-  MYFLT blockRate;             // Hz
+  cs_float speedOfSound;          // usually meters/second
+  cs_float smoothingFilterCutoff; // Hz
+  cs_float sampleRate;            // Hz
+  cs_float samplesPerDistance;    // usually samples/meter
+  cs_float blockRate;             // Hz
   int32_t blockSize;               // samples
   RCLowpassFilter *smoothingFilter;
   LinearInterpolator *audioInterpolator;
-  std::list<std::vector<MYFLT> *> *audioBufferQueue;
-  std::list<MYFLT> *sourcePositionQueue;
+  std::list<std::vector<cs_float> *> *audioBufferQueue;
+  std::list<cs_float> *sourcePositionQueue;
   int32_t relativeIndex;
   int32_t currentIndex;
 
@@ -139,30 +139,30 @@ public:
     blockRate = opds.insdshead->ekr;
     blockSize = opds.insdshead->ksmps;
     // Take care of default values.
-    if (*jSpeedOfSound == MYFLT(-1.0)) {
-      speedOfSound = MYFLT(340.29);
+    if (*jSpeedOfSound == cs_float(-1.0)) {
+      speedOfSound = cs_float(340.29);
     } else
       speedOfSound = *jSpeedOfSound;
-    if (*jUpdateFilterCutoff == MYFLT(-1.0)) {
-      //    MYFLT blockRateNyquist = blockRate / MYFLT(2.0);
-      //    *jUpdateFilterCutoff = blockRateNyquist / MYFLT(2.0);
-      smoothingFilterCutoff = MYFLT(6.0); // very conservative
+    if (*jUpdateFilterCutoff == cs_float(-1.0)) {
+      //    cs_float blockRateNyquist = blockRate / cs_float(2.0);
+      //    *jUpdateFilterCutoff = blockRateNyquist / cs_float(2.0);
+      smoothingFilterCutoff = cs_float(6.0); // very conservative
     } else
       smoothingFilterCutoff = *jUpdateFilterCutoff;
     samplesPerDistance = sampleRate / speedOfSound;
     audioInterpolator = new LinearInterpolator;
     smoothingFilter = NULL;
-    audioBufferQueue = new std::list<std::vector<MYFLT> *>;
-    sourcePositionQueue = new std::list<MYFLT>;
+    audioBufferQueue = new std::list<std::vector<cs_float> *>;
+    sourcePositionQueue = new std::list<cs_float>;
     currentIndex = 0;
     relativeIndex = 0;
     return OK;
   }
   int32_t kontrol(CSOUND *csound) {
-    MYFLT sourcePosition = *kSourcePosition;
-    MYFLT micPosition = *kMicPosition;
+    cs_float sourcePosition = *kSourcePosition;
+    cs_float micPosition = *kMicPosition;
 
-    std::vector<MYFLT> *sourceBuffer = new std::vector<MYFLT>;
+    std::vector<cs_float> *sourceBuffer = new std::vector<cs_float>;
     sourceBuffer->resize(blockSize);
     for (uint32_t inputFrame = 0; inputFrame<(uint32_t)blockSize; inputFrame++) {
       (*sourceBuffer)[inputFrame] = audioInput[inputFrame];
@@ -170,8 +170,8 @@ public:
     audioBufferQueue->push_back(sourceBuffer);
     sourcePositionQueue->push_back(sourcePosition);
 
-    std::vector<MYFLT> *currentBuffer = audioBufferQueue->front();
-    MYFLT targetPosition = sourcePositionQueue->front() - micPosition;
+    std::vector<cs_float> *currentBuffer = audioBufferQueue->front();
+    cs_float targetPosition = sourcePositionQueue->front() - micPosition;
 
     // The smoothing filter cannot be initialized at i-time,
     // because it must be initialized from a k-rate variable.
@@ -179,8 +179,8 @@ public:
       smoothingFilter = new RCLowpassFilter();
       smoothingFilter->initialize(sampleRate, smoothingFilterCutoff,
                                   targetPosition);
-      warn(csound, "Doppler::kontrol: sizeof(MYFLT):         %10d\n",
-           sizeof(MYFLT));
+      warn(csound, "Doppler::kontrol: sizeof(cs_float):         %10d\n",
+           sizeof(cs_float));
       warn(csound, "Doppler::kontrol: PI:                    %10.3f\n", M_PI);
       warn(csound, "Doppler::kontrol: this:                  %10p\n", this);
       warn(csound, "Doppler::kontrol: sampleRate:            %10.3f\n",
@@ -205,11 +205,11 @@ public:
     for (size_t outputFrame = 0;
          outputFrame < (uint32_t)blockSize;
          outputFrame++) {
-      MYFLT position = smoothingFilter->update(targetPosition);
-      MYFLT distance = std::fabs(position);
-      MYFLT sourceTime = relativeIndex - (distance * samplesPerDistance);
+      cs_float position = smoothingFilter->update(targetPosition);
+      cs_float distance = std::fabs(position);
+      cs_float sourceTime = relativeIndex - (distance * samplesPerDistance);
       int32_t targetIndex = int32_t(sourceTime);
-      MYFLT fraction = sourceTime - targetIndex;
+      cs_float fraction = sourceTime - targetIndex;
       relativeIndex++;
       for (; targetIndex >= currentIndex; currentIndex++) {
         if (currentIndex >= blockSize) {
@@ -224,7 +224,7 @@ public:
         }
         audioInterpolator->put((*currentBuffer)[currentIndex]);
       }
-      MYFLT currentSample = audioInterpolator->get(fraction);
+      cs_float currentSample = audioInterpolator->get(fraction);
       audioOutput[outputFrame] = currentSample;
     }
     return OK;

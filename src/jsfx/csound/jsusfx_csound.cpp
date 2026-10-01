@@ -401,7 +401,7 @@ static inline int slider_check(CSOUND *csound, JsusFxCsound *fx, int id) {
     return OK;
 }
 
-static inline int slider_set(JsusFxCsound *fx, int id, MYFLT value) {
+static inline int slider_set(JsusFxCsound *fx, int id, cs_float value) {
     float fvalue = static_cast<float>(value);
     if (id >= 0)
         fx->moveSlider(id, fvalue, 0);
@@ -441,7 +441,7 @@ static void jsusfx_midiout(t_jsusfx *x) {
 struct t_jsfx {
     OPDS h;
 
-    MYFLT *ihandle;
+    cs_float *ihandle;
     void *args[128];
 
     // -----------------------------
@@ -453,7 +453,7 @@ struct t_jsfx {
 
     // a pointer to the beginning of the input arguments corresponding to the sliders
     // (after the audio args)
-    MYFLT **sliderargs;
+    cs_float **sliderargs;
 
     // the number of sliders given as pairs (isliderid, kvalue)
     int num_sliders;
@@ -464,10 +464,10 @@ struct t_jsfx {
     // number of input/output channels actually processed by the jsfx plugin
     int processed_inputs, processed_outputs;
 
-    MYFLT slidervalues[64];
+    cs_float slidervalues[64];
 
     // pointers to the input / output audio channels
-    MYFLT *inchans[MAX_SIGNAL_PORT], *outchans[MAX_SIGNAL_PORT];
+    cs_float *inchans[MAX_SIGNAL_PORT], *outchans[MAX_SIGNAL_PORT];
 };
 
 
@@ -686,7 +686,7 @@ static int32_t jsfx_opcode_init(CSOUND *csound, t_jsfx *p) {
     if(kparams % 2 != 0)
         return INITERRF("params should be even, got %d", kparams);
     p->num_sliders = kparams / 2;
-    p->sliderargs = (MYFLT **)&(p->inargs[1 + inchans]);
+    p->sliderargs = (cs_float **)&(p->inargs[1 + inchans]);
     STRINGDAT *Spath = (STRINGDAT *)p->inargs[0];
     int ksmps = p->h.insdshead->ksmps;
     p->handler = make_handler(csound, Spath, ksmps, (OPDS*)p);
@@ -710,9 +710,9 @@ static int32_t jsfx_opcode_init(CSOUND *csound, t_jsfx *p) {
              p->handler->scriptpath, p->processed_inputs, p->processed_outputs);
 
     for(int chan=0; chan < numins; chan++)
-        p->inchans[chan] = (MYFLT *)(p->inargs[1+chan]);
+        p->inchans[chan] = (cs_float *)(p->inargs[1+chan]);
     for(int chan=0; chan < numouts; chan++)
-        p->outchans[chan] = (MYFLT *)(p->args[chan]);
+        p->outchans[chan] = (cs_float *)(p->args[chan]);
     for(int i=0; i < 64; i++)
         p->slidervalues[i] = 0;
 #ifdef CSOUNDAPI6
@@ -725,8 +725,8 @@ static int32_t jsfx_opcode_init(CSOUND *csound, t_jsfx *p) {
 static int32_t jsfx_opcode_perf(CSOUND *csound, t_jsfx *p) {
     jsfx_handler *x = p->handler;
 
-    MYFLT *outchan;
-    MYFLT *inchan;
+    cs_float *outchan;
+    cs_float *inchan;
 
     int nsmps = p->h.insdshead->ksmps;
 
@@ -734,14 +734,14 @@ static int32_t jsfx_opcode_perf(CSOUND *csound, t_jsfx *p) {
     if ( (x->bypass || x->user_bypass) || x->fx->dspLock.TryEnter() ) {
         int maxchan = min(p->num_audio_inputs, p->num_audio_outputs);
         for(int chan=0; chan < maxchan; chan++) {
-            outchan = (MYFLT *)p->args[chan];
-            inchan = (MYFLT *)p->inargs[1+chan];
+            outchan = (cs_float *)p->args[chan];
+            inchan = (cs_float *)p->inargs[1+chan];
             for(int j=0; j < nsmps; j++)
                 outchan[j] = inchan[j];
         }
         if(maxchan < p->num_audio_outputs) {
             for(int chan=maxchan; chan < p->num_audio_outputs; chan++) {
-                outchan = (MYFLT *)p->args[chan];
+                outchan = (cs_float *)p->args[chan];
                 for(int j=0; j < nsmps; j++)
                     outchan[j] = 0;
             }
@@ -753,7 +753,7 @@ static int32_t jsfx_opcode_perf(CSOUND *csound, t_jsfx *p) {
     JsusFxCsound *fx = x->fx;
     for(int paramidx=0; paramidx < p->num_sliders; paramidx++) {
         int paramid = static_cast<int>(*p->sliderargs[paramidx*2]);
-        MYFLT paramvalue = *p->sliderargs[paramidx*2+1];
+        cs_float paramvalue = *p->sliderargs[paramidx*2+1];
         if(p->slidervalues[paramid] != paramvalue) {
             slider_set(fx, paramid, paramvalue);
             p->slidervalues[paramid] = paramvalue;
@@ -761,10 +761,10 @@ static int32_t jsfx_opcode_perf(CSOUND *csound, t_jsfx *p) {
     }
 
 #ifdef USE_DOUBLE
-    x->fx->process64((const MYFLT **)p->inchans, p->outchans, nsmps,
+    x->fx->process64((const cs_float **)p->inchans, p->outchans, nsmps,
                      p->processed_inputs, p->processed_outputs);
 #else
-    x->fx->process((const MYFLT **)p->inchans, p->outchans, nsmps,
+    x->fx->process((const cs_float **)p->inchans, p->outchans, nsmps,
                    p->processed_inputs, p->processed_outputs);
 #endif
     x->fx->dspLock.Leave();
@@ -793,7 +793,7 @@ static int32_t jsfx_opcode_perf(CSOUND *csound, t_jsfx *p) {
 struct t_jsfx_new {
     OPDS h;
 
-    MYFLT *ihandle;
+    cs_float *ihandle;
 
     STRINGDAT *Spath;
 
@@ -855,9 +855,9 @@ static int32_t jsfx_new_init(CSOUND *csound, t_jsfx_new *p) {
 
 struct t_jsfx_play{
     OPDS h;
-    MYFLT *outs[8];
-    MYFLT *ihandle;
-    MYFLT *ins[8];
+    cs_float *outs[8];
+    cs_float *ihandle;
+    cs_float *ins[8];
     void *args[128];
 
     // ---------------------------
@@ -904,7 +904,7 @@ static int32_t jsfx_play_init(CSOUND *csound, t_jsfx_play *p) {
 static int32_t jsfx_play_perf(CSOUND *csound, t_jsfx_play *p) {
     jsfx_handler *x = p->handler;
 
-    MYFLT *outchan, *inchan;
+    cs_float *outchan, *inchan;
 
     int nsmps = p->h.insdshead->ksmps;
 
@@ -912,14 +912,14 @@ static int32_t jsfx_play_perf(CSOUND *csound, t_jsfx_play *p) {
     if ( (x->bypass || x->user_bypass) || x->fx->dspLock.TryEnter() ) {
         int maxchan = min(p->num_audio_inputs, p->num_audio_outputs);
         for(int chan=0; chan < maxchan; chan++) {
-            outchan = (MYFLT *)p->outs[chan];
-            inchan = (MYFLT *)p->ins[chan];
+            outchan = (cs_float *)p->outs[chan];
+            inchan = (cs_float *)p->ins[chan];
             for(int j=0; j < nsmps; j++)
                 outchan[j] = inchan[j];
         }
         if(maxchan < p->num_audio_outputs) {
             for(int chan=maxchan; chan < p->num_audio_outputs; chan++) {
-                outchan = (MYFLT *)p->args[chan];
+                outchan = (cs_float *)p->args[chan];
                 for(int j=0; j < nsmps; j++)
                     outchan[j] = 0;
             }
@@ -930,7 +930,7 @@ static int32_t jsfx_play_perf(CSOUND *csound, t_jsfx_play *p) {
     int numins = p->processed_input_channels;
     int numouts = p->processed_output_channels;
 
-    MYFLT *ins[MAX_SIGNAL_PORT], *outs[MAX_SIGNAL_PORT];
+    cs_float *ins[MAX_SIGNAL_PORT], *outs[MAX_SIGNAL_PORT];
     for(int chan=0; chan < numins; chan++)
         ins[chan] = p->ins[chan];
     for(int chan=0; chan < numouts; chan++)
@@ -955,11 +955,11 @@ static int32_t jsfx_play_perf(CSOUND *csound, t_jsfx_play *p) {
 struct t_jsfx_dump  {
     OPDS h;
 
-    MYFLT *ihandler;
-    MYFLT *ktrig;
+    cs_float *ihandler;
+    cs_float *ktrig;
 
     jsfx_handler *handler;
-    MYFLT lasttrig;
+    cs_float lasttrig;
 };
 
 
@@ -971,7 +971,7 @@ static int32_t jsfx_dump_init(CSOUND *csound, t_jsfx_dump *p) {
 
 static int32_t jsfx_dump_perf(CSOUND *csound, t_jsfx_dump *p) {
     IGN(csound);
-    MYFLT ktrig = *p->ktrig;
+    cs_float ktrig = *p->ktrig;
     if(ktrig == -1 || (ktrig > 0 && ktrig > p->lasttrig))
         jsfx_dumpvars(p->handler->fx);
     p->lasttrig = ktrig;
@@ -988,10 +988,10 @@ static int32_t jsfx_dump_perf(CSOUND *csound, t_jsfx_dump *p) {
 struct t_jsfx_getslider {
     OPDS h;
 
-    MYFLT *outval;
+    cs_float *outval;
 
-    MYFLT *ihandler;
-    MYFLT *ksliderid;
+    cs_float *ihandler;
+    cs_float *ksliderid;
 
     jsfx_handler *handler;
 };
@@ -1007,7 +1007,7 @@ static int32_t jsfx_getslider_perf(CSOUND *csound, t_jsfx_getslider *p) {
     int sliderid = (int)*p->ksliderid;
     if(NOTOK == slider_check(csound, p->handler->fx, sliderid))
         return NOTOK;
-    *p->outval = static_cast<MYFLT>( p->handler->fx->sliders[sliderid].getValue() );
+    *p->outval = static_cast<cs_float>( p->handler->fx->sliders[sliderid].getValue() );
     return OK;
 }
 
@@ -1021,11 +1021,11 @@ static int32_t jsfx_getslider_perf(CSOUND *csound, t_jsfx_getslider *p) {
 
 struct t_jsfx_setslider {
     OPDS h;
-    MYFLT *ihandler;
-    MYFLT *ksliderid;
-    MYFLT *kvalue;
+    cs_float *ihandler;
+    cs_float *ksliderid;
+    cs_float *kvalue;
 
-    MYFLT last;
+    cs_float last;
     int lastslider;
 
     jsfx_handler *handler;
@@ -1045,7 +1045,7 @@ static int32_t jsfx_setslider_init(CSOUND *csound, t_jsfx_setslider *p) {
 static int32_t jsfx_setslider_perf(CSOUND *csound, t_jsfx_setslider *p) {
     IGN(csound);
     int sliderid = (int)*p->ksliderid;
-    MYFLT value = *p->kvalue;
+    cs_float value = *p->kvalue;
     if(sliderid == p->lastslider) {
         if(p->last == value)
             return OK;
@@ -1063,11 +1063,11 @@ static int32_t jsfx_setslider_perf(CSOUND *csound, t_jsfx_setslider *p) {
 
 struct t_jsfx_setslider_many {
     OPDS h;
-    MYFLT *ihandler;
-    MYFLT *args[128];
+    cs_float *ihandler;
+    cs_float *args[128];
 
     jsfx_handler *handler;
-    MYFLT lastvalue[64];
+    cs_float lastvalue[64];
     int sliderids[64];
     int numsliders;
 };
@@ -1095,7 +1095,7 @@ static int32_t jsfx_setslider_many_perf(CSOUND *csound, t_jsfx_setslider_many *p
     JsusFxCsound *fx = p->handler->fx;
     for(int i=0; i < p->numsliders; i++) {
         int sliderid = p->sliderids[i];
-        MYFLT value = *p->args[i*2+1];
+        cs_float value = *p->args[i*2+1];
         if(p->lastvalue[sliderid] != value) {
             p->lastvalue[sliderid] = value;
             slider_set(fx, sliderid, value);
@@ -1121,29 +1121,29 @@ static int32_t jsfx_setslider_many_perf(CSOUND *csound, t_jsfx_setslider_many *p
  * slider6:0<-12,12,0.001>Output Gain (dB)
  */
 
-static inline MYFLT rand(CSOUND *csound, int maxval, int *seed) {
-    MYFLT rand1 = (MYFLT) (csound->Rand31(seed) - 1) / FL(2147483645.0);
+static inline cs_float rand(CSOUND *csound, int maxval, int *seed) {
+    cs_float rand1 = (cs_float) (csound->Rand31(seed) - 1) / FL(2147483645.0);
     return rand1 * maxval;
 }
 
 struct t_tubeharmonics_stereo {
     OPDS h;
-    MYFLT *out1;
-    MYFLT *out2;
-    MYFLT *a1, *a2;
-    MYFLT *keven, *kodd, *kfluct, *kindb, *koutdb, *kgain;
+    cs_float *out1;
+    cs_float *out2;
+    cs_float *a1, *a2;
+    cs_float *keven, *kodd, *kfluct, *kindb, *koutdb, *kgain;
 
-    MYFLT seed0, seed1;
-    MYFLT sc_y0, sc_y1, ka, kb, lim;
-    MYFLT src_drve, src_y0, src_y1, src_abs0, ch0, ch1, src_abs1;
-    MYFLT m00, m02, m04, m10, m12, m14;
-    MYFLT dcf00, dcf01, dcf10, dcf11;
+    cs_float seed0, seed1;
+    cs_float sc_y0, sc_y1, ka, kb, lim;
+    cs_float src_drve, src_y0, src_y1, src_abs0, ch0, ch1, src_abs1;
+    cs_float m00, m02, m04, m10, m12, m14;
+    cs_float dcf00, dcf01, dcf10, dcf11;
 };
 
 static int32_t tubeharmonics_stereo_init(CSOUND *csound, t_tubeharmonics_stereo *p) {
     int seed = csound->GetRandomSeedFromTime();
-    MYFLT seed0 = rand(csound, 999, &seed);
-    MYFLT seed1 = 0;
+    cs_float seed0 = rand(csound, 999, &seed);
+    cs_float seed1 = 0;
     while(seed1 == seed0)
         seed1 = rand(csound, 999, &seed);
     p->sc_y0 = p->sc_y1 = 1;
@@ -1198,59 +1198,59 @@ float fast_sin(float floatx) {
 #endif
 
 static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo *p) {
-    MYFLT keven = *p->keven;
+    cs_float keven = *p->keven;
     if(keven < 0)
         keven = 0.3;
-    MYFLT kodd = *p->kodd;
+    cs_float kodd = *p->kodd;
     if(kodd < 0)
         kodd = 0.3;
-    MYFLT kfluct = *p->kfluct;
+    cs_float kfluct = *p->kfluct;
     if(kfluct < 0)
         kfluct = 0.1;
 
-    MYFLT *a1 = p->a1;
-    MYFLT *a2 = p->a2;
-    MYFLT *out1 = p->out1;
-    MYFLT *out2 = p->out2;
+    cs_float *a1 = p->a1;
+    cs_float *a2 = p->a2;
+    cs_float *out1 = p->out1;
+    cs_float *out2 = p->out2;
 
-    MYFLT tgt_drve = keven * 4;
-    MYFLT drvo = kodd * 9;
-    MYFLT kr = kfluct;
-    MYFLT kabs = kfluct * 10;
-    MYFLT ingain = pow(2, *p->kindb / 6);
-    MYFLT hgain = pow(2, *p->koutdb / 6);
-    MYFLT trim = pow(2, *p->kgain / 6);
-    MYFLT lim = p->lim;
+    cs_float tgt_drve = keven * 4;
+    cs_float drvo = kodd * 9;
+    cs_float kr = kfluct;
+    cs_float kabs = kfluct * 10;
+    cs_float ingain = pow(2, *p->kindb / 6);
+    cs_float hgain = pow(2, *p->koutdb / 6);
+    cs_float trim = pow(2, *p->kgain / 6);
+    cs_float lim = p->lim;
     int samplesblock = p->h.insdshead->ksmps;
     // interpolate parameters
 
-    MYFLT d_drve = (tgt_drve - p->src_drve)/samplesblock;
-    MYFLT drve = p->src_drve;
+    cs_float d_drve = (tgt_drve - p->src_drve)/samplesblock;
+    cs_float drve = p->src_drve;
     p->src_drve = tgt_drve;
     p->seed0 += 1;
     p->sc_y0 = sin(p->seed0 * p->sc_y0);
 
-    MYFLT tgt_y0 = p->sc_y0 * kr;
-    MYFLT d_y0 = (tgt_y0 - p->src_y0) / samplesblock;
-    MYFLT y0 = p->src_y0;
+    cs_float tgt_y0 = p->sc_y0 * kr;
+    cs_float d_y0 = (tgt_y0 - p->src_y0) / samplesblock;
+    cs_float y0 = p->src_y0;
     p->src_y0 = tgt_y0;
     p->seed1 += 1;
     p->sc_y1 = sin(p->seed1 * p->sc_y1);
-    MYFLT tgt_y1 = p->sc_y1 * kr;
-    MYFLT d_y1 = (tgt_y1 - p->src_y1) / samplesblock;
-    MYFLT y1 = p->src_y1;
+    cs_float tgt_y1 = p->sc_y1 * kr;
+    cs_float d_y1 = (tgt_y1 - p->src_y1) / samplesblock;
+    cs_float y1 = p->src_y1;
     p->src_y1 = tgt_y1;
-    MYFLT tgt_abs0 = fabs(p->ch0) * kabs;
-    MYFLT d_abs0 = (tgt_abs0 - p->src_abs0) / samplesblock;
-    MYFLT abs0 = p->src_abs0;
+    cs_float tgt_abs0 = fabs(p->ch0) * kabs;
+    cs_float d_abs0 = (tgt_abs0 - p->src_abs0) / samplesblock;
+    cs_float abs0 = p->src_abs0;
     p->src_abs0 = tgt_abs0;
 
-    MYFLT tgt_abs1 = fabs(p->ch1) * kabs;
-    MYFLT d_abs1 = (tgt_abs1 - p->src_abs1)/samplesblock;
-    MYFLT abs1 = p->src_abs1;
+    cs_float tgt_abs1 = fabs(p->ch1) * kabs;
+    cs_float d_abs1 = (tgt_abs1 - p->src_abs1)/samplesblock;
+    cs_float abs1 = p->src_abs1;
     p->src_abs1 = tgt_abs1;
-    MYFLT ch0 = 1, ch1 = 1;
-    MYFLT minflt = std::numeric_limits<MYFLT>::min();
+    cs_float ch0 = 1, ch1 = 1;
+    cs_float minflt = std::numeric_limits<cs_float>::min();
 
     for(int n=0; n < samplesblock; n++) {
         ch0 = a1[n] * ingain;
@@ -1264,50 +1264,50 @@ static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo 
         drve += d_drve;
 
         //set drive values
-        MYFLT drve_rnd0 = drve-abs0;
-        MYFLT drve_rnd1 = drve-abs1;
-        MYFLT drvo_rnd0 = drvo-abs0-y0;
-        MYFLT drvo_rnd1 = drvo-abs1-y1;
+        cs_float drve_rnd0 = drve-abs0;
+        cs_float drve_rnd1 = drve-abs1;
+        cs_float drvo_rnd0 = drvo-abs0-y0;
+        cs_float drvo_rnd1 = drvo-abs1-y1;
 
         //apply harmonics
         if(ch0 == 0)
             ch0 = minflt;
         if(ch1 == 0)
             ch1 = minflt;
-        MYFLT h0 = fast_sin(ch0)/fast_sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
-        MYFLT h1 = fast_sin(ch1)/fast_sin(ch1*2)*drve_rnd1+(ch1-tan(ch1))*drvo_rnd1;
+        cs_float h0 = fast_sin(ch0)/fast_sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
+        cs_float h1 = fast_sin(ch1)/fast_sin(ch1*2)*drve_rnd1+(ch1-tan(ch1))*drvo_rnd1;
 
         //dc filter i
         p->dcf00 = h0 * p->kb + p->dcf00 * p->ka;
-        MYFLT dc00 = h0 - p->dcf00;
+        cs_float dc00 = h0 - p->dcf00;
         p->dcf01 = h1 * p->kb + p->dcf01 * p->ka;
-        MYFLT dc01 = h1 - p->dcf01;
+        cs_float dc01 = h1 - p->dcf01;
 
         //limiter
-        MYFLT lim0 = min(max(dc00*hgain, -lim), lim);
-        MYFLT lim1 = min(max(dc01*hgain, -lim), lim);
+        cs_float lim0 = min(max(dc00*hgain, -lim), lim);
+        cs_float lim1 = min(max(dc01*hgain, -lim), lim);
 
         //fir filter
-        MYFLT m01 = p->m00;
-        MYFLT m03 = p->m02;
-        MYFLT m05 = p->m04;
+        cs_float m01 = p->m00;
+        cs_float m03 = p->m02;
+        cs_float m05 = p->m04;
         p->m00 = lim0;
         p->m02 = 0.5 * (m01 + p->m00);
         p->m04 = 0.5 * (m03 + p->m02);
-        MYFLT fir0 = 0.5 * (m05 + p->m04);
-        MYFLT m11 = p->m10;
-        MYFLT m13 = p->m12;
-        MYFLT m15 = p->m14;
+        cs_float fir0 = 0.5 * (m05 + p->m04);
+        cs_float m11 = p->m10;
+        cs_float m13 = p->m12;
+        cs_float m15 = p->m14;
         p->m10 = lim1;
         p->m12 = 0.5 * (m11 + p->m10);
         p->m14 = 0.5 * (m13 + p->m12);
-        MYFLT fir1 = 0.5 * (m15 + p->m14);
+        cs_float fir1 = 0.5 * (m15 + p->m14);
 
         //dc filter ii
         p->dcf10 = fir0 * p->kb + p->dcf10 * p->ka;
-        MYFLT dc10 = fir0 - p->dcf10;
+        cs_float dc10 = fir0 - p->dcf10;
         p->dcf11 = fir1 * p->kb + p->dcf11 * p->ka;
-        MYFLT dc11 = fir1 - p->dcf11;
+        cs_float dc11 = fir1 - p->dcf11;
         //sum
 
         out1[n] = (a1[n] + dc10) * trim;
@@ -1321,21 +1321,21 @@ static int32_t tubeharmonics_stereo_perf(CSOUND *csound, t_tubeharmonics_stereo 
 
 struct t_tubeharmonics_mono {
     OPDS h;
-    MYFLT *out1;
-    MYFLT *a1;
-    MYFLT *keven, *kodd, *kfluct, *kindb, *koutdb, *kgain;
+    cs_float *out1;
+    cs_float *a1;
+    cs_float *keven, *kodd, *kfluct, *kindb, *koutdb, *kgain;
 
-    MYFLT seed0, seed1;
-    MYFLT sc_y0, ka, kb, lim;
-    MYFLT src_drve, src_y0, src_abs0, ch0;
-    MYFLT m00, m02, m04;
-    MYFLT dcf00, dcf01, dcf10, dcf11;
+    cs_float seed0, seed1;
+    cs_float sc_y0, ka, kb, lim;
+    cs_float src_drve, src_y0, src_abs0, ch0;
+    cs_float m00, m02, m04;
+    cs_float dcf00, dcf01, dcf10, dcf11;
 };
 
 static int32_t tubeharmonics_mono_init(CSOUND *csound, t_tubeharmonics_mono *p) {
     int seed = csound->GetRandomSeedFromTime();
-    MYFLT seed0 = rand(csound, 999, &seed);
-    MYFLT seed1 = 0;
+    cs_float seed0 = rand(csound, 999, &seed);
+    cs_float seed1 = 0;
     while(seed1 == seed0)
         seed1 = rand(csound, 999, &seed);
     p->sc_y0 = 1;
@@ -1354,45 +1354,45 @@ static int32_t tubeharmonics_mono_init(CSOUND *csound, t_tubeharmonics_mono *p) 
 }
 
 static int32_t tubeharmonics_mono_perf(CSOUND *csound, t_tubeharmonics_mono *p) {
-    MYFLT keven = *p->keven;
+    cs_float keven = *p->keven;
     if(keven < 0)
         keven = 0.3;
-    MYFLT kodd = *p->kodd;
+    cs_float kodd = *p->kodd;
     if(kodd < 0)
         kodd = 0.3;
-    MYFLT kfluct = *p->kfluct;
+    cs_float kfluct = *p->kfluct;
     if(kfluct < 0)
         kfluct = 0.1;
 
-    MYFLT *a1 = p->a1;
-    MYFLT *out1 = p->out1;
+    cs_float *a1 = p->a1;
+    cs_float *out1 = p->out1;
 
-    MYFLT tgt_drve = keven * 4;
-    MYFLT drvo = kodd * 9;
-    MYFLT kr = kfluct;
-    MYFLT kabs = kfluct * 10;
-    MYFLT ingain = pow(2, *p->kindb / 6);
-    MYFLT hgain = pow(2, *p->koutdb / 6);
-    MYFLT trim = pow(2, *p->kgain / 6);
+    cs_float tgt_drve = keven * 4;
+    cs_float drvo = kodd * 9;
+    cs_float kr = kfluct;
+    cs_float kabs = kfluct * 10;
+    cs_float ingain = pow(2, *p->kindb / 6);
+    cs_float hgain = pow(2, *p->koutdb / 6);
+    cs_float trim = pow(2, *p->kgain / 6);
     int samplesblock = p->h.insdshead->ksmps;
 
     // interpolate parameters
-    MYFLT d_drve = (tgt_drve - p->src_drve)/samplesblock;
-    MYFLT drve = p->src_drve;
+    cs_float d_drve = (tgt_drve - p->src_drve)/samplesblock;
+    cs_float drve = p->src_drve;
     p->src_drve = tgt_drve;
     p->seed0 += 1;
     p->sc_y0 = sin(p->seed0 * p->sc_y0);
 
-    MYFLT tgt_y0 = p->sc_y0 * kr;
-    MYFLT d_y0 = (tgt_y0 - p->src_y0) / samplesblock;
-    MYFLT y0 = p->src_y0;
+    cs_float tgt_y0 = p->sc_y0 * kr;
+    cs_float d_y0 = (tgt_y0 - p->src_y0) / samplesblock;
+    cs_float y0 = p->src_y0;
     p->src_y0 = tgt_y0;
     p->seed1 += 1;
-    MYFLT tgt_abs0 = fabs(p->ch0) * kabs;
-    MYFLT d_abs0 = (tgt_abs0 - p->src_abs0) / samplesblock;
-    MYFLT abs0 = p->src_abs0;
+    cs_float tgt_abs0 = fabs(p->ch0) * kabs;
+    cs_float d_abs0 = (tgt_abs0 - p->src_abs0) / samplesblock;
+    cs_float abs0 = p->src_abs0;
     p->src_abs0 = tgt_abs0;
-    MYFLT ch0 = 0;
+    cs_float ch0 = 0;
 
     for(int n=0; n<samplesblock; n++) {
         ch0 = a1[n] * ingain;
@@ -1403,33 +1403,33 @@ static int32_t tubeharmonics_mono_perf(CSOUND *csound, t_tubeharmonics_mono *p) 
         drve += d_drve;
 
         //set drive values
-        MYFLT drve_rnd0 = drve-abs0;
-        MYFLT drvo_rnd0 = drvo-abs0-y0;
+        cs_float drve_rnd0 = drve-abs0;
+        cs_float drvo_rnd0 = drvo-abs0-y0;
 
         //apply harmonics
         if(ch0 == 0)
-            ch0 = std::numeric_limits<MYFLT>::min();
-        MYFLT h0 = fast_sin(ch0)/fast_sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
+            ch0 = std::numeric_limits<cs_float>::min();
+        cs_float h0 = fast_sin(ch0)/fast_sin(ch0*2)*drve_rnd0+(ch0-tan(ch0))*drvo_rnd0;
 
         //dc filter i
         p->dcf00 = h0 * p->kb + p->dcf00 * p->ka;
-        MYFLT dc00 = h0 - p->dcf00;
+        cs_float dc00 = h0 - p->dcf00;
 
         //limiter
-        MYFLT lim0 = min(max(dc00*hgain, -p->lim), p->lim);
+        cs_float lim0 = min(max(dc00*hgain, -p->lim), p->lim);
 
         //fir filter
-        MYFLT m01 = p->m00;
-        MYFLT m03 = p->m02;
-        MYFLT m05 = p->m04;
+        cs_float m01 = p->m00;
+        cs_float m03 = p->m02;
+        cs_float m05 = p->m04;
         p->m00 = lim0;
         p->m02 = 0.5 * (m01 + p->m00);
         p->m04 = 0.5 * (m03 + p->m02);
-        MYFLT fir0 = 0.5 * (m05 + p->m04);
+        cs_float fir0 = 0.5 * (m05 + p->m04);
 
         //dc filter ii
         p->dcf10 = fir0 * p->kb + p->dcf10 * p->ka;
-        MYFLT dc10 = fir0 - p->dcf10;
+        cs_float dc10 = fir0 - p->dcf10;
 
         //sum
         out1[n] = (a1[n] + dc10) * trim;

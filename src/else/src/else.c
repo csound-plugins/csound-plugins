@@ -221,10 +221,10 @@
     uint32_t n, nsmps = CS_KSMPS;                                   \
     uint32_t offset = p->h.insdshead->ksmps_offset;                 \
     uint32_t early = p->h.insdshead->ksmps_no_end;                  \
-    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));  \
+    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(cs_float));  \
     if (UNLIKELY(early)) {                                          \
         nsmps -= early;                                             \
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));             \
+        memset(&out[nsmps], '\0', early*sizeof(cs_float));             \
     }                                                               \
 
 // needed for each opcode using audio-rate inputs/outputs
@@ -237,10 +237,10 @@
 // initialize an audio output variable, for sample-accurate offset/early end
 // this should be called for each audio output
 #define AUDIO_OUTPUT(out) \
-    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));   \
+    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(cs_float));   \
     if (UNLIKELY(early)) {                                           \
         nsmps -= early;                                              \
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));              \
+        memset(&out[nsmps], '\0', early*sizeof(cs_float));              \
     }                                                                \
 
 #ifdef CSOUNDAPI6
@@ -356,18 +356,18 @@ intpool_pop(CSOUND *csound, intarray_t *pool) {
 
 typedef struct {
     OPDS h;
-    MYFLT *aout;
-    MYFLT *kp;
-    MYFLT y1;
-    MYFLT y2;
+    cs_float *aout;
+    cs_float *kp;
+    cs_float y1;
+    cs_float y2;
 } CRACKLE;
 
-static inline MYFLT rnd31(CSOUND *csound, int*seed) {
-    return (MYFLT) (csound->Rand31(seed) - 1) / FL(2147483645.0);
+static inline cs_float rnd31(CSOUND *csound, int*seed) {
+    return (cs_float) (csound->Rand31(seed) - 1) / FL(2147483645.0);
 }
 
 static int32_t crackle_init(CSOUND *csound, CRACKLE* p) {
-    // MYFLT kp = *p->kp;
+    // cs_float kp = *p->kp;
     int seed = csound->GetRandomSeedFromTime();
     p->y1 = rnd31(csound, &seed);
     p->y2 = 0;
@@ -376,16 +376,16 @@ static int32_t crackle_init(CSOUND *csound, CRACKLE* p) {
 
 static int32_t crackle_perf(CSOUND *csound, CRACKLE* p) {
     IGN(csound);
-    MYFLT * out = p->aout;                                             \
+    cs_float * out = p->aout;                                             \
 
     SAMPLE_ACCURATE(out)
 
-    MYFLT y0;
-    MYFLT kp = *p->kp;
+    cs_float y0;
+    cs_float kp = *p->kp;
     if(kp < 0)
         kp = 1.5;
-    MYFLT y1 = p->y1;
-    MYFLT y2 = p->y2;
+    cs_float y1 = p->y1;
+    cs_float y2 = p->y2;
 
     for(n=offset; n<nsmps; n++) {
         y0 = fabs(y1 * kp - y2 - 0.05);
@@ -406,14 +406,14 @@ static int32_t crackle_perf(CSOUND *csound, CRACKLE* p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *ktrig;
-    MYFLT *kdur;
-    MYFLT *ivalpost;
-    MYFLT ivalpre;
-    MYFLT lasttrig;
-    MYFLT now;
-    MYFLT sr;
+    cs_float *out;
+    cs_float *ktrig;
+    cs_float *kdur;
+    cs_float *ivalpost;
+    cs_float ivalpre;
+    cs_float lasttrig;
+    cs_float now;
+    cs_float sr;
     int started;
 } RAMPTRIGK;
 
@@ -432,9 +432,9 @@ static int32_t ramptrig_k_kk_init(CSOUND *csound, RAMPTRIGK *p) {
 
 static int32_t ramptrig_k_kk(CSOUND *csound, RAMPTRIGK *p) {
     IGN(csound);
-    MYFLT ktrig = *p->ktrig;
-    MYFLT now = p->now;
-    MYFLT delta = 1 / (*p->kdur * p->sr);
+    cs_float ktrig = *p->ktrig;
+    cs_float now = p->now;
+    cs_float delta = 1 / (*p->kdur * p->sr);
     if(ktrig > 0 && ktrig > p->lasttrig) {
         p->started = 1;
         p->now = 0;
@@ -464,18 +464,18 @@ static int32_t ramptrig_a_kk_init(CSOUND *csound, RAMPTRIGK *p) {
 
 static int32_t ramptrig_a_kk(CSOUND *csound, RAMPTRIGK *p) {
     IGN(csound);
-    MYFLT *out = p->out;
+    cs_float *out = p->out;
 
     SAMPLE_ACCURATE(out)
 
-    MYFLT ktrig = *p->ktrig;
-    MYFLT now = p->now;
-    MYFLT delta = 1 / (*p->kdur * p->sr);
+    cs_float ktrig = *p->ktrig;
+    cs_float now = p->now;
+    cs_float delta = 1 / (*p->kdur * p->sr);
     if(ktrig > 0 && ktrig > p->lasttrig) {
         p->started = 1;
         p->now = 0;
     } else if(!p->started) {
-        MYFLT ivalpre = p->ivalpre;
+        cs_float ivalpre = p->ivalpre;
         for(n=offset; n<nsmps; n++) {
             out[n] = ivalpre;
         }
@@ -486,7 +486,7 @@ static int32_t ramptrig_a_kk(CSOUND *csound, RAMPTRIGK *p) {
         }
         p->now = now;
     } else {
-        MYFLT ivalpost = *p->ivalpost;
+        cs_float ivalpost = *p->ivalpost;
         for(n=offset; n<nsmps; n++)
             out[n] = ivalpost;
     }
@@ -498,16 +498,16 @@ static int32_t ramptrig_a_kk(CSOUND *csound, RAMPTRIGK *p) {
 // aout, afinished ramptrig atrig, kdur
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *sync;
-    MYFLT *trig;
-    MYFLT *dur;
-    MYFLT *ivalpost;
-    MYFLT ivalpre;
-    MYFLT lasttrig;
-    MYFLT lastsync;
-    MYFLT now;
-    MYFLT sr;
+    cs_float *out;
+    cs_float *sync;
+    cs_float *trig;
+    cs_float *dur;
+    cs_float *ivalpost;
+    cs_float ivalpre;
+    cs_float lasttrig;
+    cs_float lastsync;
+    cs_float now;
+    cs_float sr;
     int started;
 } RAMPTRIGSYNC;
 
@@ -526,9 +526,9 @@ static int32_t ramptrigsync_kk_kk_init(CSOUND *csound, RAMPTRIGSYNC *p) {
 
 static int32_t ramptrigsync_kk_kk(CSOUND *csound, RAMPTRIGSYNC *p) {
     IGN(csound);
-    MYFLT ktrig = *p->trig;
-    MYFLT now = p->now;
-    MYFLT delta = 1 / (*p->dur * p->sr);
+    cs_float ktrig = *p->trig;
+    cs_float now = p->now;
+    cs_float delta = 1 / (*p->dur * p->sr);
     if(ktrig > 0 && ktrig > p->lasttrig) {
         p->started = 1;
         p->now = 0;
@@ -555,21 +555,21 @@ static int32_t ramptrigsync_kk_kk(CSOUND *csound, RAMPTRIGSYNC *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in;
-    MYFLT *drivefactor;
-    MYFLT *mode;
+    cs_float *out;
+    cs_float *in;
+    cs_float *drivefactor;
+    cs_float *mode;
 
 } SIGMDRIVE;
 
 static int32_t sigmdrive_a_ak(CSOUND *csound, SIGMDRIVE * p) {
     IGN(csound);
-    MYFLT *in = p->in;
-    MYFLT *out = p->out;
-    MYFLT drivefactor = *p->drivefactor;
+    cs_float *in = p->in;
+    cs_float *out = p->out;
+    cs_float drivefactor = *p->drivefactor;
     if(drivefactor < 0)
         drivefactor = 0;
-    MYFLT x;
+    cs_float x;
     SAMPLE_ACCURATE(out);
     if(*p->mode == 0.) {
         for(n=offset; n<nsmps; n++) {
@@ -596,11 +596,11 @@ static int32_t sigmdrive_a_ak(CSOUND *csound, SIGMDRIVE * p) {
 
 static int32_t sigmdrive_a_aa(CSOUND *csound, SIGMDRIVE * p) {
     IGN(csound);
-    MYFLT *in = p->in;
-    MYFLT *out = p->out;
-    MYFLT *drivefactorp = p->drivefactor;
-    MYFLT drivefactor;
-    MYFLT x;
+    cs_float *in = p->in;
+    cs_float *out = p->out;
+    cs_float *drivefactorp = p->drivefactor;
+    cs_float drivefactor;
+    cs_float x;
     SAMPLE_ACCURATE(out);
     int mode = (int)*p->mode;
     if(mode == 0) {
@@ -637,17 +637,17 @@ static int32_t sigmdrive_a_aa(CSOUND *csound, SIGMDRIVE * p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *freq;
-    MYFLT *interp;
+    cs_float *out;
+    cs_float *freq;
+    cs_float *interp;
 
-    MYFLT x_freq;
+    cs_float x_freq;
     int   x_val;
     int x_interp;
-    double x_phase;
-    MYFLT x_ynp1;
-    MYFLT x_yn;
-    MYFLT x_sr;
+    cs_double x_phase;
+    cs_float x_ynp1;
+    cs_float x_yn;
+    cs_float x_sr;
 } LFNOISE;
 
 
@@ -656,7 +656,7 @@ static int32_t lfnoise_init(CSOUND *csound, LFNOISE *p) {
     // static int init_seed = 234599;
     init_seed *= 1319;
     // default parameters
-    MYFLT hz = *p->freq;
+    cs_float hz = *p->freq;
     int seed = init_seed;
     int interp = 0;
     if (hz >= 0)
@@ -664,7 +664,7 @@ static int32_t lfnoise_init(CSOUND *csound, LFNOISE *p) {
     p->x_freq = hz;
     p->x_interp = interp != 0;
     // get 1st output
-    p->x_ynp1 = (((MYFLT)((seed & 0x7fffffff) - 0x40000000)) * (MYFLT)(1.0 / 0x40000000));
+    p->x_ynp1 = (((cs_float)((seed & 0x7fffffff) - 0x40000000)) * (cs_float)(1.0 / 0x40000000));
     p->x_val = seed * 435898247 + 382842987;
     p->x_sr = LOCAL_SR(p);
     return OK;
@@ -672,25 +672,25 @@ static int32_t lfnoise_init(CSOUND *csound, LFNOISE *p) {
 
 static int32_t lfnoise_perf(CSOUND *csound, LFNOISE *p) {
     IGN(csound);
-    MYFLT *out = p->out;
+    cs_float *out = p->out;
 
     SAMPLE_ACCURATE(out);
 
-    MYFLT hz = *p->freq;
+    cs_float hz = *p->freq;
     int interp = (int)*p->interp;
     int val = p->x_val;
-    double phase = p->x_phase;
-    MYFLT ynp1 = p->x_ynp1;
-    MYFLT yn = p->x_yn;
-    MYFLT sr = p->x_sr;
-    MYFLT random;
+    cs_double phase = p->x_phase;
+    cs_float ynp1 = p->x_ynp1;
+    cs_float yn = p->x_yn;
+    cs_float sr = p->x_sr;
+    cs_float random;
     for(n=offset; n<nsmps; n++) {
-        double phase_step = hz / sr;
+        cs_double phase_step = hz / sr;
         // clipped phase_step
         phase_step = phase_step > 1 ? 1. : phase_step < -1 ? -1 : phase_step;
         if (hz >= 0) {
             if (phase >= 1.) {    // update
-                random = ((MYFLT)((val & 0x7fffffff) - 0x40000000)) * (MYFLT)(1.0 / 0x40000000);
+                random = ((cs_float)((val & 0x7fffffff) - 0x40000000)) * (cs_float)(1.0 / 0x40000000);
                 val = val * 435898247 + 382842987;
                 phase = phase - 1;
                 yn = ynp1;
@@ -698,7 +698,7 @@ static int32_t lfnoise_perf(CSOUND *csound, LFNOISE *p) {
             }
         } else {
             if (phase <= 0.) {    // update
-                random = ((MYFLT)((val & 0x7fffffff) - 0x40000000)) * (MYFLT)(1.0 / 0x40000000);
+                random = ((cs_float)((val & 0x7fffffff) - 0x40000000)) * (cs_float)(1.0 / 0x40000000);
                 val = val * 435898247 + 382842987;
                 phase = phase + 1;
                 yn = ynp1;
@@ -730,11 +730,11 @@ static int32_t lfnoise_perf(CSOUND *csound, LFNOISE *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in;
-    MYFLT *high;
-    MYFLT *low;
-    MYFLT last;
+    cs_float *out;
+    cs_float *in;
+    cs_float *high;
+    cs_float *low;
+    cs_float last;
 } SCHMITT;
 
 static int32_t schmitt_k_init (CSOUND *csound, SCHMITT *p) {
@@ -745,10 +745,10 @@ static int32_t schmitt_k_init (CSOUND *csound, SCHMITT *p) {
 
 static int32_t schmitt_k_perf (CSOUND *csound, SCHMITT *p) {
     IGN(csound);
-    MYFLT last = p->last;
-    MYFLT in = *p->in;
-    MYFLT lo = *p->low;
-    MYFLT hi = *p->high;
+    cs_float last = p->last;
+    cs_float in = *p->in;
+    cs_float lo = *p->low;
+    cs_float hi = *p->high;
     *p->out = last = (in > lo && (in >= hi || last));
     p->last = last;
     return OK;
@@ -756,14 +756,14 @@ static int32_t schmitt_k_perf (CSOUND *csound, SCHMITT *p) {
 
 static int32_t schmitt_a_perf (CSOUND *csound, SCHMITT *p) {
     IGN(csound);
-    MYFLT *out = p->out;
-    MYFLT x;
+    cs_float *out = p->out;
+    cs_float x;
     SAMPLE_ACCURATE(out);
 
-    MYFLT *in = p->in;
-    MYFLT lo = *p->low;
-    MYFLT hi = *p->high;
-    MYFLT last = p->last;
+    cs_float *in = p->in;
+    cs_float lo = *p->low;
+    cs_float hi = *p->high;
+    cs_float last = p->last;
 
     for(n=offset; n<nsmps; n++) {
         x = in[n];
@@ -778,19 +778,19 @@ static int32_t schmitt_a_perf (CSOUND *csound, SCHMITT *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *rate;
-    MYFLT *k;
-    MYFLT *x;
-    MYFLT *y;
+    cs_float *out;
+    cs_float *rate;
+    cs_float *k;
+    cs_float *x;
+    cs_float *y;
 
     int x_val;
-    MYFLT  x_sr;
-    MYFLT  x_lastout;
-    MYFLT  x_phase;
-    MYFLT  x_freq;
-    MYFLT  x_yn;
-    MYFLT  x_xn;
+    cs_float  x_sr;
+    cs_float  x_lastout;
+    cs_float  x_phase;
+    cs_float  x_freq;
+    cs_float  x_yn;
+    cs_float  x_xn;
 } STANDARDCHAOS;
 
 
@@ -798,7 +798,7 @@ static int32_t standardchaos_init(CSOUND *csound, STANDARDCHAOS *p) {
     IGN(csound);
     // p->x_sr = csound->GetSr(csound);
     p->x_sr = LOCAL_SR(p);
-    MYFLT hz = p->x_sr * 0.5; // default parameters
+    cs_float hz = p->x_sr * 0.5; // default parameters
     p->x_phase = hz >= 0 ? 1 : 0;
     p->x_freq  = hz;
     p->x_lastout = 0;
@@ -813,31 +813,31 @@ static int32_t standardchaos_init_x(CSOUND *csound, STANDARDCHAOS *p) {
     return standardchaos_init(csound, p);
 }
 
-MYFLT mfmod(MYFLT x, MYFLT y) {
+cs_float mfmod(cs_float x, cs_float y) {
     // double mfmod(double x,double y) { double a; return ((a=x/y)-(int)a)*y; }
-    MYFLT a = x/y;
+    cs_float a = x/y;
     return a - (int)a * y;
 }
 
 static int32_t standardchaos_perf(CSOUND *csound, STANDARDCHAOS *p) {
     IGN(csound);
 
-    MYFLT *out = p->out;
+    cs_float *out = p->out;
 
     SAMPLE_ACCURATE(out);
 
-    MYFLT hz = *p->rate;
-    MYFLT yn = p->x_yn;
-    MYFLT xn = p->x_xn;
-    MYFLT k = *p->k;
-    MYFLT lastout = p->x_lastout;
-    MYFLT phase = p->x_phase;
-    MYFLT sr = p->x_sr;
+    cs_float hz = *p->rate;
+    cs_float yn = p->x_yn;
+    cs_float xn = p->x_xn;
+    cs_float k = *p->k;
+    cs_float lastout = p->x_lastout;
+    cs_float phase = p->x_phase;
+    cs_float sr = p->x_sr;
     for(n=offset; n<nsmps; n++) {
-        MYFLT phase_step = hz / sr; // phase_step
+        cs_float phase_step = hz / sr; // phase_step
         phase_step = phase_step > 1 ? 1. : phase_step < -1 ? -1 : phase_step; // clipped phase_step
         int trig;
-        MYFLT output;
+        cs_float output;
         if (hz >= 0) {
             trig = phase >= 1.;
             if (phase >= 1.) phase = phase - 1;
@@ -877,24 +877,24 @@ char* _rampgateStateNames[] = {"Off", "Attack", "Sustain", "Release", "Retrigger
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *gate;
-    MYFLT *sustpoint;
-    MYFLT *points[MAXPOINTS];
+    cs_float *out;
+    cs_float *gate;
+    cs_float *sustpoint;
+    cs_float *points[MAXPOINTS];
 
-    MYFLT sr;
+    cs_float sr;
     int lastgate;
     enum RampgateState state;
     uint32_t numpoints;
 
-    MYFLT val;
-    MYFLT t;
-    MYFLT segment_end;
-    MYFLT deltat;
-    MYFLT prev_val;
-    MYFLT next_val;
-    MYFLT retrigger_ramptime;
-    MYFLT factor;
+    cs_float val;
+    cs_float t;
+    cs_float segment_end;
+    cs_float deltat;
+    cs_float prev_val;
+    cs_float next_val;
+    cs_float retrigger_ramptime;
+    cs_float factor;
     int32_t numsegments;
     int32_t segment_idx;
     int32_t sustain_idx;
@@ -902,7 +902,7 @@ typedef struct {
 } RAMPGATE;
 
 
-static int32_t rampgate_k_init_common(CSOUND *csound, RAMPGATE *p, MYFLT sr) {
+static int32_t rampgate_k_init_common(CSOUND *csound, RAMPGATE *p, cs_float sr) {
     p->sr = sr;
     p->state = Off;  // not playing
     p->numpoints = p->INOCOUNT - 2;  // this should be odd
@@ -938,8 +938,8 @@ static int32_t rampgate_k_init_common(CSOUND *csound, RAMPGATE *p, MYFLT sr) {
 
 
 static int32_t linenv_k_init(CSOUND *csound, RAMPGATE *p) {
-    // MYFLT kr = csound->GetKr(csound);
-    MYFLT kr = LOCAL_KR(p);
+    // cs_float kr = csound->GetKr(csound);
+    cs_float kr = LOCAL_KR(p);
     return rampgate_k_init_common(csound, p, kr);
 }
 
@@ -947,7 +947,7 @@ static int32_t linenv_k_init(CSOUND *csound, RAMPGATE *p) {
 static inline void rampgate_update_segment(RAMPGATE *p, int32_t idx) {
     int32_t idx0 = idx*2;
     // we assume that p->t has been updated already
-    MYFLT segment_dur = *(p->points[idx0+1]);
+    cs_float segment_dur = *(p->points[idx0+1]);
     if(segment_dur == 0) {
         idx += 1;
         idx0 += 2;
@@ -963,7 +963,7 @@ static inline void rampgate_update_segment(RAMPGATE *p, int32_t idx) {
 static int32_t linenv_k_k(CSOUND *csound, RAMPGATE *p) {
     int gate = (int)*p->gate > 0 ? 1 : 0;
     int lastgate = p->lastgate;
-    MYFLT val;
+    cs_float val;
     if(gate != lastgate) {
         int oldstate = p->state;
         if(gate > 0) {
@@ -1062,13 +1062,13 @@ static int32_t linenv_a_init(CSOUND *csound, RAMPGATE *p) {
 
 
 static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
-    MYFLT *out = p->out;
+    cs_float *out = p->out;
 
     SAMPLE_ACCURATE(out);
 
     int gate = (int)*p->gate > 0 ? 1 : 0;
     int lastgate = p->lastgate;
-    MYFLT **points = p->points;
+    cs_float **points = p->points;
 
     if(gate != lastgate) {
         int oldstate = p->state;
@@ -1119,9 +1119,9 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
         }
     }
     p->lastgate = gate;
-    MYFLT t = p->t;
+    cs_float t = p->t;
     enum RampgateState state = p->state;
-    MYFLT val = p->val;
+    cs_float val = p->val;
 
     // if state is Off or Sustain, state can only change with a gate, so will not change
     // during this period
@@ -1131,14 +1131,14 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
         return OK;
     }
 
-    MYFLT next_val = p->next_val;
-    MYFLT prev_val = p->prev_val;
-    MYFLT segment_end = p->segment_end;
-    MYFLT deltat = p->deltat;
+    cs_float next_val = p->next_val;
+    cs_float prev_val = p->prev_val;
+    cs_float segment_end = p->segment_end;
+    cs_float deltat = p->deltat;
     int32_t segment_idx = p->segment_idx;
     int32_t last_segment_idx = p->numsegments - 1;
     uint32_t m;
-    MYFLT factor = (next_val - prev_val) / segment_end;
+    cs_float factor = (next_val - prev_val) / segment_end;
     for(n=offset; n<nsmps; n++) {
         // TODO: optimize this to extract a factor
         // factor = (next_val - prev_val) / segment_end
@@ -1209,14 +1209,14 @@ static int32_t linenv_a_k(CSOUND *csound, RAMPGATE *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in;
-    MYFLT *threshdb;
-    MYFLT *atk;
-    MYFLT *rel;
+    cs_float *out;
+    cs_float *in;
+    cs_float *threshdb;
+    cs_float *atk;
+    cs_float *rel;
 
-    MYFLT patk, prel;
-    MYFLT b0_r, a1_r, b0_a, a1_a, level;
+    cs_float patk, prel;
+    cs_float b0_r, a1_r, b0_a, a1_a, level;
 
 } SP_PEAKLIM;
 
@@ -1244,25 +1244,25 @@ static int32_t sp_peaklim_init(CSOUND *csound, SP_PEAKLIM *p) {
 static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
     IGN(csound);
 
-    MYFLT *out = p->out;
+    cs_float *out = p->out;
     SAMPLE_ACCURATE(out);
-    MYFLT *in = p->in;
+    cs_float *in = p->in;
 
-    MYFLT gain = 0;
+    cs_float gain = 0;
 
-    MYFLT atk = *p->atk >= 0 ? *p->atk : 0.01;
-    MYFLT rel = *p->rel >= 0 ? *p->rel : 0.1;
+    cs_float atk = *p->atk >= 0 ? *p->atk : 0.01;
+    cs_float rel = *p->rel >= 0 ? *p->rel : 0.1;
 
-    MYFLT patk = p->patk;
-    MYFLT prel = p->prel;
-    MYFLT a1_a = p->a1_a;
-    MYFLT b0_r = p->b0_r;
-    MYFLT a1_r = p->a1_r;
-    MYFLT b0_a = p->b0_a;
-    MYFLT sr = LOCAL_SR(p);
-    MYFLT level = p->level;
-    MYFLT insamp;
-    MYFLT threshlin = dB2lin(*p->threshdb);
+    cs_float patk = p->patk;
+    cs_float prel = p->prel;
+    cs_float a1_a = p->a1_a;
+    cs_float b0_r = p->b0_r;
+    cs_float a1_r = p->a1_r;
+    cs_float b0_a = p->b0_a;
+    cs_float sr = LOCAL_SR(p);
+    cs_float level = p->level;
+    cs_float insamp;
+    cs_float threshlin = dB2lin(*p->threshdb);
 
     if(patk != atk) {
         patk = atk;
@@ -1281,7 +1281,7 @@ static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
 
     while (n--) {
         insamp = *in++;
-        MYFLT absinsamp = fabs(insamp);
+        cs_float absinsamp = fabs(insamp);
         if ( absinsamp > level)
             level += b0_a * ( absinsamp - level);
         else
@@ -1306,7 +1306,7 @@ static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     STRINGDAT *path;
 } FILE_EXISTS;
 
@@ -1330,30 +1330,30 @@ static int32_t file_exists_init(CSOUND *csound, FILE_EXISTS *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *aout;
-    MYFLT *ain;
-    MYFLT *kmodfreq;
-    MYFLT *kdiodeon;
-    MYFLT *kfeedback;
-    MYFLT *knonlinearities;
-    MYFLT *koversample;
+    cs_float *aout;
+    cs_float *ain;
+    cs_float *kmodfreq;
+    cs_float *kdiodeon;
+    cs_float *kfeedback;
+    cs_float *knonlinearities;
+    cs_float *koversample;
 
     int started;
-    MYFLT r, c1, c2, c3, fgain, bl_c1, bl_c2, bl_c3;
-    MYFLT src_f;
-    MYFLT sinp, ps_sin_out2;
-    MYFLT sin_bl2_1, sin_bl2_2, sin_bl1_1, sin_bl1_2, o_sin_out2;
-    MYFLT s1, s2;
-    MYFLT ps_fx_out2l;
-    MYFLT bl2_1, bl2_2, bl1_1, bl1_2;
-    MYFLT o_fx_out2l;
-    MYFLT s2l, s1l;
-    MYFLT fp_l_os_1, fp_l_os_2, fp_l;
+    cs_float r, c1, c2, c3, fgain, bl_c1, bl_c2, bl_c3;
+    cs_float src_f;
+    cs_float sinp, ps_sin_out2;
+    cs_float sin_bl2_1, sin_bl2_2, sin_bl1_1, sin_bl1_2, o_sin_out2;
+    cs_float s1, s2;
+    cs_float ps_fx_out2l;
+    cs_float bl2_1, bl2_2, bl1_1, bl1_2;
+    cs_float o_fx_out2l;
+    cs_float s2l, s1l;
+    cs_float fp_l_os_1, fp_l_os_2, fp_l;
     uint32_t seed;
 
 #ifdef USE_LOOKUP_SINE
     FUNC * ftp;
-    MYFLT cpstoinc;
+    cs_float cpstoinc;
     int32_t  phase;
     int32_t  lomask;
 #endif
@@ -1378,10 +1378,10 @@ static int32_t dioderingmod_init(CSOUND *csound, t_diode_ringmod *p) {
     p->seed = csound->GetRandomSeedFromTime();
     p->sinp = 0;
 #ifdef USE_LOOKUP_SINE
-    MYFLT ifn = -1;
+    cs_float ifn = -1;
     p->ftp = csound->FTFind(csound, &ifn);
     uint32_t tabsize = p->ftp->flen;
-    MYFLT sampledur = 1 / csound->GetSr(csound);
+    cs_float sampledur = 1 / csound->GetSr(csound);
     p->cpstoinc = tabsize * sampledur * 65536;
     p->lomask   = (tabsize - 1) << 3;
     p->phase = 0;
@@ -1391,7 +1391,7 @@ static int32_t dioderingmod_init(CSOUND *csound, t_diode_ringmod *p) {
 
 
 // uniform noise, taken from csoundRand31, returns floats between 0-1
-static inline MYFLT randflt(uint32_t *seedptr) {
+static inline cs_float randflt(uint32_t *seedptr) {
     uint64_t tmp1;
     uint32_t tmp2;
     /* x = (742938285 * x) % 0x7FFFFFFF */
@@ -1400,7 +1400,7 @@ static inline MYFLT randflt(uint32_t *seedptr) {
     tmp2 += (uint32_t) (tmp1 >> 31);
     tmp2  = (tmp2 & (uint32_t) 0x7FFFFFFF) + (tmp2 >> 31);
     (*seedptr) = tmp2;
-    return (MYFLT)(tmp2 - 1) / FL(2147483648.0);
+    return (cs_float)(tmp2 - 1) / FL(2147483648.0);
 }
 
 
@@ -1418,14 +1418,14 @@ static inline MYFLT randflt(uint32_t *seedptr) {
 #define xlobits1 13
 
 
-// static inline MYFLT
-// lookupi1(const MYFLT* table0, const MYFLT* table1,
+// static inline cs_float
+// lookupi1(const cs_float* table0, const cs_float* table1,
 //          int32_t pphase, int32_t lomask) {
-//     MYFLT pfrac    = PhaseFrac(pphase);
+//     cs_float pfrac    = PhaseFrac(pphase);
 //     uint32_t index = ((pphase >> xlobits1) & lomask);
-//     MYFLT val1 = *(const MYFLT*)((const char*)table0 + index);
-//     MYFLT val2 = *(const MYFLT*)((const char*)table1 + index);
-//     MYFLT out  = val1 + (val2 - val1) * pfrac;
+//     cs_float val1 = *(const cs_float*)((const char*)table0 + index);
+//     cs_float val2 = *(const cs_float*)((const char*)table1 + index);
+//     cs_float out  = val1 + (val2 - val1) * pfrac;
 //     return out;
 // }
 
@@ -1434,46 +1434,46 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
     IGN(csound);
 
     int os = (int)*p->koversample;
-    MYFLT tgt_f = *p->kmodfreq;
+    cs_float tgt_f = *p->kmodfreq;
 
     // sx = 16+slider3*1.20103;
     // tgt_f = floor(exp(sx*log(1.059))*8.17742);
 
-    MYFLT fb = *p->kfeedback;
+    cs_float fb = *p->kfeedback;
     int diode = (int)*p->kdiodeon;
-    MYFLT nl = *p->knonlinearities * 100;
-    MYFLT outgain = 1;
+    cs_float nl = *p->knonlinearities * 100;
+    cs_float outgain = 1;
 
-    MYFLT *ain = p->ain;
-    MYFLT *aout = p->aout;
+    cs_float *ain = p->ain;
+    cs_float *aout = p->aout;
 
     if(! p->started) {
         p->src_f = tgt_f;
         p->started = 1;
     }
 
-    MYFLT samplesblock = p->h.insdshead->ksmps;
-    // MYFLT srate = csound->GetSr(csound);
-    MYFLT srate = LOCAL_SR(p);
+    cs_float samplesblock = p->h.insdshead->ksmps;
+    // cs_float srate = csound->GetSr(csound);
+    cs_float srate = LOCAL_SR(p);
 
     //interpolate 'f'
-    MYFLT d_f = (tgt_f - p->src_f) / samplesblock;
-    MYFLT tf = p->src_f;
+    cs_float d_f = (tgt_f - p->src_f) / samplesblock;
+    cs_float tf = p->src_f;
     p->src_f = tgt_f;
 
     int nsmps = p->h.insdshead->ksmps;
     uint32_t seed = p->seed;
-    MYFLT pi2_over_srate = pi2 / srate;
-    MYFLT sinp = p->sinp;
+    cs_float pi2_over_srate = pi2 / srate;
+    cs_float sinp = p->sinp;
 
 #ifdef USE_LOOPUP_SINE
-    MYFLT *table0 = p->ftp->ftable;
-    MYFLT *table1 = table0 + 1;
+    cs_float *table0 = p->ftp->ftable;
+    cs_float *table1 = table0 + 1;
     int32_t intphase = p->phase;
-    MYFLT cpstoinc = p->cpstoinc;
+    cs_float cpstoinc = p->cpstoinc;
 #endif
-    MYFLT nl_fb = 0;
-    MYFLT nl_f = 0;
+    cs_float nl_fb = 0;
+    cs_float nl_f = 0;
     for(int i=0; i < nsmps; i++) {
         nl_f = nl == 0 ? 0 : randflt(&seed) * 4*nl - 2*nl;
         nl_fb = ((fb == 0)|(nl == 0)) ? 0 : (randflt(&seed)*2*nl - nl)*0.001;
@@ -1483,51 +1483,51 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
         // mod signal gen
 #ifdef USE_LOOPUP_SINE
         int32_t phaseinc = (int32_t)(cpstoinc * (tf - nl_f));
-        MYFLT sinout = lookupi1(table0, table1, intphase, p->lomask);
+        cs_float sinout = lookupi1(table0, table1, intphase, p->lomask);
         intphase += phaseinc;
 #else
-        MYFLT sina = (tf - nl_f) * pi2_over_srate;
-        // MYFLT sinout = sin(sinp);
-        MYFLT sinout = fast_sin(sinp);
-        // MYFLT sinout = sinf(sinp);
+        cs_float sina = (tf - nl_f) * pi2_over_srate;
+        // cs_float sinout = sin(sinp);
+        cs_float sinout = fast_sin(sinp);
+        // cs_float sinout = sinf(sinp);
         sinp += sina;
         if(sinp >= pi2)
             sinp -= pi2;
 #endif
         //diode - positive semi-periods
-        MYFLT m_out;
+        cs_float m_out;
         if (diode == 0) {
             m_out = sinout;
         } else {
             //os - diode-ed signal?
-            MYFLT d_sin;
+            cs_float d_sin;
             if(os == 0) {
               d_sin = fabs(sinout)*2-0.20260;
             } else {
                 //power series in
-                MYFLT ps_sin_out1 = 0.5*(sinout + p->ps_sin_out2);
+                cs_float ps_sin_out1 = 0.5*(sinout + p->ps_sin_out2);
                 p->ps_sin_out2 = 0.5 * ps_sin_out1;
                 //abs()
-                MYFLT ps_d_sin1 = fabs(ps_sin_out1)*2-0.20260;
-                MYFLT ps_d_sin2 = fabs(p->ps_sin_out2)*2-0.20260;
+                cs_float ps_d_sin1 = fabs(ps_sin_out1)*2-0.20260;
+                cs_float ps_d_sin2 = fabs(p->ps_sin_out2)*2-0.20260;
                 //bandlimit
-                MYFLT sin_bl3_1 = p->sin_bl2_1;
-                MYFLT sin_bl3_2 = p->sin_bl2_2;
+                cs_float sin_bl3_1 = p->sin_bl2_1;
+                cs_float sin_bl3_2 = p->sin_bl2_2;
                 p->sin_bl2_1 = p->sin_bl1_1;
                 p->sin_bl2_2 = p->sin_bl1_2;
                 p->sin_bl1_1 = ps_d_sin1;
                 p->sin_bl1_2 = ps_d_sin2;
-                MYFLT sin_bl_out1 = (p->sin_bl1_1*p->bl_c1 +
+                cs_float sin_bl_out1 = (p->sin_bl1_1*p->bl_c1 +
                                      p->sin_bl2_1*p->bl_c2 +
                                      sin_bl3_1*p->bl_c3);
-                MYFLT sin_bl_out2 = (p->sin_bl1_2*p->bl_c1 +
+                cs_float sin_bl_out2 = (p->sin_bl1_2*p->bl_c1 +
                                      p->sin_bl2_2*p->bl_c2 +
                                      sin_bl3_2*p->bl_c3);
                 //power series out
-                MYFLT o_sin_out1 = 0.5*(sin_bl_out1+p->o_sin_out2);
+                cs_float o_sin_out1 = 0.5*(sin_bl_out1+p->o_sin_out2);
                 p->o_sin_out2 = 0.5*(sin_bl_out2+o_sin_out1);
                 //fir restoration
-                MYFLT s3 = p->s2;
+                cs_float s3 = p->s2;
                 p->s2 = p->s1;
                 p->s1 = o_sin_out1;
                 d_sin = (p->s1*p->c1+p->s2*p->c2+s3*p->c3) * p->fgain;
@@ -1538,13 +1538,13 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
         //-------------------------------------------------
         //input
         //-------------------------------------------------
-        MYFLT in_l = ain[i];
-        MYFLT fx_outl;
+        cs_float in_l = ain[i];
+        cs_float fx_outl;
         if(os == 0) {   // No oversampling
             //feedback ala Paul Kellet
             p->fp_l = (in_l+(fb-nl_fb)*p->fp_l)*sinout*p->r;
             //multiply carrier with mod
-            MYFLT s_out_l = m_out*in_l;
+            cs_float s_out_l = m_out*in_l;
             //apply feedback
             s_out_l += p->fp_l;
 
@@ -1553,25 +1553,25 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
 
         } else {      // Yes oversampling
             //power series in
-            MYFLT ps_fx_out1l = 0.5*(in_l+p->ps_fx_out2l);
+            cs_float ps_fx_out1l = 0.5*(in_l+p->ps_fx_out2l);
             p->ps_fx_out2l = 0.5*ps_fx_out1l;
 
             //------------------------
             //fx
             //------------------------
             p->fp_l_os_1 = (ps_fx_out1l+(fb-nl_fb)*p->fp_l_os_1)*sinout*p->r;
-            MYFLT s_out_l_os_1 = m_out*ps_fx_out1l;
+            cs_float s_out_l_os_1 = m_out*ps_fx_out1l;
             s_out_l_os_1 += p->fp_l_os_1;
 
             p->fp_l_os_2 = (p->ps_fx_out2l+(fb-nl_fb)*p->fp_l_os_2)*sinout*p->r;
-            MYFLT s_out_l_os_2 = m_out*p->ps_fx_out2l;
+            cs_float s_out_l_os_2 = m_out*p->ps_fx_out2l;
             s_out_l_os_2 += p->fp_l_os_2;
 
             //------------------------
             //bandlimit
             //------------------------
-            MYFLT bl3_1 = p->bl2_1;
-            MYFLT bl3_2 = p->bl2_2;
+            cs_float bl3_1 = p->bl2_1;
+            cs_float bl3_2 = p->bl2_2;
 
             p->bl2_1 = p->bl1_1;
             p->bl2_2 = p->bl1_2;
@@ -1579,17 +1579,17 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
             p->bl1_1 = s_out_l_os_1;
             p->bl1_2 = s_out_l_os_2;
 
-            MYFLT bl_out1 = (p->bl1_1*p->bl_c1 + p->bl2_1*p->bl_c2 + bl3_1*p->bl_c3);
-            MYFLT bl_out2 = (p->bl1_2*p->bl_c1 + p->bl2_2*p->bl_c2 + bl3_2*p->bl_c3);
+            cs_float bl_out1 = (p->bl1_1*p->bl_c1 + p->bl2_1*p->bl_c2 + bl3_1*p->bl_c3);
+            cs_float bl_out2 = (p->bl1_2*p->bl_c1 + p->bl2_2*p->bl_c2 + bl3_2*p->bl_c3);
 
             //------------------------
             //power series out
             //------------------------
-            MYFLT o_fx_out1l = 0.5*(bl_out1+p->o_fx_out2l);
+            cs_float o_fx_out1l = 0.5*(bl_out1+p->o_fx_out2l);
             p->o_fx_out2l = 0.5*(bl_out2+o_fx_out1l);
 
             //fir restoration
-            MYFLT s3l = p->s2l;
+            cs_float s3l = p->s2l;
             p->s2l = p->s1l;
             p->s1l = o_fx_out1l;
 
@@ -1631,7 +1631,7 @@ INSTRTXT *find_instrdef(INSDS *insdshead, int instrnum) {
     return NULL;
 }
 
-INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum, int must_be_active) {
+INSDS *find_instance_exact(INSTRTXT *instrdef, cs_float instrnum, int must_be_active) {
     // Find an exact instance of the given instr, returns NULL if not found
     INSDS *instance = instrdef->instance;
     if(instance == NULL) {
@@ -1664,7 +1664,7 @@ INSDS *find_instance_exact(INSTRTXT *instrdef, MYFLT instrnum, int must_be_activ
 
 typedef struct {
     OPDS h;
-    MYFLT *outval, *instrnum, *pindex, *inotfound;
+    cs_float *outval, *instrnum, *pindex, *inotfound;
 
     CS_VAR_MEM *pfields;    // points to instr's pfields
     int maxpfield;         // max readable pfield
@@ -1677,9 +1677,9 @@ typedef struct {
 typedef struct {
     OPDS h;
     ARRAYDAT *outvals;
-    MYFLT *instrnum;
+    cs_float *instrnum;
     ARRAYDAT *pindexes;
-    MYFLT *inotfound;
+    cs_float *inotfound;
 
     CS_VAR_MEM *pfields;    // points to instr's pfields
     int maxpfield;         // max readable pfield
@@ -1690,7 +1690,7 @@ typedef struct {
 } PREADARR;
 
 
-int32_t pread_search_(CSOUND *csound, MYFLT p1, INSTRTXT **instrtxt, INSDS **instr) {
+int32_t pread_search_(CSOUND *csound, cs_float p1, INSTRTXT **instrtxt, INSDS **instr) {
     IGN(csound);
     INSTRTXT *instrtxt_ = *instrtxt;
     if(!instrtxt_) {
@@ -1740,7 +1740,7 @@ pread_init(CSOUND *csound, PREAD *p) {
     p->instr = NULL;
     p->found = -1;
     p->instrtxt = NULL;
-    MYFLT p1 = *p->instrnum;
+    cs_float p1 = *p->instrnum;
     // a negative instr. number indicates NOT to search again after failed to
     // find the given instance
     if(p1 < 0) {
@@ -1761,7 +1761,7 @@ preadarr_init(CSOUND *csound, PREADARR *p) {
     p->instr = NULL;
     p->found = -1;
     p->instrtxt = NULL;
-    MYFLT p1 = *p->instrnum;
+    cs_float p1 = *p->instrnum;
     if(p->pindexes->dimensions != 1) {
         return INITERRF("Expected a 1D array, got %d", p->pindexes->dimensions);
     }
@@ -1794,7 +1794,7 @@ pread_perf(CSOUND *csound, PREAD *p) {
     if(idx > p->maxpfield) {
         return PERFERRF(Str("pread: can't read p%d (max index = %d)"), idx, p->maxpfield);
     }
-    MYFLT value = p->pfields[idx].value;
+    cs_float value = p->pfields[idx].value;
     *p->outval = value;
     return OK;
 }
@@ -1877,10 +1877,10 @@ enum PwriteStatus { FirstRun, InstanceNotFound, InstanceFound, NoOp };
 typedef struct {
     OPDS h;
     // inputs
-    MYFLT *instrnum;
-    MYFLT *inputs[PWRITE_MAXINPUTS];
+    cs_float *instrnum;
+    cs_float *inputs[PWRITE_MAXINPUTS];
 
-    MYFLT p1;             // cached instrnum, will always be positive
+    cs_float p1;             // cached instrnum, will always be positive
     int numpairs;         // number of index:value pairs
     int retry;            // should we retry when no instance matched?
     INSDS *instr;         // a pointer to the found instance, when matching exact number
@@ -1896,7 +1896,7 @@ static inline void
 pwrite_writevalues(CSOUND *csound, PWRITE *p, CS_VAR_MEM *pfields) {
     for(int pair=0; pair < p->numpairs; pair++) {
         int indx = (int)*(p->inputs[pair*2]);
-        MYFLT value = *(p->inputs[pair*2+1]);
+        cs_float value = *(p->inputs[pair*2+1]);
         if(indx > p->maxpfield)
             MSGF("pwrite: can't write to p%d (max index=%d)\n", indx, p->maxpfield);
         else
@@ -1908,7 +1908,7 @@ pwrite_writevalues(CSOUND *csound, PWRITE *p, CS_VAR_MEM *pfields) {
 static int32_t
 pwrite_search(CSOUND *csound, PWRITE *p) {
     IGN(csound);
-    MYFLT p1 = p->p1;
+    cs_float p1 = p->p1;
     if(p->instrtxt == NULL) {
         // INSTRTXT *instrdef = find_instrdef(p->h.insdshead, (int)p1);
         INSTRTXT *instrdef = GetInstrumentByNumber(csound, (int)p1);
@@ -1934,7 +1934,7 @@ pwrite_search(CSOUND *csound, PWRITE *p) {
 static int32_t
 pwrite_initcommon(CSOUND *csound, PWRITE *p) {
     IGN(csound);
-    MYFLT p1 = *p->instrnum;
+    cs_float p1 = *p->instrnum;
     if (p1 < 0) {
         p1 = -p1;
         p->retry = 0;
@@ -2037,13 +2037,13 @@ pwriten_perf(CSOUND *csound, PWRITE *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out, *int_instrnum, *max_instances;
+    cs_float *out, *int_instrnum, *max_instances;
     int p1;
     int numslots;
     char slots[UNIQ_NUMSLOTS];
 } UNIQINSTANCE;
 
-static MYFLT
+static cs_float
 uniqueinstance_(CSOUND *csound, UNIQINSTANCE *p) {
     // char slots[UNIQ_NUMSLOTS] = {0};
     char *slots = p->slots;
@@ -2053,7 +2053,7 @@ uniqueinstance_(CSOUND *csound, UNIQINSTANCE *p) {
     int idx;
     int maxidx = 0;
     int minidx = numslots;
-    MYFLT fractional_part, integral_part;
+    cs_float fractional_part, integral_part;
 
     // INSTRTXT *instrtxt = csound->GetInstrument(csound, p1, NULL);
     INSTRTXT *instrtxt = GetInstrumentByNumber(csound, p1);
@@ -2099,7 +2099,7 @@ uniqueinstance_initcommon(CSOUND *csound, UNIQINSTANCE *p) {
         p->numslots = UNIQ_NUMSLOTS;
     else if(p->numslots > UNIQ_NUMSLOTS)
         p->numslots = UNIQ_NUMSLOTS;
-    MYFLT instrnum = uniqueinstance_(csound, p);
+    cs_float instrnum = uniqueinstance_(csound, p);
     *p->out = instrnum;
     return OK;
 }
@@ -2161,12 +2161,12 @@ typedef struct {
 
     // inputs
     void *instr;
-    MYFLT *p2;
-    MYFLT *p3;
+    cs_float *p2;
+    cs_float *p3;
     void *pargs [ATSTOP_MAXPARGS];
 
     // internal
-    MYFLT instrnum;   // cached instrnum
+    cs_float instrnum;   // cached instrnum
 
     size_t numargs;
 
@@ -2176,16 +2176,16 @@ typedef struct {
 static int32_t
 atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
 #ifdef CSOUNDAPI7
-    MYFLT pfields[VARGMAX] = {0};
-    MYFLT offset = csound->GetScoreOffsetSeconds(csound);
+    cs_float pfields[VARGMAX] = {0};
+    cs_float offset = csound->GetScoreOffsetSeconds(csound);
     pfields[0] = p->instrnum;
     pfields[1] = offset + (*p->p2);
     pfields[2] = *p->p3;
     for(uint32_t i=0; i<p->numargs; i++) {
-        pfields[3+i] = *(MYFLT *)p->pargs[i];
+        pfields[3+i] = *(cs_float *)p->pargs[i];
     }
     
-    csound->Event(csound, 0, (const MYFLT *)(&pfields), p->numargs + 3);
+    csound->Event(csound, 0, (const cs_float *)(&pfields), p->numargs + 3);
     return OK;
 #else
     EVTBLK evt;
@@ -2200,7 +2200,7 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     evt.p[2] = *p->p2;
     evt.p[3] = *p->p3;
     for(size_t i=0; i < p->numargs; i++) {
-        evt.p[4+i] = *(MYFLT *)p->pargs[i];
+        evt.p[4+i] = *(cs_float *)p->pargs[i];
     }
     evt.pcnt = (int16_t)(p->numargs + 3);
     InsertScoreEventNow(csound, &evt, &(p->h));
@@ -2237,7 +2237,7 @@ atstop_deinit_N(CSOUND *csound, SCHED_DEINIT *p) {
             lenarg = add_string_arg(s, ((STRINGDAT *)p->pargs[i])->data, lens);
             lens += lenarg;
         } else {
-            lens += snprintf(sf, 64, " %f", *(MYFLT*)p->pargs[i]);
+            lens += snprintf(sf, 64, " %f", *(cs_float*)p->pargs[i]);
             strncat(s, sf, 16384 - lens);
         }
     }
@@ -2246,7 +2246,7 @@ atstop_deinit_N(CSOUND *csound, SCHED_DEINIT *p) {
 }
 
 static int32_t
-atstop_init(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
+atstop_init(CSOUND *csound, SCHED_DEINIT *p, cs_float instrnum) {
     p->instrnum = instrnum;
     p->numargs = _GetInputArgCnt(csound, p) - 3;
 
@@ -2258,7 +2258,7 @@ atstop_init(CSOUND *csound, SCHED_DEINIT *p, MYFLT instrnum) {
 
 static int32_t
 atstop_i(CSOUND *csound, SCHED_DEINIT *p) {
-    MYFLT instrnum = *((MYFLT*)p->instr);
+    cs_float instrnum = *((cs_float*)p->instr);
     return atstop_init(csound, p, instrnum);
 }
 
@@ -2269,7 +2269,7 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
     if (UNLIKELY(instrnum == NOT_AN_INSTRUMENT)) return NOTOK;
     p->instrnum = instrnum;
     p->numargs = _GetInputArgCnt(csound, p) - 3;
-    return atstop_init(csound, p, (MYFLT) instrnum);
+    return atstop_init(csound, p, (cs_float) instrnum);
 }
 
 /*
@@ -2287,9 +2287,9 @@ atstop_s(CSOUND *csound, SCHED_DEINIT *p) {
  */
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *step, *initial_value, *reset;
-    MYFLT value;
+    cs_float *out;
+    cs_float *step, *initial_value, *reset;
+    cs_float value;
 } ACCUM;
 
 static int32_t
@@ -2313,9 +2313,9 @@ accum_perf(CSOUND *csound, ACCUM *p) {
 static int32_t
 accum_perf_audio(CSOUND *csound, ACCUM *p) {
     IGN(csound);
-    MYFLT step = *p->step;
-    MYFLT value = *p->reset == 0 ? p->value : *p->initial_value;
-    MYFLT *out = p->out;
+    cs_float step = *p->step;
+    cs_float value = *p->reset == 0 ? p->value : *p->initial_value;
+    cs_float *out = p->out;
 
     SAMPLE_ACCURATE(out);
 
@@ -2329,9 +2329,9 @@ accum_perf_audio(CSOUND *csound, ACCUM *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in1;
-    MYFLT *in2;
+    cs_float *out;
+    cs_float *in1;
+    cs_float *in2;
 } FUNC12;
 
 /** frac2int
@@ -2359,9 +2359,9 @@ typedef struct {
 static int32_t
 frac2int(CSOUND *csound, FUNC12 *p) {
     IGN(csound);
-    double integ;
-    double fract = modf(*p->in1, &integ);
-    MYFLT mul = *p->in2;
+    cs_double integ;
+    cs_double fract = cs_modf(*p->in1, &integ);
+    cs_float mul = *p->in2;
     *p->out = floor(fract * mul + 0.5);
     return OK;
 }
@@ -2382,7 +2382,7 @@ frac2int(CSOUND *csound, FUNC12 *p) {
 // init array 'arr' to point to data
 
 
-static void _init_array_view(CSOUND *csound, ARRAYDAT *outarr, MYFLT *sourcedata,
+static void _init_array_view(CSOUND *csound, ARRAYDAT *outarr, cs_float *sourcedata,
                              int sourcesize, size_t allocated, OPDS *ctx) {
     if(outarr->data != NULL) {
         printf("$$$ freeing original data (size=%d, allocated=%ld) \n",
@@ -2411,7 +2411,7 @@ static void _init_array_view(CSOUND *csound, ARRAYDAT *outarr, MYFLT *sourcedata
 typedef struct {
     OPDS h;
     ARRAYDAT *in;
-    MYFLT *value, *start, *end, *step;
+    cs_float *value, *start, *end, *step;
 } ARRSETSLICE;
 
 static int32_t
@@ -2425,11 +2425,11 @@ array_set_slice(CSOUND *csound, ARRSETSLICE *p) {
     int32_t end = (int32_t)*p->end;
     int32_t step = (int32_t)*p->step;
     int32_t ksmps = p->h.insdshead->ksmps;
-    MYFLT value = *p->value;
+    cs_float value = *p->value;
     if(end == 0) {
         end = p->in->sizes[0];
     }
-    MYFLT *data = p->in->data;
+    cs_float *data = p->in->data;
     char vartype = p->in->arrayType->varTypeName[0];
     switch(vartype) {
     case 'i':
@@ -2450,7 +2450,7 @@ array_set_slice(CSOUND *csound, ARRSETSLICE *p) {
 typedef struct {
     OPDS h;
     ARRAYDAT *out;
-    MYFLT *ifn, *istart, *iend;
+    cs_float *ifn, *istart, *iend;
     FUNC * ftp;
     int size;
 } TABALIAS;
@@ -2478,7 +2478,7 @@ static int tabalias_init(CSOUND *csound, TABALIAS *p) {
         return INITERR("end is bigger than the length of the table");
 
     _init_array_view(csound, p->out, &(ftp->ftable[start]), end-start,
-                     sizeof(MYFLT)*(tabsize-start), &(p->h));
+                     sizeof(cs_float)*(tabsize-start), &(p->h));
 
 #ifdef CSOUNDAPI6
     register_deinit(csound, p, tabalias_deinit);
@@ -2501,8 +2501,8 @@ static int tabalias_init(CSOUND *csound, TABALIAS *p) {
 typedef struct {
     OPDS h;
     ARRAYDAT *out, *in;
-    MYFLT *istart, *iend;
-    MYFLT *dataptr;
+    cs_float *istart, *iend;
+    cs_float *dataptr;
     int size;
 } ARRAYVIEW;
 
@@ -2559,7 +2559,7 @@ typedef struct REF_GLOBALS_ REF_GLOBALS;
 
 typedef struct {
     int active;
-    MYFLT *data;
+    cs_float *data;
     enum RefType type;
     int size;
     int *sizes;
@@ -2708,9 +2708,9 @@ _ref_get_slot(REF_GLOBALS *g) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;  // index
+    cs_float *out;  // index
     ARRAYDAT *arr;
-    MYFLT *extrarefs;
+    cs_float *extrarefs;
     int slot;
     REF_GLOBALS *g;
     int local;
@@ -2880,8 +2880,8 @@ ref_local_deinit(CSOUND *csound, REF_NEW_ARRAY *p) {
 typedef struct {
     OPDS h;
     ARRAYDAT *arr;
-    MYFLT *idx;
-    MYFLT *extrarefs;
+    cs_float *idx;
+    cs_float *extrarefs;
     int slot;
     REF_GLOBALS *g;
 } DEREF_ARRAY;
@@ -2982,7 +2982,7 @@ deref_array(CSOUND *csound, DEREF_ARRAY *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *args[10];
+    cs_float *args[10];
     REF_GLOBALS *g;
     REF_HANDLE *handle;
     int numouts;
@@ -3024,8 +3024,8 @@ ref_valid_i(CSOUND *csound, REF1 *p) {
 /*
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT state1;
+    cs_float *out;
+    cs_float state1;
 } OPCk_0;
 
 static int32_t
@@ -3148,7 +3148,7 @@ typedef struct {
     OPDS h;
     ARRAYDAT *A;
     ARRAYDAT *B;
-    MYFLT *k1;
+    cs_float *k1;
     char varTypeName;
 } _AAk;
 
@@ -3176,7 +3176,7 @@ static int32_t extendArray_k(CSOUND *csound, _AA *p) {
             deststrs[offset + i].data = csound->Strdup(csound, srcstr);
         }
     } else if(p->varTypeName == 'k' || p->varTypeName == 'i') {
-        memcpy(&(p->A->data[offset]), p->B->data, sizeof(MYFLT)*p->B->sizes[0]);
+        memcpy(&(p->A->data[offset]), p->B->data, sizeof(cs_float)*p->B->sizes[0]);
     } else {
         return PERFERRF("extendArray: Arrays of type %c not supported", p->varTypeName);
     }
@@ -3209,7 +3209,7 @@ static int32_t setslice_array_k(CSOUND *csound, _AAk *p) {
             deststrs[offset + i].data = csound->Strdup(csound, srcstr);
         }
     } else if(p->varTypeName == 'k' || p->varTypeName == 'i') {
-        memcpy((char*)p->A->data+offset*sizeof(MYFLT), p->B->data, sizeof(MYFLT)*numitems);
+        memcpy((char*)p->A->data+offset*sizeof(cs_float), p->B->data, sizeof(cs_float)*numitems);
     } else {
         MSGF("setslice: Arrays of type %c not supported", p->varTypeName);
         return NOTOK;
@@ -3252,16 +3252,16 @@ static int _perlin_space[512], _perlin_permutation[256] = {
     138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 };
 
-static double fade(double t) { return t * t * t * (t * (t * 6. - 15.) + 10.); }
-static double lerp(double t, double a, double b) { return a + t * (b - a); }
-static double grad(int hash, double x, double y, double z) {
+static cs_double fade(cs_double t) { return t * t * t * (t * (t * 6. - 15.) + 10.); }
+static cs_double lerp(cs_double t, cs_double a, cs_double b) { return a + t * (b - a); }
+static cs_double grad(int hash, cs_double x, cs_double y, cs_double z) {
     int h = hash & 15;                      // CONVERT LO 4 BITS OF HASH CODE
-    double u = h<8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
+    cs_double u = h<8 ? x : y,                 // INTO 12 GRADIENT DIRECTIONS.
         v = h<4 ? y : h==12||h==14 ? x : z;
     return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
 }
 
-static double inline perlin3_calc(double x, double y, double z) {
+static cs_double inline perlin3_calc(cs_double x, cs_double y, cs_double z) {
     // find unit cube that contains point
     int X = (int)x & 255,
         Y = (int)y & 255,
@@ -3269,7 +3269,7 @@ static double inline perlin3_calc(double x, double y, double z) {
     x -= floor(x);                                // FIND RELATIVE X,Y,Z
     y -= floor(y);                                // OF POINT IN CUBE.
     z -= floor(z);
-    double u = fade(x),                                // COMPUTE FADE CURVES
+    cs_double u = fade(x),                                // COMPUTE FADE CURVES
            v = fade(y),                                // FOR EACH OF X,Y,Z.
            w = fade(z);
     int A  = _perlin_space[X  ]+Y,
@@ -3291,8 +3291,8 @@ static double inline perlin3_calc(double x, double y, double z) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *x, *y, *z;
+    cs_float *out;
+    cs_float *x, *y, *z;
     uint32_t seed;
 } PERLIN3;
 
@@ -3320,13 +3320,13 @@ static int32_t perlin3_k_kkk(CSOUND *csound, PERLIN3 *p) {
 
 static int32_t perlin3_a_aaa(CSOUND *csound, PERLIN3 *p) {
     IGN(csound);
-    MYFLT * out = p->out;
+    cs_float * out = p->out;
 
     SAMPLE_ACCURATE(out);
 
-    MYFLT * x = p->x;
-    MYFLT * y = p->y;
-    MYFLT * z = p->z;
+    cs_float * x = p->x;
+    cs_float * y = p->y;
+    cs_float * z = p->z;
 
     for(n=offset; n<nsmps; n++) {
         out[n] = perlin3_calc(x[n], y[n], z[n]);
@@ -3399,17 +3399,17 @@ static int32_t perlin3hash_init(CSOUND *csound, PERLIN3 *p) {
 
 static int32_t perlin3hash_a_aaa(CSOUND *csound, PERLIN3 *p) {
     IGN(csound);
-    MYFLT * restrict out = p->out;
+    cs_float * restrict out = p->out;
 
     SAMPLE_ACCURATE(out);
 
-    const MYFLT * restrict x = p->x;
-    const MYFLT * restrict y = p->y;
-    const MYFLT * restrict z = p->z;
+    const cs_float * restrict x = p->x;
+    const cs_float * restrict y = p->y;
+    const cs_float * restrict z = p->z;
     const uint32_t seed = p->seed;
 
     for (n = offset; n < nsmps; n++)
-        out[n] = (MYFLT)perlin_noise_hash((float)x[n], (float)y[n], (float)z[n], seed);
+        out[n] = (cs_float)perlin_noise_hash((float)x[n], (float)y[n], (float)z[n], seed);
 
     return OK;
 }
@@ -3417,12 +3417,12 @@ static int32_t perlin3hash_a_aaa(CSOUND *csound, PERLIN3 *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *tabnum;
+    cs_float *tabnum;
     // sr, nchnls, loopstart=0, basenote=60
-    MYFLT *sr;
-    MYFLT *nchnls;
-    MYFLT *loopstart;
-    MYFLT *basenote;
+    cs_float *sr;
+    cs_float *nchnls;
+    cs_float *loopstart;
+    cs_float *basenote;
 
 } FTSETPARAMS;
 
@@ -3442,11 +3442,11 @@ static int32_t ftsetparams(CSOUND *csound, FTSETPARAMS *p) {
 
     ftp->gen01args.sample_rate = *p->sr;
     ftp->nchanls = (int)*p->nchnls;
-    MYFLT basenote = *p->basenote;
+    cs_float basenote = *p->basenote;
 
     if (basenote < 0)
         basenote = FL(60);
-    double natcps = POWER(2.0, (basenote - FL(69)) / 12.0) * csound->GetA4(csound);
+    cs_double natcps = POWER(2.0, (basenote - FL(69)) / 12.0) * csound->GetA4(csound);
 
     if(*p->loopstart > 0) {
         ftp->begin1 = (int)*p->loopstart;
@@ -3506,21 +3506,21 @@ enum InterpMethod {InterpError,
 // t is a value that goes from 0 to 1 to interpolate in a C1 continuous way across
 // uniformly sampled data points.
 // when t is 0, this will return B.  When t is 1, this will return C.
-static inline MYFLT _cubic_interpol(MYFLT t, MYFLT A, MYFLT B, MYFLT C, MYFLT D) {
-    MYFLT a = -A/2.0 + (3.0*B)/2.0 - (3.0*C)/2.0 + D/2.0;
-    MYFLT b = A - (5.0*B)/2.0 + 2.0*C - D / 2.0;
-    MYFLT c = -A/2.0 + C/2.0;
-    MYFLT d = B;
+static inline cs_float _cubic_interpol(cs_float t, cs_float A, cs_float B, cs_float C, cs_float D) {
+    cs_float a = -A/2.0 + (3.0*B)/2.0 - (3.0*C)/2.0 + D/2.0;
+    cs_float b = A - (5.0*B)/2.0 + 2.0*C - D / 2.0;
+    cs_float c = -A/2.0 + C/2.0;
+    cs_float d = B;
 
     return a*t*t*t + b*t*t + c*t + d;
 }
 
-static inline MYFLT _exp_interpol(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT expon) {
+static inline cs_float _exp_interpol(cs_float y0, cs_float y1, cs_float frac, cs_float expon) {
     return y0 + (y1 - y0) * POWER(frac, expon);
 }
 
-// static inline MYFLT _smooth_interpol2(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT param) {
-//     MYFLT frac2 = frac*frac*(3 - 2*frac);
+// static inline cs_float _smooth_interpol2(cs_float y0, cs_float y1, cs_float frac, cs_float param) {
+//     cs_float frac2 = frac*frac*(3 - 2*frac);
 //     if(param > 0) {
 //         for(int i=0; i<(int)param; i++) {
 //             frac2 = frac2*frac2*(3 - 2*frac2);
@@ -3529,43 +3529,43 @@ static inline MYFLT _exp_interpol(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT expon) {
 //     return y0 + (y1 - y0) * frac2;
 // }
 
-static inline MYFLT _smooth_interpol(MYFLT y0, MYFLT y1, MYFLT frac, MYFLT param) {
+static inline cs_float _smooth_interpol(cs_float y0, cs_float y1, cs_float frac, cs_float param) {
     if(param==0) {
-        MYFLT frac2 = frac*frac*(3 - 2*frac);
+        cs_float frac2 = frac*frac*(3 - 2*frac);
         return y0 + (y1 - y0) * frac2;
     }
-    MYFLT paramint;
-    MYFLT paramfrac = modf(param, &paramint);
-    MYFLT frac1 = frac*frac*(3-2*frac);
+    cs_float paramint;
+    cs_float paramfrac = modf(param, &paramint);
+    cs_float frac1 = frac*frac*(3-2*frac);
     for(int i=0; i<(int)paramint; i++) {
         frac1 = frac1*frac1*(3-2*frac1);
     }
     if(paramfrac == 0) {
         return y0 + (y1 - y0) * frac1;
     }
-    MYFLT frac2 = frac1*frac1*(3 - 2*frac1);
-    // MYFLT val0 = y0 + (y1 - y0) * frac1;
-    // MYFLT val1 = y0 + (y1 - y0) * frac2;
+    cs_float frac2 = frac1*frac1*(3 - 2*frac1);
+    // cs_float val0 = y0 + (y1 - y0) * frac1;
+    // cs_float val1 = y0 + (y1 - y0) * frac2;
     // return val0 + (val1-val0)*paramfrac;
     // this is a simplified version of the above:
-    MYFLT ydiff = y0-y1;
+    cs_float ydiff = y0-y1;
     return -frac1*ydiff + paramfrac*(frac1 - frac2)*ydiff + y0;
 }
 
-static inline MYFLT _smoother_interpol(MYFLT y0, MYFLT y1, MYFLT x, MYFLT param) {
+static inline cs_float _smoother_interpol(cs_float y0, cs_float y1, cs_float x, cs_float param) {
     // perlin's version of smoothstep, corresponds to ~0.7 smoothstep
-    MYFLT delta = x * x * x * (x * (x * 6. - 15.) + 10.);
+    cs_float delta = x * x * x * (x * (x * 6. - 15.) + 10.);
     return y0 + (y1-y0) * delta;
 }
 
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *idx;
+    cs_float *out;
+    cs_float *idx;
     ARRAYDAT *arr;
     STRINGDAT *mode;
-    MYFLT *param;
+    cs_float *param;
     enum InterpMethod method;
 } INTERPARR_x_xK;
 
@@ -3588,7 +3588,7 @@ static enum InterpMethod _interp_parse_mode(char *s) {
     return InterpError;
 }
 
-static enum InterpMethod _interp_parse_mode_with_param(char *s, MYFLT *param) {
+static enum InterpMethod _interp_parse_mode_with_param(char *s, cs_float *param) {
     if(!strcmp(s, "linear"))
         return InterpLinear;
     else if(!strcmp(s, "cos"))
@@ -3622,10 +3622,10 @@ static int32_t interparr_k_kK_init(CSOUND *csound, INTERPARR_x_xK *p) {
 
 static int32_t interparr_k_kK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
     IGN(csound);
-    MYFLT idx = *p->idx;
-    MYFLT intpart, ypre, ypost;
-    MYFLT frac = modf(idx, &intpart);
-    MYFLT *data = p->arr->data;
+    cs_float idx = *p->idx;
+    cs_float intpart, ypre, ypost;
+    cs_float frac = modf(idx, &intpart);
+    cs_float *data = p->arr->data;
     uint64_t len = p->arr->sizes[0];
     if (idx <= 0) {
         *p->out = data[0];
@@ -3638,8 +3638,8 @@ static int32_t interparr_k_kK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
 
     uint64_t i = (uint64_t)intpart;
 
-    MYFLT y0 = data[i];
-    MYFLT y1 = data[i+1];
+    cs_float y0 = data[i];
+    cs_float y1 = data[i+1];
     switch(p->method) {
     case InterpExp:
         *p->out = _exp_interpol(y0, y1, frac, *p->param);
@@ -3678,16 +3678,16 @@ static int32_t interparr_k_kK_ir(CSOUND *csound, INTERPARR_x_xK *p) {
 
 
 static int32_t interparr_a_aK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
-    MYFLT *out = p->out;
-    MYFLT *in = p->idx;
-    MYFLT *data = p->arr->data;
-    MYFLT frac, intpart, idx;
+    cs_float *out = p->out;
+    cs_float *in = p->idx;
+    cs_float *data = p->arr->data;
+    cs_float frac, intpart, idx;
     uint64_t len = p->arr->sizes[0];
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
     int method = p->method;
-    MYFLT param = *p->param;
+    cs_float param = *p->param;
     for(n=offset; n<nsmps; n++) {
         idx = in[n];
         intpart = modf(idx, &frac);
@@ -3702,8 +3702,8 @@ static int32_t interparr_a_aK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
 
         uint64_t i = (uint64_t)intpart;
 
-        MYFLT y0 = data[i];
-        MYFLT y1 = data[i+1];
+        cs_float y0 = data[i];
+        cs_float y1 = data[i+1];
         switch(method) {
         case InterpLinear:
             out[n] = y0 + (y1 - y0)*frac;
@@ -3737,7 +3737,7 @@ typedef struct {
     ARRAYDAT *idx;
     ARRAYDAT *arr;
     STRINGDAT *mode;
-    MYFLT *param;
+    cs_float *param;
     enum InterpMethod method;
 } INTERPARR_K_KK;
 
@@ -3764,17 +3764,17 @@ static int32_t interparr_K_KK_init_simple(CSOUND *csound, INTERPARR_K_KK *p) {
 
 
 static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
-    MYFLT *out = p->out->data;
-    MYFLT *in = p->idx->data;
-    MYFLT *data = p->arr->data;
-    MYFLT frac, intpart, idx, ypre, ypost;
+    cs_float *out = p->out->data;
+    cs_float *in = p->idx->data;
+    cs_float *data = p->arr->data;
+    cs_float frac, intpart, idx, ypre, ypost;
     size_t len = p->arr->sizes[0];
     size_t numitems = p->idx->sizes[0];
     tabcheck(csound, p->out, numitems, &(p->h));
     int method = p->method;
-    MYFLT param = *p->param;
-    MYFLT data0 = data[0];
-    MYFLT data1 = data[len-1];
+    cs_float param = *p->param;
+    cs_float data0 = data[0];
+    cs_float data1 = data[len-1];
     for(size_t n=0; n < numitems; n++) {
         idx = in[n];
         frac = modf(idx, &intpart);
@@ -3789,8 +3789,8 @@ static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
 
         size_t i = (uint64_t)intpart;
 
-        MYFLT y0 = data[i];
-        MYFLT y1 = data[i+1];
+        cs_float y0 = data[i];
+        cs_float y1 = data[i+1];
         switch (method) {
         case InterpLinear:
             out[n] = y0 + (y1 - y0)*frac;
@@ -3835,14 +3835,14 @@ static int32_t interparr_K_KK_ir(CSOUND *csound, INTERPARR_K_KK *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *idx, *tabnum;
+    cs_float *out;
+    cs_float *idx, *tabnum;
     STRINGDAT *mode;
-    MYFLT *step, *offset;
+    cs_float *step, *offset;
 
     FUNC *ftp;
     int lasttab;
-    MYFLT param;
+    cs_float param;
     int numargs;
     enum InterpMethod method;
 } INTERPTAB;
@@ -3878,8 +3878,8 @@ static int32_t interptab_init_kkSkk(CSOUND *csound, INTERPTAB *p) {
 
 static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
     IGN(csound);
-    MYFLT idx = *p->idx;
-    MYFLT *data = p->ftp->ftable;
+    cs_float idx = *p->idx;
+    cs_float *data = p->ftp->ftable;
     int32_t step, taboffset;
 
     if(p->numargs == 2) {
@@ -3897,8 +3897,8 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
         return OK;
     }
 
-    MYFLT intpart;
-    MYFLT frac = modf(idx, &intpart);
+    cs_float intpart;
+    cs_float frac = modf(idx, &intpart);
 
     uint64_t len = p->ftp->flen;
     uint64_t i = (uint64_t)intpart * step + taboffset;
@@ -3912,9 +3912,9 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
         *p->out = data[i];
         return OK;
     }
-    MYFLT y0 = data[i];
-    MYFLT y1 = data[i+step];
-    MYFLT ypre, ypost;
+    cs_float y0 = data[i];
+    cs_float y1 = data[i+step];
+    cs_float ypre, ypost;
     switch(p->method) {
     case InterpLinear:
         *p->out = y0 + (y1 - y0)*frac;
@@ -3970,25 +3970,25 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         p->ftp = ftp;
         p->lasttab = (int)*p->tabnum;
     }
-    MYFLT *out = p->out;
-    MYFLT *in = p->idx;
+    cs_float *out = p->out;
+    cs_float *in = p->idx;
     uint64_t taboffset = (uint64_t)*p->offset;
     uint64_t step = (uint64_t)*p->step;
     if(step <= 0) {
         return PERFERRF("step cannot be less than 1, got %lu", step);
     }
 
-    MYFLT *data = &(p->ftp->ftable[taboffset]);
-    MYFLT idx, intpart, frac, y0, y1, ypre, ypost;
+    cs_float *data = &(p->ftp->ftable[taboffset]);
+    cs_float idx, intpart, frac, y0, y1, ypre, ypost;
     uint64_t len = p->ftp->flen;
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
 
     // we branch outside the loop depending on the interpolation mode
-    MYFLT firstelem = data[0];
-    MYFLT lastelem = data[len - step];
-    MYFLT param = p->param;
+    cs_float firstelem = data[0];
+    cs_float lastelem = data[len - step];
+    cs_float param = p->param;
     switch(p->method) {
     case InterpLinear:
         for(n=offset; n < nsmps; n++) {
@@ -4135,14 +4135,14 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *x;
+    cs_float *out;
+    cs_float *x;
     ARRAYDAT *arr;
     int64_t lastidx;
 } BISECT;
 
 
-static inline int64_t array_bisect_multidim(MYFLT x, MYFLT *xs, int64_t len,
+static inline int64_t array_bisect_multidim(cs_float x, cs_float *xs, int64_t len,
                                             int step, int offset, int64_t lastidx) {
     // step: the frame size, a.k.a the number of columns per row. Must be >= 1
     // offset: the column index to use for comparison
@@ -4178,7 +4178,7 @@ static inline int64_t array_bisect_multidim(MYFLT x, MYFLT *xs, int64_t len,
 }
 
 
-static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t lastidx) {
+static inline int64_t array_bisect(cs_float x, cs_float *xs, int64_t xslen, int64_t lastidx) {
     // Boundary checks
     if(x <= xs[0]) return -1;
     if(x >= xs[xslen-1]) return -2;
@@ -4211,7 +4211,7 @@ static inline int64_t array_bisect(MYFLT x, MYFLT *xs, int64_t xslen, int64_t la
     return imin - 1;
 }
 
-// static inline int64_t array_bisect_old(MYFLT x, MYFLT *xs, int64_t xslen, int64_t lastidx) {
+// static inline int64_t array_bisect_old(cs_float x, cs_float *xs, int64_t xslen, int64_t lastidx) {
 //     // -1: lower bound, -2: upper bound
 //     if(x <= xs[0]) {
 //         return -1;
@@ -4260,9 +4260,9 @@ static int32_t bisect_init(CSOUND *csound, BISECT *p) {
 static int32_t bisect_kr(CSOUND *csound, BISECT *p) {
     IGN(csound);
     int64_t lenarr = p->arr->sizes[0];
-    MYFLT *arr = p->arr->data;
-    MYFLT x = *p->x;
-    MYFLT x0, x1, frac;
+    cs_float *arr = p->arr->data;
+    cs_float x = *p->x;
+    cs_float x0, x1, frac;
 
     int64_t idx = array_bisect(x, arr, lenarr, p->lastidx);
 
@@ -4281,7 +4281,7 @@ static int32_t bisect_kr(CSOUND *csound, BISECT *p) {
     x0 = arr[idx];
     x1 = arr[idx+1];
     frac = (x - x0) / (x1 - x0);
-    *p->out = (MYFLT)idx + frac;
+    *p->out = (cs_float)idx + frac;
     p->lastidx = idx;
     return OK;
 }
@@ -4294,10 +4294,10 @@ static int32_t bisect_ir(CSOUND *csound, BISECT *p) {
 static int32_t bisect_a_a_kr(CSOUND *csound, BISECT *p) {
     IGN(csound);
     int64_t lenarr = p->arr->sizes[0];
-    MYFLT *arr = p->arr->data;
-    MYFLT *out = p->out;
-    MYFLT *in = p->x;
-    MYFLT x0, x1, frac, x;
+    cs_float *arr = p->arr->data;
+    cs_float *out = p->out;
+    cs_float *in = p->x;
+    cs_float x0, x1, frac, x;
     int64_t idx, lastidx = p->lastidx;
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
@@ -4315,7 +4315,7 @@ static int32_t bisect_a_a_kr(CSOUND *csound, BISECT *p) {
             x0 = arr[idx];
             x1 = arr[idx+1];
             frac = (x - x0) / (x1 - x0);
-            out[n] = (MYFLT)idx + frac;
+            out[n] = (cs_float)idx + frac;
             lastidx = idx;
         }
     }
@@ -4340,15 +4340,15 @@ static int32_t bisectarr_init(CSOUND *csound, BISECTARR *p) {
 
 static int32_t bisectarr_kr(CSOUND *csound, BISECTARR *p) {
     IGN(csound);
-    MYFLT *out = p->out->data;
-    MYFLT *in = p->xs->data;
-    MYFLT *arr = p->arr->data;
+    cs_float *out = p->out->data;
+    cs_float *in = p->xs->data;
+    cs_float *arr = p->arr->data;
 
     size_t lenarr = p->arr->sizes[0];
     size_t numitems = p->xs->sizes[0];
     tabcheck(csound, p->out, numitems, &(p->h));
 
-    MYFLT x0, x1, frac, x;
+    cs_float x0, x1, frac, x;
     int64_t idx, lastidx = p->lastidx;
 
     for(size_t n=0; n<numitems; n++) {
@@ -4364,7 +4364,7 @@ static int32_t bisectarr_kr(CSOUND *csound, BISECTARR *p) {
             x0 = arr[idx];
             x1 = arr[idx+1];
             frac = (x - x0) / (x1 - x0);
-            out[n] = (MYFLT)idx + frac;
+            out[n] = (cs_float)idx + frac;
             lastidx = idx;
         }
     }
@@ -4383,8 +4383,8 @@ static int32_t bisectarr_ir(CSOUND *csound, BISECTARR *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in, *tabnum, *step, *offset;
+    cs_float *out;
+    cs_float *in, *tabnum, *step, *offset;
 
     FUNC *ftp;
     int64_t lastidx;
@@ -4415,10 +4415,10 @@ static int32_t bisecttab_k_k_kr(CSOUND *csound, BISECTTAB *p) {
         p->ftp = ftp;
         p->lasttab = (int)*p->tabnum;
     }
-    MYFLT *data = p->ftp->ftable;
-    MYFLT x = *p->in;
+    cs_float *data = p->ftp->ftable;
+    cs_float x = *p->in;
     int64_t lendata = p->ftp->flen;
-    MYFLT x0, x1, frac;
+    cs_float x0, x1, frac;
     int32_t taboffset = (int32_t)(*p->offset);
     int32_t step = (int32_t)(*p->step);
     if(step == 0)
@@ -4437,7 +4437,7 @@ static int32_t bisecttab_k_k_kr(CSOUND *csound, BISECTTAB *p) {
         x0 = data[taboffset+row*step];
         x1 = data[taboffset+(row+1)*step];
         frac = (x - x0) / (x1 - x0);
-        *p->out = (MYFLT)row + frac;
+        *p->out = (cs_float)row + frac;
         p->lastidx = row;
     }
     return OK;
@@ -4461,8 +4461,8 @@ static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
         p->ftp = ftp;
         p->lasttab = (int)*p->tabnum;
     }
-    MYFLT *out = p->out;
-    MYFLT *in = p->in;
+    cs_float *out = p->out;
+    cs_float *in = p->in;
     int32_t taboffset = (int32_t)*p->offset;
     int32_t step = (int32_t)*p->step;
     if(step <= 0) {
@@ -4471,7 +4471,7 @@ static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
         step = 1;
     }
 
-    MYFLT *data = p->ftp->ftable;
+    cs_float *data = p->ftp->ftable;
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
@@ -4480,8 +4480,8 @@ static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
             lendata = p->ftp->flen,
             lastidx = p->lastidx;
 
-    MYFLT x0, x1, frac, x;
-    MYFLT rightmost = ceil((lendata-taboffset)/step)-1;
+    cs_float x0, x1, frac, x;
+    cs_float rightmost = ceil((lendata-taboffset)/step)-1;
     for(n=offset; n < nsmps; n++) {
         x = in[n];
         idx = array_bisect_multidim(x, data, lendata, step, taboffset, lastidx);
@@ -4496,7 +4496,7 @@ static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
             x0 = data[idx0];
             x1 = data[idx0+step];
             frac = (x - x0) / (x1 - x0);
-            out[n] = (MYFLT)idx + frac;
+            out[n] = (cs_float)idx + frac;
             lastidx = idx;
         }
     }
@@ -4507,7 +4507,7 @@ typedef struct {
     OPDS h;
     ARRAYDAT *out;
     ARRAYDAT *in;
-    MYFLT *tabnum, *step, *offset;
+    cs_float *tabnum, *step, *offset;
 
     FUNC *ftp;
     int64_t lastidx;
@@ -4539,10 +4539,10 @@ static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
         p->ftp = ftp;
         p->lasttab = (int)*p->tabnum;
     }
-    MYFLT *data = p->ftp->ftable;
+    cs_float *data = p->ftp->ftable;
 
-    MYFLT *out = p->out->data;
-    MYFLT *in = p->in->data;
+    cs_float *out = p->out->data;
+    cs_float *in = p->in->data;
     int32_t taboffset = (int32_t)*p->offset;
     int32_t step = (int32_t)*p->step;
     if(step <= 0)
@@ -4560,7 +4560,7 @@ static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
             lendata = p->ftp->flen,
             lastidx = p->lastidx;
 
-    MYFLT x0, x1, frac, x;
+    cs_float x0, x1, frac, x;
     for(size_t n=0; n < arrsize; n++) {
         x = in[n];
         idx = array_bisect_multidim(x, data, lendata, step, taboffset, lastidx);
@@ -4574,7 +4574,7 @@ static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
             x0 = data[taboffset + idx*step];
             x1 = data[taboffset + idx*step + 1];
             frac = (x - x0) / (x1 - x0);
-            out[n] = (MYFLT)idx + frac;
+            out[n] = (cs_float)idx + frac;
             lastidx = idx;
         }
     }
@@ -4589,9 +4589,9 @@ static int32_t bisecttabarr_ir(CSOUND *csound, BISECTTAB_ARR *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    // MYFLT *tabnum;
-    MYFLT *pargs [VARGMAX-5];
+    cs_float *out;
+    // cs_float *tabnum;
+    cs_float *pargs [VARGMAX-5];
 } FILLTAB;
 
 // itab filltab 100, 0, 1, 2, 3, 4
@@ -4607,15 +4607,15 @@ static int32_t filltab(CSOUND *csound, FILLTAB *p) {
     int32_t n = _GetInputArgCnt(csound, p); // csound->GetInputArgCnt(p);
     int32_t tabsize = n;
 #ifdef CSOUNDAPI6
-    MYFLT *fp = &ftevt->p[0];
+    cs_float *fp = &ftevt->p[0];
     fp[0] = 0.;
     fp[1] = 0.;
     fp[2] = 0.;
-    fp[3] = -(MYFLT)tabsize;
+    fp[3] = -(cs_float)tabsize;
     fp[4] = 2.;
     fp[5] = 0.;
 #else
-    MYFLT pfields[] = {0., 0., 0., -(MYFLT)tabsize, 2., 0.};
+    cs_float pfields[] = {0., 0., 0., -(cs_float)tabsize, 2., 0.};
     ftevt->p = &pfields[0];
 #endif
     ftevt->p2orig = 0.;
@@ -4626,20 +4626,20 @@ static int32_t filltab(CSOUND *csound, FILLTAB *p) {
     csound->Free(csound, ftevt);
     if (UNLIKELY(n != 0) || ftp == NULL)
         return INITERR("ftgen error");
-    MYFLT **pargs = p->pargs;
-    MYFLT *ftable = ftp->ftable;
+    cs_float **pargs = p->pargs;
+    cs_float *ftable = ftp->ftable;
     for(size_t i=0; i < (size_t)tabsize; i++) {
         ftable[i] = *pargs[i];
     }
-    *p->out = (MYFLT) ftp->fno;                      /* record the fno */
+    *p->out = (cs_float) ftp->fno;                      /* record the fno */
     return OK;
 }
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *size;
-    MYFLT *defaultvalue;
+    cs_float *out;
+    cs_float *size;
+    cs_float *defaultvalue;
 } FTNEW;
 
 static int32_t ftnew(CSOUND *csound, FTNEW *p) {
@@ -4655,15 +4655,15 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
     ftevt->pcnt = (int16) 6;
     // int n = csound->hfgens(csound, &ftp, ftevt, 1);         /* call the fgen */
 #ifdef CSOUNDAPI6
-    MYFLT *fp = &ftevt->p[0];;
+    cs_float *fp = &ftevt->p[0];;
     fp[0] = 0.;
     fp[1] = 0.;
     fp[2] = 0.;
-    fp[3] = -(MYFLT)tabsize;
+    fp[3] = -(cs_float)tabsize;
     fp[4] = 2.;
     fp[5] = 0.;
 #else
-    MYFLT pfields[] = {0., 0., 0., -(MYFLT)tabsize, 2., 0.};
+    cs_float pfields[] = {0., 0., 0., -(cs_float)tabsize, 2., 0.};
     ftevt->p = &pfields[0];
 #endif
     int n = _createTable(csound, &ftp, ftevt, 1);
@@ -4673,13 +4673,13 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
     if (UNLIKELY(n != 0) || ftp == NULL)
         return INITERR("ftgen error");
     if(*p->defaultvalue != 0) {
-        MYFLT v = *p->defaultvalue;
-        MYFLT *ftable = ftp->ftable;
+        cs_float v = *p->defaultvalue;
+        cs_float *ftable = ftp->ftable;
         for(size_t i=0; i < (size_t)tabsize; i++) {
             ftable[i] = v;
         }
     }
-    *p->out = (MYFLT) ftp->fno;                      /* record the fno */
+    *p->out = (cs_float) ftp->fno;                      /* record the fno */
     return OK;
 }
 
@@ -4693,13 +4693,13 @@ typedef struct {
 typedef struct {
     OPDS h;
     ARRAYDAT *arr;
-    MYFLT *masktab;
+    cs_float *masktab;
     FUNC *ftp;
 } ZEROARR_TAB;
 
 
 static int32_t zeroarr_perf(CSOUND *csound, ZEROARR *p) {
-    MYFLT *data = p->arr->data;
+    cs_float *data = p->arr->data;
     // size_t numbytes = p->arr->allocated;
     // TODO: zero only the used part of an array
     // The size might change between cycles
@@ -4712,13 +4712,13 @@ static int32_t zeroarr_perf(CSOUND *csound, ZEROARR *p) {
     return OK;
 }
 
-inline void _zeroarr_masked(CSOUND *csound, ARRAYDAT *arr, MYFLT *mask) {
+inline void _zeroarr_masked(CSOUND *csound, ARRAYDAT *arr, cs_float *mask) {
     // This is only for 1D audio arrays
     // For audio arrays arrayMemberSize holds the number of bytes of an audio signal,
-    // that is ksmps * sizeof(MYFLT)
+    // that is ksmps * sizeof(cs_float)
     size_t arrsize = arr->sizes[0];
     int ksmpsbytes = arr->arrayMemberSize;
-    MYFLT *arrdata = arr->data;
+    cs_float *arrdata = arr->data;
     for(size_t i=0; i < arrsize; i++) {
         if(mask[i] > 0) {
             memset((char *)(arrdata) + i*ksmpsbytes, 0, ksmpsbytes);
@@ -4735,7 +4735,7 @@ static int32_t zeroarr_masked_perf(CSOUND *csound, ZEROARR *p) {
         PERFERRF("The mask is too small (mask size=%d, array size=%d)", p->mask->sizes[0], p->arr->sizes[0]);
         return NOTOK;
     }
-    MYFLT *maskdata = p->mask->data;
+    cs_float *maskdata = p->mask->data;
     _zeroarr_masked(csound, p->arr, maskdata);
     return OK;
 }
@@ -4764,8 +4764,8 @@ static int32_t zeroarr_maskedtab_perf(CSOUND *csound, ZEROARR_TAB *p) {
 typedef struct {
     OPDS h;
     ARRAYDAT *arr;
-    MYFLT *idx;
-    MYFLT *insig;
+    cs_float *idx;
+    cs_float *insig;
 } MIXARRAY1;
 
 // Mix an audio source with an element of an audio array
@@ -4779,8 +4779,8 @@ static int32_t mixarray_perf(CSOUND *csound, MIXARRAY1 *p) {
     }
     int ksmps = p->h.insdshead->ksmps;
     size_t samp0 = idx * ksmps;
-    MYFLT *dest = &(p->arr->data[samp0]);
-    MYFLT *source = p->insig;
+    cs_float *dest = &(p->arr->data[samp0]);
+    cs_float *source = p->insig;
     for(int i=0; i<ksmps; i++ ) {
         dest[i] += source[i];
     }
@@ -4789,15 +4789,15 @@ static int32_t mixarray_perf(CSOUND *csound, MIXARRAY1 *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *outidx;
-    MYFLT *ftnum;
-    MYFLT *x;
-    MYFLT *tolerance;
+    cs_float *outidx;
+    cs_float *ftnum;
+    cs_float *x;
+    cs_float *tolerance;
 } FTINDEX;
 
 static int32_t ftindex_perf(CSOUND *csound, FTINDEX *p) {
-    MYFLT x = *p->x;
-    MYFLT tolerance = *p->tolerance;
+    cs_float x = *p->x;
+    cs_float tolerance = *p->tolerance;
     if(tolerance <= 0) {
         tolerance = 1e-12;
     }
@@ -4807,7 +4807,7 @@ static int32_t ftindex_perf(CSOUND *csound, FTINDEX *p) {
         MSGF("table %d not found", (int)*p->ftnum);
         return NOTOK;
     }
-    MYFLT *data = ftp->ftable;
+    cs_float *data = ftp->ftable;
     size_t len = ftp->flen;
     for(size_t i=0; i<len; i++) {
         if(fabs(data[i] - x) < tolerance ) {
@@ -4822,23 +4822,23 @@ static int32_t ftindex_perf(CSOUND *csound, FTINDEX *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *outidx;
+    cs_float *outidx;
     ARRAYDAT *arr;
-    MYFLT *x;
-    MYFLT *tolerance;
+    cs_float *x;
+    cs_float *tolerance;
 } FINDARR;
 
 static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
     // p->h.insdshead->instr->psetdata
-    MYFLT *data = p->arr->data;
-    MYFLT x = *p->x;
-    MYFLT tolerance = *p->tolerance;
+    cs_float *data = p->arr->data;
+    cs_float x = *p->x;
+    cs_float tolerance = *p->tolerance;
     if(tolerance <= 0) {
         tolerance = 1e-12;
     }
     for(size_t i=0; i<p->arr->sizes[0]; i++) {
         if(fabs(data[i] - x) < tolerance ) {
-            *p->outidx = (MYFLT)i;
+            *p->outidx = (cs_float)i;
             return OK;
         }
     }
@@ -4848,7 +4848,7 @@ static int32_t findarr_perf(CSOUND *csound, FINDARR *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *outidx;
+    cs_float *outidx;
     ARRAYDAT *arr;
     STRINGDAT *val;
 } FINDARR_S;
@@ -4860,7 +4860,7 @@ static int32_t findarr_s(CSOUND *csound, FINDARR_S *p) {
     int32_t vallen = strlen(val);
     for(int32_t i=0; i<p->arr->sizes[0]; i++) {
         if(data[i].size >= vallen && strcmp(val, data[i].data) == 0) {
-            *p->outidx = (MYFLT)i;
+            *p->outidx = (cs_float)i;
             return OK;
         }
     }
@@ -4964,7 +4964,7 @@ static int32_t load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr, OPDS *ctx)
             nread = fread(tmp, 1, numbytes, fp);
             if (nread != numbytes) return 2;
             for(size_t i=0; i<numitems; i++) {
-                arr->data[i] = (MYFLT)tmp[i];
+                arr->data[i] = (cs_float)tmp[i];
             }
             csound->Free(csound, tmp);
         } else
@@ -4976,7 +4976,7 @@ static int32_t load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr, OPDS *ctx)
             nread = fread(tmp, 1, numbytes, fp);
             if (nread != numbytes) return 2;
             for(size_t i=0; i<numitems; i++) {
-                arr->data[i] = (MYFLT)tmp[i];
+                arr->data[i] = (cs_float)tmp[i];
             }
             // free(tmp);
             csound->Free(csound, tmp);
@@ -4986,7 +4986,7 @@ static int32_t load_npy_file(CSOUND *csound, FILE* fp, ARRAYDAT *arr, OPDS *ctx)
             nread = fread(tmp, 1, numbytes, fp);
             if (nread != numbytes) return 2;
             for(size_t i=0; i<numitems; i++) {
-                arr->data[i] = (MYFLT)tmp[i];
+                arr->data[i] = (cs_float)tmp[i];
             }
             // free(tmp);
             csound->Free(csound, tmp);
@@ -5128,7 +5128,7 @@ write_error:
 typedef struct {
     OPDS h;
     STRINGDAT *outfile;
-    MYFLT *itabnum;
+    cs_float *itabnum;
 } SAVENPYTAB;
 
 static int32_t savenpy_tab(CSOUND *csound, SAVENPYTAB *p) {
@@ -5182,8 +5182,8 @@ static int32_t rowsweightedsum_init(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
 
 
 static int32_t rowsweightedsum_perf(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
-    MYFLT *out = p->outrow->data;
-    MYFLT *mtx = p->rows->data;
+    cs_float *out = p->outrow->data;
+    cs_float *mtx = p->rows->data;
     int numrows = p->rows->sizes[0];
     int numweights = p->weights->sizes[0];
     int n = min(numrows, numweights);
@@ -5192,7 +5192,7 @@ static int32_t rowsweightedsum_perf(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
         out[j] = 0.;
     }
     for(int i=0; i < n; i++) {
-        MYFLT weight = p->weights->data[i];
+        cs_float weight = p->weights->data[i];
         for(int j=0; j < rowsize; j++) {
             out[j] += mtx[i*rowsize+j] * weight;
         }
@@ -5224,32 +5224,32 @@ static int32_t rowsweightedsum_i(CSOUND *csound, ROWSWEIGHTEDSUM *p) {
 typedef struct {
     OPDS h;
     ARRAYDAT *weights;
-    MYFLT *kx;
-    MYFLT *ky;
+    cs_float *kx;
+    cs_float *ky;
     ARRAYDAT *coords;
-    MYFLT *clamp;
+    cs_float *clamp;
     size_t numpoints;
-    double mindistances[PRESETINTERP_MAXPOINTS];
+    cs_double mindistances[PRESETINTERP_MAXPOINTS];
     int pointsize;
 
 } PRESETINTERP;
 
 
-static inline MYFLT euclidian_distance(MYFLT x0, MYFLT y0, MYFLT x1, MYFLT y1) {
-    MYFLT dx = x1 - x0;
-    MYFLT dy = y1 - y0;
+static inline cs_float euclidian_distance(cs_float x0, cs_float y0, cs_float x1, cs_float y1) {
+    cs_float dx = x1 - x0;
+    cs_float dy = y1 - y0;
     return sqrt(dx*dx + dy*dy);
 }
 
-static MYFLT distance_to_nearest_point(MYFLT x, MYFLT y, ARRAYDAT *arr, int pointsize) {
+static cs_float distance_to_nearest_point(cs_float x, cs_float y, ARRAYDAT *arr, int pointsize) {
     size_t n = arr->sizes[0];
     if(n == 0) {
         return -1.;
     }
-    MYFLT mindistance = INF;
-    MYFLT *data = arr->data;
-    MYFLT px, py;
-    MYFLT distance;
+    cs_float mindistance = INF;
+    cs_float *data = arr->data;
+    cs_float px, py;
+    cs_float distance;
     for(size_t i=0; i < n; i++) {
         px = data[i*pointsize];
         py = data[i*pointsize+1];
@@ -5261,10 +5261,10 @@ static MYFLT distance_to_nearest_point(MYFLT x, MYFLT y, ARRAYDAT *arr, int poin
 }
 
 
-static void calculate_mindistances(ARRAYDAT *points, double *mindistances, const int pointsize) {
+static void calculate_mindistances(ARRAYDAT *points, cs_double *mindistances, const int pointsize) {
     size_t numpoints = points->sizes[0] / pointsize;
-    double distance, ix, iy, jx, jy;
-    double *data = points->data;
+    cs_double distance, ix, iy, jx, jy;
+    cs_float *data = points->data;
 
     for(size_t i=0; i < numpoints; i++) {
         mindistances[i] = INF;
@@ -5286,15 +5286,15 @@ static void calculate_mindistances(ARRAYDAT *points, double *mindistances, const
     }
 }
 
-static MYFLT calculate_weight(int pointidx, PRESETINTERP *p, MYFLT cursorx, MYFLT cursory) {
-    MYFLT cursor_radius = distance_to_nearest_point(cursorx, cursory, p->coords, p->pointsize);
-    MYFLT point_radius = p->mindistances[pointidx];
-    double *coordsdata = p->coords->data;
-    MYFLT dist = euclidian_distance(cursorx, cursory, coordsdata[pointidx*p->pointsize], coordsdata[pointidx*p->pointsize+1]);
-    MYFLT intersection = point_radius + cursor_radius - dist;
-    MYFLT weight = intersection / point_radius;
+static cs_float calculate_weight(int pointidx, PRESETINTERP *p, cs_float cursorx, cs_float cursory) {
+    cs_float cursor_radius = distance_to_nearest_point(cursorx, cursory, p->coords, p->pointsize);
+    cs_float point_radius = p->mindistances[pointidx];
+    cs_float *coordsdata = p->coords->data;
+    cs_float dist = euclidian_distance(cursorx, cursory, coordsdata[pointidx*p->pointsize], coordsdata[pointidx*p->pointsize+1]);
+    cs_float intersection = point_radius + cursor_radius - dist;
+    cs_float weight = intersection / point_radius;
     if(p->pointsize == 3) {
-        MYFLT weightfactor = p->coords->data[pointidx*p->pointsize+2];
+        cs_float weightfactor = p->coords->data[pointidx*p->pointsize+2];
         weight *= weightfactor;
     }
 
@@ -5302,11 +5302,11 @@ static MYFLT calculate_weight(int pointidx, PRESETINTERP *p, MYFLT cursorx, MYFL
 }
 
 static void calculate_weights(PRESETINTERP *p) {
-    MYFLT weights[PRESETINTERP_MAXPOINTS];
-    MYFLT weight;
-    MYFLT x = *p->kx;
-    MYFLT y = *p->ky;
-    MYFLT sumweights = 0;
+    cs_float weights[PRESETINTERP_MAXPOINTS];
+    cs_float weight;
+    cs_float x = *p->kx;
+    cs_float y = *p->ky;
+    cs_float sumweights = 0;
     for(size_t i=0; i < p->numpoints; i++) {
         weight = max(0, calculate_weight(i, p, x, y));
         weights[i] = weight;
@@ -5321,9 +5321,9 @@ static void calculate_weights(PRESETINTERP *p) {
     for(size_t i=0; i < p->numpoints; i++) {
         weights[i] /= sumweights;
     }
-    MYFLT clamp = *p->clamp;
+    cs_float clamp = *p->clamp;
     if(clamp > 0) {
-        MYFLT sumvalid = 0.;
+        cs_float sumvalid = 0.;
         clamp = clamp/p->numpoints;
         for(size_t i=0; i < p->numpoints; i++) {
             weight = weights[i];
@@ -5391,10 +5391,10 @@ static int32_t presetinterpw_init(CSOUND *csound, PRESETINTERP *p) {
 // in: audio, amp: 0.0001, time: 0.1
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *ain;
-    MYFLT *kthresh;
-    MYFLT *ktime;
+    cs_float *out;
+    cs_float *ain;
+    cs_float *kthresh;
+    cs_float *ktime;
     int32_t counter;
 
 } DETECT_SILENCE;
@@ -5406,16 +5406,16 @@ static int32_t detectSilence_init(CSOUND *csound, DETECT_SILENCE *p) {
 
 
 static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
-    MYFLT thresh = *p->kthresh;
+    cs_float thresh = *p->kthresh;
     if(thresh < 0)
         thresh = 0.0001;
-    MYFLT ktime = *p->ktime;
+    cs_float ktime = *p->ktime;
     if(ktime < 0)
         ktime = 0.1;
     int endCounter = (int32_t)(LOCAL_SR(p) * ktime);
     int counter = p->counter;
-    MYFLT out = 0.;
-    const MYFLT* restrict in = p->ain;
+    cs_float out = 0.;
+    const cs_float* restrict in = p->ain;
 
     uint32_t n,
         nsmps = LOCAL_KSMPS(p),
@@ -5434,13 +5434,13 @@ static int32_t detectSilence_k_a(CSOUND *csound, DETECT_SILENCE *p) {
 
 
 static int32_t detectSilence_a_a(CSOUND *csound, DETECT_SILENCE *p) {
-    MYFLT thresh = *p->kthresh;
-    MYFLT ktime = *p->ktime;
+    cs_float thresh = *p->kthresh;
+    cs_float ktime = *p->ktime;
     int endCounter = (int32_t)(LOCAL_SR(p) * ktime);
     int counter = p->counter;
-    MYFLT val;
-    MYFLT *in = p->ain;
-    MYFLT *out = p->out;
+    cs_float val;
+    cs_float *in = p->ain;
+    cs_float *out = p->out;
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
@@ -5524,17 +5524,17 @@ static int32_t sflistprograms(CSOUND *csound, SFLISTPROGRAMS *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *leftout, *rightout;
-    MYFLT *leftin, *rightin;
-    MYFLT *kpos, *klevel;
-    MYFLT m_pos, m_level, m_leftamp, m_rightamp;
+    cs_float *leftout, *rightout;
+    cs_float *leftin, *rightin;
+    cs_float *kpos, *klevel;
+    cs_float m_pos, m_level, m_leftamp, m_rightamp;
 } BALANCE2;
 
 static int32_t balance2_init(CSOUND *csound, BALANCE2 *p) {
     IGN(csound);
     p->m_pos = clip(*p->kpos, 0, 1);
     p->m_level = *p->klevel;
-    MYFLT pos = p->m_pos;
+    cs_float pos = p->m_pos;
     p->m_leftamp = p->m_level * sin(PI2 * (1-pos));
     p->m_rightamp = p->m_level * sin(PI2*pos);
     return OK;
@@ -5545,19 +5545,19 @@ static int32_t balance2_ak(CSOUND *csound, BALANCE2 *p) {
     IGN(csound);
     int32_t nsmps = CS_KSMPS;
 
-    MYFLT *leftout = p->leftout;
-    MYFLT *rightout = p->rightout;
-    MYFLT *leftin = p->leftin;
-    MYFLT *rightin = p->rightin;
-    MYFLT pos = *(p->kpos);
-    MYFLT level = *p->klevel;
-    MYFLT leftamp = p->m_leftamp;
-    MYFLT rightamp = p->m_rightamp;
+    cs_float *leftout = p->leftout;
+    cs_float *rightout = p->rightout;
+    cs_float *leftin = p->leftin;
+    cs_float *rightin = p->rightin;
+    cs_float pos = *(p->kpos);
+    cs_float level = *p->klevel;
+    cs_float leftamp = p->m_leftamp;
+    cs_float rightamp = p->m_rightamp;
     if(pos != p->m_pos || p->m_level != level) {
-        MYFLT nextleftamp = level * sin(PI2 * (1-pos));
-        MYFLT nextrightamp = level * sin(PI2 * pos);
-        MYFLT leftampslope = (nextleftamp - leftamp) / nsmps;
-        MYFLT rightampslope = (nextrightamp - rightamp) / nsmps;
+        cs_float nextleftamp = level * sin(PI2 * (1-pos));
+        cs_float nextrightamp = level * sin(PI2 * pos);
+        cs_float leftampslope = (nextleftamp - leftamp) / nsmps;
+        cs_float rightampslope = (nextrightamp - rightamp) / nsmps;
         for(int i=0; i<nsmps; i++) {
             leftout[i] = leftin[i] * leftamp;
             rightout[i] = rightin[i] * rightamp;
@@ -5621,9 +5621,9 @@ void ZeroCrossing_next_a(ZeroCrossing* unit, int inNumSamples) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in;
-    MYFLT previn, prevfrac, level;
+    cs_float *out;
+    cs_float *in;
+    cs_float previn, prevfrac, level;
     size_t counter;
 } ZEROCROSSING;
 
@@ -5637,22 +5637,22 @@ static int32_t zerocrossing_init(CSOUND *csound, ZEROCROSSING *p) {
 }
 
 static int32_t zerocrossing_a_a(CSOUND *csound, ZEROCROSSING *p) {
-    MYFLT* out = p->out;
-    MYFLT* in = p->in;
-    MYFLT previn = p->previn;
-    MYFLT prevfrac = p->prevfrac;
-    MYFLT level = p->level;
-    MYFLT curin;
+    cs_float* out = p->out;
+    cs_float* in = p->in;
+    cs_float previn = p->previn;
+    cs_float prevfrac = p->prevfrac;
+    cs_float level = p->level;
+    cs_float curin;
     size_t counter = p->counter;
     size_t nsmps = CS_KSMPS;
-    // MYFLT sr = csound->GetSr(csound);
-    MYFLT sr = LOCAL_SR(p);
+    // cs_float sr = csound->GetSr(csound);
+    cs_float sr = LOCAL_SR(p);
 
     for(size_t i=0; i<nsmps; i++) {
         counter++;
         curin = in[i];
         if(counter > 4 && previn<0 && curin >0) {
-            MYFLT frac = -previn / (curin - previn);
+            cs_float frac = -previn / (curin - previn);
             level = sr / (frac + counter - prevfrac);
             prevfrac = frac;
             counter = 0;
@@ -5690,9 +5690,9 @@ typedef struct {
 
 typedef struct {
     char name[32];
-    MYFLT freqs[MAX_VOWELS][5];
-    MYFLT bws[MAX_VOWELS][5];
-    MYFLT amps[MAX_VOWELS][5];
+    cs_float freqs[MAX_VOWELS][5];
+    cs_float bws[MAX_VOWELS][5];
+    cs_float amps[MAX_VOWELS][5];
 } vowelspeaker;
 
 static const vowelspeaker voweldb[] = {
@@ -5976,12 +5976,12 @@ static int32_t vowelsdb_i(CSOUND *csound, VOWELSDB *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *kfreq;
-    MYFLT *initphase;
-    MYFLT accum;
+    cs_float *out;
+    cs_float *kfreq;
+    cs_float *initphase;
+    cs_float accum;
     size_t counter;
-    MYFLT lastfreq;
+    cs_float lastfreq;
 } MTRO;
 
 static int32_t mtro_init(CSOUND *csound, MTRO *p) {
@@ -5993,15 +5993,15 @@ static int32_t mtro_init(CSOUND *csound, MTRO *p) {
 
 static int32_t mtro(CSOUND *csound, MTRO *p) {
     IGN(csound);
-    MYFLT freq = *p->kfreq;
+    cs_float freq = *p->kfreq;
     if(freq != p->lastfreq) {
-        MYFLT lastdx = p->lastfreq * CS_ONEDKR;
+        cs_float lastdx = p->lastfreq * CS_ONEDKR;
         p->accum = p->accum + p->counter * lastdx;
         p->counter = 0;
         p->lastfreq = freq;
     }
-    MYFLT dx = freq * CS_ONEDKR;
-    MYFLT phase = p->accum + p->counter * dx;
+    cs_float dx = freq * CS_ONEDKR;
+    cs_float phase = p->accum + p->counter * dx;
     if(phase >= 1.) {
         p->accum = phase - 1.0;
         p->counter = 0;
@@ -6016,7 +6016,7 @@ static int32_t mtro(CSOUND *csound, MTRO *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *instrnum;
+    cs_float *instrnum;
     STRINGDAT *instrname;
 } NAMETOINSTRNUM;
 
@@ -6026,7 +6026,7 @@ static int32_t nametoinstrnum(CSOUND *csound, NAMETOINSTRNUM *p) {
     if(instrnum == NOT_AN_INSTRUMENT) {
         *p->instrnum = -1;
     } else {
-        *p->instrnum = (MYFLT)instrnum;
+        *p->instrnum = (cs_float)instrnum;
     }
     return OK;
 }
@@ -6038,12 +6038,12 @@ static int32_t nametoinstrnum(CSOUND *csound, NAMETOINSTRNUM *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *kcursor;
-    MYFLT *pargs [VARGMAX-5];
-    MYFLT nextval;
+    cs_float *out;
+    cs_float *kcursor;
+    cs_float *pargs [VARGMAX-5];
+    cs_float nextval;
     size_t nextidx;
-    MYFLT lastcursor;
+    cs_float lastcursor;
     size_t numargs;
 } CUETRIG;
 
@@ -6056,7 +6056,7 @@ static int32_t cuetrig_init(CSOUND *csound, CUETRIG *p) {
 }
 
 static int32_t cuetrig(CSOUND *csound, CUETRIG *p) {
-    MYFLT cursor = *(p->kcursor);
+    cs_float cursor = *(p->kcursor);
     if(cursor < p->lastcursor) {
         p->nextidx = 0;
         p->nextval = *(p->pargs[0]);
@@ -6088,24 +6088,24 @@ static int32_t cuetrig(CSOUND *csound, CUETRIG *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *gain;
-    MYFLT *mingain;
-    MYFLT *exp;
-    MYFLT *minvel;
-    MYFLT *round;
+    cs_float *out;
+    cs_float *gain;
+    cs_float *mingain;
+    cs_float *exp;
+    cs_float *minvel;
+    cs_float *round;
 
 } GAINTOVEL;
 
 static int32_t gaintovel(CSOUND *csound, GAINTOVEL *p) {
-    MYFLT gain = *p->gain;
-    MYFLT minvel = max(1., *p->minvel);
-    MYFLT vel;
+    cs_float gain = *p->gain;
+    cs_float minvel = max(1., *p->minvel);
+    cs_float vel;
     if(gain <= 0.) {
         vel = 0.;
     } else {
-        MYFLT mingain = *p->mingain;
-        MYFLT relgain = (gain - mingain) / (1. - mingain);
+        cs_float mingain = *p->mingain;
+        cs_float relgain = (gain - mingain) / (1. - mingain);
         if(relgain <= 0.) {
             vel = minvel;
         } else {
@@ -6122,19 +6122,19 @@ static int32_t gaintovel(CSOUND *csound, GAINTOVEL *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *x;
-    MYFLT *exp;
-    MYFLT *x0;
-    MYFLT *x1;
-    MYFLT *y0;
-    MYFLT *y1;
+    cs_float *out;
+    cs_float *x;
+    cs_float *exp;
+    cs_float *x0;
+    cs_float *x1;
+    cs_float *y0;
+    cs_float *y1;
 } LINEXP;
 
 
 static int32_t linexp(CSOUND *csound, LINEXP *p) {
-    MYFLT x0 = *p->x0, x1 = *p->x1, x = *p->x, y0 = *p->y0;
-    MYFLT dx = (x - x0) / (x1 - x0);
+    cs_float x0 = *p->x0, x1 = *p->x1, x = *p->x, y0 = *p->y0;
+    cs_float dx = (x - x0) / (x1 - x0);
     if(dx < 0) {
         return NOTOK;
     }
@@ -6148,15 +6148,15 @@ static int32_t linexp(CSOUND *csound, LINEXP *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in;
-    MYFLT *shift;       // in semitones
-    MYFLT *windowdur;   // in seconds
-    MYFLT *xfade;       // in samples
-    MYFLT r0, r1;
+    cs_float *out;
+    cs_float *in;
+    cs_float *shift;       // in semitones
+    cs_float *windowdur;   // in seconds
+    cs_float *xfade;       // in samples
+    cs_float r0, r1;
     AUXCH vec;
     int iota;
-    MYFLT freqratio;
+    cs_float freqratio;
 
 } PITCHSHIFT;
 
@@ -6165,7 +6165,7 @@ static void auxinit(CSOUND *csound, AUXCH *ch, size_t numitems) {
     // do not reallocate if already allocated
     if(ch->auxp != NULL)
         return;
-    size_t numbytes = sizeof(MYFLT) * numitems;
+    size_t numbytes = sizeof(cs_float) * numitems;
     csound->AuxAlloc(csound, numbytes, ch);
     memset(ch->auxp, 0, numbytes);
 }
@@ -6186,46 +6186,46 @@ static int32_t faust_pitchshift_init(CSOUND *csound, PITCHSHIFT *p) {
 
 static int32_t faust_pitchshift(CSOUND *csound, PITCHSHIFT *p) {
     IGN(csound);
-    MYFLT sr = LOCAL_SR(p);
-    MYFLT windowdur = *p->windowdur;
+    cs_float sr = LOCAL_SR(p);
+    cs_float windowdur = *p->windowdur;
     if(windowdur <= 0)
         windowdur = 0.02;
-    MYFLT xfade = *p->xfade;
+    cs_float xfade = *p->xfade;
     if(xfade < 0.)
         xfade = floor(windowdur * sr / 4.);
     size_t nsmps = CS_KSMPS;
-    MYFLT nsmpscompl = 1. / nsmps;
-    MYFLT *vec = (MYFLT*)p->vec.auxp;
-    MYFLT *out = p->out;
-    MYFLT *in = p->in;
-    MYFLT freqratio = p->freqratio;
-    MYFLT freqratio1 = pow(2.0, 0.08333333 * (*p->shift));
-    MYFLT xfadesamples = floor(xfade);
-    MYFLT winsamples = floor(windowdur * sr);
+    cs_float nsmpscompl = 1. / nsmps;
+    cs_float *vec = (cs_float*)p->vec.auxp;
+    cs_float *out = p->out;
+    cs_float *in = p->in;
+    cs_float freqratio = p->freqratio;
+    cs_float freqratio1 = pow(2.0, 0.08333333 * (*p->shift));
+    cs_float xfadesamples = floor(xfade);
+    cs_float winsamples = floor(windowdur * sr);
 
     // first time
     if(freqratio == 0.) {
         freqratio = freqratio1;
     }
 
-    MYFLT freqratiodelta = (freqratio1 - freqratio) * nsmpscompl;
+    cs_float freqratiodelta = (freqratio1 - freqratio) * nsmpscompl;
 
-    MYFLT xfadeperiod = 1.0 / xfadesamples;
+    cs_float xfadeperiod = 1.0 / xfadesamples;
     int iota = p->iota;
-    MYFLT r0 = p->r0;
-    MYFLT r1 = p->r1;
+    cs_float r0 = p->r0;
+    cs_float r1 = p->r1;
     // fSlow0: shiftratio, fSlow1: window; fSlow2: xfadeperiod
     for(size_t i=0; i<nsmps; i++) {
         r0 = fmod(winsamples + (r1 + 1. - freqratio), winsamples);
-        MYFLT fadefactor = fmin(xfadeperiod * r0, 1.);
+        cs_float fadefactor = fmin(xfadeperiod * r0, 1.);
         vec[iota & 131071] = in[i];
-        MYFLT r0end = winsamples + r0;
+        cs_float r0end = winsamples + r0;
         int r0endint = (int)(r0end);
-        MYFLT r0endfloor = floor(r0end);
-        MYFLT tmp5 = 1. - r0;
+        cs_float r0endfloor = floor(r0end);
+        cs_float tmp5 = 1. - r0;
         int r0int = (int)(r0);
-        MYFLT r0floor = floor(r0);
-        out[i] = (MYFLT)(
+        cs_float r0floor = floor(r0);
+        out[i] = (cs_float)(
             (vec[(iota - CLAMP(r0int, 0, 65537)) & 131071] * (r0floor + tmp5) + (r0 - r0floor) * vec[(iota - CLAMP(r0int+1, 0, 65537)) & 131071]) * fadefactor +
             (vec[(iota - CLAMP(r0endint, 0, 65537)) & 131071] * (r0endfloor + tmp5 - winsamples) + (winsamples + (r0 - r0endfloor)) * vec[(iota - CLAMP(r0endint+1, 0, 65537)) & 131071]) * (1.0 - fadefactor));
 
@@ -6247,22 +6247,22 @@ static int32_t faust_pitchshift(CSOUND *csound, PITCHSHIFT *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *kwhich;
-    MYFLT *sources[128];
+    cs_float *out;
+    cs_float *kwhich;
+    cs_float *sources[128];
 } PICKSOURCE;
 
 
 static int32_t picksource_k_perf(CSOUND *csound, PICKSOURCE *p) {
-    MYFLT *out = p->out;
+    cs_float *out = p->out;
     SAMPLE_ACCURATE(out);
     int32_t numsources = ((int32_t) p->INOCOUNT) - 1;                                             \
     int32_t which = (int32_t)*p->kwhich;
     if(which < 0 || which >= numsources) {
         return PERFERRF("Invalid source index %d, must be between 0 and %d", which, numsources - 1);
     }
-    MYFLT *in = p->sources[which];
-    memcpy(p->out + offset, in + offset, (nsmps - offset)*sizeof(MYFLT));
+    cs_float *in = p->sources[which];
+    memcpy(p->out + offset, in + offset, (nsmps - offset)*sizeof(cs_float));
     return OK;
 }
 
@@ -6270,10 +6270,10 @@ static int32_t picksource_k_perf(CSOUND *csound, PICKSOURCE *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in0;
-    MYFLT *in1;
-    MYFLT *in2;
+    cs_float *out;
+    cs_float *in0;
+    cs_float *in1;
+    cs_float *in2;
 } TESTOPCODE;
 
 
@@ -6292,11 +6292,11 @@ static int32_t testopcode_init(CSOUND *csound, TESTOPCODE *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     PVSDAT *fin;
-    MYFLT *minfreq;
-    MYFLT *maxfreq;
-    MYFLT old;
+    cs_float *minfreq;
+    cs_float *maxfreq;
+    cs_float old;
     uint32_t lastframe;
 } PVSFLATNESS;
 
@@ -6318,8 +6318,8 @@ static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
         return OK;
     }
 
-    MYFLT minfreq = *p->minfreq;
-    MYFLT maxfreq = *p->maxfreq;
+    cs_float minfreq = *p->minfreq;
+    cs_float maxfreq = *p->maxfreq;
     if (maxfreq <= 0)
         maxfreq = LOCAL_SR(p) / 2;
     if (minfreq <= 0)
@@ -6354,14 +6354,14 @@ static int32_t pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
         numbins++;
     }
 
-    MYFLT flatness;
+    cs_float flatness;
     if (numbins == 0) {
         flatness = 1.;
     } else {
         float nb    = (float)numbins;
         float gmean = expf(geommean / nb);
         float amean = mean / nb;
-        flatness    = (amean == 0.f ? 1. : (MYFLT)(gmean / amean));
+        flatness    = (amean == 0.f ? 1. : (cs_float)(gmean / amean));
     }
 
     p->old  = flatness;
@@ -6376,8 +6376,8 @@ static int32_t _pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
         *p->out = p->old;
         return OK;
     }
-    MYFLT minfreq = *p->minfreq;
-    MYFLT maxfreq = *p->maxfreq;
+    cs_float minfreq = *p->minfreq;
+    cs_float maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
         maxfreq = LOCAL_SR(p) / 2;;
     }
@@ -6406,7 +6406,7 @@ static int32_t _pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
     }
     geommean = exp(geommean/numbins);
     mean /= numbins;
-    MYFLT flatness = (mean == 0. ? 1. : (geommean / mean));
+    cs_float flatness = (mean == 0. ? 1. : (geommean / mean));
     p->old = flatness;
     *p->out = flatness;
     p->lastframe = p->fin->framecount;
@@ -6416,13 +6416,13 @@ static int32_t _pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     PVSDAT *fin;
-    MYFLT *rolloff_factor;
-    MYFLT *minfreq;
-    MYFLT *maxfreq;
-    MYFLT *silence;
-    MYFLT old;
+    cs_float *rolloff_factor;
+    cs_float *minfreq;
+    cs_float *maxfreq;
+    cs_float *silence;
+    cs_float old;
     uint32_t lastframe;
     int32 last_rolloff_bin;
 } PVSROLLOFF;
@@ -6445,9 +6445,9 @@ static int32_t pvsrolloff_perf(CSOUND *csound, PVSROLLOFF *p) {
         *p->out = p->old;
         return OK;
     }
-    MYFLT minfreq = *p->minfreq;
-    MYFLT maxfreq = *p->maxfreq;
-    MYFLT silenceamp = *p->silence;
+    cs_float minfreq = *p->minfreq;
+    cs_float maxfreq = *p->maxfreq;
+    cs_float silenceamp = *p->silence;
     silenceamp = silenceamp < 0.000001 ? 0.000001 : silenceamp;  // -120 dB
     if(maxfreq <= 0) {
         maxfreq = LOCAL_SR(p) / 2;;
@@ -6457,7 +6457,7 @@ static int32_t pvsrolloff_perf(CSOUND *csound, PVSROLLOFF *p) {
     }
     float *fin = (float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
-    MYFLT total_energy = 0.;
+    cs_float total_energy = 0.;
     int32_t minbin = 0, maxbin = N - 2;
     for(i = 2; i < N-2; i+=2) {
         float freq = fin[i+1];
@@ -6469,15 +6469,15 @@ static int32_t pvsrolloff_perf(CSOUND *csound, PVSROLLOFF *p) {
             maxbin = i;
             break;
         }
-        MYFLT amp = fin[i];
+        cs_float amp = fin[i];
         total_energy += amp*amp;  // we use the power spectrum
     }
-    MYFLT rolloff_freq = 0.;
+    cs_float rolloff_freq = 0.;
     if(total_energy > silenceamp) {
-        MYFLT threshold = total_energy * *(p->rolloff_factor);
-        MYFLT accum = 0.;
+        cs_float threshold = total_energy * *(p->rolloff_factor);
+        cs_float accum = 0.;
         for(i = minbin + 2; i < maxbin; i+= 2) {
-            MYFLT amp = fin[i];
+            cs_float amp = fin[i];
             accum += amp * amp;
             if(accum >= threshold) {
                 rolloff_freq = fin[i+1];
@@ -6549,11 +6549,11 @@ void SpecFlatness_next(SpecFlatness* unit, int inNumSamples) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     PVSDAT *fin;
-    MYFLT *minfreq;
-    MYFLT *maxfreq;
-    MYFLT old;
+    cs_float *minfreq;
+    cs_float *maxfreq;
+    cs_float old;
     uint32_t lastframe;
 } PVSCREST;
 
@@ -6575,17 +6575,17 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
     }
     float *fin = (float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
-    MYFLT minfreq = *p->minfreq;
-    MYFLT maxfreq = *p->maxfreq;
+    cs_float minfreq = *p->minfreq;
+    cs_float maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
         maxfreq = LOCAL_SR(p) / 2;
     }
     if(minfreq <= 0) {
         minfreq = 10.;
     }
-    MYFLT peak = 0.;
+    cs_float peak = 0.;
     uint32_t numbins = 0;
-    MYFLT total = 0.;
+    cs_float total = 0.;
 
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
@@ -6594,14 +6594,14 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
         if(freq > maxfreq)
             break;
         float amp = fin[i];
-        MYFLT sqramp = amp*amp;
+        cs_float sqramp = amp*amp;
         if(sqramp >= peak) {
             peak = sqramp;
         }
         total += sqramp;
         numbins++;
     }
-    MYFLT scf = total == 0. ? 1. : peak * (numbins - 1) / total;
+    cs_float scf = total == 0. ? 1. : peak * (numbins - 1) / total;
     p->old = scf;
     *p->out = scf;
     p->lastframe = p->fin->framecount;
@@ -6668,7 +6668,7 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
 
 typedef struct {
 	OPDS h;
-    MYFLT *framecount;
+    cs_float *framecount;
 	PVSDAT *fin;
 } PVSFRAMECOUNT;
 
@@ -6679,12 +6679,12 @@ static int32_t pvsframecount_perf(CSOUND *csound, PVSFRAMECOUNT *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     PVSDAT *fin;
-    MYFLT *inumbins;
-    MYFLT *minfreq;
-    MYFLT *maxfreq;
-    MYFLT old;
+    cs_float *inumbins;
+    cs_float *minfreq;
+    cs_float *maxfreq;
+    cs_float old;
     uint32_t lastframe;
     int32 numbins;
     int32 relative;
@@ -6722,15 +6722,15 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
     const float* restrict fin = (float * restrict)p->fin->frame.auxp;
     // fin = __builtin_assume_aligned(fin, 32); // AVX
     int32 i, N = p->fin->N;
-    MYFLT minfreq = *p->minfreq;
-    MYFLT maxfreq = *p->maxfreq;
+    cs_float minfreq = *p->minfreq;
+    cs_float maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
         maxfreq = LOCAL_SR(p) / 2;
     }
     if(minfreq <= 0) {
         minfreq = 10.;
     }
-    MYFLT * restrict heaparr = heap->arr;
+    cs_float * restrict heaparr = heap->arr;
     float totalamp = 0.;
 
     for(i = 2; i < N - 2; i += 2) {
@@ -6750,7 +6750,7 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
             }
         }
     }
-    MYFLT total = 0.;
+    cs_float total = 0.;
     for(i = 0; i < heap->size; i++) {
         total += heaparr[i];
     }
@@ -6765,11 +6765,11 @@ static int32_t pvsmagsumn_perf(CSOUND *csound, PVSMAGSUMN *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     PVSDAT *fin;
-    MYFLT *minfreq;
-    MYFLT *maxfreq;
-    MYFLT old;
+    cs_float *minfreq;
+    cs_float *maxfreq;
+    cs_float old;
     uint32_t lastframe;
 } PVSENTROPY;
 
@@ -6792,8 +6792,8 @@ static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
     }
     const float * restrict fin = (float * restrict)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
-    MYFLT minfreq = *p->minfreq;
-    MYFLT maxfreq = *p->maxfreq;
+    cs_float minfreq = *p->minfreq;
+    cs_float maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
         maxfreq = LOCAL_SR(p) / 2;
     }
@@ -6841,11 +6841,11 @@ static int32_t pvsentropy_perf(CSOUND *csound, PVSENTROPY *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     PVSDAT *fin;
-    MYFLT *minfreq;
-    MYFLT *maxfreq;
-    MYFLT old;
+    cs_float *minfreq;
+    cs_float *maxfreq;
+    cs_float old;
     uint32_t lastframe;
 } PVSMAGSUM;
 
@@ -6867,8 +6867,8 @@ static int32_t pvsmagsum_perf(CSOUND *csound, PVSMAGSUM *p) {
     }
     float *fin = (float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
-    MYFLT minfreq = *p->minfreq;
-    MYFLT maxfreq = *p->maxfreq;
+    cs_float minfreq = *p->minfreq;
+    cs_float maxfreq = *p->maxfreq;
     if(maxfreq <= 0) {
         maxfreq = LOCAL_SR(p) / 2;;
     ;
@@ -6876,7 +6876,7 @@ static int32_t pvsmagsum_perf(CSOUND *csound, PVSMAGSUM *p) {
     if(minfreq <= 0) {
         minfreq = 10.;
     }
-    MYFLT total = 0.;
+    cs_float total = 0.;
     for(i = 2; i < N - 2; i += 2) {
         float freq = fin[i+1];
         if(freq < minfreq)
@@ -6898,8 +6898,8 @@ typedef struct {
     OPDS h;
     STRINGDAT *outstr;
     STRINGDAT *instr;
-    MYFLT *num;
-    MYFLT *imaxlen;
+    cs_float *num;
+    cs_float *imaxlen;
     int32 maxlen;
 } STRMUL;
 
@@ -6961,7 +6961,7 @@ static int32_t strmul_i(CSOUND *csound, STRMUL *p) {
  *
  * We use the threshold t as x and compute proportional weights.
  * ------------------------------------------------------------------------- */
-static inline MYFLT beta_pdf(MYFLT x, MYFLT a, MYFLT b)
+static inline cs_float beta_pdf(cs_float x, cs_float a, cs_float b)
 {
     if (x <= 0.0 || x >= 1.0) return 0.0;
     return pow(x, a - 1.0) * pow(1.0 - x, b - 1.0);
@@ -6971,17 +6971,17 @@ static inline MYFLT beta_pdf(MYFLT x, MYFLT a, MYFLT b)
  * Helper: parabolic interpolation to refine the lag estimate.
  * Returns sub-sample lag at the minimum around index tau.
  * ------------------------------------------------------------------------- */
-static inline MYFLT parabolic_interpolation(MYFLT *d, int tau, int len)
+static inline cs_float parabolic_interpolation(cs_float *d, int tau, int len)
 {
     if (tau <= 0 || tau >= len - 1)
-        return (MYFLT)tau;
-    MYFLT s0 = d[tau - 1];
-    MYFLT s1 = d[tau];
-    MYFLT s2 = d[tau + 1];
-    MYFLT denom = 2.0 * (s0 - 2.0 * s1 + s2);
+        return (cs_float)tau;
+    cs_float s0 = d[tau - 1];
+    cs_float s1 = d[tau];
+    cs_float s2 = d[tau + 1];
+    cs_float denom = 2.0 * (s0 - 2.0 * s1 + s2);
     if (fabs(denom) < 1e-10)
-        return (MYFLT)tau;
-    return (MYFLT)tau + (s0 - s2) / denom;
+        return (cs_float)tau;
+    return (cs_float)tau + (s0 - s2) / denom;
 }
 
 /* -------------------------------------------------------------------------
@@ -6994,20 +6994,20 @@ static inline MYFLT parabolic_interpolation(MYFLT *d, int tau, int len)
  * autocorrelation trick (r[0] + r[tau] - 2*r[tau] via IFFT of |X|^2),
  * which reduces it to O(W log W).
  * ------------------------------------------------------------------------- */
-static void compute_yin_cmnd(MYFLT *x, MYFLT *diff, MYFLT *cmnd,
+static void compute_yin_cmnd(cs_float *x, cs_float *diff, cs_float *cmnd,
                               int W, int taumax)
 {
     int tau, j;
-    MYFLT running_sum = 0.0;
+    cs_float running_sum = 0.0;
 
     diff[0] = 0.0;
     cmnd[0] = 1.0;
 
     for (tau = 1; tau <= taumax; tau++) {
-        MYFLT s = 0.0;
+        cs_float s = 0.0;
         int limit = W - tau;
         for (j = 0; j < limit; j++) {
-            MYFLT delta = x[j] - x[j + tau];
+            cs_float delta = x[j] - x[j + tau];
             s += delta * delta;
         }
         diff[tau] = s;
@@ -7015,19 +7015,19 @@ static void compute_yin_cmnd(MYFLT *x, MYFLT *diff, MYFLT *cmnd,
         if (running_sum < 1e-20)
             cmnd[tau] = 1.0;
         else
-            cmnd[tau] = s * (MYFLT)tau / running_sum;
+            cmnd[tau] = s * (cs_float)tau / running_sum;
     }
 }
 
 
-static void precalculate_thresholds(MYFLT *beta_weights, MYFLT *thresholds) {
-    MYFLT delta_threshold = PYIN_THRESHOLD_MAX - PYIN_THRESHOLD_MIN;
-    MYFLT weight_sum = 0.;
-    MYFLT denom = (MYFLT)(PYIN_N_THRESHOLDS - 1);
+static void precalculate_thresholds(cs_float *beta_weights, cs_float *thresholds) {
+    cs_float delta_threshold = PYIN_THRESHOLD_MAX - PYIN_THRESHOLD_MIN;
+    cs_float weight_sum = 0.;
+    cs_float denom = (cs_float)(PYIN_N_THRESHOLDS - 1);
     for (int t = 0; t < PYIN_N_THRESHOLDS; t++) {
-        MYFLT thresh = PYIN_THRESHOLD_MIN + (MYFLT)t * delta_threshold / denom;
+        cs_float thresh = PYIN_THRESHOLD_MIN + (cs_float)t * delta_threshold / denom;
         thresholds[t] = thresh;
-        MYFLT weight = beta_pdf(thresh, PYIN_BETA_A, PYIN_BETA_B);
+        cs_float weight = beta_pdf(thresh, PYIN_BETA_A, PYIN_BETA_B);
         beta_weights[t] = weight;
         weight_sum += weight;
     }
@@ -7048,14 +7048,14 @@ static void precalculate_thresholds(MYFLT *beta_weights, MYFLT *thresholds) {
  *
  * Returns the number of candidates found.
  * ------------------------------------------------------------------------- */
-static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
-                                 MYFLT sr,
-                                 MYFLT *out_freq, MYFLT *out_prob,
-                                 int maxcands, MYFLT *beta_weights, MYFLT *thresholds)
+static int pyin_pitch_candidates(cs_float *cmnd, int taumin, int taumax,
+                                 cs_float sr,
+                                 cs_float *out_freq, cs_float *out_prob,
+                                 int maxcands, cs_float *beta_weights, cs_float *thresholds)
 {
     int n_cands = 0;
     taumax = taumax < 4095 ? taumax : 4095;
-    MYFLT tau_prob[4096] = {0};
+    cs_float tau_prob[4096] = {0};
 
     /*
      * For each threshold, find the first lag in [taumin, taumax] where
@@ -7066,8 +7066,8 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
     /* Temporary accumulator indexed by tau */
     int tau_len = taumax + 1;
     for (int t = 0; t < PYIN_N_THRESHOLDS; t++) {
-        MYFLT thr = thresholds[t];
-        MYFLT w = beta_weights[t];
+        cs_float thr = thresholds[t];
+        cs_float w = beta_weights[t];
         int tau;
         for (tau = taumin; tau <= taumax; tau++) {
             if (cmnd[tau] < thr) {
@@ -7086,18 +7086,18 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
      * in tau_prob. Each peak becomes one candidate
      */
     for (int tau = taumin + 1; tau < taumax && n_cands < maxcands; tau++) {
-        MYFLT prob = tau_prob[tau];
+        cs_float prob = tau_prob[tau];
         // if (tau_prob[tau] > 0.0 &&
         //     tau_prob[tau] >= tau_prob[tau - 1] &&
         //     tau_prob[tau] >= tau_prob[tau + 1])
         if(prob > 0.0 && prob >= tau_prob[tau - 1] && prob >= tau_prob[tau + 1])
         {
             /* Parabolic interpolation on cmnd for the lag */
-            MYFLT refined_tau = parabolic_interpolation(cmnd, tau, tau_len);
-            MYFLT freq = (refined_tau > 0.0) ? sr / refined_tau : 0.0;
+            cs_float refined_tau = parabolic_interpolation(cmnd, tau, tau_len);
+            cs_float freq = (refined_tau > 0.0) ? sr / refined_tau : 0.0;
 
             /* Accumulate neighbouring probability */
-            // MYFLT prob = tau_prob[tau];
+            // cs_float prob = tau_prob[tau];
             if (tau > 0)         prob += tau_prob[tau - 1] * 0.5;
             if (tau < taumax)    prob += tau_prob[tau + 1] * 0.5;
             if (prob > 1.0)      prob = 1.0;
@@ -7110,7 +7110,7 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
 
     // If nothing found but some tau_prob exists, take the highest
     if (n_cands == 0) {
-        MYFLT best = 0.0;
+        cs_float best = 0.0;
         int best_tau = -1;
         for (int tau = taumin; tau <= taumax; tau++) {
             if (tau_prob[tau] > best) {
@@ -7119,7 +7119,7 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
             }
         }
         if (best_tau > 0 && best > PYIN_MINTAU) {
-            MYFLT refined_tau = parabolic_interpolation(cmnd, best_tau, tau_len);
+            cs_float refined_tau = parabolic_interpolation(cmnd, best_tau, tau_len);
             out_freq[0] = (refined_tau > 0.0) ? sr / refined_tau : 0.0;
             out_prob[0] = best;
             n_cands = 1;
@@ -7135,19 +7135,19 @@ static int pyin_pitch_candidates(MYFLT *cmnd, int taumin, int taumax,
  * semitone
  * ------------------------------------------------------------------------- */
 
-static inline int freq_to_state(MYFLT freq, MYFLT a4, int hmmstates, int subbins)
+static inline int freq_to_state(cs_float freq, cs_float a4, int hmmstates, int subbins)
 {
     if (freq <= 0.0) return 0;  // check at the callsize that freq is positive
-    MYFLT midi = 12.0 * log2(freq / a4) + 69.0;
+    cs_float midi = 12.0 * log2(freq / a4) + 69.0;
     int state = (int)round((midi - PYIN_MIDI_MIN) * subbins);
     if (state < 0) state = 0;
     if (state >= hmmstates) state = hmmstates - 1;
     return state;  // 0 <= state < hmmstates
 }
 
-static inline MYFLT state_to_freq(int state, MYFLT a4, int subbins)
+static inline cs_float state_to_freq(int state, cs_float a4, int subbins)
 {
-    MYFLT midi = PYIN_MIDI_MIN + (MYFLT)state / (MYFLT)subbins;
+    cs_float midi = PYIN_MIDI_MIN + (cs_float)state / (cs_float)subbins;
     return a4 * pow(2.0, (midi - 69.0) / 12.0);
 }
 
@@ -7157,12 +7157,12 @@ static inline MYFLT state_to_freq(int state, MYFLT a4, int subbins)
  * We use a simple Gaussian in pitch distance (in semitones).
  * Self-transitions get extra weight via PYIN_TRANS_SELF.
  * ------------------------------------------------------------------------- */
-static inline MYFLT transition_weight(int i, int j, MYFLT trans_self, int subbins)
+static inline cs_float transition_weight(int i, int j, cs_float trans_self, int subbins)
 {
     if (i == j) return trans_self;
-    MYFLT dist_semitones = fabs((MYFLT)(i - j)) / (MYFLT)subbins;
+    cs_float dist_semitones = fabs((cs_float)(i - j)) / (cs_float)subbins;
     /* Gaussian with sigma=1 semitone */
-    MYFLT w = (1.0 - trans_self) * exp(-0.5 * dist_semitones * dist_semitones);
+    cs_float w = (1.0 - trans_self) * exp(-0.5 * dist_semitones * dist_semitones);
     return w;
 }
 
@@ -7181,27 +7181,27 @@ static inline MYFLT transition_weight(int i, int j, MYFLT trans_self, int subbin
 #define GAUSS_1 0.60653065971263342  /* exp(-0.5) */
 
 static void hmm_forward_step(
-    MYFLT *fwd_prev,
-    MYFLT *fwd_cur,
-    MYFLT *cand_freq,
-    MYFLT *cand_prob,
+    cs_float *fwd_prev,
+    cs_float *fwd_cur,
+    cs_float *cand_freq,
+    cs_float *cand_prob,
     int n_cands,
-    MYFLT a4,
-    MYFLT transprob,
+    cs_float a4,
+    cs_float transprob,
     int drift_semitones,
     int hmm_states,
     int subbins,
-    MYFLT *transition_matrix)
+    cs_float *transition_matrix)
 {
     int s, c, j;
 
     // observation likelihoods
-    MYFLT obs[PYIN_MAX_HMM_STATES] = {0};
+    cs_float obs[PYIN_MAX_HMM_STATES] = {0};
 
     if(transprob == 0.)
         transprob = 0.99;
     for (c = 0; c < n_cands; c++) {
-        MYFLT freq = cand_freq[c];
+        cs_float freq = cand_freq[c];
         if(freq <= 0)
             continue;
         int st = freq_to_state(cand_freq[c], a4, hmm_states, subbins);
@@ -7211,28 +7211,28 @@ static void hmm_forward_step(
 
         // delta = -1 and +1, weight = exp(-0.5)
         if (st >= 1) {
-            MYFLT w = cand_prob[c] * GAUSS_1;
+            cs_float w = cand_prob[c] * GAUSS_1;
             obs[st - 1] += w;
         }
         if (st + 1 < hmm_states) {
-            MYFLT w = cand_prob[c] * GAUSS_1;
+            cs_float w = cand_prob[c] * GAUSS_1;
             obs[st + 1] += w;
         }
     }
 
     // Unvoiced observation probability = 1 - sum of voiced candidate probs
-    MYFLT total_voiced_prob = 0.0;
+    cs_float total_voiced_prob = 0.0;
     for (c = 0; c < n_cands; c++)
         total_voiced_prob += cand_prob[c];
     if (total_voiced_prob > 1.0) total_voiced_prob = 1.0;
-    MYFLT p_unvoiced_obs = 1.0 - total_voiced_prob;
+    cs_float p_unvoiced_obs = 1.0 - total_voiced_prob;
 
     // Forward update: marginalise over previous states via transition
-    MYFLT norm = 0.0;
+    cs_float norm = 0.0;
     int drift_bins = drift_semitones * subbins;
 
     for (s = 0; s < hmm_states; s++) {
-        MYFLT trans_sum = 0.0;
+        cs_float trans_sum = 0.0;
         // Only consider a band of nearby states for efficiency +/- drift_bins
         int lo = s - drift_bins;
         int hi = s + drift_bins;
@@ -7250,10 +7250,10 @@ static void hmm_forward_step(
         }
 
         // Voiced prior blended with unvoiced
-        // MYFLT voiced_prior = PYIN_VOICED_PROB;
-        // MYFLT emission = voiced_prior * obs[s]
-        //                + (1.0 - voiced_prior) * (p_unvoiced_obs / (MYFLT)hmm_states);
-        MYFLT emission = p_unvoiced_obs * (1.0f / hmm_states)   // unvoiced floor
+        // cs_float voiced_prior = PYIN_VOICED_PROB;
+        // cs_float emission = voiced_prior * obs[s]
+        //                + (1.0 - voiced_prior) * (p_unvoiced_obs / (cs_float)hmm_states);
+        cs_float emission = p_unvoiced_obs * (1.0f / hmm_states)   // unvoiced floor
                            + (1.0 - p_unvoiced_obs) * obs[s];       // voiced component
         fwd_cur[s] = trans_sum * emission;
         norm += fwd_cur[s];
@@ -7265,7 +7265,7 @@ static void hmm_forward_step(
             fwd_cur[s] /= norm;
     } else {
         /* No information: flat prior */
-        MYFLT flat = 1.0 / (MYFLT)hmm_states;
+        cs_float flat = 1.0 / (cs_float)hmm_states;
         for (s = 0; s < hmm_states; s++)
             fwd_cur[s] = flat;
     }
@@ -7275,10 +7275,10 @@ static void hmm_forward_step(
  * Extract pitch estimate from forward variable.
  * Returns best state index, sets confidence and voicing flag.
  * ------------------------------------------------------------------------- */
-static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates, MYFLT minconf)
+static int hmm_decode(cs_float *fwd, cs_float *conf, int *voiced, int hmmstates, cs_float minconf)
 {
     int best = 0;
-    MYFLT best_val = fwd[0];
+    cs_float best_val = fwd[0];
     int s;
     for (s = 1; s < hmmstates; s++) {
         if (fwd[s] > best_val) {
@@ -7288,7 +7288,7 @@ static int hmm_decode(MYFLT *fwd, MYFLT *conf, int *voiced, int hmmstates, MYFLT
     }
 
     /* Confidence = posterior of best state + neighbours */
-    MYFLT c = best_val;
+    cs_float c = best_val;
     if (best > 0)
         c += fwd[best - 1];
     if (best < hmmstates - 1)
@@ -7305,19 +7305,19 @@ typedef struct {
     OPDS h;
 
     /* Output k-rate variables */
-    MYFLT *kpitch;
-    MYFLT *kconf;
-    MYFLT *kvoiced;
+    cs_float *kpitch;
+    cs_float *kconf;
+    cs_float *kvoiced;
 
     /* Input arguments */
-    MYFLT *asig;
-    MYFLT *iminfreq;
-    MYFLT *imaxfreq;
-    MYFLT *ibufsize;
-    MYFLT *ioverlap;
-    MYFLT *trans_self;    // HMM self-transition probability
-    MYFLT *inumbins;         // bins per semitone
-    MYFLT *drift;         // Drift in semitones, defaults to 5
+    cs_float *asig;
+    cs_float *iminfreq;
+    cs_float *imaxfreq;
+    cs_float *ibufsize;
+    cs_float *ioverlap;
+    cs_float *trans_self;    // HMM self-transition probability
+    cs_float *inumbins;         // bins per semitone
+    cs_float *drift;         // Drift in semitones, defaults to 5
 
     /* Internal state */
     int bufsize;           // analysis window size (samples)
@@ -7328,7 +7328,7 @@ typedef struct {
     int samples_since_hop; // samples since last hop
     int hmmstates;
     int subbins;
-    MYFLT transprob;        // fixed hmm transition probability
+    cs_float transprob;        // fixed hmm transition probability
 
     AUXCH aux_inputbuf;    // ring buffer for incoming audio
     AUXCH aux_workbuf;     // linear analysis window extracted from ring buf
@@ -7336,18 +7336,18 @@ typedef struct {
     AUXCH aux_cmnd;        // cumulative mean normalized difference function
     AUXCH aux_transition_matrix;
 
-    MYFLT thresholds[PYIN_N_THRESHOLDS];
-    MYFLT beta_weights[PYIN_N_THRESHOLDS];
+    cs_float thresholds[PYIN_N_THRESHOLDS];
+    cs_float beta_weights[PYIN_N_THRESHOLDS];
 
-    MYFLT *hmm_fwd;
-    MYFLT *hmm_fwd_prev;
+    cs_float *hmm_fwd;
+    cs_float *hmm_fwd_prev;
 
-    MYFLT hmm_buf1[PYIN_MAX_HMM_STATES];
-    MYFLT hmm_buf2[PYIN_MAX_HMM_STATES];
+    cs_float hmm_buf1[PYIN_MAX_HMM_STATES];
+    cs_float hmm_buf2[PYIN_MAX_HMM_STATES];
 
     /* Per-frame pitch candidate storage */
-    MYFLT cand_freq[PYIN_MAX_CANDIDATES];
-    MYFLT cand_prob[PYIN_MAX_CANDIDATES];
+    cs_float cand_freq[PYIN_MAX_CANDIDATES];
+    cs_float cand_prob[PYIN_MAX_CANDIDATES];
     int   n_cands;
 
 } PYIN_OPCODE;
@@ -7355,7 +7355,7 @@ typedef struct {
 
 static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
 {
-    MYFLT sr = LOCAL_SR(p);
+    cs_float sr = LOCAL_SR(p);
 
     p->bufsize = (p->ibufsize && *p->ibufsize > 0)
                  ? (int)*p->ibufsize : 2048;
@@ -7364,8 +7364,8 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
     p->hopsize = p->bufsize / overlap;
     if (p->hopsize < 1) p->hopsize = 1;
 
-    MYFLT minfreq = *p->iminfreq;
-    MYFLT maxfreq = *p->imaxfreq;
+    cs_float minfreq = *p->iminfreq;
+    cs_float maxfreq = *p->imaxfreq;
     if (minfreq <= 0.0) minfreq = 60.0;
     if (maxfreq <= 0.0) maxfreq = 1000.0;
 
@@ -7386,7 +7386,7 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
     p->bufpos = 0;
     p->samples_since_hop = 0;
     p->n_cands = 0;
-    MYFLT transprob = *p->trans_self;
+    cs_float transprob = *p->trans_self;
     if(transprob == 0)
         transprob = 0.99;
     p->transprob = transprob;
@@ -7405,7 +7405,7 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
     auxinit(csound, &(p->aux_transition_matrix), hmmstates*hmmstates);
 
     // Initialise HMM prior: flat
-    MYFLT flat = 1.0 / (MYFLT)p->hmmstates;
+    cs_float flat = 1.0 / (cs_float)p->hmmstates;
     for (int s = 0; s < p->hmmstates; s++)
         p->hmm_fwd_prev[s] = flat;
 
@@ -7418,7 +7418,7 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
     // We precalculate the transition matrix. We still allow trans_self to change, which
     // is incurs in a performance hit since we need to call transition_weight within
     // an inner loop
-    MYFLT *trans_matrix = (MYFLT*)p->aux_transition_matrix.auxp;
+    cs_float *trans_matrix = (cs_float*)p->aux_transition_matrix.auxp;
     for (int i = 0; i < hmmstates; i++) {
         for (int j = 0; j < hmmstates; j++) {
             trans_matrix[i * hmmstates + j] = transition_weight(i, j, transprob, numbins);
@@ -7431,20 +7431,20 @@ static int pyin_init(CSOUND *csound, PYIN_OPCODE *p)
 static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
 {
     int ksmps = LOCAL_KSMPS(p);
-    MYFLT *in = p->asig;
-    MYFLT *input_buf = (MYFLT*)p->aux_inputbuf.auxp;
+    cs_float *in = p->asig;
+    cs_float *input_buf = (cs_float*)p->aux_inputbuf.auxp;
     int bufsize = p->bufsize;
     int bufpos = p->bufpos;
     int samples_to_end = bufsize - bufpos;
 
     if (ksmps <= samples_to_end) {
-        memcpy(input_buf + bufpos, in, ksmps * sizeof(MYFLT));
+        memcpy(input_buf + bufpos, in, ksmps * sizeof(cs_float));
         bufpos += ksmps;
         if (bufpos == bufsize) bufpos = 0;
     } else {
         // split across wrap boundary
-        memcpy(input_buf + bufpos, in, samples_to_end * sizeof(MYFLT));
-        memcpy(input_buf, in + samples_to_end, (ksmps - samples_to_end) * sizeof(MYFLT));
+        memcpy(input_buf + bufpos, in, samples_to_end * sizeof(cs_float));
+        memcpy(input_buf, in + samples_to_end, (ksmps - samples_to_end) * sizeof(cs_float));
         bufpos = ksmps - samples_to_end;
     }
     p->bufpos = bufpos;
@@ -7453,14 +7453,14 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
         return OK;
     }
 
-    MYFLT a4 = csound->GetA4(csound);
+    cs_float a4 = csound->GetA4(csound);
     int drift_semitones = *p->drift;
     if(drift_semitones <= 0)
         drift_semitones = PYIN_DRIFT_SEMITONES;
 
-    MYFLT sr = LOCAL_SR(p);
-    MYFLT trans_self = *p->trans_self;
-    MYFLT *transition_matrix = NULL;
+    cs_float sr = LOCAL_SR(p);
+    cs_float trans_self = *p->trans_self;
+    cs_float *transition_matrix = NULL;
     if((trans_self == 0.) || (trans_self == p->transprob)) {
         transition_matrix = p->aux_transition_matrix.auxp;
     }
@@ -7468,15 +7468,15 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
     p->samples_since_hop -= p->hopsize;
 
     // linearise ring buffer
-    MYFLT *work_buf = (MYFLT*)p->aux_workbuf.auxp;
+    cs_float *work_buf = (cs_float*)p->aux_workbuf.auxp;
     samples_to_end = bufsize - bufpos;
-    memcpy(work_buf, input_buf + bufpos, samples_to_end * sizeof(MYFLT));
-    memcpy(work_buf + samples_to_end, input_buf, bufpos * sizeof(MYFLT));
+    memcpy(work_buf, input_buf + bufpos, samples_to_end * sizeof(cs_float));
+    memcpy(work_buf + samples_to_end, input_buf, bufpos * sizeof(cs_float));
 
     // TODO: apply window here, compute it at init
 
-    MYFLT *cmnd = (MYFLT*)p->aux_cmnd.auxp;
-    compute_yin_cmnd(work_buf, (MYFLT*)p->aux_diff.auxp, cmnd, p->bufsize, p->taumax);
+    cs_float *cmnd = (cs_float*)p->aux_cmnd.auxp;
+    compute_yin_cmnd(work_buf, (cs_float*)p->aux_diff.auxp, cmnd, p->bufsize, p->taumax);
 
     // get pitch canidates
     p->n_cands = pyin_pitch_candidates(cmnd, p->taumin, p->taumax, sr,
@@ -7488,9 +7488,9 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
                      a4, trans_self, drift_semitones,
                      p->hmmstates, p->subbins, transition_matrix);
 
-    MYFLT conf;
+    cs_float conf;
     int voiced;
-    MYFLT minconf = 0.1;  // original: 0.05
+    cs_float minconf = 0.1;  // original: 0.05
     // TODO: make it configurable. But since we return the confidence anyway, leave the parameter
     // kvoiced for future use, maybe we can come up with something more clever than just applying
     // a threshold
@@ -7498,10 +7498,10 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
 
     *p->kpitch = voiced ? state_to_freq(best_state, a4, p->subbins) : 0.0;
     *p->kconf = conf;
-    *p->kvoiced = (MYFLT)voiced;
+    *p->kvoiced = (cs_float)voiced;
 
     // swap buffers
-    MYFLT *tmp = p->hmm_fwd_prev;
+    cs_float *tmp = p->hmm_fwd_prev;
     p->hmm_fwd_prev = p->hmm_fwd;
     p->hmm_fwd = tmp;
 

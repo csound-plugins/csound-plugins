@@ -263,7 +263,7 @@ typedef uint64_t ui64;
         return PERFERRF(Str("dict: key too long (%d > %d)"),            \
                         (int)strlen((s)->data), KHASH_STRKEY_MAXSIZE)
 
-// p: an opcode struct with a member 'g':KHASH_GLOBALS* and input handleidx:MYFLT*
+// p: an opcode struct with a member 'g':KHASH_GLOBALS* and input handleidx:cs_float*
 #define get_handle_check(p)  ((ui32)*(p)->handleidx < p->g->maxhandles ? &((p)->g->handles[(ui32)*(p)->handleidx]) : NULL)
 
 #define get_handle(p) (&((p)->g->handles[(ui32)*(p)->handleidx]))
@@ -392,9 +392,9 @@ enum {
 };
 
 // Initialize all possible types
-KHASH_MAP_INIT_STR(khStrFlt, MYFLT)
+KHASH_MAP_INIT_STR(khStrFlt, cs_float)
 KHASH_MAP_INIT_STR(khStrStr, kstring_t)
-KHASH_MAP_INIT_INT(khIntFlt, MYFLT)
+KHASH_MAP_INIT_INT(khIntFlt, cs_float)
 KHASH_MAP_INIT_INT(khIntStr, kstring_t)
 
 // this is used by the cache opcodes
@@ -462,7 +462,7 @@ static inline HANDLE *get_handle_by_idx(HASH_GLOBALS *g, ui32 idx) {
 typedef struct {
     OPDS h;
     // outputs
-    MYFLT *out_handleidx;
+    cs_float *out_handleidx;
     // inputs
     STRINGDAT *keyvaltype;
     void  *inargs[VARGMAX];
@@ -484,9 +484,9 @@ static i32 set_many_is(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
 static i32 set_many_if(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
 static i32 set_many_sa(CSOUND *cs, void** inargs, ui32 numargs, HANDLE *handle);
 static inline void _set_ss(CSOUND *csound, khash_t(khStrStr) *h, const char*key, char *val);
-static inline void _set_sf(CSOUND *csound, khash_t(khStrFlt) *h, const char*key, MYFLT val);
+static inline void _set_sf(CSOUND *csound, khash_t(khStrFlt) *h, const char*key, cs_float val);
 static void _set_sa_s(CSOUND *csound, HANDLE *handle, char *key, char *value);
-static void _set_sa_f(CSOUND *csound, HANDLE *handle, char *key, MYFLT value);
+static void _set_sa_f(CSOUND *csound, HANDLE *handle, char *key, cs_float value);
 
 
 
@@ -963,13 +963,13 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
     int capacity = DICT_INITIAL_SIZE;
     if(_GetInputArgCnt(csound, p) == 2) {
         // called as idict dict_new "sf", icapacity
-        capacity = (int)*(MYFLT*)p->inargs[0];
+        capacity = (int)*(cs_float*)p->inargs[0];
     }
     i32 idx = dict_make(csound, p->g, khtype, capacity);
     if(idx < 0)
         return INITERR(Str("dict_new: failed to create a new dict"));
     p->idx = idx;
-    *p->out_handleidx = (MYFLT)idx;
+    *p->out_handleidx = (cs_float)idx;
     p->khtype = khtype;
     return OK;
 }
@@ -977,7 +977,7 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *idx;
+    cs_float *idx;
     STRINGDAT *str;
 } DICT_LOADSTR;
 
@@ -1201,10 +1201,10 @@ dict_new_many(CSOUND *csound, DICT_NEW *p) {
 typedef struct {
     OPDS h;
     // out
-    MYFLT *handleidx;
+    cs_float *handleidx;
     // in
-    MYFLT *outkey;
-    MYFLT *outval;
+    cs_float *outkey;
+    cs_float *outval;
     // internal
     HASH_GLOBALS *g;
     ui32 lastidx;
@@ -1260,10 +1260,10 @@ dict_set_if_i(CSOUND *csound, DICT_SET_if *p) {
 typedef struct {
     OPDS h;
     // out
-    MYFLT *handleidx;
+    cs_float *handleidx;
     // in
     STRINGDAT *outkey;
-    MYFLT *outval;
+    cs_float *outval;
     // internal
     HASH_GLOBALS *g;
     ui64 counter;
@@ -1349,7 +1349,7 @@ dict_set_sf_i(CSOUND *csound, DICT_SET_sf *p) {
 typedef struct {
     OPDS h;
     // in
-    MYFLT *handleidx;
+    cs_float *handleidx;
     STRINGDAT *outkey;
     STRINGDAT *outval;
     // internal
@@ -1414,9 +1414,9 @@ dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
 typedef struct {
     OPDS h;
     // out
-    MYFLT *handleidx;
+    cs_float *handleidx;
     // in
-    MYFLT *outkey;
+    cs_float *outkey;
     STRINGDAT *outval;
 
     // internal
@@ -1492,7 +1492,7 @@ dict_set_is_i(CSOUND *csound, DICT_SET_is *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
+    cs_float *handleidx;
     STRINGDAT *outkey;
 } DICT_DEL_s;
 
@@ -1549,8 +1549,8 @@ dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
-    MYFLT *outkey;
+    cs_float *handleidx;
+    cs_float *outkey;
 } DICT_DEL_i;
 
 
@@ -1600,12 +1600,12 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *kout;
+    cs_float *kout;
 
     // inputs
-    MYFLT *handleidx;
-    MYFLT *outkey;
-    MYFLT *defaultval;
+    cs_float *handleidx;
+    cs_float *outkey;
+    cs_float *defaultval;
 
     // internal
     HASH_GLOBALS *g;
@@ -1659,12 +1659,12 @@ dict_get_if_i(CSOUND *csound, DICT_GET_if *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *kout;
+    cs_float *kout;
     // inputs
-    MYFLT *handleidx;
+    cs_float *handleidx;
     STRINGDAT *outkey;
-    MYFLT *defaultval;
-    MYFLT *failnodict;
+    cs_float *defaultval;
+    cs_float *failnodict;
     // internal
     HASH_GLOBALS *g;
     khiter_t lastidx;
@@ -1765,7 +1765,7 @@ typedef struct {
     STRINGDAT *outstr;
 
     // inputs
-    MYFLT *handleidx;
+    cs_float *handleidx;
     STRINGDAT *outkey;
 
     // internal
@@ -1858,8 +1858,8 @@ typedef struct {
     OPDS h;
     STRINGDAT *outstr;
     // inputs
-    MYFLT *handleidx;
-    MYFLT *outkey;
+    cs_float *handleidx;
+    cs_float *outkey;
 
     // internal
     HASH_GLOBALS *g;
@@ -1921,8 +1921,8 @@ hashtab_get_is_i(CSOUND *csound, DICT_GET_is *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *ibasedict;
-    MYFLT *iupdatedict;
+    cs_float *ibasedict;
+    cs_float *iupdatedict;
 } DICT_UPDATE;
 
 // dict_update ibase, iupdates
@@ -1981,8 +1981,8 @@ dict_update_sf(CSOUND *csound, DICT_UPDATE *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
-    MYFLT *iwhen;
+    cs_float *handleidx;
+    cs_float *iwhen;
 } DICT_FREE;
 
 static i32
@@ -2022,7 +2022,7 @@ dict_free(CSOUND *csound, DICT_FREE *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
+    cs_float *handleidx;
     HASH_GLOBALS *g;
 } DICT_CLEAR;
 
@@ -2101,10 +2101,10 @@ static i32 dict_clear_perf(CSOUND *csound, DICT_CLEAR *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
-    MYFLT *ktrig;
+    cs_float *handleidx;
+    cs_float *ktrig;
     HASH_GLOBALS *g;
-    MYFLT lasttrig;
+    cs_float lasttrig;
 } DICT_PRINT;
 
 
@@ -2281,9 +2281,9 @@ dict_print_k(CSOUND *csound, DICT_PRINT *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *outstr;
+    cs_float *outstr;
 
-    MYFLT *handleidx;
+    cs_float *handleidx;
     STRINGDAT *cmdstr;
 
     HASH_GLOBALS *g;
@@ -2364,7 +2364,7 @@ typedef struct {
     OPDS h;
     ARRAYDAT *outstr;
 
-    MYFLT *handleidx;
+    cs_float *handleidx;
     STRINGDAT *cmdstr;
 
     HASH_GLOBALS *g;
@@ -2397,7 +2397,7 @@ dict_query_arr_keys_s(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
 static i32
 dict_query_arr_keys_i(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
     IGN(csound);
-    MYFLT *outdata = (MYFLT*)(out->data);
+    cs_float *outdata = (cs_float*)(out->data);
     ui32 counter = 0;
     i32 khtype = handle->khtype;
     ui32 key;
@@ -2439,8 +2439,8 @@ dict_query_arr_values_s(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
 static i32
 dict_query_arr_values_f(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
     IGN(csound);
-    MYFLT *outdata = (MYFLT*)(out->data);
-    MYFLT val;
+    cs_float *outdata = (cs_float*)(out->data);
+    cs_float val;
     i32 counter=0, khtype=handle->khtype;
     if(khtype == khIntFlt) {
         khash_t(khIntFlt) *h = handle->hashtab;
@@ -2553,10 +2553,10 @@ typedef struct {
     // out
     void *outkey;
     void *outval;
-    MYFLT *outkidx;
+    cs_float *outkidx;
     // in
-    MYFLT *handleidx;
-    MYFLT *kreset;
+    cs_float *handleidx;
+    cs_float *kreset;
     // internal
     HASH_GLOBALS *g;
     ui32 _handleidx;
@@ -2639,7 +2639,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
             if(!kh_exist(h, k)) continue;
             const char *key = kh_key(h, k);
             stringdat_set(csound, (STRINGDAT*)p->outkey, key, strlen(key));
-            *((MYFLT*)p->outval) = kh_val(h, k);
+            *((cs_float*)p->outval) = kh_val(h, k);
             p->nextk = k+1;
             *p->outkidx = p->numyields;
             p->numyields++;
@@ -2650,7 +2650,7 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
         CHECK_HASHTAB_EXISTS(h);
         for(khiter_t k=p->nextk; k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
-            *((MYFLT*)p->outkey) = kh_key(h, k);
+            *((cs_float*)p->outkey) = kh_key(h, k);
             kstr = &(kh_val(h, k));
             stringdat_set(csound, (STRINGDAT*)p->outval, kstr->s, kstr->l);
             p->nextk = k+1;
@@ -2663,8 +2663,8 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
         CHECK_HASHTAB_EXISTS(h);
         for(khiter_t k=p->nextk; k != kh_end(h); ++k) {
             if(!kh_exist(h, k)) continue;
-            *((MYFLT*)p->outkey) = kh_key(h, k);
-            *((MYFLT*)p->outval) = kh_val(h, k);
+            *((cs_float*)p->outkey) = kh_key(h, k);
+            *((cs_float*)p->outval) = kh_val(h, k);
             p->nextk = k+1;
             *p->outkidx = p->numyields;
             p->numyields++;
@@ -2709,7 +2709,7 @@ set_many_ss(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
 }
 
 static inline void
-_set_sf(CSOUND *csound, khash_t(khStrFlt) *h, const char *key, MYFLT val) {
+_set_sf(CSOUND *csound, khash_t(khStrFlt) *h, const char *key, cs_float val) {
     int absent;
     khiter_t k = kh_put(khStrFlt, h, key, &absent);
     if(absent) {
@@ -2723,8 +2723,8 @@ set_many_sf(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     khash_t(khStrFlt) *h = handle->hashtab;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
         STRINGDAT *key = (STRINGDAT *)inargs[argidx];
-        // MYFLT val = *((MYFLT*)(inargs[argidx+1]));
-        MYFLT val = *(MYFLT*)inargs[argidx+1];
+        // cs_float val = *((cs_float*)(inargs[argidx+1]));
+        cs_float val = *(cs_float*)inargs[argidx+1];
         _set_sf(csound, h, key->data, val);
     }
     handle->counter++;
@@ -2732,7 +2732,7 @@ set_many_sf(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
 }
 
 
-void _set_sa_f(CSOUND *csound, HANDLE *handle, char *key, double value) {
+void _set_sa_f(CSOUND *csound, HANDLE *handle, char *key, cs_float value) {
     // for a dict of type str:any, set a str:float pair
     khash_t(khStrFlt) *h2 = handle->hashtab2;
     _set_sf(csound, h2, key, value);
@@ -2763,7 +2763,7 @@ set_many_sa(CSOUND *csound, void**inargs, ui32 numargs, HANDLE *handle) {
         case 'i':
         case 'c':   // constant
         case 'k':
-            _set_sf(csound, h2, key->data, *(MYFLT*)inargs[argidx+1]);
+            _set_sf(csound, h2, key->data, *(cs_float*)inargs[argidx+1]);
             break;
         }
     }
@@ -2777,12 +2777,12 @@ set_many_if(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     khash_t(khIntFlt) *h = handle->hashtab;
     int absent;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
-        ui32 key = (ui32) *((MYFLT*)(inargs[argidx]));
+        ui32 key = (ui32) *((cs_float*)(inargs[argidx]));
         khiter_t k = kh_put(khIntFlt, h, key, &absent);
         if(absent) {
             kh_key(h, k) = key;
         }
-        kh_value(h, k) = *((MYFLT*)(inargs[argidx+1]));
+        kh_value(h, k) = *((cs_float*)(inargs[argidx+1]));
     }
     handle->counter++;
     return OK;
@@ -2795,7 +2795,7 @@ set_many_is(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
     kstring_t *ks;
     STRINGDAT *val;
     for(ui32 argidx=0; argidx < numargs; argidx+=2) {
-        ui32 key = (ui32) *((MYFLT*)(inargs[argidx]));
+        ui32 key = (ui32) *((cs_float*)(inargs[argidx]));
         val = (STRINGDAT *)inargs[argidx+1];
         khiter_t k = kh_put(khIntStr, h, key, &absent);
         ks = &(h->vals[k]);
@@ -2821,7 +2821,7 @@ set_many_is(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
 typedef struct {
     OPDS h;
     STRINGDAT *sout;
-    MYFLT *dictidx;
+    cs_float *dictidx;
 } DICT_DUMP;
 
 static i64 _dict_dump_sf(khash_t(khStrFlt) *h, char *buf, size_t buflen) {
@@ -2835,7 +2835,7 @@ static i64 _dict_dump_sf(khash_t(khStrFlt) *h, char *buf, size_t buflen) {
     for(khint_t k=kh_begin(h); k != kh_end(h); ++k) {
         if(!kh_exist(h, k)) continue;
         key = kh_key(h, k);
-        MYFLT val = kh_val(h, k);
+        cs_float val = kh_val(h, k);
         if(buflen < 80) {
             return -1;
         }
@@ -3056,7 +3056,7 @@ typedef struct {
     OPDS h;
     // Sstr cacheget kidx / iidx
     STRINGDAT *outstr;
-    MYFLT *idx;
+    cs_float *idx;
 
     STRCACHE_GLOBALS *g;
     int done;
@@ -3138,7 +3138,7 @@ sview_k(CSOUND *csound, CACHEGET *p) {
 typedef struct {
     OPDS h;
     STRINGDAT *s;
-    MYFLT *idx;
+    cs_float *idx;
 } STRPEEK;
 
 
@@ -3182,7 +3182,7 @@ cachepop_i(CSOUND *csound, CACHEGET *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *idx;
+    cs_float *idx;
     STRINGDAT *s;
     STRCACHE_GLOBALS *g;
 } CACHEPUT;
@@ -3199,7 +3199,7 @@ cacheput_perf(CSOUND *csound, CACHEPUT *p) {
     i64 idx = 0;
     i32 ret = cache_putstr(csound, g, p->s, &idx);
     if(ret == NOTOK) return NOTOK;
-    *p->idx = (MYFLT) idx;
+    *p->idx = (cs_float) idx;
     return OK;
 }
 
@@ -3244,7 +3244,7 @@ typedef struct {
     int size;
     int allocated;
     int cangrow;
-    MYFLT *data;
+    cs_float *data;
     int handlenum;
 } POOL_HANDLE;
 
@@ -3257,19 +3257,19 @@ typedef struct {
 
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
-    MYFLT *arg1;
-    MYFLT *arg2;
+    cs_float *handleidx;
+    cs_float *arg1;
+    cs_float *arg2;
 } POOL_NEW;
 
 
 static i32
-pool_fill(POOL_HANDLE *handle, MYFLT start, MYFLT stop, MYFLT step) {
+pool_fill(POOL_HANDLE *handle, cs_float start, cs_float stop, cs_float step) {
     int numitems = (int)((stop - start) / step);
     if (numitems <= 0 || numitems > handle->size || numitems > handle->allocated)
         return NOTOK;
-    MYFLT x = start;
-    MYFLT *data = handle->data;
+    cs_float x = start;
+    cs_float *data = handle->data;
     for(int i=numitems-1; i >= 0; i--) {
         data[i] = x;
         x += step;
@@ -3297,7 +3297,7 @@ static POOL_HANDLE *pool_make(CSOUND *csound, int allocated, int cangrow) {
         return NULL;
     }
     handle->active = 1;
-    handle->data = csound->Malloc(csound, sizeof(MYFLT) * allocated);
+    handle->data = csound->Malloc(csound, sizeof(cs_float) * allocated);
     if(handle->data == NULL) {
         MSG("Allocation error when creating pool");
         return NULL;
@@ -3412,15 +3412,15 @@ pool_empty(CSOUND *csound, POOL_NEW *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *handleidx, *arg1, *arg2, *arg3, *arg4;
+    cs_float *out;
+    cs_float *handleidx, *arg1, *arg2, *arg3, *arg4;
     POOL_HANDLE *handle;
 } POOL_1;
 
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
-    MYFLT *arg1, *arg2;
+    cs_float *handleidx;
+    cs_float *arg1, *arg2;
     POOL_HANDLE *handle;
 } POOL_0;
 
@@ -3462,7 +3462,7 @@ static i32
 pool_pop_perf(CSOUND *csound, POOL_1 *p) {
     IGN(csound);
     int size = p->handle->size;
-    MYFLT item;
+    cs_float item;
     if(size > 0) {
         item = p->handle->data[size -1];
     } else {
@@ -3529,9 +3529,9 @@ pool_size_i(CSOUND *csound, POOL_1 *p) {
 // pool_put ipool, item, when=0 (0=at init, 1=at stop)
 typedef struct {
     OPDS h;
-    MYFLT *handleidx;
-    MYFLT *item;
-    MYFLT *when;
+    cs_float *handleidx;
+    cs_float *item;
+    cs_float *when;
     POOL_HANDLE *handle;
 } POOL_PUSH;
 
@@ -3548,7 +3548,7 @@ void pool_resize(CSOUND *csound, POOL_HANDLE *handle, int minsize) {
     while(allocated < minsize) {
         allocated *= 2;
     }
-    handle->data = csound->ReAlloc(csound, handle->data, sizeof(MYFLT)*allocated);
+    handle->data = csound->ReAlloc(csound, handle->data, sizeof(cs_float)*allocated);
     handle->allocated = allocated;
 }
 

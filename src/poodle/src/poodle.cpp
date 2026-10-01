@@ -63,7 +63,7 @@ Compilation options: -a /usr/share/faust/csound.cpp -lang cpp -i -ct 1 -es 1 -mc
 #include "csdl.h"                        /* CSOUND plugin API header */
 
 // make sure we use csound floats
-#define FAUSTFLOAT MYFLT
+#define FAUSTFLOAT cs_float
 
 // we require macro declarations
 #define FAUST_UIMACROS
@@ -1229,8 +1229,8 @@ char *_params_list(const char* options[], char **cache) {
 
 struct ZITAREV {
     OPDS h;
-    MYFLT* aout[ZITAREV_OUTPUTS];
-    MYFLT* ain[ZITAREV_INPUTS];
+    cs_float* aout[ZITAREV_OUTPUTS];
+    cs_float* ain[ZITAREV_INPUTS];
     void* ctrls[22];                      // alternate Stringparam, kparamvalue
     zitarev_dsp* DSP;                     //
     AUXCH     dspmem;                     // aux memory allocated once to store the DSP object
@@ -1320,7 +1320,7 @@ static int32_t zitarev_perf(CSOUND *csound, ZITAREV *p) {
     zitarev_dsp *dsp = (zitarev_dsp *)(p->DSP);
     FAUSTFLOAT *slots = &(dsp->params[0]);
     for(int i = 0; i < numpairs; i++) {
-        MYFLT value = *(MYFLT *)(p->ctrls[i * 2 + 1]);
+        cs_float value = *(cs_float *)(p->ctrls[i * 2 + 1]);
         int index = p->ctrlindexes[i];
         slots[index] = value;
     }
@@ -2139,10 +2139,10 @@ class fofcycle_dsp : public dsp {
 
 struct FOFCYCLE {
     OPDS h;
-    MYFLT *aout[1];
-    MYFLT *gate;
-    MYFLT *freq;
-    MYFLT *gain;
+    cs_float *aout[1];
+    cs_float *gate;
+    cs_float *freq;
+    cs_float *gain;
     void *ctrls[20];
     fofcycle_dsp *DSP;
     AUXCH dspmem;
@@ -2219,7 +2219,7 @@ static int32_t fofcycle_perf(CSOUND *csound, FOFCYCLE *p) {
     fofcycle_dsp *dsp = p->DSP;
     FAUSTFLOAT *slots = &(dsp->params[0]);
     for(int i = 0; i < numpairs; i++) {
-        MYFLT value = *(MYFLT *)(p->ctrls[i * 2 + 1]);
+        cs_float value = *(cs_float *)(p->ctrls[i * 2 + 1]);
         int index = p->ctrlindexes[i];
         slots[index] = value;
     }

@@ -63,22 +63,22 @@
 
 #define UInt32toFlt(x) ((double)(x) * (1.0 / 4294967295.03125))
 
-#define unirand(c) ((MYFLT) UInt32toFlt(csoundRandMT(&((c)->randState_))))
+#define unirand(c) ((cs_float) UInt32toFlt(csoundRandMT(&((c)->randState_))))
 
-#define unirand2(cs,seed) ((MYFLT) (cs->Rand31(&seed)-1) / FL(2147483645.0))
+#define unirand2(cs,seed) ((cs_float) (cs->Rand31(&seed)-1) / FL(2147483645.0))
 
 // 1 / 2pi
 #define RTWOPI 0.1591549430918953357688837634
 
 #define SAMPLE_ACCURATE \
     uint32_t n, nsmps = CS_KSMPS;                                    \
-    MYFLT *out = p->out;                                             \
+    cs_float *out = p->out;                                             \
     uint32_t offset = p->h.insdshead->ksmps_offset;                  \
     uint32_t early  = p->h.insdshead->ksmps_no_end;                  \
-    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(MYFLT));   \
+    if (UNLIKELY(offset)) memset(out, '\0', offset*sizeof(cs_float));   \
     if (UNLIKELY(early)) {                                           \
         nsmps -= early;                                              \
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));              \
+        memset(&out[nsmps], '\0', early*sizeof(cs_float));              \
     }                                                                \
 
 
@@ -90,7 +90,7 @@
 
 
 // uniform noise, taken from csoundRand31, returns floats between 0-1
-static inline MYFLT
+static inline cs_float
 FastRandFloat(uint32_t *seedptr) {
     uint64_t tmp1;
     uint32_t tmp2;
@@ -100,7 +100,7 @@ FastRandFloat(uint32_t *seedptr) {
     tmp2 += (uint32_t) (tmp1 >> 31);
     tmp2  = (tmp2 & (uint32_t) 0x7FFFFFFF) + (tmp2 >> 31);
     (*seedptr) = tmp2;
-    return (MYFLT)(tmp2 - 1) / FL(2147483648.0);
+    return (cs_float)(tmp2 - 1) / FL(2147483648.0);
 }
 
 
@@ -118,32 +118,32 @@ FastRandFloat(uint32_t *seedptr) {
 */
 
 typedef struct {
-    MYFLT gset;
+    cs_float gset;
     int iset;
     uint32_t seed;
 } GaussianState;
 
-static inline MYFLT
+static inline cs_float
 gaussian_normal(GaussianState *gs) {
     if(gs->iset) {
       gs->iset = 0;
       return gs->gset;
     }
     gs->iset = 1;
-    MYFLT v1 = FL(2.0) * FastRandFloat(&(gs->seed)) - FL(1.0);
-    MYFLT v2 = FL(2.0) * FastRandFloat(&(gs->seed)) - FL(1.0);
-    MYFLT r  = v1*v1 + v2*v2;
+    cs_float v1 = FL(2.0) * FastRandFloat(&(gs->seed)) - FL(1.0);
+    cs_float v2 = FL(2.0) * FastRandFloat(&(gs->seed)) - FL(1.0);
+    cs_float r  = v1*v1 + v2*v2;
     while(r >= 1.0) {
       v1 = v2;
       v2 = FL(2.0) * FastRandFloat(&(gs->seed)) - FL(1.0);
       r  = v1*v1 + v2*v2;
     }
-    MYFLT fac = r == FL(0) ? FL(0) : sqrt(FL(-2) * fastlog(r)/r);
+    cs_float fac = r == FL(0) ? FL(0) : sqrt(FL(-2) * fastlog(r)/r);
     gs->gset = v1*fac;
     return v2*fac;
 }
 
-static MYFLT* gaussians = NULL;
+static cs_float* gaussians = NULL;
 
 #define GAUSSIANS_SIZE 65536
 
@@ -156,7 +156,7 @@ gaussians_init(uint32_t seed) {
       gs.gset = 0;
       gs.iset = 0;
       gs.seed = seed;
-      MYFLT *g = malloc(sizeof(MYFLT)*size);
+      cs_float *g = malloc(sizeof(cs_float)*size);
       for(i=0; i<size; i++) {
         g[i] = gaussian_normal(&gs);
       }
@@ -195,32 +195,32 @@ PhaseFrac1(uint32_t inPhase) {
 }
 #endif
 
-static inline MYFLT
-lookupi1(const MYFLT* table0, const MYFLT* table1,
+static inline cs_float
+lookupi1(const cs_float* table0, const cs_float* table1,
          int32_t pphase, int32_t lomask) {
-    MYFLT pfrac    = PhaseFrac(pphase);
+    cs_float pfrac    = PhaseFrac(pphase);
     uint32_t index = ((pphase >> xlobits1) & lomask);
-    MYFLT val1 = *(const MYFLT*)((const char*)table0 + index);
-    MYFLT val2 = *(const MYFLT*)((const char*)table1 + index);
-    MYFLT out  = val1 + (val2 - val1) * pfrac;
+    cs_float val1 = *(const cs_float*)((const char*)table0 + index);
+    cs_float val2 = *(const cs_float*)((const char*)table1 + index);
+    cs_float out  = val1 + (val2 - val1) * pfrac;
     return out;
 }
 
 
-static inline MYFLT
-lookup(const MYFLT *table, int32_t phase, int32_t mask) {
+static inline cs_float
+lookup(const cs_float *table, int32_t phase, int32_t mask) {
     uint32_t index = ((phase >> xlobits1) & mask);
-    return *(const MYFLT*)((const char*)table + index);
+    return *(const cs_float*)((const char*)table + index);
 }
 
-#define LOOKUP(table, phase, mask) ( *(const MYFLT*)((const char*)table + (((phase >> xlobits1) & mask))) )
+#define LOOKUP(table, phase, mask) ( *(const cs_float*)((const char*)table + (((phase >> xlobits1) & mask))) )
 
-static inline MYFLT
-cs_lookupi(const MYFLT* ftbl, int32_t phs, int32_t lobits, int32_t lomask,
-           MYFLT lodiv) {
-    MYFLT fract = (MYFLT)((phs & lomask) * lodiv);
-    const MYFLT* ftbl0 = ftbl + (phs >> lobits);
-    MYFLT v1 = ftbl0[0];
+static inline cs_float
+cs_lookupi(const cs_float* ftbl, int32_t phs, int32_t lobits, int32_t lomask,
+           cs_float lodiv) {
+    cs_float fract = (cs_float)((phs & lomask) * lodiv);
+    const cs_float* ftbl0 = ftbl + (phs >> lobits);
+    cs_float v1 = ftbl0[0];
     return v1 + (ftbl0[1] - v1)*fract;
 }
 
@@ -250,14 +250,14 @@ cs_lookupi(const MYFLT* ftbl, int32_t phs, int32_t lobits, int32_t lomask,
 
 typedef struct {
     OPDS h;
-    MYFLT *out, *xfreq, *kbw, *ifn, *iphs, *iflags;
-    MYFLT  lastfreq;
+    cs_float *out, *xfreq, *kbw, *ifn, *iphs, *iflags;
+    cs_float  lastfreq;
     int32_t  phase;
     int32_t  lomask;
-    MYFLT  cpstoinc, radtoinc;
+    cs_float  cpstoinc, radtoinc;
     FUNC * ftp;
-    MYFLT  x1, x2, x3; // MA
-    MYFLT  y1, y2, y3; // AR
+    cs_float  x1, x2, x3; // MA
+    cs_float  y1, y2, y3; // AR
     int flags;
     GaussianState gs;
     uint32_t seed;
@@ -266,8 +266,8 @@ typedef struct {
 static int
 beosc_init(CSOUND *csound, BEOSC *p) {
     FUNC *ftp;
-    // MYFLT sampledur = 1 / csound->GetSr(csound);
-    MYFLT sampledur = 1 / LOCAL_SR(p);
+    // cs_float sampledur = 1 / csound->GetSr(csound);
+    cs_float sampledur = 1 / LOCAL_SR(p);
     ftp = FTFind(csound, p->ifn);
     // ftp = csound->FTFind(csound, p->ifn);
     if (UNLIKELY(ftp == NULL))
@@ -293,17 +293,17 @@ beosc_kkiii(CSOUND *csound, BEOSC *p) {
     SAMPLE_ACCURATE
 
     FUNC *ftp     = p->ftp;
-    MYFLT freqin  = *p->xfreq;
-    MYFLT bwin    = *p->kbw;
-    MYFLT *table0 = ftp->ftable;
-    MYFLT *table1 = table0 + 1;
+    cs_float freqin  = *p->xfreq;
+    cs_float bwin    = *p->kbw;
+    cs_float *table0 = ftp->ftable;
+    cs_float *table1 = table0 + 1;
 
     int32_t phase  = p->phase;
     int32_t lomask = p->lomask;
 
     int32_t phaseinc = (int32_t)(p->cpstoinc * freqin);
 
-    MYFLT x0,
+    cs_float x0,
           x1 = p->x1,
           x2 = p->x2,
           x3 = p->x3,
@@ -313,8 +313,8 @@ beosc_kkiii(CSOUND *csound, BEOSC *p) {
           y3 = p->y3;
 
     // bw coefficients
-    MYFLT bw1 = sqrt( FL(1.0) - bwin );
-    MYFLT bw2 = sqrt( FL(2.0) * bwin );
+    cs_float bw1 = sqrt( FL(1.0) - bwin );
+    cs_float bw2 = sqrt( FL(2.0) * bwin );
 
     // uint32_t seed = p->gs.seed;
     uint32_t seed = p->seed;
@@ -389,16 +389,16 @@ beosc_akiii(CSOUND *csound, BEOSC *p) {
     SAMPLE_ACCURATE
 
     FUNC *ftp  = p->ftp;
-    MYFLT *freqptr = p->xfreq;
-    MYFLT bwin    = *p->kbw;
-    MYFLT *table0 = ftp->ftable;
-    MYFLT *table1 = table0 + 1;
-    // MYFLT noise;
+    cs_float *freqptr = p->xfreq;
+    cs_float bwin    = *p->kbw;
+    cs_float *table0 = ftp->ftable;
+    cs_float *table1 = table0 + 1;
+    // cs_float noise;
 
     int32_t phase  = p->phase;
     int32_t lomask = p->lomask;
 
-    MYFLT x0,
+    cs_float x0,
           x1 = p->x1,
           x2 = p->x2,
           x3 = p->x3,
@@ -408,12 +408,12 @@ beosc_akiii(CSOUND *csound, BEOSC *p) {
           y3 = p->y3;
 
     // bw coefficients
-    MYFLT bw1 = sqrt( FL(1.0) - bwin );
-    MYFLT bw2 = sqrt( FL(2.0) * bwin );
+    cs_float bw1 = sqrt( FL(1.0) - bwin );
+    cs_float bw2 = sqrt( FL(2.0) * bwin );
 
     uint32_t seed = p->gs.seed;
 
-    MYFLT freq,
+    cs_float freq,
           cpstoinc = p->cpstoinc;
 
     // GaussianState *gsptr;
@@ -521,8 +521,8 @@ beosc_akiii(CSOUND *csound, BEOSC *p) {
  */
 
 typedef struct {
-    MYFLT x1, x2, x3;
-    MYFLT y1, y2, y3;
+    cs_float x1, x2, x3;
+    cs_float y1, y2, y3;
 } FILTCOEFS;
 
 static void
@@ -537,21 +537,21 @@ befilter_init(FILTCOEFS *filt) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     void *ifreqtbl, *iamptbl, *ibwtbl;
-    MYFLT *icnt,  *iflags, *kfreq, *kbw, *ifn, *iphs;
+    cs_float *icnt,  *iflags, *kfreq, *kbw, *ifn, *iphs;
     GaussianState gs;
     FUNC * ftp;
-    MYFLT *freqs;
-    MYFLT *amps;
-    MYFLT *bws;
+    cs_float *freqs;
+    cs_float *amps;
+    cs_float *bws;
     unsigned int count;
     int inerr;
     AUXCH lphs;
     AUXCH pamp;
     AUXCH filtcoefs;
     AUXCH pfreq;
-    MYFLT cpstoinc;
+    cs_float cpstoinc;
     uint32_t seed;
     int updatearrays;
 
@@ -564,9 +564,9 @@ beadsynt_init_common(CSOUND *csound, BEADSYNT *p) {
     FILTCOEFS *filtcoefs;
     int32_t *lphs;
     unsigned int c, count = p->count;
-    MYFLT iphs = *p->iphs;
-    // MYFLT sr   = csound->GetSr(csound);
-    MYFLT sr = LOCAL_SR(p);
+    cs_float iphs = *p->iphs;
+    // cs_float sr   = csound->GetSr(csound);
+    cs_float sr = LOCAL_SR(p);
     p->inerr = 0;
     // corresponds to csound->sicvt. FMAXLEN depends on B64BIT being defined
     p->cpstoinc = FMAXLEN / sr;
@@ -597,15 +597,15 @@ beadsynt_init_common(CSOUND *csound, BEADSYNT *p) {
         return INITERR(Str("beadsynt: phasetable not found"));
       }
       for (c=0; c<count; c++) {
-        MYFLT ph = phasetp->ftable[c];
+        cs_float ph = phasetp->ftable[c];
         lphs[c] = ((int32_t)(ph * FMAXLEN)) & PHMASK;
       }
     }
 
-    if (p->pamp.auxp==NULL || p->pamp.size < (uint32_t)(sizeof(MYFLT)*p->count))
-      csound->AuxAlloc(csound, sizeof(MYFLT)*p->count, &p->pamp);
+    if (p->pamp.auxp==NULL || p->pamp.size < (uint32_t)(sizeof(cs_float)*p->count))
+      csound->AuxAlloc(csound, sizeof(cs_float)*p->count, &p->pamp);
     else if (iphs >= 0)        /* AuxAlloc clear anyway */
-      memset(p->pamp.auxp, 0, sizeof(MYFLT)*p->count);
+      memset(p->pamp.auxp, 0, sizeof(cs_float)*p->count);
 
     if (p->filtcoefs.auxp==NULL || p->filtcoefs.size < sizeof(FILTCOEFS)*count)
       csound->AuxAlloc(csound, sizeof(FILTCOEFS)*count, &p->filtcoefs);
@@ -616,12 +616,12 @@ beadsynt_init_common(CSOUND *csound, BEADSYNT *p) {
     // freq. interpolation
     if ((int)*p->iflags & 4) {
       if (p->pfreq.auxp==NULL ||
-          p->pfreq.size < (uint32_t)(sizeof(MYFLT)*p->count))
-        csound->AuxAlloc(csound, sizeof(MYFLT)*p->count, &p->pfreq);
+          p->pfreq.size < (uint32_t)(sizeof(cs_float)*p->count))
+        csound->AuxAlloc(csound, sizeof(cs_float)*p->count, &p->pfreq);
       // init freqs to current table contents
-      MYFLT *prevfreqs = (MYFLT*)p->pfreq.auxp;
-      MYFLT *freqs  = p->freqs;
-      MYFLT freqmul = *p->kfreq;
+      cs_float *prevfreqs = (cs_float*)p->pfreq.auxp;
+      cs_float *freqs  = p->freqs;
+      cs_float freqmul = *p->kfreq;
       for (c=0; c<p->count; c++) {
         prevfreqs[c] = freqs[c] * freqmul;
       }
@@ -651,7 +651,7 @@ beadsynt_init(CSOUND *csound, BEADSYNT *p) {
     }
     p->amps = ftp->ftable;
     ftp = FTFind(csound, p->ifreqtbl);
-    // ftp = csound->FTnp2Find(csound, (MYFLT *)p->ifreqtbl);
+    // ftp = csound->FTnp2Find(csound, (cs_float *)p->ifreqtbl);
     if (ftp == NULL) {
       return INITERR(Str("beadsynt: freqtable not found!"));
     }
@@ -660,8 +660,8 @@ beadsynt_init(CSOUND *csound, BEADSYNT *p) {
     }
     p->freqs = ftp->ftable;
 
-    // ftp = csound->FTnp2Find(csound, (MYFLT *)p->ibwtbl);
-    ftp = FTFind(csound, (MYFLT *)p->ibwtbl);
+    // ftp = csound->FTnp2Find(csound, (cs_float *)p->ibwtbl);
+    ftp = FTFind(csound, (cs_float *)p->ibwtbl);
     if (ftp == NULL) {
       return INITERR(Str("beadsynt: bandwidth table not found"));
     }
@@ -719,22 +719,22 @@ beadsynt_init_array(CSOUND *csound, BEADSYNT *p) {
     return beadsynt_init_common(csound, p);
 }
 
-// FMAXLEN = MYFLT 0x40000000
+// FMAXLEN = cs_float 0x40000000
 // PHMASK = 0x3fffffff
 
 static int32_t
 beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     FUNC *ftp;
-    MYFLT *out, *ftpdata, *ftpdata1, *freqs, *amps, *bws, *prevamps, *prevfreqs;
-    MYFLT freq, freqmul, freqnow, freqinc;
-    MYFLT amp, ampnow, ampinc, bwmul, bwin, bw1, bw2;
-    MYFLT cpstoinc, sample, lodiv;
+    cs_float *out, *ftpdata, *ftpdata1, *freqs, *amps, *bws, *prevamps, *prevfreqs;
+    cs_float freq, freqmul, freqnow, freqinc;
+    cs_float amp, ampnow, ampinc, bwmul, bwin, bw1, bw2;
+    cs_float cpstoinc, sample, lodiv;
     int32_t phs;
     // int32_t inc, lobits, lomask;
     int32_t *lphs;
     int flags;
     unsigned int c, count;
-    MYFLT x0, x1, x2, x3, y0, y1, y2, y3;
+    cs_float x0, x1, x2, x3, y0, y1, y2, y3;
     FILTCOEFS *coefs;
     uint32_t seed,
             offset = p->h.insdshead->ksmps_offset,
@@ -745,8 +745,8 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
         return PERFERR(Str("beadsynt: not initialised"));
 
     ftp = p->ftp;
-    // MYFLT sampledur = 1/csound->GetSr(csound);
-    MYFLT sampledur = 1 / LOCAL_SR(p);
+    // cs_float sampledur = 1/csound->GetSr(csound);
+    cs_float sampledur = 1 / LOCAL_SR(p);
     ftpdata  = ftp->ftable;
     ftpdata1 = ftpdata + 1;
     // lobits   = ftp->lobits + 0;     // +2 added march 2023. Used to be just 0, what happened here??
@@ -770,15 +770,15 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     }
 
     lphs = (int32*)p->lphs.auxp;
-    prevamps  = (MYFLT*)p->pamp.auxp;
-    prevfreqs = (MYFLT*)p->pfreq.auxp;
+    prevamps  = (cs_float*)p->pamp.auxp;
+    prevfreqs = (cs_float*)p->pfreq.auxp;
 
     // clear output before adding partials
-    memset(out, 0, nsmps*sizeof(MYFLT));
+    memset(out, 0, nsmps*sizeof(cs_float));
 
     if (UNLIKELY(early)) {
         nsmps -= early;
-        memset(&out[nsmps], '\0', early*sizeof(MYFLT));
+        memset(&out[nsmps], '\0', early*sizeof(cs_float));
     }
 
     coefs = (FILTCOEFS *)(p->filtcoefs.auxp);
@@ -787,7 +787,7 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
 
     uint32_t tabsize = ftp->flen;
     int32_t lomask2 = (tabsize - 1) << 3;             // FIX
-    MYFLT cpstoinc2 = tabsize * sampledur * 65536;    // FIX
+    cs_float cpstoinc2 = tabsize * sampledur * 65536;    // FIX
     int32_t phaseinc; // FIX
 
     for (c=0; c<count; c++) {
@@ -1015,7 +1015,7 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
             case 1:  // 001
                 for (n=offset; n<nsmps; n++) {
                     // out[n] += *(ftpdata + (phs >> lobits)) * ampnow;
-                    // MYFLT samp = lookup(ftpdata, phs, lomask);
+                    // cs_float samp = lookup(ftpdata, phs, lomask);
                     out[n] += lookup(ftpdata, phs, lomask2) * ampnow;
                     phs += phaseinc;
 
@@ -1137,9 +1137,9 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *krow, *ifnsrc, *ifndest, *inumcols, *ioffset, *istart, *iend, *istep;
-    MYFLT* tabsource;
-    MYFLT* tabdest;
+    cs_float *krow, *ifnsrc, *ifndest, *inumcols, *ioffset, *istart, *iend, *istep;
+    cs_float* tabsource;
+    cs_float* tabdest;
     int maxrow;
     int tabsourcelen;
     int tabdestlen;
@@ -1182,8 +1182,8 @@ tabrowcopy_init(CSOUND* csound, TABROWCOPY* p){
 static int32_t
 tabrowcopyk(CSOUND* csound, TABROWCOPY* p) {
     int i;
-    MYFLT x0, x1;
-    MYFLT row   = *p->krow;
+    cs_float x0, x1;
+    cs_float row   = *p->krow;
     if(row > p->maxrow) {
       csound->Message(csound, Str(">>>> tabrowlin: row %.4f > maxrow %d! "
                                   "It will be clipped\n"),
@@ -1192,7 +1192,7 @@ tabrowcopyk(CSOUND* csound, TABROWCOPY* p) {
     }
     row = row < p->maxrow ? row : p->maxrow;
     int row0    = (int)row;
-    MYFLT delta = row - row0;
+    cs_float delta = row - row0;
     int numcols = *p->inumcols;
     int offset  = *p->ioffset;
     int start   = *p->istart;
@@ -1200,8 +1200,8 @@ tabrowcopyk(CSOUND* csound, TABROWCOPY* p) {
     int step = *p->istep;
     int tabsourcelen = p->tabsourcelen;
 
-    MYFLT* tabsource = p->tabsource;
-    MYFLT* tabdest   = p->tabdest;
+    cs_float* tabsource = p->tabsource;
+    cs_float* tabdest   = p->tabdest;
 
     int idx0 = offset + numcols * row0 + start;
     int idx1 = idx0 + (end-start);
@@ -1236,9 +1236,9 @@ tabrowcopyk(CSOUND* csound, TABROWCOPY* p) {
 typedef struct {
     OPDS h;
     ARRAYDAT *outarr;
-    MYFLT *krow, *ifnsrc, *inumcols, *ioffset, *istart, *iend, *istep;
-    MYFLT* tabsource;
-    MYFLT  maxrow;
+    cs_float *krow, *ifnsrc, *inumcols, *ioffset, *istart, *iend, *istep;
+    cs_float* tabsource;
+    cs_float  maxrow;
     uint32_t tabsourcelen;
     uint32_t end;
     uint32_t numitems;
@@ -1262,7 +1262,7 @@ tabrowcopyarr_init(CSOUND *csound, TABROWCOPYARR *p) {
         return INITERR(Str("tabrowlin: end must be bigger than start"));
     }
     p->end = end;
-    uint32_t numitems = (uint32_t) (ceil((end - start) / (MYFLT)step));
+    uint32_t numitems = (uint32_t) (ceil((end - start) / (cs_float)step));
     if(numitems <= 0) {
         return INITERR(Str("tabrowlin: no items to copy"));
     }
@@ -1281,11 +1281,11 @@ tabrowcopyarr_k(CSOUND *csound, TABROWCOPYARR *p) {
     uint32_t offset = (uint32_t)*p->ioffset;
     //uint32_t numitems = (uint32_t)ceil((end - start) / (float)step);
     uint32_t numcols = (uint32_t)*p->inumcols;
-    MYFLT row = *p->krow;
+    cs_float row = *p->krow;
     uint32_t row0 = (uint32_t)row;
-    MYFLT delta = row - row0;
+    cs_float delta = row - row0;
     uint32_t tabsourcelen = p->tabsourcelen;
-    MYFLT x0, x1;
+    cs_float x0, x1;
 
     if(UNLIKELY(row < 0)) {
       return PERFERR(Str("krow cannot be negative"));
@@ -1293,11 +1293,11 @@ tabrowcopyarr_k(CSOUND *csound, TABROWCOPYARR *p) {
     // TODO : check maxrow
     uint32_t idx0 = offset + numcols * row0 + start;
     uint32_t idx1 = idx0 + (end-start);
-    uint32_t numitems = (uint32_t) (ceil((end - start) / (MYFLT)step));
+    uint32_t numitems = (uint32_t) (ceil((end - start) / (cs_float)step));
     ARRAY_ENSURESIZE_PERF(csound, p->outarr, numitems);
 
-    MYFLT *out = p->outarr->data;
-    MYFLT *tabsource = p->tabsource;
+    cs_float *out = p->outarr->data;
+    cs_float *tabsource = p->tabsource;
 
     uint32_t i, j = 0;
     if (LIKELY(delta != 0)) {
@@ -1323,7 +1323,7 @@ typedef struct {
     OPDS h;
     // kOut[] rowlin kMtrx[], krow, kstart=0, kend=0, kstep=1
     ARRAYDAT *outarr, *inarr;
-    MYFLT *krow, *kstart, *kend, *kstep;
+    cs_float *krow, *kstart, *kend, *kstep;
     int numitems;
 } GETROWLIN;
 
@@ -1346,7 +1346,7 @@ getrowlin_init(CSOUND *csound, GETROWLIN *p) {
     int step  = (int)*p->kstep;
     if (end < 1)
       end = p->inarr->sizes[1];
-    int numitems = (int) (ceil((end - start) / (MYFLT)step));
+    int numitems = (int) (ceil((end - start) / (cs_float)step));
     tabinit_compat(csound, p->outarr, numitems, &(p->h));
     p->numitems = numitems;
     return OK;
@@ -1362,14 +1362,14 @@ getrowlin_k(CSOUND *csound, GETROWLIN *p) {
     if (end <= 0) {
         end = p->inarr->sizes[1];
     }
-    int numitems = (int) (ceil((end - start) / (MYFLT)step));
+    int numitems = (int) (ceil((end - start) / (cs_float)step));
     int numcols  = p->inarr->sizes[1];
     if(numitems > numcols)
         return PERFERR(Str("Asked to read too many items from a row"));
     ARRAY_ENSURESIZE_PERF(csound, p->outarr, numitems);
 
     p->numitems = numitems;
-    MYFLT row = *p->krow;
+    cs_float row = *p->krow;
     int maxrow = p->inarr->sizes[0] - 1;
     if(UNLIKELY(row < 0))
         return PERFERR(Str("getrowlin: krow cannot be negative"));
@@ -1380,14 +1380,14 @@ getrowlin_k(CSOUND *csound, GETROWLIN *p) {
         // return PERFERR(Str("getrowlin: exceeded maximum row"));
     }
     int row0    = (int)row;
-    MYFLT delta = row - row0;
+    cs_float delta = row - row0;
 
-    MYFLT *out = p->outarr->data;
-    MYFLT *in  = p->inarr->data;
+    cs_float *out = p->outarr->data;
+    cs_float *in  = p->inarr->data;
 
     int idx0 = numcols * row0 + start;
     int idx1 = idx0 + numitems;
-    MYFLT x0, x1;
+    cs_float x0, x1;
     int i, j = 0;
     if (LIKELY(delta != 0)) {
         for (i=idx0; i<idx1; i+=step) {

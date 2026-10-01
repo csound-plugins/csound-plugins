@@ -305,7 +305,7 @@ static int32_t pathSplitExt_opcode(CSOUND *csound, SS_S *p) {
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
+    cs_float *out;
     STRINGDAT *s;
 } K_S;
 

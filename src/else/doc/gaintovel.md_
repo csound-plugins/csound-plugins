@@ -30,12 +30,12 @@ vel = (relgain ^ exp) * (127 - minvel) + minvel
 
 ## Syntax
 
-MYFLT *vel;
-    MYFLT *gain;
-    MYFLT *mingain;
-    MYFLT *exp;
-    MYFLT *minvel;
-    MYFLT *round;
+cs_float *vel;
+    cs_float *gain;
+    cs_float *mingain;
+    cs_float *exp;
+    cs_float *minvel;
+    cs_float *round;
 
 
 ```csound

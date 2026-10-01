@@ -45,7 +45,7 @@
 
 
 static inline
-int em_isnan(MYFLT d) {
+int em_isnan(cs_float d) {
   union {
     unsigned long long l;
     double d;
@@ -57,7 +57,7 @@ int em_isnan(MYFLT d) {
 }
 
 static inline
-int em_isinf(MYFLT d) {
+int em_isinf(cs_float d) {
   union {
     unsigned long long l;
     double d;
@@ -67,7 +67,7 @@ int em_isinf(MYFLT d) {
 }
 
 static inline
-int em_isinfornan(MYFLT d) {
+int em_isinfornan(cs_float d) {
     union {
       unsigned long long l;
       double d;
@@ -82,7 +82,7 @@ int em_isinfornan(MYFLT d) {
 
 // Functions to deal with both csound6 and csound7 in the same codebase
 
-static inline FUNC * FTFind(CSOUND *csound, MYFLT *num) {
+static inline FUNC * FTFind(CSOUND *csound, cs_float *num) {
 #ifdef CSOUNDAPI7
     return csound->FTFind(csound, num);
 #else
@@ -117,13 +117,13 @@ static inline char* _GetInputArgName(CSOUND *csound, void *p, uint32_t idx) {
 #endif
 }
 
-// static inline MYFLT _currentTime(CSOUND *csound, OPDS *ctx) {
+// static inline cs_float _currentTime(CSOUND *csound, OPDS *ctx) {
 //     size_t numcycles = CS_KCNT;
 // }
 
 static inline void InsertScoreEventNow(CSOUND *csound, EVTBLK *evt, OPDS *ctx) {
 #ifdef CSOUNDAPI7
-    MYFLT sr = GetLocalSr(ctx);
+    cs_float sr = GetLocalSr(ctx);
     // csound->InsertScoreEvent(csound, evt, csound->GetCurrentTimeSamples(csound) / sr);
     csound->Event(csound, 0, evt->p, evt->pcnt);
 #else
@@ -151,7 +151,7 @@ _createTable(CSOUND *csound, FUNC **ftp, const EVTBLK * ftevt, int32_t n) {
 #endif
 }
 
-static inline MYFLT _GetLocalSr(CSOUND *csound, OPDS *ctx) {
+static inline cs_float _GetLocalSr(CSOUND *csound, OPDS *ctx) {
 #ifdef CSOUNDAPI7
     IGN(csound);
     return GetLocalSr(ctx);
@@ -161,7 +161,7 @@ static inline MYFLT _GetLocalSr(CSOUND *csound, OPDS *ctx) {
 #endif
 }
 
-static inline MYFLT _GetLocalKsmps(CSOUND *csound, OPDS *ctx) {
+static inline cs_float _GetLocalKsmps(CSOUND *csound, OPDS *ctx) {
 #ifdef CSOUNDAPI7
     IGN(csound);
     return GetLocalKsmps(ctx);
@@ -265,7 +265,7 @@ static inline float fastlogf (float x) {
     return 0.69314718f * fastlog2 (x);
 }
 
-static inline MYFLT fastlog(MYFLT x) {
+static inline cs_float fastlog(cs_float x) {
     return FL(0.6931471805599453) * fastlog2(x);
 }
 
@@ -297,7 +297,7 @@ char * _strncpy(char *dst, const char *src, size_t siz) {
 
 // #define LOBITS     10
 // #define LOFACT     1024
-// LOSCAL is 1/LOFACT as MYFLT
+// LOSCAL is 1/LOFACT as cs_float
 // #define LOSCAL     FL(0.0009765625)
 // #define LOMASK     1023
 

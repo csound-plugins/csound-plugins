@@ -69,12 +69,12 @@
 typedef struct {
     OPDS h;
     // outputs
-    // MYFLT *out;
+    // cs_float *out;
     // inputs
-    // MYFLT *in;
+    // cs_float *in;
     
     // internal
-    // MYFLT data;
+    // cs_float data;
 } OPCODEA;
 
 #define S(x) sizeof(x)

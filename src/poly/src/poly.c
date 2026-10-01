@@ -203,7 +203,7 @@ typedef struct {
     // the internal state of the opcode
     OPCSTATE *state;
     // memory ot hold k values for this instance
-    MYFLT indata[POLY_MAXINPARAMS];
+    cs_float indata[POLY_MAXINPARAMS];
 } OPCHANDLE;
 
 /**
@@ -382,7 +382,7 @@ static const i32 default_unset = -1000;
 static const i32 default_fail  = -999;
 
 /** Returns the default value corresponding to a given char in a signature */
-MYFLT get_default_value(char c) {
+cs_float get_default_value(char c) {
     switch(c) {
     case 'o':
     case 'O':
@@ -407,9 +407,9 @@ MYFLT get_default_value(char c) {
     case 'Z':
     case '*':
     case '?':
-        return (MYFLT)default_unset;
+        return (cs_float)default_unset;
     default:
-        return (MYFLT)default_fail;
+        return (cs_float)default_fail;
     }
 }
 
@@ -426,7 +426,7 @@ handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
     ui32 col, nsmps = CS_KSMPS;
     OPCHANDLE *handle = &(p->handles[handleidx]);
     char c;
-    MYFLT default_value;
+    cs_float default_value;
     void **inargs = &(handle->state->args[p->num_output_args]);
     /* opc_numins: the TOTAL number of inputs expected by opcode
        num_input_args: the number of inputs actually passed to poly
@@ -460,7 +460,7 @@ handle_set_inputs(CSOUND *csound, POLY1 *p, ui32 handleidx) {
         switch(c) {
         case 'i':
         case 'k':
-            handle->indata[col] = *((MYFLT*)(p->inargs[col]));
+            handle->indata[col] = *((cs_float*)(p->inargs[col]));
             break;
         case 'a':
             // we can safely point to the input arg. since this will not change
@@ -658,7 +658,7 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
     p->num_input_args = (ui32)_GetInputArgCnt(csound, p) - 2;
     // p->num_output_args = (ui32)csound->GetOutputArgCnt(p);
     p->num_output_args = (ui32)_GetOutputArgCnt(csound, p);
-    p->num_instances = (ui32 ) *((MYFLT*)(p->args[p->num_output_args]));
+    p->num_instances = (ui32 ) *((cs_float*)(p->args[p->num_output_args]));
     p->opcode_name = (STRINGDAT*) p->args[p->num_output_args + 1];
     p->inargs = &(p->args[p->num_output_args + 2]);
     p->is_parallel = 1;
@@ -831,7 +831,7 @@ static i32 poly1_perf(CSOUND *csound, POLY1 *p) {
                 handle->indata[col] = arr->data[i];
             } else if (c=='k') {
                 // scalar, copy value to internal storage
-                handle->indata[col] = *((MYFLT*)(p->inargs[col]));
+                handle->indata[col] = *((cs_float*)(p->inargs[col]));
             }
 
         }
@@ -916,7 +916,7 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
 
     p->num_input_args = (ui32)_GetInputArgCnt(csound, p) - 2; // csound->GetInputArgCnt(p) - 2;
     p->num_output_args = (ui32)_GetOutputArgCnt(csound, p);   // csound->GetOutputArgCnt(p);
-    p->num_instances = (ui32 ) *((MYFLT*)(p->args[p->num_output_args]));
+    p->num_instances = (ui32 ) *((cs_float*)(p->args[p->num_output_args]));
     p->opcode_name = (STRINGDAT*) p->args[p->num_output_args + 1];
     p->inargs = &(p->args[p->num_output_args + 2]);
     p->firstcol = p->num_output_args;
@@ -1128,14 +1128,14 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
         if(i >= p->opc_numins)
             continue;
         char c = p->opc->intypes[i];
-        MYFLT default_value = get_default_value(c);
+        cs_float default_value = get_default_value(c);
 
         if((i32)default_value == default_fail)
             return INITERRF(Str("failed to parse signature (%s), char failed: '%c'"),
                             p->opc->intypes, c);
 
         if((i32)default_value != default_unset) {
-            *(MYFLT*)inargs[i] = default_value;
+            *(cs_float*)inargs[i] = default_value;
         }
     }
 
@@ -1163,20 +1163,20 @@ defer_deinit(CSOUND *csound, DEFER *p) {
 
 typedef struct {
   OPDS h;
-  MYFLT  *ans;
+  cs_float  *ans;
   ARRAYDAT *tab;
-  MYFLT  *opt;
+  cs_float  *opt;
 } TABQUERY1;
 
 
 static int32_t tabsuma(CSOUND *csound, TABQUERY1 *p) {
     ARRAYDAT *t = p->tab;
     int32_t i, numarrays = 0;
-    MYFLT *ans = p->ans, *in0, *in1, *in2, *in3;
+    cs_float *ans = p->ans, *in0, *in1, *in2, *in3;
     uint32_t offset = p->h.insdshead->ksmps_offset;
     uint32_t early  = p->h.insdshead->ksmps_no_end;
     int32_t nsmps = CS_KSMPS;
-    int32_t span = (t->arrayMemberSize)/sizeof(MYFLT);
+    int32_t span = (t->arrayMemberSize)/sizeof(cs_float);
 
     if (UNLIKELY(t->data == NULL))
         return PERFERR("array-variable not initialised");
@@ -1184,14 +1184,14 @@ static int32_t tabsuma(CSOUND *csound, TABQUERY1 *p) {
     if (UNLIKELY(t->dimensions!=1))
       return PERFERR("array-variable not a vector");
 
-    if (UNLIKELY(offset)) memset(ans, '\0', offset*sizeof(MYFLT));
+    if (UNLIKELY(offset)) memset(ans, '\0', offset*sizeof(cs_float));
     if (UNLIKELY(early)) {
-        memset(&ans[nsmps], '\0', early*sizeof(MYFLT));
+        memset(&ans[nsmps], '\0', early*sizeof(cs_float));
     }
 
     for (i=0; i<t->dimensions; i++) numarrays += t->sizes[i];
 
-    memset(&ans[offset], '\0', nsmps*sizeof(MYFLT));
+    memset(&ans[offset], '\0', nsmps*sizeof(cs_float));
 
     int numarrays4 = numarrays - (numarrays % 4);
 
@@ -1218,9 +1218,9 @@ static int32_t tabsuma(CSOUND *csound, TABQUERY1 *p) {
 
 typedef struct {
   OPDS h;
-  MYFLT *out;
-  MYFLT *in;
-  MYFLT *k1;
+  cs_float *out;
+  cs_float *in;
+  cs_float *k1;
 } TESTOPC_a_a;
 
 int32_t testopc_init(CSOUND *csound, TESTOPC_a_a *p) {
@@ -1230,9 +1230,9 @@ int32_t testopc_init(CSOUND *csound, TESTOPC_a_a *p) {
 
 int32_t testopc_perf(CSOUND *csound, TESTOPC_a_a *p) {
     size_t nsmps = CS_KSMPS;
-    MYFLT *in = p->in;
-    MYFLT *out = p->out;
-    MYFLT k1 = *p->k1;
+    cs_float *in = p->in;
+    cs_float *out = p->out;
+    cs_float k1 = *p->k1;
     printf("\nTest: ");
     for(size_t i=0; i<nsmps; i++) {
         out[i] = in[i] * k1;

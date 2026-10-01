@@ -16,6 +16,10 @@ endif()
 target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/include)
 target_include_directories(${pluginlib} PRIVATE ${CMAKE_SOURCE_DIR}/csound/Android/CsoundAndroid/jni)
 
+if(LINUX)
+    target_include_directories(${pluginlib} PRIVATE /usr/local/include/csound)
+endif()
+
 set_target_properties(${pluginlib} PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}
   LIBRARY_OUTPUT_DIRECTORY ${BUILD_PLUGINS_DIR}

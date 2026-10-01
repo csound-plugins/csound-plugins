@@ -69,17 +69,17 @@ static int _key_index(char *key, const char **options) {
 
 typedef struct {
     OPDS h;
-    MYFLT *kfreq;
-    MYFLT *kconf;
-    MYFLT *kvoiced;
+    cs_float *kfreq;
+    cs_float *kconf;
+    cs_float *kvoiced;
 
-    MYFLT *asig;
+    cs_float *asig;
     void *ctrls[30];
     PYINContext *pyinctx;
 
-    MYFLT last_freq;
-    MYFLT last_conf;
-    MYFLT last_voiced;
+    cs_float last_freq;
+    cs_float last_conf;
+    cs_float last_voiced;
 
 } PYIN_OPCODE;
 
@@ -114,7 +114,7 @@ static int32_t pyin_init(CSOUND *csound, PYIN_OPCODE *p) {
                 }
                 return NOTOK;
             }
-            MYFLT value = *(MYFLT *)(p->ctrls[i*2+1]);
+            cs_float value = *(cs_float *)(p->ctrls[i*2+1]);
             switch(paramindex) {
             case 0:   // framesize
                 cfg.frame_size = (int)value;
@@ -180,7 +180,7 @@ static int32_t pyin_deinit(CSOUND *csound, PYIN_OPCODE *p) {
 static int32_t pyin_perf(CSOUND *csound, PYIN_OPCODE *p) {
     PYINResult res;
     float block[512];
-    MYFLT *asig = p->asig;
+    cs_float *asig = p->asig;
     for(uint32_t i=0; i < LOCAL_KSMPS(p); i++) {
         block[i] = (float)asig[i];
     }
@@ -188,7 +188,7 @@ static int32_t pyin_perf(CSOUND *csound, PYIN_OPCODE *p) {
     if(hasresult) {
         p->last_freq = res.pitch_hz;
         p->last_conf = res.confidence;
-        p->last_voiced = (MYFLT)res.voiced;
+        p->last_voiced = (cs_float)res.voiced;
     }
     *p->kfreq = p->last_freq;
     *p->kconf = p->last_conf;

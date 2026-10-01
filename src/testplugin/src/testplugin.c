@@ -3,10 +3,10 @@
 
 typedef struct {
     OPDS h;
-    MYFLT *out;
-    MYFLT *in0;
-    MYFLT *in1;
-    MYFLT *in2;
+    cs_float *out;
+    cs_float *in0;
+    cs_float *in1;
+    cs_float *in2;
 } TESTOPCODE;
 
 
