@@ -21,8 +21,15 @@
  * with it, tracking is stable with comfortable margins.  That pure-tone
  * behaviour is a known accuracy limitation, not something this test pins.
  *
+ * Signal tests run under BOTH difference-function backends
+ * (cfg.diff_use_fft true/false); the backends must additionally agree
+ * frame-by-frame (same voicing, pitch within 0.05 Hz), which is far above
+ * measured float-level divergence (~3e-3 Hz max) but far below any musical
+ * difference such as an octave flip.
+ *
  * Build & run (from src/pitchtrack/test/):
- *   gcc -O2 -Wall -Wextra -o test_pyinlib test_pyinlib.c ../src/pyinlib.c -lm
+ *   gcc -O2 -Wall -Wextra -o test_pyinlib test_pyinlib.c ../src/pyinlib.c \
+ *       ../src/kiss_fft.c ../src/kiss_fftr.c -lm
  *   ./test_pyinlib
  *
  * Exit code is 0 when all checks pass, 1 otherwise.  All signals are
@@ -161,10 +168,12 @@ int main(void)
         pyin_destroy(ctx);
     }
 
-    /* ---- 3. silence -> unvoiced ---- */
-    {
+    /* ---- 3. silence -> unvoiced (both backends; gate path is shared) ---- */
+    for (int be = 0; be < 2; be++) {
         PYINConfig cfg = pyin_config_default();
+        cfg.diff_use_fft = (be == 1);
         PYINContext *ctx = pyin_create(cfg, NULL, NULL, NULL);
+        CHECK(ctx != NULL, "create with diff_use_fft=%d", be);
         float *sig = (float *)calloc((size_t)sig_len, sizeof(float));
         PYINResult res[128];
         int n = feed(ctx, sig, sig_len, block_size, n_blocks, res, 128);
@@ -185,11 +194,14 @@ int main(void)
      * tracking lag; the mean must sit within 1%. */
     {
         const float f0s[] = { 110.0f, 220.0f, 440.0f };
-        for (int fi = 0; fi < 3; fi++) {
+        for (int fi = 0; fi < 3; fi++)
+        for (int be = 0; be < 2; be++) {
             float f0 = f0s[fi];
             PYINConfig cfg = pyin_config_default();
             cfg.sample_rate = sr;
+            cfg.diff_use_fft = (be == 1);
             PYINContext *ctx = pyin_create(cfg, NULL, NULL, NULL);
+            CHECK(ctx != NULL, "create f0=%f be=%d", f0, be);
             float *sig = (float *)malloc((size_t)sig_len * sizeof(float));
             PYINResult res[128];
             make_vibrato_tone(sig, sig_len, f0, sr, 0.5f);
@@ -218,10 +230,11 @@ int main(void)
         }
     }
 
-    /* ---- 7. determinism ---- */
-    {
+    /* ---- 7. determinism (both backends, exact) ---- */
+    for (int be = 0; be < 2; be++) {
         PYINConfig cfg = pyin_config_default();
         cfg.sample_rate = sr;
+        cfg.diff_use_fft = (be == 1);
         float *sig = (float *)malloc((size_t)sig_len * sizeof(float));
         PYINResult a[128], b[128];
         make_vibrato_tone(sig, sig_len, 330.0f, sr, 0.5f);
@@ -229,16 +242,55 @@ int main(void)
         PYINContext *c2 = pyin_create(cfg, NULL, NULL, NULL);
         int na = feed(c1, sig, sig_len, block_size, n_blocks, a, 128);
         int nb = feed(c2, sig, sig_len, block_size, n_blocks, b, 128);
-        CHECK(na == nb, "determinism run length %d vs %d", na, nb);
+        CHECK(na == nb, "be=%d determinism run length %d vs %d",
+              be, na, nb);
         for (int i = 0; i < na && i < 128; i++) {
             CHECK(a[i].pitch_hz == b[i].pitch_hz &&
                   a[i].confidence == b[i].confidence &&
                   a[i].voiced == b[i].voiced,
-                  "frame %d differs between identical runs", i);
+                  "be=%d frame %d differs between identical runs",
+                  be, i);
         }
         free(sig);
         pyin_destroy(c1);
         pyin_destroy(c2);
+    }
+
+    /* ---- 8. cross-backend agreement ----
+     * FFT and direct paths compute the same quantity up to float rounding
+     * (measured max |dpitch| ~3e-3 Hz).  Same voicing plus tight absolute
+     * tolerances catch any musical divergence (e.g. octave flips). */
+    {
+        const float f0s[] = { 110.0f, 220.0f, 330.0f, 440.0f };
+        for (int fi = 0; fi < 4; fi++) {
+            float f0 = f0s[fi];
+            PYINConfig fa = pyin_config_default();
+            PYINConfig fb = pyin_config_default();
+            fa.sample_rate = fb.sample_rate = sr;
+            fa.diff_use_fft = true;
+            fb.diff_use_fft = false;
+            float *sig = (float *)malloc((size_t)sig_len * sizeof(float));
+            PYINResult a[128], b[128];
+            make_vibrato_tone(sig, sig_len, f0, sr, 0.5f);
+            PYINContext *ca = pyin_create(fa, NULL, NULL, NULL);
+            PYINContext *cb = pyin_create(fb, NULL, NULL, NULL);
+            int na = feed(ca, sig, sig_len, block_size, n_blocks, a, 128);
+            int nb = feed(cb, sig, sig_len, block_size, n_blocks, b, 128);
+            CHECK(na == nb, "f0=%f backend run length %d vs %d",
+                  f0, na, nb);
+            for (int i = 0; i < na && i < 128; i++) {
+                CHECK(a[i].voiced == b[i].voiced,
+                      "f0=%f frame %d voicing differs", f0, i);
+                CHECK(fabsf(a[i].pitch_hz - b[i].pitch_hz) < 0.05f,
+                      "f0=%f frame %d pitch differs: %f vs %f",
+                      f0, i, a[i].pitch_hz, b[i].pitch_hz);
+                CHECK(fabsf(a[i].confidence - b[i].confidence) < 1e-3f,
+                      "f0=%f frame %d confidence differs", f0, i);
+            }
+            free(sig);
+            pyin_destroy(ca);
+            pyin_destroy(cb);
+        }
     }
 
     if (n_failed == 0)

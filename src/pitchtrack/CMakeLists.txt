@@ -5,7 +5,14 @@ if(NOT(BUILD_PITCHTRACK_OPCODES))
 endif()
 
 set(pluginlib pitchtrack)
-set(SOURCE_FILES src/pyinlib.c src/pyin.c)
+# kiss_fft sources are vendored BSD-3-Clause upstream code (see headers).
+set(SOURCE_FILES src/pyinlib.c src/pyin.c src/kiss_fft.c src/kiss_fftr.c)
+
+if(NOT MSVC)
+    # Keep third-party FFT warnings out of our -Wall -Wextra build.
+    set_source_files_properties(src/kiss_fft.c src/kiss_fftr.c
+        PROPERTIES COMPILE_OPTIONS "-w")
+endif()
 
 if(APPLE)
     add_library(${pluginlib} SHARED ${SOURCE_FILES})

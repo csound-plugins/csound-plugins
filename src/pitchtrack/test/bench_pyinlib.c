@@ -11,14 +11,16 @@
  * covered separately by test_pyinlib.c.
  *
  * Build & run (from src/pitchtrack/test/):
- *   gcc -O2 -Wall -Wextra -o bench_pyinlib bench_pyinlib.c ../src/pyinlib.c -lm
- *   ./bench_pyinlib [seconds] [repeats]
+ *   gcc -O2 -Wall -Wextra -o bench_pyinlib bench_pyinlib.c ../src/pyinlib.c \
+ *       ../src/kiss_fft.c ../src/kiss_fftr.c -lm
+ *   ./bench_pyinlib [seconds] [repeats] [fft|direct|both]
  */
 #include "../src/pyinlib.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #ifndef M_PI
@@ -43,6 +45,7 @@ int main(int argc, char **argv)
 {
     double seconds = argc > 1 ? atof(argv[1]) : 30.0;
     int repeats = argc > 2 ? atoi(argv[2]) : 3;
+    const char *which = argc > 3 ? argv[3] : "both";
     if (seconds <= 0.0) seconds = 30.0;
     if (repeats <= 0) repeats = 3;
 
@@ -72,36 +75,50 @@ int main(int argc, char **argv)
         sig[i] = s;
     }
 
-    PYINConfig cfg = pyin_config_default();
-    cfg.sample_rate = sr;
-    const int BS = cfg.block_size;
+    const int BS = 64;
+    int backends[2];
+    int nbe = 0;
+    if (!strcmp(which, "fft") || !strcmp(which, "both"))
+        backends[nbe++] = 1;
+    if (!strcmp(which, "direct") || !strcmp(which, "both"))
+        backends[nbe++] = 0;
+    if (nbe == 0) { fprintf(stderr, "backend must be fft|direct|both\n"); return 1; }
 
-    double best = 1e300;
-    long frames = 0;
-    for (int r = 0; r < repeats; r++) {
-        PYINContext *ctx = pyin_create(cfg, NULL, NULL, NULL);
-        if (!ctx) { fprintf(stderr, "create failed\n"); return 1; }
-        float *blk = (float *)malloc((size_t)BS * sizeof(float));
-        PYINResult res;
-        long nframes = 0;
-        double t0 = now_sec();
-        for (int pos = 0; pos + BS <= total; pos += BS) {
-            for (int i = 0; i < BS; i++)
-                blk[i] = sig[pos + i];
-            if (pyin_process_block(ctx, blk, &res))
-                nframes++;
+    for (int bi = 0; bi < nbe; bi++) {
+        PYINConfig cfg = pyin_config_default();
+        cfg.sample_rate = sr;
+        cfg.diff_use_fft = (backends[bi] == 1);
+
+        double best = 1e300;
+        long frames = 0;
+        for (int r = 0; r < repeats; r++) {
+            PYINContext *ctx = pyin_create(cfg, NULL, NULL, NULL);
+            if (!ctx) { fprintf(stderr, "create failed\n"); return 1; }
+            float *blk = (float *)malloc((size_t)BS * sizeof(float));
+            PYINResult res;
+            long nframes = 0;
+            double t0 = now_sec();
+            for (int pos = 0; pos + BS <= total; pos += BS) {
+                for (int i = 0; i < BS; i++)
+                    blk[i] = sig[pos + i];
+                if (pyin_process_block(ctx, blk, &res))
+                    nframes++;
+            }
+            double dt = now_sec() - t0;
+            if (dt < best) best = dt;
+            frames = nframes;
+            free(blk);
+            pyin_destroy(ctx);
         }
-        double dt = now_sec() - t0;
-        if (dt < best) best = dt;
-        frames = nframes;
-        free(blk);
-        pyin_destroy(ctx);
-    }
 
-    printf("signal=%.1fs frames=%ld repeats=%d\n", seconds, frames, repeats);
-    printf("best wall inside pyin_process_block: %.3f s\n", best);
-    printf("us/frame: %.1f  x-realtime: %.1fx\n",
-           best * 1e6 / (double)frames, seconds / best);
+        printf("[%s] signal=%.1fs frames=%ld repeats=%d\n",
+               backends[bi] ? "fft" : "direct", seconds, frames, repeats);
+        printf("[%s] best wall inside pyin_process_block: %.3f s\n",
+               backends[bi] ? "fft" : "direct", best);
+        printf("[%s] us/frame: %.1f  x-realtime: %.1fx\n",
+               backends[bi] ? "fft" : "direct",
+               best * 1e6 / (double)frames, seconds / best);
+    }
     free(sig);
     return 0;
 }

@@ -30,6 +30,12 @@
 
 #include "pyinlib.h"
 
+#include "kiss_fft.h"
+#include "kiss_fftr.h"
+#ifdef FIXED_POINT
+#error "pyinlib requires floating-point kiss_fft_scalar"
+#endif
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -465,17 +471,21 @@ static inline float frame_energy(const float * restrict frame, int W)
 }
 
 /*
- * compute_diff — YIN difference function with auto-vectorization.
+ * compute_diff_direct — YIN difference function, direct O(W*maxlag) form.
  *
+ *   d(tau) = r_x(tau) + r_y(tau) - 2*r(tau),
+ * with r_x/r_y maintained by O(1) recurrences and r(tau) a dot product.
  * r_x0 is the full-frame energy sum(x[j]^2), computed once by the caller
  * (frame_energy) and shared with the energy gate, so the frame is only
  * summed once.  r_y(0) equals r_x(0).
  *
  * No alignment requirement: the inner dot products use unaligned loads.
+ *
+ * See compute_diff_fft for the FFT-based equivalent (same contract).
  */
-static void compute_diff(const float * restrict frame, int W,
-                         float       * restrict diff,  int max_lag,
-                         float r_x0)
+static void compute_diff_direct(const float * restrict frame, int W,
+                                float       * restrict diff,  int max_lag,
+                                float r_x0)
 {
     const float *af = frame;
     /* --- full-frame energy r_x(0) = r_y(0), provided by the caller --- */
@@ -496,6 +506,52 @@ static void compute_diff(const float * restrict frame, int W,
         diff[tau] = r_x + r_y - 2.0f * rt;
     }
 
+}
+
+/*
+ * compute_diff_fft — YIN difference function via FFT autocorrelation.
+ *
+ * Same contract as compute_diff_direct: identical d(tau) up to float
+ * rounding.  r(tau) for all lags comes from one zero-padded autocorrelation:
+ * forward real FFT, magnitude-square the spectrum, inverse FFT, scale by
+ * 1/N.  Padding to N >= W + maxlag keeps bins 1..maxlag free of circular
+ * wrap-around, so r(tau) matches the direct sum exactly in exact arithmetic.
+ * r_x/r_y use the same O(1) recurrences as the direct path.  Tiny negative
+ * results from FFT rounding are clamped to 0 (the direct path can also
+ * produce ~1e-9 negatives; both feed the same downstream clamps).
+ */
+static void compute_diff_fft(int N, float * restrict work,
+                             kiss_fft_cpx * restrict spec,
+                             kiss_fftr_cfg fwd, kiss_fftr_cfg inv,
+                             const float * restrict frame, int W,
+                             float       * restrict diff,  int max_lag,
+                             float r_x0)
+{
+    memcpy(work, frame, (size_t)W * sizeof(float));
+    memset(work + W, 0, (size_t)(N - W) * sizeof(float));
+
+    kiss_fftr(fwd, work, spec);
+    for (int k = 0; k <= N / 2; k++) {
+        float re = spec[k].r, im = spec[k].i;
+        spec[k].r = re * re + im * im;
+        spec[k].i = 0.0f;
+    }
+    kiss_fftri(inv, spec, work);
+
+    const float inv_n = 1.0f / (float)N;
+    float r_x = r_x0, r_y = r_x0;
+    diff[0] = 0.0f;
+
+    for (int tau = 1; tau <= max_lag; tau++) {
+        float drop_left  = frame[W - tau];
+        float drop_right = frame[tau - 1];
+        r_x -= drop_left  * drop_left;
+        r_y -= drop_right * drop_right;
+
+        float rt = work[tau] * inv_n;
+        float d  = r_x + r_y - 2.0f * rt;
+        diff[tau] = d > 0.0f ? d : 0.0f;
+    }
 }
 
 
@@ -561,6 +617,14 @@ struct PYINContext {
      * The pitch grid never changes, so Step 3 + decode avoid a powf and
      * a division per state per frame. */
     float *state_tau;
+    /* FFT difference-function workspace (only when cfg.diff_use_fft).
+     * fft_n is the padded length (next pow2 >= frame + maxlag);
+     * fft_work holds N real samples, fft_spec N/2+1 complex bins. */
+    int            fft_n;
+    float         *fft_work;
+    kiss_fft_cpx  *fft_spec;
+    kiss_fftr_cfg  fft_fwd;
+    kiss_fftr_cfg  fft_inv;
 };
 
 #define BETA_LUT_N 2048
@@ -596,6 +660,7 @@ PYINConfig pyin_config_default(void)
     c.voiced_obs_floor          = 0.0f;
     c.octave_cost_weight        = 0.0f;
     c.octave_subharmonic_threshold = 3.0f;
+    c.diff_use_fft              = true;
     return c;
 }
 
@@ -707,6 +772,28 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
     for (int s = 0; s < ctx->n_pitched; s++)
         ctx->state_tau[s] = cfg.sample_rate / state_to_hz(s, ctx->state_cents);
 
+    /* FFT workspace for the autocorrelation path (create-time only, so the
+     * hot path never allocates).  N must cover frame + max lag. */
+    ctx->fft_n = 0;
+    ctx->fft_work = NULL;
+    ctx->fft_spec = NULL;
+    ctx->fft_fwd = NULL;
+    ctx->fft_inv = NULL;
+    if (cfg.diff_use_fft) {
+        int fft_n = next_pow2(cfg.frame_size + ctx->lag_max);
+        if (fft_n < 4) goto fail;
+        ctx->fft_work = (float *)_calloc(allocfn, allocdata,
+                                         (size_t)fft_n, sizeof(float));
+        ctx->fft_spec = (kiss_fft_cpx *)_calloc(allocfn, allocdata,
+                                               (size_t)(fft_n / 2 + 1),
+                                               sizeof(kiss_fft_cpx));
+        if (!ctx->fft_work || !ctx->fft_spec) goto fail;
+        ctx->fft_fwd = kiss_fftr_alloc(fft_n, 0, NULL, NULL);
+        ctx->fft_inv = kiss_fftr_alloc(fft_n, 1, NULL, NULL);
+        if (!ctx->fft_fwd || !ctx->fft_inv) goto fail;
+        ctx->fft_n = fft_n;
+    }
+
     return ctx;
 
 fail:
@@ -721,6 +808,12 @@ void pyin_destroy(PYINContext *ctx)
     _free(ctx->freefn, ctx->allocdata, ctx->mem);
     _free(ctx->freefn, ctx->allocdata, ctx->beta_lut);
     _free(ctx->freefn, ctx->allocdata, ctx->state_tau);
+    _free(ctx->freefn, ctx->allocdata, ctx->fft_work);
+    _free(ctx->freefn, ctx->allocdata, ctx->fft_spec);
+    /* kiss_fft cfgs use malloc/free internally; only ever created/destroyed
+     * here, never on the audio path. */
+    free(ctx->fft_fwd);
+    free(ctx->fft_inv);
     _free(ctx->freefn, ctx->allocdata, ctx->hmm.score);
     _free(ctx->freefn, ctx->allocdata, ctx->hmm.log_trans_band);
 
@@ -774,7 +867,12 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
     }
 
     /* ── Step 1: YIN difference + CMNDF ─────────────────────────────────── */
-    compute_diff(ctx->frame, W, ctx->diff,  lag_max, frame_e);
+    if (ctx->cfg.diff_use_fft)
+        compute_diff_fft(ctx->fft_n, ctx->fft_work, ctx->fft_spec,
+                         ctx->fft_fwd, ctx->fft_inv,
+                         ctx->frame, W, ctx->diff, lag_max, frame_e);
+    else
+        compute_diff_direct(ctx->frame, W, ctx->diff, lag_max, frame_e);
     compute_cmndf(ctx->diff,     ctx->cmndf, lag_max);
 
     /* ── Step 2: per-lag voiced probability ──────────────────────────────

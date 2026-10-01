@@ -239,6 +239,20 @@ typedef struct {
      */
     float octave_subharmonic_threshold;  /* Default: 3.0f */
 
+    /**
+     * Difference-function backend.
+     *
+     *   true  (default) – lagged cross-correlation via FFT (zero-padded
+     *           autocorrelation): O(N log N), roughly 2-3x faster per frame.
+     *   false – direct O(W*maxlag) dot products; kept for comparison,
+     *           debugging, and minimal-memory builds (no FFT workspace).
+     *
+     * Both paths compute the same mathematical quantity; the test suite
+     * pins them to identical musical decisions.  Read once at pyin_create;
+     * changing it afterwards has no effect.
+     */
+    bool diff_use_fft;  /* Default: true */
+
 } PYINConfig;
 
 /**
@@ -258,6 +272,7 @@ typedef struct {
  *   voiced_obs_floor          = 0.0
  *   octave_cost_weight        = 0.0
  *   octave_subharmonic_threshold = 3.0
+ *   diff_use_fft              = true
  */
 PYINConfig pyin_config_default(void);
 
