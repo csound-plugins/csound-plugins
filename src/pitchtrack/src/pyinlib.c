@@ -576,6 +576,17 @@ static float parabolic_interp(const float *cmndf, int tau, int max_lag)
     return (float)tau + 0.5f * (s0 - s2) / denom;
 }
 
+/* Linear interpolation of the CMNDF at a (possibly fractional) lag x.
+ * Used by the subharmonic penalty to evaluate cmndf(τ/k). */
+static float cmndf_interp(const float *cmndf, float x, int max_lag)
+{
+    if (x <= 0.0f)              return cmndf[0];
+    if (x >= (float)max_lag)    return cmndf[max_lag];
+    int   i    = (int)x;
+    float frac = x - (float)i;
+    return (1.0f - frac) * cmndf[i] + frac * cmndf[i + 1];
+}
+
 /* ── Main context ───────────────────────────────────────────────────────── */
 
 struct PYINContext {
@@ -592,6 +603,9 @@ struct PYINContext {
 
     /* Runtime */
     int samples_since_last_hop;
+    int prev_voiced;      /* previous analysis frame decoded as voiced */
+    int hold_left;        /* voiced_obs_hold hangover frames remaining */
+    int hold_len;         /* hangover length in frames (set at create)     */
 
     /* Heap buffers */
     RingBuffer ring;
@@ -658,8 +672,10 @@ PYINConfig pyin_config_default(void)
     c.beta_b                    = 6.0f;
     c.energy_gate_rms           = 1e-4f;
     c.voiced_obs_floor          = 0.0f;
+    c.voiced_obs_hold           = 0.0f;
     c.octave_cost_weight        = 0.0f;
     c.octave_subharmonic_threshold = 3.0f;
+    c.subharmonic_cost_weight   = 0.0f;
     c.diff_use_fft              = true;
     return c;
 }
@@ -688,7 +704,9 @@ static bool config_valid(const PYINConfig *c)
     if (c->beta_b <= 0.0f)                                      return false;
     if (c->energy_gate_rms < 0.0f)                             return false;
     if (c->voiced_obs_floor < 0.0f || c->voiced_obs_floor >= 0.5f) return false;
+    if (c->voiced_obs_hold  < 0.0f || c->voiced_obs_hold  >= 0.95f) return false;
     if (c->octave_cost_weight < 0.0f)                               return false;
+    if (c->subharmonic_cost_weight < 0.0f)                         return false;
     if (c->octave_subharmonic_threshold <= 1.0f)                    return false;
     return true;
 }
@@ -713,6 +731,11 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
     ctx->state_cents = 100.0f / (float)cfg.cents_per_semitone;
     ctx->beta_a      = (double)cfg.beta_a;
     ctx->beta_b      = (double)cfg.beta_b;
+
+    /* Voiced-hold hangover: about one analysis window, so a glide whose
+     * smearing lasts one window is bridged but longer silences are not. */
+    ctx->hold_len    = cfg.frame_size / cfg.hop_size + 3;
+    ctx->hold_left   = 0;
 
     /* Band half-width: ±TRANS_BAND_SIGMA × sigma, rounded up to whole states.
      * Capped so it never exceeds the full pitch range. */
@@ -859,6 +882,8 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
             ctx->log_obs[n_pitched] = 0.0f;   /* log(1) = 0 → certain unvoiced */
             hmm_push(&ctx->hmm, ctx->log_obs);
 
+            ctx->prev_voiced   = 0;
+            ctx->hold_left     = 0;
             result->pitch_hz   = 0.0f;
             result->confidence = 0.0f;
             result->voiced     = false;
@@ -909,22 +934,74 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
      * Applied only when 2τ <= lag_max (sub-harmonic must be in the search range).
      * ──────────────────────────────────────────────────────────────────── */
     const float ocw = ctx->cfg.octave_cost_weight;
-    if (ocw > 0.0f) {
+    const float scw = ctx->cfg.subharmonic_cost_weight;
+    if (ocw > 0.0f || scw > 0.0f) {
         const float K = ctx->cfg.octave_subharmonic_threshold;
-        for (int tau = lag_min; tau <= lag_max; tau++) {
-            int tau2 = tau * 2;
-            if (tau2 > lag_max) continue;   /* sub-harmonic out of range */
-            float ct  = ctx->cmndf[tau];
-            float c2t = ctx->cmndf[tau2];
-            if (ct <= 0.0f) continue;
-            float R = c2t / ct;
-            if (R < K) {
-                /* sub-harmonic is competitive: τ may be a harmonic alias */
-                float penalty = powf(R / K, ocw);    /* in (0, 1) */
-                ctx->p_voiced_lag[tau] *= penalty;
+
+        if (ocw > 0.0f) {
+            for (int tau = lag_min; tau <= lag_max; tau++) {
+                int tau2 = tau * 2;
+                if (tau2 > lag_max) continue;   /* sub-harmonic out of range */
+                float ct  = ctx->cmndf[tau];
+                float c2t = ctx->cmndf[tau2];
+                if (ct <= 0.0f) continue;
+                float R = c2t / ct;
+                if (R < K) {
+                    /* sub-harmonic is competitive: τ may be a harmonic alias */
+                    float penalty = powf(R / K, ocw);    /* in (0, 1) */
+                    ctx->p_voiced_lag[tau] *= penalty;
+                }
             }
         }
-        /* Recompute max after penalty */
+
+        /* ── Subharmonic (octave-down / first-dip) penalty ────────────────
+         *
+         * Mirror of the octave penalty above.  Here we detect a candidate τ
+         * that is a subharmonic (lower octave) of a shorter lag τ/k that is a
+         * *strictly deeper* CMNDF dip.  This is the common failure after a fast
+         * jump to a higher pitch: the Viterbi cannot reach the new fundamental
+         * in one transition (it lies outside the ±4σ band) and every
+         * subharmonic of it has p_voiced ≈ 1, so the path settles on the
+         * subharmonic nearest the old pitch.  Penalising all such lags lets the
+         * tracker leave them.
+         *
+         *   ρ = cmndf(τ/k) / cmndf(τ)      (only ρ < 1 means "deeper")
+         *   p_voiced[τ] *= ρ ^ subharmonic_cost_weight
+         *
+         * Requiring a strictly deeper divisor is what keeps this from harming
+         * real voiced speech: there the fundamental and its 2nd harmonic have
+         * comparable dips (ρ ≈ 1), so the penalty is negligible, whereas a
+         * clean subharmonic lock has ρ ≪ 1.  The smallest ρ over k is used, and
+         * a true fundamental — whose divisors are not dips at all — is left
+         * untouched.  The penalty is continuous at ρ = 1, so there is no cliff.
+         * ──────────────────────────────────────────────────────────────── */
+        if (scw > 0.0f) {
+            /* Lags whose voiced probability is already negligible can never be
+             * selected, so penalising them cannot change the result; skipping
+             * them keeps the divisor scan off the hot path. */
+            const float CAND = 1e-4f;
+            for (int tau = lag_min; tau <= lag_max; tau++) {
+                float c_here = ctx->cmndf[tau];
+                if (c_here <= 0.0f) continue;
+                if (ctx->p_voiced_lag[tau] < CAND) continue;
+
+                /* Track the smallest divisor ratio; the penalty is monotonic
+                 * in ρ, so only a single powf is needed per lag. */
+                float invc   = 1.0f / c_here;
+                float minRho = 1.0f;
+                for (int k = 2; ; k++) {
+                    float x = (float)tau / (float)k;
+                    if (x < (float)lag_min) break;
+                    float cdiv = cmndf_interp(ctx->cmndf, x, lag_max);
+                    float rho  = cdiv * invc;    /* = cmndf(τ/k) / cmndf(τ) */
+                    if (rho < minRho) minRho = rho;
+                }
+                if (minRho < 1.0f)
+                    ctx->p_voiced_lag[tau] *= powf(minRho, scw); /* in (0,1) */
+            }
+        }
+
+        /* Recompute max once after all penalties */
         max_p_voiced = 0.0f;
         for (int tau = lag_min; tau <= lag_max; tau++) {
             if (ctx->p_voiced_lag[tau] > max_p_voiced)
@@ -945,14 +1022,41 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
      *   (creak, glottalization, microphone noise) cannot impose an arbitrarily
      *   large penalty on the voiced path.  Does not affect per-lag values used
      *   for the individual voiced-state observations.
+     *
+     * voiced_obs_hold: the same clamp, but only while the previous frame was
+     *   decoded voiced.  This is voicing hysteresis: it bridges short
+     *   low-periodicity stretches inside a voiced segment (e.g. a fast pitch
+     *   glide) without making voiced onsets and offsets harder to detect.
      * ──────────────────────────────────────────────────────────────────── */
     const float FLOOR = 1e-7f;
 
     /* Apply voiced observation floor to the unvoiced observation only;
      * per-lag p_voiced values keep their original range for pitch accuracy. */
+    /* Voiced-hold hangover: refresh while the frame still carries solid
+     * periodicity, otherwise count down.  The hold then bridges a short
+     * low-evidence stretch (a glide smeared across one window) but expires
+     * during longer silences / genuine unvoiced segments. */
+    if (max_p_voiced >= 0.4f)
+        ctx->hold_left = ctx->hold_len;
+    else if (ctx->hold_left > 0)
+        ctx->hold_left--;
+
+    float obs_floor = ctx->cfg.voiced_obs_floor;
+    if (ctx->prev_voiced && ctx->hold_left > 0 && ctx->cfg.voiced_obs_hold > obs_floor) {
+        /* Only hold while the frame is clearly above the energy gate: the
+         * gate itself catches silence, but borderline frames just above it
+         * can carry spurious periodicity that the hold would otherwise latch
+         * onto.  Requiring the frame energy to exceed 4× the gate (i.e. RMS
+         * above 2× gate) keeps the hold for real speech only. */
+        float gate = ctx->cfg.energy_gate_rms;
+        float gate_e = 4.0f * gate * gate * (float)W;
+        if (frame_e > gate_e)
+            obs_floor = ctx->cfg.voiced_obs_hold;
+    }
+
     float max_pv_floored = max_p_voiced;
-    if (max_pv_floored < ctx->cfg.voiced_obs_floor)
-        max_pv_floored = ctx->cfg.voiced_obs_floor;
+    if (max_pv_floored < obs_floor)
+        max_pv_floored = obs_floor;
 
     for (int s = 0; s < n_pitched; s++) {
         float tau_f = ctx->state_tau[s];
@@ -982,6 +1086,7 @@ static bool analyse_frame(PYINContext *ctx, PYINResult *result)
 
     /* ── Step 5: decode ──────────────────────────────────────────────────── */
     int best = hmm_best_state(&ctx->hmm);
+    ctx->prev_voiced = (best != n_pitched);
 
     /*
      * If the best state is the unvoiced state: report unvoiced.

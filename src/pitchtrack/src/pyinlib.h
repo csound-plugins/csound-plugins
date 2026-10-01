@@ -157,39 +157,63 @@ typedef struct {
     float energy_gate_rms;  /* Default: 1e-4f */
 
     /**
-     * Voiced observation floor: minimum value clamped onto max_p_voiced
-     * before computing the HMM log-observation for voiced states.
+     * Voiced observation floor: lower bound clamped onto max_p_voiced before
+     * deriving the unvoiced state's observation.
      *
-     * Without a floor, a single genuinely ambiguous frame (e.g. during a
-     * creak, glottalization, or breath) where CMNDF is high can produce
-     * max_p_voiced ≈ 0.15, giving log_obs_voiced ≈ −1.9 nats.  This is
-     * enough to let the unvoiced path overtake the voiced path, and with
-     * the default voiced_transition_weight=0.10 it then takes 8–10 strong
-     * frames to recover.
+     * The unvoiced observation is normally log(1 − max_p_voiced).  Without a
+     * floor, a single genuinely ambiguous frame (creak, glottalization,
+     * breath) where the CMNDF is high can produce max_p_voiced ≈ 0.15, i.e.
+     * p_unvoiced ≈ 0.85, enough to let the unvoiced path overtake the voiced
+     * path; with the default voiced_transition_weight=0.10 it then takes 8–10
+     * strong frames to recover.
      *
-     * Setting voiced_obs_floor=0.20 means: "even if the CMNDF looks very
-     * bad for one frame, treat the voiced probability as at least 0.20
-     * rather than committing fully to unvoiced."  This bounds the debt a
-     * single bad frame can impose on the voiced path.
+     * Setting voiced_obs_floor=0.20 means: "treat the voiced probability as at
+     * least 0.20", i.e. cap p_unvoiced at 0.80, for every frame.  This bounds
+     * the debt a single bad frame can impose on the voiced path.
      *
      * Interpretation of values:
-     *   0.00  – disabled; bad frames impose full cost on voiced path (default)
-     *   0.10  – mild smoothing; only helps with very weak evidence frames
+     *   0.00  – disabled (default)
+     *   0.10  – mild smoothing
      *   0.20  – recommended for natural speech with occasional creaky voice,
      *           breathiness, or microphone noise
-     *   0.30  – aggressive; may prevent detection of genuinely unvoiced
-     *           short segments embedded in voiced speech
+     *   0.30+ – increasingly aggressive; may prevent detection of genuinely
+     *           unvoiced short segments embedded in voiced speech
      *
-     * This parameter only affects the observation floor; it does NOT affect
-     * the energy gate (silence is still handled separately).
-     *
-     * NOTE: voiced_obs_floor is most effective in combination with a low
-     * voiced_transition_weight (0.01–0.05).  With a high weight, the
-     * Viterbi switches state too easily for the floor to help.
+     * This is an unconditional bias.  For bridging short low-periodicity
+     * frames *inside* a voiced segment (e.g. a fast pitch glide) without also
+     * making voiced onsets harder to detect, use voiced_obs_hold instead.
      *
      * Default: 0.0 (disabled)
      */
     float voiced_obs_floor;  /* Default: 0.0f */
+
+    /**
+     * Voicing hysteresis: conditional observation floor while voiced.
+     *
+     * A fast pitch glide (or any brief, low-periodicity transition) can make
+     * the CMNDF dip shallow for several consecutive frames, so max_p_voiced
+     * drops and the HMM commits to unvoiced even though the signal is
+     * clearly voiced.  Widening the analysis window does not help (the
+     * opposite), and a global voiced_obs_floor large enough to bridge it
+     * makes voiced onsets and offsets unreliable.
+     *
+     * This parameter adds hysteresis instead: while the previous analysis
+     * frame was decoded as voiced, max_p_voiced is clamped up to at least
+     * this value (p_unvoiced capped accordingly).  Entering a voiced region
+     * is unaffected, but once voiced, a short run of weak frames no longer
+     * forces an unvoiced dropout.  The hold is released as soon as a frame
+     * decodes unvoiced (or hits the energy gate).
+     *
+     *   0.0  – disabled (default; previous behaviour)
+     *   0.6  – mild hold
+     *   0.8  – bridges the ≈30 ms glides seen in continuous speech
+     *   0.9  – strong hold; may smear genuine short unvoiced intervals
+     *
+     * Values are clamped to [0, 0.95).
+     *
+     * Default: 0.0 (disabled)
+     */
+    float voiced_obs_hold;  /* Default: 0.0f */
 
     /**
      * Octave error suppression: penalty weight.
@@ -240,6 +264,47 @@ typedef struct {
     float octave_subharmonic_threshold;  /* Default: 3.0f */
 
     /**
+     * Subharmonic (octave-down) lock suppression: penalty weight.
+     *
+     * The mirror of octave_cost_weight, and a separate knob because it
+     * addresses the opposite failure mode:
+     *
+     *   octave_cost_weight     – candidate reports 2×F0 (too high); suppressed
+     *                            by checking the double lag 2τ.
+     *   subharmonic_cost_weight – candidate reports F0/k (too low), typically
+     *                            after a fast jump to a higher pitch; the
+     *                            Viterbi cannot reach the new fundamental
+     *                            because the nearest reachable lag is a
+     *                            subharmonic of it, and the spectral emission
+     *                            of every subharmonic saturates at p_voiced≈1.
+     *
+     * Detection (first-dip preference, generalised to any integer subharmonic):
+     * for each candidate lag τ and each divisor k = 2, 3, … with τ/k ≥ lag_min,
+     * compare the divisor dip cmndf(τ/k) with the candidate dip cmndf(τ).  Only
+     * a *strictly deeper* shorter dip (ρ < 1) counts, so a true fundamental —
+     * whose divisors are not dips at all, or are only as deep as it is — is
+     * left untouched:
+     *
+     *   ρ = cmndf(τ/k) / cmndf(τ)
+     *   p_voiced[τ] *= ρ ^ subharmonic_cost_weight        (only when ρ < 1)
+     *
+     * The smallest ρ over all divisors is used.  Requiring ρ < 1 is what keeps
+     * this safe on real voiced speech: there the fundamental and its 2nd
+     * harmonic have comparable dips (ρ ≈ 1), so the penalty is negligible,
+     * whereas a clean subharmonic lock has ρ ≪ 1.  The penalty is continuous at
+     * ρ = 1, so there is no threshold cliff.
+     *
+     * Values:
+     *   0.0  – disabled (default; preserves previous behaviour)
+     *   0.5  – mild; safe for continuous voiced speech
+     *   1.0  – resolves subharmonic locks after low→high jumps
+     *   2.0  – aggressive; stronger suppression, may bias very low pitches
+     *
+     * Default: 0.0
+     */
+    float subharmonic_cost_weight;  /* Default: 0.0f */
+
+    /**
      * Difference-function backend.
      *
      *   true  (default) – lagged cross-correlation via FFT (zero-padded
@@ -270,8 +335,10 @@ typedef struct {
  *   beta_b                    = 6.0
  *   energy_gate_rms           = 1e-4
  *   voiced_obs_floor          = 0.0
+ *   voiced_obs_hold           = 0.0
  *   octave_cost_weight        = 0.0
  *   octave_subharmonic_threshold = 3.0
+ *   subharmonic_cost_weight   = 0.0
  *   diff_use_fft              = true
  */
 PYINConfig pyin_config_default(void);

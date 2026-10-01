@@ -1,5 +1,6 @@
 <CsoundSynthesizer>
 <CsOptions>
+-o pyin-test2.wav
 </CsOptions>
 
 <CsInstruments>
@@ -38,7 +39,6 @@ beta_a             1 - 3          2
 beta_b             1 - 20         3
 drift              10 -           100
 voiced_obs_floor   0-1            0.
-voiced_hold        0.             0. - 0.95
 octave_cost        0.             0. - 0.5
 subharmonic_tresh  4              1 - 8
 subharmonic_cost   0.             0. - 2.
@@ -57,26 +57,29 @@ instr 1
   if metro(1/3) == 1 then
     ksource = (ksource + 1) % 4
   endif
-  asig = picksource(ksource, asig1, asig2, asig3, asig4)
-  ; asig = asig2
+  ; asig = picksource(ksource, asig1, asig2, asig3, asig4)
+  asig = asig2
   ; ar compress2 aasig, acsig, kthresh, kloknee, khiknee, kratio, katt, krel, ilook
   asigpyin = compress2:a(asig, asig, -90, -40, -20, 6, 0.01, 0.5, 0.02)
   asigpyin *= 3
   ; asigpyin = asig
-  kpitch, kconf, kvoiced pyin asigpyin, "framesize", 2048, "hop", 256, \
-  	"fmin", 70, "fmax", 600, "transition_weight", 0.05, "beta_b", 1.6, \
-  	"drift", 150, "voiced_obs_floor", 0.1, "subharmonic_cost", 0., \
-  	"voiced_hold", 0.8
-  ksound = schmitt(dbamp(rms(asig)),  -45, -60);
-  kenv = schmitt:k(kconf, 0.3, 0.2) * schmitt:k(kpitch, 90, 75) * ksound;
+  kpitch, kconf, kvoiced pyin asigpyin, "framesize", 1536, "hop", 192, \
+  	"fmin", 70, "fmax", 500, "transition_weight", 0.2, "beta_b", 1.6, \
+  	"drift", 150, "voiced_obs_floor", 0.1, "subharmonic_cost", 0.1, \
+  	"voiced_hold", 0.6
+  ksound = schmitt(dbamp(rms(asig)),  -50, -70);
+  kenv = schmitt:k(kconf, 0.4, 0.15) * schmitt:k(kpitch, 90, 70) * ksound;
   outch 1, asigpyin * 0.9
-  outch 2, vco2(0.1, kpitch);  * a(kenv)
+  outch 2, vco2(0.1, kpitch) * a(kenv)
+  if metro(200) == 1 then
+    println "t: %.3f, f0: %.1f, conf: %.4f, voiced: %.1f", eventtime(), kpitch, kconf, kvoiced
+  endif
 endin
 
 </CsInstruments>
 
 <CsScore>
-i1 1 20
+i1 0 5
 
 </CsScore>
 </CsoundSynthesizer>

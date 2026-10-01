@@ -37,10 +37,16 @@ kfreq, kconfidence, kvoiced pyin asig, Sarg1, ivalue1, [Sarg2, ivalue2, ...]
 * **beta_b**: 1–20. Param b for beta distr. Lower = smoother track
 * **drift**: 10– (100). Pitch variation between frames, in cents
 * **voiced_obs_floor**: 0–1. Floor for voiced observations
+* **voiced_hold**: 0–0.95 (0). Voicing hysteresis: while the previous frame was
+  voiced, clamp the voiced evidence up to this value so a short low-periodicity
+  stretch (e.g. a fast pitch glide) does not force an unvoiced dropout
 * **octave_cost**: 0–0.5 (0). Cost of jumping an octave between frames. 
   Use if the algorithm falsely predicts the 2nd overtone as the fundamental
 * **subharmonic_tresh**: 4. Used together with octave_cost, controls the 
   threshold of a downward octave jump
+* **subharmonic_cost**: 0–2 (0). Suppresses subharmonic locks (pitch reported
+  one or more octaves too low), typically after a fast jump to a higher pitch.
+  Use if a source change causes the tracker to settle on a subharmonic
 
 
 ## Output
@@ -101,8 +107,10 @@ beta_a             1 - 3          2
 beta_b             1 - 20         3
 drift              10 -           100
 voiced_obs_floor   0-1            0.
+voiced_hold        0.             0. - 0.95
 octave_cost        0.             0. - 0.5
 subharmonic_tresh  4              1 - 8
+subharmonic_cost   0.             0. - 2.
 
 */
 

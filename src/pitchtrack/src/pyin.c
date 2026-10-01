@@ -52,6 +52,8 @@ static const char *pyin_params[] = {
     "octave_cost",                    // 10
     "subharmonic_thresh",             // 11
     "drift",                          // 12
+    "subharmonic_cost",               // 13
+    "voiced_hold",                    // 14
     NULL
 };
 
@@ -154,6 +156,12 @@ static int32_t pyin_init(CSOUND *csound, PYIN_OPCODE *p) {
                 break;
             case 12:  // drift
                 cfg.pitch_sigma_cents = value;
+                break;
+            case 13:  // subharmonic_cost
+                cfg.subharmonic_cost_weight = value;
+                break;
+            case 14:  // voiced_hold
+                cfg.voiced_obs_hold = value;
                 break;
             default:
                 INITERRF("Invalid parameter index: %d", paramindex);

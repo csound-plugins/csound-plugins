@@ -39,8 +39,10 @@ beta_a             1 - 3          2
 beta_b             1 - 20         3
 drift              10 -           100
 voiced_obs_floor   0-1            0.
+voiced_hold        0.             0. - 0.95
 octave_cost        0.             0. - 0.5
 subharmonic_tresh  4              1 - 8
+subharmonic_cost   0.             0. - 2.
 
 */
 
