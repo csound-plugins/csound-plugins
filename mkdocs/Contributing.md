@@ -45,9 +45,11 @@ At the root folder of this repository, do
 
     mkdir build
     cd build
-    cmake ..
+    cmake -DAPIVERSION=7.0 ..
 	cmake --build .
 	cmake --install .
+
+(The build defaults to the Csound 7 API; pass `-DAPIVERSION=6.0` for Csound 6.)
     
 
 

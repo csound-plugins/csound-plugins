@@ -207,6 +207,7 @@ typedef uint64_t ui64;
 #define KHASH_STRKEY_MAXSIZE 127
 #define HANDLES_INITIAL_SIZE 200
 #define DICT_INITIAL_SIZE 8
+#define DICT_MAX_INITIAL_SIZE (1<<20)
 #define FLOAT_FMT "%.10g"
 
 /*
@@ -239,10 +240,10 @@ typedef uint64_t ui64;
 
 #define CHECK_HASHTAB_EXISTS(h) {if(UNLIKELY((h)==NULL)) return PERFERR(ERR_NOINSTANCE);}
 
-#define CHECK_HANDLE(handle) {if((handle)->hashtab==NULL) return PERFERR(ERR_NOINSTANCE);}
-#define CHECK_HANDLE_INIT(handle) {if((handle)->hashtab==NULL) return INITERR(ERR_NOINSTANCE);}
+#define CHECK_HANDLE(handle) {if(UNLIKELY((handle)==NULL || (handle)->hashtab==NULL)) return PERFERR(ERR_NOINSTANCE);}
+#define CHECK_HANDLE_INIT(handle) {if(UNLIKELY((handle)==NULL || (handle)->hashtab==NULL)) return INITERR(ERR_NOINSTANCE);}
 
-#define CHECK_INDEX(idx, globals) {if((idx) < 0 || (idx) >= (globals->maxhandles)) return INITERRF("Handle index invalid: %d", (idx));  }
+#define CHECK_INDEX(idx, globals) {if((i32)(idx) < 0 || (ui32)(idx) >= (globals)->maxhandles) return INITERRF("Handle index invalid: %d", (int)(idx));  }
 
 #define CHECK_HASHTAB_TYPE(handletype, expectedtype)                                       \
     if(UNLIKELY((handletype) != (expectedtype))) {                                         \
@@ -263,26 +264,21 @@ typedef uint64_t ui64;
         return PERFERRF(Str("dict: key too long (%d > %d)"),            \
                         (int)strlen((s)->data), KHASH_STRKEY_MAXSIZE)
 
-// p: an opcode struct with a member 'g':KHASH_GLOBALS* and input handleidx:cs_float*
-#define get_handle_check(p)  ((ui32)*(p)->handleidx < p->g->maxhandles ? &((p)->g->handles[(ui32)*(p)->handleidx]) : NULL)
+// p: an opcode struct with a member 'g':HASH_GLOBALS* and input handleidx:cs_float*
+// NB: handle_lookup is defined after HASH_GLOBALS; these macros expand at use sites
+static inline void *handle_lookup_void(void *g_void, cs_float fidx);
+#define get_handle_check(p)  ((HANDLE*)handle_lookup_void((p)->g, *(p)->handleidx))
 
-#define get_handle(p) (&((p)->g->handles[(ui32)*(p)->handleidx]))
+#define get_handle(p) ((HANDLE*)handle_lookup_void((p)->g, *(p)->handleidx))
 
 #ifdef CSOUNDAPI6
 #define register_deinit(csound, p, func) \
     csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
 #endif
 
-
-// #define CSOUND_MULTICORE
-
-#ifdef CSOUND_MULTICORE
-    #define LOCK(x) csound->LockMutex(x->mutex_)
-    #define UNLOCK(x) csound->LockMutex(x->mutex_)
-#else
-    #define LOCK(x) do {} while(0)
-    #define UNLOCK(x) do {} while(0)
-#endif
+// Mutex support removed: dicts/pools are not thread-safe for concurrent
+// write access. Callers must serialize access from the orchestra (init/k-rate
+// are already serialized by Csound). See TODO.md.
 
 // ---------------------- Utilities -----------------------
 
@@ -327,11 +323,18 @@ kstr_init_from_stringdat(CSOUND *csound, kstring_t *ks, STRINGDAT *s) {
     kstr_from_cstr(csound, ks, s->data);
 }
 
-// like strncpy but really makes sure that the dest str is 0 terminated
+// Copy src into dest (of total size destsize), always NUL-terminating.
+// Truncates if src does not fit; destsize must be > 0.
 static inline
-void strncpy0(char *dest, const char *src, size_t n) {
-    strncpy(dest, src, n);
-    dest[n] = '\0';
+void strncpy0(char *dest, const char *src, size_t destsize) {
+    if(destsize == 0)
+        return;
+    if(src == NULL) {
+        dest[0] = '\0';
+        return;
+    }
+    strncpy(dest, src, destsize - 1);
+    dest[destsize - 1] = '\0';
 }
 
 // Set a STRINGDAT* from a source string and its length
@@ -407,25 +410,25 @@ typedef struct {
     ui64 counter;
     void *hashtab;
     void *hashtab2;   // used by the "any" type to support both float and string values
-    void *mutex_;
-    spin_lock_t lock;
 } HANDLE;
 
 
-// handle: a KHASH_HANDLE, code: the code to run with the hashtabele h
+// handle: a KHASH_HANDLE, code: the code to run with the hashtable h
+// NB: khStrAny has TWO tables; with_hashtable must not be used for it.
+// Callers needing Any must handle hashtab/hashtab2 explicitly.
 #define with_hashtable(handle, code) {               \
-    i32 _khtype = handle->khtype;                    \
+    i32 _khtype = (handle)->khtype;                  \
     if(_khtype == khStrStr) {                        \
-        khash_t(khStrStr) *h = handle->hashtab;      \
+        khash_t(khStrStr) *h = (handle)->hashtab;    \
         code;                                        \
     } else if (_khtype == khStrFlt) {                \
-        khash_t(khStrFlt) *h = handle->hashtab;      \
+        khash_t(khStrFlt) *h = (handle)->hashtab;    \
         code;                                        \
     } else if (_khtype == khIntStr) {                \
-        khash_t(khIntStr) *h = handle->hashtab;      \
+        khash_t(khIntStr) *h = (handle)->hashtab;    \
         code;                                        \
-    } else {                                         \
-        khash_t(khIntFlt) *h = handle->hashtab;      \
+    } else if (_khtype == khIntFlt) {                \
+        khash_t(khIntFlt) *h = (handle)->hashtab;    \
         code;                                        \
     }                                                \
 } \
@@ -438,6 +441,25 @@ typedef struct {
             code;                                      \
     }}
 
+// Versioned wrapper around kh_put.
+//
+// kh_put decides whether to rehash BEFORE it looks at the key, based purely on
+// occupancy: if (n_occupied >= upper_bound) it resizes, and kh_resize rehashes
+// every live entry into new buckets. This can therefore happen even when the
+// key being written already exists (e.g. a table full of tombstones gets its
+// "clear deleted" pass). In that case kh_put returns *ret = 0 (present), so the
+// existing `if(absent) handle->counter++` logic does not fire, yet every cached
+// khiter_t in the opcode fast-paths has been invalidated.
+//
+// Bump the handle version counter exactly on that transition, so opcode caches
+// (which compare p->counter against handle->counter) re-fetch instead of using
+// a stale bucket index. `h` must be one of the khash tables in `handle`.
+#define DICT_KH_PUT(handle, name, h, key, ret)              \
+    ( ((h)->n_occupied >= (h)->upper_bound                 \
+           ? (void)((handle)->counter++)                   \
+           : (void)0),                                      \
+      kh_put(name, h, key, ret) )
+
 
 typedef struct {
     CSOUND *csound;
@@ -446,12 +468,34 @@ typedef struct {
     ui32 *slots;
     ui32 maxslots;
     ui32 lastslot;
-    void *mutex_;
 } HASH_GLOBALS;
 
 
+// OOB-safe lookup: returns NULL if g is NULL, fidx is negative/NaN,
+// or >= maxhandles. Does NOT check hashtab (freed vs invalid are
+// distinguished by the caller).
+static inline HANDLE *handle_lookup(HASH_GLOBALS *g, cs_float fidx) {
+    ui32 idx;
+    if(g == NULL || g->handles == NULL)
+        return NULL;
+    if(!(fidx >= 0))
+        return NULL;
+    if(!(fidx < (cs_float)g->maxhandles))
+        return NULL;
+    idx = (ui32)fidx;
+    if(idx >= g->maxhandles)
+        return NULL;
+    return &(g->handles[idx]);
+}
+
+static inline void *handle_lookup_void(void *g_void, cs_float fidx) {
+    return (void*)handle_lookup((HASH_GLOBALS*)g_void, fidx);
+}
+
 static inline HANDLE *get_handle_by_idx(HASH_GLOBALS *g, ui32 idx) {
-    if(idx > g->maxhandles)
+    if(g == NULL || g->handles == NULL)
+        return NULL;
+    if(idx >= g->maxhandles)
         return NULL;
     return &(g->handles[idx]);
 }
@@ -504,30 +548,33 @@ static HASH_GLOBALS* create_globals(CSOUND *csound) {
     g->csound = csound;
     g->maxhandles = HANDLES_INITIAL_SIZE;
     g->handles = csound->Calloc(csound, sizeof(HANDLE)*g->maxhandles);
+    if(g->handles == NULL)
+        return NULL;
     g->slots = csound->Calloc(csound, sizeof(ui32)*g->maxhandles);
+    if(g->slots == NULL) {
+        csound->Free(csound, g->handles);
+        g->handles = NULL;
+        return NULL;
+    }
     g->maxslots = g->maxhandles;
     g->lastslot = g->maxhandles;
     for(ui32 i=0;i < g->maxslots; i++) {
         g->slots[i] = i;
     }
-    g->mutex_ = csound->Create_Mutex(0);
     csound->RegisterResetCallback(csound, (void*)g, (i32(*)(CSOUND*, void*))dict_reset);
     return g;
 }
 
 /**
- * get the globals struct
+ * get the globals struct. The globals are stored per-CSOUND instance as a
+ * named global variable, so we must query (not cache in a static) to avoid
+ * leaking one instance's handles into another / dangling after reset.
  */
 
-static HASH_GLOBALS *_globals = NULL;
-
 static inline HASH_GLOBALS* dict_globals(CSOUND *csound) {
-    if(_globals != NULL)
-        return _globals;
     HASH_GLOBALS *g = (HASH_GLOBALS*)csound->QueryGlobalVariable(csound, GLOBALS_NAME);
     if(g == NULL)
         g = create_globals(csound);
-    _globals = g;
     return g;
 }
 
@@ -540,21 +587,29 @@ _init_handle(HANDLE *h) {
 static i32
 dict_expand_pool(HASH_GLOBALS *g) {
     CSOUND *csound = g->csound;
+    HANDLE *newhandles;
+    ui32 *newslots;
     if(g->lastslot > 0) {
         MSGF("dict_expand_pool: dict is not empty! (dict size: %d)\n", g->lastslot);
         return NOTOK;
     }
     ui32 oldsize = g->maxhandles;
     ui32 newsize = g->maxhandles * 2;
-    g->handles = csound->ReAlloc(csound, g->handles, sizeof(HANDLE)*newsize);
+    newhandles = csound->ReAlloc(csound, g->handles, sizeof(HANDLE)*newsize);
+    if(newhandles == NULL) {
+        MSGF("%s\n", "dict_expand_pool: memory allocation error (handles)");
+        return NOTOK;
+    }
+    g->handles = newhandles;
     for(size_t i=oldsize; i<newsize; i++) {
         _init_handle(&(g->handles[i]));
     }
-    g->slots = csound->ReAlloc(csound, g->slots, sizeof(ui32)*newsize);
-    if(g->handles == NULL || g->slots == NULL) {
-        MSGF("%s\n", "dict_expand_pool: memory allocation error");
+    newslots = csound->ReAlloc(csound, g->slots, sizeof(ui32)*newsize);
+    if(newslots == NULL) {
+        MSGF("%s\n", "dict_expand_pool: memory allocation error (slots)");
         return NOTOK;
     }
+    g->slots = newslots;
     // fill the pool with new values, from maxhandles to numhandles
     ui32 i = 0;
     for(ui32 slot=oldsize; slot<newsize; slot++) {
@@ -628,12 +683,15 @@ static i32
 dict_make_strany(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
     khash_t(khStrFlt) *hsf = kh_init(khStrFlt);
     khash_t(khStrStr) *hss = kh_init(khStrStr);
-    HANDLE *handle = &(g->handles[idx]);
+    HANDLE *handle;
+    IGN(csound);
+    if(g == NULL || idx >= g->maxhandles)
+        return NOTOK;
+    handle = &(g->handles[idx]);
     handle->hashtab = hss;
     handle->hashtab2 = hsf;
     handle->khtype = khStrAny;
     handle->counter = 0;
-    handle->mutex_ = csound->Create_Mutex(0);
     return OK;
 }
 
@@ -675,12 +733,14 @@ dict_make(CSOUND *csound, HASH_GLOBALS *g, int khtype, ui32 initialsize) {
         if(initialsize > 4) kh_resize(khIntFlt, hashtab, initialsize);
         break;
     }
-    HANDLE *handle = &(g->handles[idx]);
+    HANDLE *handle;
+    if(g == NULL || (ui32)idx >= g->maxhandles)
+        return -1;
+    handle = &(g->handles[idx]);
     handle->hashtab = hashtab;
     handle->hashtab2 = NULL;
     handle->khtype = khtype;
     handle->counter = 0;
-    handle->mutex_ = csound->Create_Mutex(0);
     return idx;
 }
 
@@ -708,14 +768,10 @@ dict_reset(CSOUND *csound, HASH_GLOBALS *g) {
     for(i = 0; i < g->maxhandles; i++) {
         if(g->handles[i].hashtab != NULL)
             _dict_free(csound, g, i);
-        if(g->handles[i].mutex_ != NULL)
-            csound->DestroyMutex(g->handles[i].mutex_);
     }
-    csound->DestroyMutex(g->mutex_);
     csound->Free(csound, g->handles);
     csound->Free(csound, g->slots);
     csound->DestroyGlobalVariable(csound, GLOBALS_NAME);
-    _globals = NULL;
     return OK;
 }
 
@@ -753,9 +809,12 @@ _hashtable_free_ss(CSOUND *csound, void *hashtab) {
  */
 static i32
 _dict_free(CSOUND *csound, HASH_GLOBALS *g, ui32 idx) {
-    HANDLE *handle = &(g->handles[idx]);
+    HANDLE *handle;
     khint_t k;
     kstring_t *ks;
+    if(g == NULL || idx >= g->maxhandles)
+        return NOTOK;
+    handle = &(g->handles[idx]);
     if(handle->hashtab == NULL) {
         MSGF("dict_free: trying to free handle (idx: %d), but its hashtable is NULL!\n", idx);
         return NOTOK;
@@ -965,6 +1024,9 @@ dict_new(CSOUND *csound, DICT_NEW *p) {
         // called as idict dict_new "sf", icapacity
         capacity = (int)*(cs_float*)p->inargs[0];
     }
+    if(capacity < 0 || capacity > DICT_MAX_INITIAL_SIZE)
+        return INITERRF("dict_new: invalid capacity %d (max %d)",
+                        capacity, DICT_MAX_INITIAL_SIZE);
     i32 idx = dict_make(csound, p->g, khtype, capacity);
     if(idx < 0)
         return INITERR(Str("dict_new: failed to create a new dict"));
@@ -983,9 +1045,14 @@ typedef struct {
 
 
 i32 _strcount(const char *s, char c) {
-    i32 i;
-    for (i=0; s[i]; s[i]==c ? i++ : *s++);
-    return i;
+    i32 n = 0;
+    if(s == NULL)
+        return 0;
+    for(; *s; s++) {
+        if(*s == c)
+            n++;
+    }
+    return n;
 }
 
 i64 stridx(const char *s, char c, size_t start) {
@@ -1020,81 +1087,120 @@ static i32
 dict_loadstr(CSOUND *csound, DICT_LOADSTR *p) {
     i32 numkeys = _strcount(p->str->data, ',');
     HASH_GLOBALS *g = dict_globals(csound);
+    enum { MAX_LOADSTR_ITEMS = 100 };
     i32 idx = dict_make(csound, g, khStrAny, numkeys);
     if(idx < 0) {
         return INITERRF("Failed to create a dict handle for str %s", p->str->data);
     }
     *p->idx = idx;
-    HANDLE *handle = &(g->handles[idx]);
+    HANDLE *handle = handle_lookup(g, (cs_float)(idx));
     CHECK_HANDLE(handle);
 
     // now parse the str and set the pairs
+    // items are separated by commas NOT inside quotes
     int insidestr = 0;
     const char *s = p->str->data;
     size_t itemstart = 0;
-    size_t itemend = 0;
-    size_t starts[100];
-    size_t ends[100];
+    size_t starts[MAX_LOADSTR_ITEMS];
+    size_t ends[MAX_LOADSTR_ITEMS];
     size_t numitems = 0;
-    char skey[80];
-    char valuebuf[1000];
+    char skey[KHASH_STRKEY_MAXSIZE+1];
+    char valuebuf[1024];
     char *svalue = valuebuf;
-    size_t slen = strlen(s);
+    size_t slen = s != NULL ? strlen(s) : 0;
     char quotetype = ' ';
     for(size_t i=0; i<slen; i++) {
         char c = s[i];
-        if(insidestr && (c == '\'' || c == '"') && c == quotetype) {
-            insidestr = 0;
+        if(insidestr) {
+            if(c == quotetype)
+                insidestr = 0;
+            continue;
+        }
+        if(c == '\'' || c == '"') {
+            insidestr = 1;
+            quotetype = c;
         } else if(c == ',') {
-            itemend = i;
+            if(numitems >= MAX_LOADSTR_ITEMS)
+                return INITERRF("Too many items (max %d)", MAX_LOADSTR_ITEMS);
             starts[numitems] = itemstart;
-            ends[numitems] = itemend;
+            ends[numitems] = i;
             numitems++;
             itemstart = i+1;
-        } else if(c=='\'') {
-            insidestr = 1;
-            quotetype = '\'';
-        } else if(c=='"') {
-            insidestr = 1;
-            quotetype = '"';
         }
     }
-    // check last item
-    if(itemstart > itemend && itemstart < slen) {
-        starts[numitems] = itemstart;
-        ends[numitems] = slen;
-        numitems++;
+    // last item (also covers the single-item string without any comma)
+    if(slen > 0) {
+        i64 laststart = str_first_char_after(s, slen, itemstart);
+        if(laststart >= 0) {
+            if(numitems >= MAX_LOADSTR_ITEMS)
+                return INITERRF("Too many items (max %d)", MAX_LOADSTR_ITEMS);
+            starts[numitems] = itemstart;
+            ends[numitems] = slen;
+            numitems++;
+        }
     }
     for(size_t i=0; i<numitems; i++) {
         size_t start = starts[i];
-        size_t sepidx = stridx(s, ':', start);
+        size_t itemend = ends[i];
+        // find first ':' in [start, itemend) not inside quotes
+        i64 sepidx = -1;
+        {
+            int inq = 0;
+            char qt = ' ';
+            for(size_t j=start; j<itemend; j++) {
+                char c = s[j];
+                if(inq) {
+                    if(c == qt)
+                        inq = 0;
+                } else if(c == '\'' || c == '"') {
+                    inq = 1;
+                    qt = c;
+                } else if(c == ':') {
+                    sepidx = (i64)j;
+                    break;
+                }
+            }
+        }
         if(sepidx < 0) {
-            return INITERRF("Item idx %lu in %s does not have separator :", i, s);
+            return INITERRF("Item idx %lu in %s does not have separator :", (unsigned long)i, s);
         }
 
-        size_t keystart = str_first_char_after(s, slen, start);
-        size_t keyend = str_last_char_before(s, slen, sepidx);
-        if(keystart < 0 || keyend < 0) {
-            return INITERRF("Malformed key %lu (%s)", i, s);
+        i64 keystart = str_first_char_after(s, slen, start);
+        i64 keyend = str_last_char_before(s, slen, (size_t)sepidx);
+        if(keystart < 0 || keyend < 0 || keyend < keystart) {
+            return INITERRF("Malformed key %lu (%s)", (unsigned long)i, s);
         }
-
-        strncpy0(skey, &s[keystart], keyend - keystart + 1);
-        size_t valuestart = str_first_char_after(s, slen, sepidx+1);
-        size_t valueend = str_last_char_before(s, slen, ends[i]);
-        if(valuestart < 0 || valueend < 0) {
-            return INITERRF("Malformed value %lu (%s)", i, s);
+        if((size_t)(keyend - keystart + 1) > KHASH_STRKEY_MAXSIZE) {
+            return INITERRF("Key too long (%s)", s);
         }
-        size_t lenvalue = valueend - valuestart + 1;
-        strncpy0(valuebuf, &s[valuestart], lenvalue);
+        {
+            size_t keylen = (size_t)(keyend - keystart + 1);
+            if(keylen >= sizeof(skey))
+                return INITERRF("Key too long (%s)", s);
+            memcpy(skey, &s[keystart], keylen);
+            skey[keylen] = '\0';
+        }
+        i64 valuestart = str_first_char_after(s, slen, (size_t)sepidx+1);
+        i64 valueend = str_last_char_before(s, slen, itemend);
+        if(valuestart < 0 || valueend < 0 || valueend < valuestart) {
+            return INITERRF("Malformed value %lu (%s)", (unsigned long)i, s);
+        }
+        size_t lenvalue = (size_t)(valueend - valuestart + 1);
+        if(lenvalue >= sizeof(valuebuf)) {
+            return INITERR("Value too long");
+        }
+        memcpy(valuebuf, &s[valuestart], lenvalue);
+        valuebuf[lenvalue] = '\0';
         int is_string_value = 0;
         if(valuebuf[0] == '\'' || valuebuf[0] == '"') {
-            if(valuebuf[lenvalue-1] != valuebuf[0])
+            if(lenvalue < 2 || valuebuf[lenvalue-1] != valuebuf[0])
                 return INITERRF("Malformed string value %s", valuebuf);
             is_string_value = 1;
-            svalue[lenvalue-1] = '\0';
-            svalue++;
-        } else if(isalpha(valuebuf[0])) {
+            valuebuf[lenvalue-1] = '\0';
+            svalue = &valuebuf[1];
+        } else if(isalpha((unsigned char)valuebuf[0])) {
             is_string_value = 1;
+            svalue = valuebuf;
         }
 
         if(is_string_value) {
@@ -1168,10 +1274,18 @@ dict_new_many(CSOUND *csound, DICT_NEW *p) {
 
     i32 idx = (i32)(*p->out_handleidx);
 
-    HANDLE *handle = &(p->g->handles[idx]);
+    HANDLE *handle = handle_lookup(p->g, (cs_float)idx);
 
-    CHECK_HANDLE(handle);
-    check_multi_signature(csound, p->inargs, numargs, handle->khtype);
+    if(handle == NULL || handle->hashtab == NULL) {
+        MSGF("%s\n", "dict_new_many: invalid handle");
+        return NOTOK;
+    }
+    if(check_multi_signature(csound, p->inargs, numargs, handle->khtype) != OK) {
+        // the dict was already created by dict_new; free it so we don't leak
+        // a handle slot / hashtable on a signature error
+        _dict_free(csound, p->g, (ui32)idx);
+        return NOTOK;
+    }
 
     switch(p->khtype) {
     case khStrFlt:
@@ -1236,13 +1350,11 @@ dict_set_if(CSOUND *csound, DICT_SET_if *p) {
         k = p->lastidx;
     } else {
         int absent;
-        p->lastidx = k = kh_put(khIntFlt, h, key, &absent);
+        p->lastidx = k = DICT_KH_PUT(handle, khIntFlt, h, key, &absent);
         p->lastkey = key;
         if (absent) {
             handle->counter++;
-            LOCK(handle);
             kh_key(h, k) = key;
-            UNLOCK(handle);
         }
         p->counter = handle->counter;
     }
@@ -1321,16 +1433,14 @@ dict_set_sf_(CSOUND *csound, DICT_SET_sf *p, HANDLE *handle, khash_t(khStrFlt) *
         return OK;
     }
     CHECK_KEY_SIZE(p->outkey);
-    p->lastidx = k = kh_put(khStrFlt, h, p->outkey->data, &absent);
+    p->lastidx = k = DICT_KH_PUT(handle, khStrFlt, h, p->outkey->data, &absent);
     if (absent) {
         key = csound->Strdup(csound, p->outkey->data);
-        LOCK(handle);
         kh_key(h, k) = key;
-        UNLOCK(handle);
         handle->counter++;
     }
     kh_value(h, k) = *p->outval;
-    strncpy0(p->lastkey_data, p->outkey->data, strlen(p->outkey->data));
+    strncpy0(p->lastkey_data, p->outkey->data, sizeof(p->lastkey_data));
     p->lastkey_size = p->outkey->size;
     p->counter = handle->counter;
     return OK;
@@ -1375,12 +1485,13 @@ dict_set_ss_0(CSOUND *csound, DICT_SET_ss *p) {
 static i32
 dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
     HASH_GLOBALS *g = p->g;
-    i32 idx = (i32)*p->handleidx;
-    HANDLE *handle = &(g->handles[idx]);
-    khash_t(khStrStr) *h = handle->hashtab;
+    HANDLE *handle = handle_lookup(g, *p->handleidx);
+    khash_t(khStrStr) *h;
     khint_t k;
     int absent;
     kstring_t *ks;
+    CHECK_HANDLE(handle);
+    h = handle->hashtab;
     CHECK_HASHTAB_EXISTS(h);
     CHECK_HASHTAB_TYPE2(handle->khtype, khStrStr, khStrAny);
 
@@ -1391,8 +1502,8 @@ dict_set_ss(CSOUND *csound, DICT_SET_ss *p) {
         k = p->lastidx;
     } else {
         CHECK_KEY_SIZE(p->outkey);
-        p->lastidx = k = kh_put(khStrStr, h, p->outkey->data, &absent);
-        strncpy0(p->lastkey_data, p->outkey->data, (size_t)(p->outkey->size - 1));
+        p->lastidx = k = DICT_KH_PUT(handle, khStrStr, h, p->outkey->data, &absent);
+        strncpy0(p->lastkey_data, p->outkey->data, sizeof(p->lastkey_data));
         if (absent) {
             kh_key(h, k) = csound->Strdup(csound, p->outkey->data);
             ks = &(h->vals[k]);
@@ -1439,8 +1550,10 @@ static i32
 dict_set_is(CSOUND *csound, DICT_SET_is *p) {
     HASH_GLOBALS *g = p->g;
     i32 idx = (i32)*p->handleidx;
-    HANDLE *handle = &(g->handles[idx]);
-    khash_t(khIntStr) *h = handle->hashtab;
+    HANDLE *handle = handle_lookup(g, (cs_float)(idx));
+    khash_t(khIntStr) *h;
+    CHECK_HANDLE(handle);
+    h = handle->hashtab;
     CHECK_HASHTAB_EXISTS(h);
     CHECK_HASHTAB_TYPE(handle->khtype, khIntStr);
     ui32 key = (ui32) *p->outkey;
@@ -1450,16 +1563,14 @@ dict_set_is(CSOUND *csound, DICT_SET_is *p) {
         k = p->lastidx;
     } else {
         int absent;
-        p->lastidx = k = kh_put(khIntStr, h, key, &absent);
+        p->lastidx = k = DICT_KH_PUT(handle, khIntStr, h, key, &absent);
         p->lastkey = key;
         if (absent) {
             handle->counter++;
             p->counter = handle->counter;
-            LOCK(handle);
-                kh_key(h, k) = key;
-                ks = &(h->vals[k]);
-                kstr_init_from_stringdat(csound, ks, p->outval);
-            UNLOCK(handle);
+            kh_key(h, k) = key;
+            ks = &(h->vals[k]);
+            kstr_init_from_stringdat(csound, ks, p->outval);
             return OK;
         }
     }
@@ -1501,12 +1612,11 @@ _hashtab_del_ss(CSOUND *csound, khash_t(khStrStr) *h, STRINGDAT *key) {
     khiter_t k = kh_get(khStrStr, h, key->data);
     if(k == kh_end(h))
         return 0;
-    LOCK(handle);
+    
     csound->Free(csound, kh_key(h, k));
     kstring_t *ks = &(h->vals[k]);
     csound->Free(csound, ks->s);
     kh_del(khStrStr, h, k);
-    UNLOCK(handle);
     return 1;
 }
 
@@ -1515,19 +1625,19 @@ _hashtab_del_sf(CSOUND *csound, khash_t(khStrFlt) *h, STRINGDAT *key) {
     khiter_t k = kh_get(khStrFlt, h, key->data);
     if(k == kh_end(h))
         return 0;
-    LOCK(handle);
+    
     csound->Free(csound, kh_key(h, k));
     kh_del(khStrFlt, h, k);
-    UNLOCK(handle);
     return 1;
 }
 
 static i32
 dict_del_s(CSOUND *csound, DICT_DEL_s *p) {
     HASH_GLOBALS *g = dict_globals(csound);
-    i32 idx = (i32)*p->handleidx;
-    HANDLE *handle = &(g->handles[idx]);
-    i32 khtype = handle->khtype;
+    HANDLE *handle = handle_lookup(g, *p->handleidx);
+    i32 khtype;
+    CHECK_HANDLE(handle);
+    khtype = handle->khtype;
     int found = 0;
     if(khtype == khStrFlt) {
         khash_t(khStrFlt) *h = handle->hashtab;
@@ -1557,13 +1667,15 @@ typedef struct {
 static i32
 dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
     HASH_GLOBALS *g = dict_globals(csound);
-    i32 idx = (i32)*p->handleidx;
-    HANDLE *handle = &(g->handles[idx]);
-    i32 khtype = handle->khtype;
+    HANDLE *handle = handle_lookup(g, *p->handleidx);
+    i32 khtype;
     khiter_t k;
-    ui32 key = (ui32)*p->outkey;
+    ui32 key;
+    CHECK_HANDLE(handle);
+    khtype = handle->khtype;
+    key = (ui32)*p->outkey;
     if(khtype == khIntFlt) {
-        khash_t(khIntFlt) *h = g->handles[idx].hashtab;
+        khash_t(khIntFlt) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
         k = kh_get(khIntFlt, h, key);
         if(k != kh_end(h)) {
@@ -1572,17 +1684,16 @@ dict_del_i(CSOUND *csound, DICT_DEL_i *p) {
             handle->counter++;
         }
     } else if(khtype == khIntStr) {
-        khash_t(khIntStr) *h = g->handles[idx].hashtab;
+        khash_t(khIntStr) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
         k = kh_get(khIntStr, h, key);
         if(k != kh_end(h)) {
             // key exists, free value, remove item
-            LOCK(handle);
+            
             kstring_t *ks = &(kh_val(h, k));
             if(ks->s != NULL)
                 csound->Free(csound, ks->s);
             kh_del(khIntStr, h, k);
-            UNLOCK(handle);
             handle->counter++;
         }
     } else
@@ -1627,8 +1738,8 @@ static i32
 dict_get_if(CSOUND *csound, DICT_GET_if *p) {
     HASH_GLOBALS *g = p->g;
     i32 idx = (i32)*p->handleidx;
-    HANDLE *handle = &(g->handles[idx]);
-    if(UNLIKELY(handle->hashtab == NULL)) {
+    HANDLE *handle = handle_lookup(g, (cs_float)(idx));
+    if(UNLIKELY(handle == NULL || handle->hashtab == NULL)) {
         *p->kout = *p->defaultval;
         return OK;
     }
@@ -1639,7 +1750,8 @@ dict_get_if(CSOUND *csound, DICT_GET_if *p) {
     if(p->counter == handle->counter &&        // fast path
        p->lastkey == key) {
         k = p->lastidx;
-        *p->kout = kh_val(h, k);
+        // a cached miss stores kh_end(h); never index kh_val with it
+        *p->kout = k != kh_end(h) ? kh_val(h, k) : *p->defaultval;
         return OK;
     }
     p->lastidx = k = kh_get(khIntFlt, h, key);
@@ -1714,11 +1826,12 @@ dict_get_sf_(CSOUND *csound, DICT_GET_sf *p, HANDLE *handle, khash_t(khStrFlt) *
         // key found
         p->lastidx = k;
         p->lastkey_size = p->outkey->size;  // save size, mark key as valid
-        strncpy0(p->lastkey_data, p->outkey->data, (size_t)(p->outkey->size-1));
+        strncpy0(p->lastkey_data, p->outkey->data, sizeof(p->lastkey_data));
         *p->kout = kh_val(h, k);
     } else {
         *p->kout = *p->defaultval;  // return default value
         p->lastkey_size = 0;        // mark last key as not usable
+        p->lastidx = kh_end(h);     // cache the miss so the fast path is safe
     }
     p->counter = handle->counter;
     return OK;
@@ -1730,8 +1843,8 @@ static i32 dict_get_sf_any(CSOUND *csound, DICT_GET_sf *p, HANDLE *handle);
 static i32
 dict_get_sf(CSOUND *csound, DICT_GET_sf *p) {
     // use cached idx, not really necessary since we declared ihandle as i-var
-    HANDLE *handle = &(p->g->handles[p->_handleidx]);
-    if(UNLIKELY(handle->hashtab == NULL)) {
+    HANDLE *handle = handle_lookup(p->g, (cs_float)p->_handleidx);
+    if(UNLIKELY(handle == NULL || handle->hashtab == NULL)) {
         *p->kout = *p->defaultval;
         return OK;
     }
@@ -1791,9 +1904,12 @@ dict_get_ss(CSOUND *csound, DICT_GET_ss *p) {
     // if the key is not found, an empty string is returned
     HASH_GLOBALS *g = p->g;
     i32 idx = (i32)*p->handleidx;
-    HANDLE *handle = &(g->handles[idx]);
-    if(handle->hashtab == NULL) {
-        p->outstr->data[0] = '\0';
+    HANDLE *handle = handle_lookup(g, (cs_float)(idx));
+    if(handle == NULL || handle->hashtab == NULL) {
+        if(p->outstr->data != NULL && p->outstr->size > 0)
+            p->outstr->data[0] = '\0';
+        else
+            stringdat_set(csound, p->outstr, "", 0);
         return OK;
     }
     CHECK_HASHTAB_TYPE2(handle->khtype, khStrStr, khStrAny);
@@ -1803,22 +1919,32 @@ dict_get_ss(CSOUND *csound, DICT_GET_ss *p) {
 
     // test fast path
     if(p->counter == handle->counter &&
+       p->lastkey_size > 0 &&
        p->lastkey_size == p->outkey->size &&
        !strcmp(p->lastkey_data, p->outkey->data)) {
         k = p->lastidx;
+        if(UNLIKELY(k == kh_end(h))) {
+            // cached miss
+            p->outstr->data[0] = '\0';
+            return OK;
+        }
     } else {
         CHECK_KEY_SIZE(p->outkey);
         k = kh_get(khStrStr, h, p->outkey->data);
         if(k == kh_end(h)) {
-            // key not found, set out to empty string
+            // key not found, set out to empty string and invalidate cache
             p->outstr->data[0] = '\0';
+            p->lastidx = kh_end(h);
+            p->lastkey_size = 0;
+            p->lastkey_data[0] = '\0';
+            p->counter = handle->counter;
             return OK;
         }
 
         // key found, update cache
         p->lastidx = k;   // save last key index
         p->counter = handle->counter;
-        strncpy0(p->lastkey_data, p->outkey->data, (size_t) p->outkey->size-1);
+        strncpy0(p->lastkey_data, p->outkey->data, sizeof(p->lastkey_data));
         p->lastkey_size = p->outkey->size;
     }
     ks = &(kh_val(h, k));
@@ -1830,9 +1956,12 @@ static i32
 dict_get_ss_i(CSOUND *csound, DICT_GET_ss *p) {
     HASH_GLOBALS *g = dict_globals(csound);
     i32 idx = (i32)*p->handleidx;
-    HANDLE *handle = &(g->handles[idx]);
-    if(handle->hashtab == NULL) {
-        p->outstr->data[0] = '\0';
+    HANDLE *handle = handle_lookup(g, (cs_float)(idx));
+    if(handle == NULL || handle->hashtab == NULL) {
+        if(p->outstr->data != NULL && p->outstr->size > 0)
+            p->outstr->data[0] = '\0';
+        else
+            stringdat_set(csound, p->outstr, "", 0);
         return OK;
     }
     CHECK_HASHTAB_TYPE2(handle->khtype, khStrStr, khStrAny);
@@ -1881,8 +2010,11 @@ hashtab_get_is_0(CSOUND *csound, DICT_GET_is *p) {
 static i32
 hashtab_get_is(CSOUND *csound, DICT_GET_is *p) {
     HANDLE *handle = get_handle(p);
-    if(UNLIKELY(handle==NULL)) {
-        p->outstr->data[0] = '\0';
+    if(UNLIKELY(handle == NULL || handle->hashtab == NULL)) {
+        if(p->outstr->data != NULL && p->outstr->size > 0)
+            p->outstr->data[0] = '\0';
+        else
+            stringdat_set(csound, p->outstr, "", 0);
         return OK;
     }
     CHECK_HASHTAB_TYPE(handle->khtype, khIntStr);
@@ -1892,9 +2024,17 @@ hashtab_get_is(CSOUND *csound, DICT_GET_is *p) {
     kstring_t *ks;
     if(p->counter == handle->counter && p->lastkey == key) {  // fast path
         k = p->lastidx;
+        if(UNLIKELY(k == kh_end(h))) {   // cached miss
+            p->outstr->data[0] = '\0';
+            p->outstr->size = 1;
+            return OK;
+        }
     } else {
         k = kh_get(khIntStr, h, key);
-        if(k == kh_end(h)) {   // key not found
+        if(k == kh_end(h)) {   // key not found: cache the miss and return empty
+            p->lastidx = kh_end(h);
+            p->lastkey = key;
+            p->counter = handle->counter;
             p->outstr->data[0] = '\0';
             p->outstr->size = 1;
             return OK;
@@ -1930,12 +2070,15 @@ typedef struct {
 static i32
 dict_update_sf(CSOUND *csound, DICT_UPDATE *p) {
     HASH_GLOBALS *g = dict_globals(csound);
-    ui32 baseidx = (ui32)*p->ibasedict;
-    CHECK_INDEX(baseidx, g);
-    HANDLE *basehandle = &(g->handles[baseidx]);
-    ui32 updateidx = (ui32)*p->iupdatedict;
-    CHECK_INDEX(updateidx, g);
-    HANDLE *updatehandle = &(g->handles[updateidx]);
+    HANDLE *basehandle = handle_lookup(g, *p->ibasedict);
+    HANDLE *updatehandle;
+    if(basehandle == NULL)
+        return INITERRF("Handle index invalid: %d", (int)*p->ibasedict);
+    updatehandle = handle_lookup(g, *p->iupdatedict);
+    if(updatehandle == NULL)
+        return INITERRF("Handle index invalid: %d", (int)*p->iupdatedict);
+    if(basehandle->hashtab == NULL || updatehandle->hashtab == NULL)
+        return INITERR(Str("dict: instance doesn't exist"));
     int absent;
     if(basehandle->khtype != updatehandle->khtype) {
         return INITERRF("Incomptabile dict types: %d %d", basehandle->khtype, updatehandle->khtype);
@@ -1953,7 +2096,7 @@ dict_update_sf(CSOUND *csound, DICT_UPDATE *p) {
                 kh_val(h0, k0) = kh_val(h1, k1);
             } else {
                 // add key to h0
-                k0 = kh_put(khStrFlt, h0, key, &absent);
+                k0 = DICT_KH_PUT(basehandle, khStrFlt, h0, key, &absent);
                 kh_key(h0, k0) = csound->Strdup(csound, key);
                 basehandle->counter++;
                 kh_val(h0, k0) = kh_val(h1, k1);
@@ -1987,10 +2130,11 @@ typedef struct {
 
 static i32
 dict_free_callback(CSOUND *csound, DICT_FREE *p) {
-    ui32 idx = (ui32)*p->handleidx;
     HASH_GLOBALS *g = dict_globals(csound);
-    if(g->handles[idx].hashtab == NULL)
-        return PERFERR(Str("dict free: instance does not exist!"));
+    HANDLE *handle = handle_lookup(g, *p->handleidx);
+    ui32 idx;
+    CHECK_HANDLE(handle);
+    idx = (ui32)*p->handleidx;
     return _dict_free(csound, g, idx);
 }
 
@@ -2001,11 +2145,11 @@ dict_free_callback(CSOUND *csound, DICT_FREE *p) {
  */
 static i32
 dict_free(CSOUND *csound, DICT_FREE *p) {
-    ui32 idx = (ui32)*p->handleidx;
     HASH_GLOBALS *g = dict_globals(csound);
-    HANDLE *handle = &(g->handles[idx]);
-    if(handle->hashtab == NULL)
-        return PERFERR(Str("dict free: instance does not exist"));
+    HANDLE *handle = handle_lookup(g, *p->handleidx);
+    ui32 idx;
+    CHECK_HANDLE(handle);
+    idx = (ui32)*p->handleidx;
     if((i32)*p->iwhen == 0) {
         return _dict_free(csound, g, idx);
     }
@@ -2027,9 +2171,13 @@ typedef struct {
 } DICT_CLEAR;
 
 static i32 _dict_clear(CSOUND *csound, HANDLE *handle, HASH_GLOBALS *g) {
-    int khtype = handle->khtype;
+    int khtype;
     kstring_t *ks;
     khint_t k;
+    IGN(g);
+    if(handle == NULL || handle->hashtab == NULL)
+        return NOTOK;
+    khtype = handle->khtype;
     if(khtype == khStrFlt) {
         khash_t(khStrFlt) *h = handle->hashtab;
         // we need to free all keys
@@ -2046,8 +2194,10 @@ static i32 _dict_clear(CSOUND *csound, HANDLE *handle, HASH_GLOBALS *g) {
         for (k = 0; k < kh_end(h); ++k) {
             if (kh_exist(h, k)) {
                 ks = &(kh_val(h, k));
-                if(ks->s != NULL)
+                if(ks->s != NULL) {
                     csound->Free(csound, ks->s);
+                    ks->s = NULL;
+                }
                 csound->Free(csound, kh_key(h, k));
             }
         }
@@ -2063,20 +2213,51 @@ static i32 _dict_clear(CSOUND *csound, HANDLE *handle, HASH_GLOBALS *g) {
         for (k = 0; k < kh_end(h); ++k) {
             if (kh_exist(h, k)) {
                 ks = &(kh_val(h, k));
-                csound->Free(csound, ks->s);
+                if(ks->s != NULL) {
+                    csound->Free(csound, ks->s);
+                    ks->s = NULL;
+                }
             }
         }
         kh_clear(khIntStr, h);
     }
+    else if (khtype == khStrAny) {
+        khash_t(khStrStr) *h = handle->hashtab;
+        khash_t(khStrFlt) *h2 = handle->hashtab2;
+        if(h != NULL) {
+            for (k = 0; k < kh_end(h); ++k) {
+                if (kh_exist(h, k)) {
+                    ks = &(kh_val(h, k));
+                    if(ks->s != NULL) {
+                        csound->Free(csound, ks->s);
+                        ks->s = NULL;
+                    }
+                    csound->Free(csound, kh_key(h, k));
+                }
+            }
+            kh_clear(khStrStr, h);
+        }
+        if(h2 != NULL) {
+            for (k = 0; k < kh_end(h2); ++k) {
+                if (kh_exist(h2, k)) {
+                    csound->Free(csound, kh_key(h2, k));
+                }
+            }
+            kh_clear(khStrFlt, h2);
+        }
+    }
     else {
         return NOTOK;
     }
+    // invalidate fast-path caches that key off the version counter
+    handle->counter++;
     return OK;
 }
 
 static i32 dict_clear_i(CSOUND *csound, DICT_CLEAR *p) {
     HASH_GLOBALS *g = dict_globals(csound);
-    HANDLE *handle = &(g->handles[(int)*p->handleidx]);
+    HANDLE *handle = handle_lookup(g, *p->handleidx);
+    CHECK_HANDLE(handle);
     return _dict_clear(csound, handle, g);
 }
 
@@ -2087,7 +2268,8 @@ static i32 dict_clear_init(CSOUND *csound, DICT_CLEAR *p) {
 }
 
 static i32 dict_clear_perf(CSOUND *csound, DICT_CLEAR *p) {
-    HANDLE *handle = &(p->g->handles[(int)*p->handleidx]);
+    HANDLE *handle = handle_lookup(p->g, *p->handleidx);
+    CHECK_HANDLE(handle);
     return _dict_clear(csound, handle, p->g);
 }
 
@@ -2110,27 +2292,63 @@ typedef struct {
 
 #define DICT_PRINT_LINELENGTH 80
 
+static void print_line_flush(CSOUND *csound, char *line, i32 *chars) {
+    if(*chars > 0) {
+        line[*chars] = '\0';
+        csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", line);
+        *chars = 0;
+    }
+}
+
 void print_hashtab_ss(CSOUND *csound, khash_t(khStrStr) *h) {
     i32 chars = 0;
     const i32 linelength = DICT_PRINT_LINELENGTH;
     char line[256];
     for(khint_t k = kh_begin(h); k != kh_end(h); ++k) {
+        const char *key;
+        kstring_t *val;
+        int avail, n;
         if(!kh_exist(h, k)) continue;
-        chars += sprintf(line+chars, "%s: \"%s\"", kh_key(h, k), kh_val(h, k).s);
-        if(chars < linelength) {
+        key = kh_key(h, k);
+        val = &(kh_val(h, k));
+        // unbounded string values: print oversized items directly
+        if(val->s != NULL && (strlen(key) + val->l) > 128) {
+            print_line_flush(csound, line, &chars);
+            csound->MessageS(csound, CSOUNDMSG_ORCH, "%s: \"%s\",\n",
+                             key, val->s);
+            continue;
+        }
+        avail = (int)sizeof(line) - chars;
+        n = snprintf(line+chars, (size_t)avail, "%s: \"%s\"",
+                     key, val->s != NULL ? val->s : "");
+        if(n < 0) {
+            print_line_flush(csound, line, &chars);
+            continue;
+        }
+        if(n >= avail) {
+            print_line_flush(csound, line, &chars);
+            n = snprintf(line, sizeof(line), "%s: \"%s\"",
+                         key, val->s != NULL ? val->s : "");
+            if(n < 0)
+                continue;
+            if(n >= (int)sizeof(line)) {
+                line[sizeof(line)-1] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", line);
+                chars = 0;
+                continue;
+            }
+            chars = n;
+        } else {
+            chars += n;
+        }
+        if(chars < linelength && chars + 2 < (i32)sizeof(line)) {
             line[chars++] = ',';
             line[chars++] = ' ';
         } else {
-            line[chars+1] = '\0';
-            csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
-            chars = 0;
+            print_line_flush(csound, line, &chars);
         }
     }
-    if(chars > 0) {    // last line
-        line[chars] = '\0';
-        csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
-    }
-
+    print_line_flush(csound, line, &chars);
 }
 
 static void
@@ -2139,22 +2357,39 @@ print_hashtab_sf(CSOUND *csound, khash_t(khStrFlt) *h) {
     const i32 linelength = DICT_PRINT_LINELENGTH;
     char line[256];
     for(khint_t k = kh_begin(h); k != kh_end(h); ++k) {
+        int avail, n;
         if(!kh_exist(h, k)) continue;
-        chars += sprintf(line+chars, "%s: "FLOAT_FMT, kh_key(h, k), kh_val(h, k));
-        if(chars < linelength) {
+        avail = (int)sizeof(line) - chars;
+        n = snprintf(line+chars, (size_t)avail, "%s: "FLOAT_FMT,
+                     kh_key(h, k), kh_val(h, k));
+        if(n < 0) {
+            print_line_flush(csound, line, &chars);
+            continue;
+        }
+        if(n >= avail) {
+            print_line_flush(csound, line, &chars);
+            n = snprintf(line, sizeof(line), "%s: "FLOAT_FMT,
+                         kh_key(h, k), kh_val(h, k));
+            if(n < 0)
+                continue;
+            if(n >= (int)sizeof(line)) {
+                line[sizeof(line)-1] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", line);
+                chars = 0;
+                continue;
+            }
+            chars = n;
+        } else {
+            chars += n;
+        }
+        if(chars < linelength && chars + 2 < (i32)sizeof(line)) {
             line[chars++] = ',';
             line[chars++] = ' ';
         } else {
-            line[chars+1] = '\0';
-            csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
-            chars = 0;
+            print_line_flush(csound, line, &chars);
         }
     }
-    // last line
-    if(chars > 0) {    // last line
-        line[chars] = '\0';
-        csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
-    }
+    print_line_flush(csound, line, &chars);
 }
 
 static i32
@@ -2176,15 +2411,42 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
     if(khtype == khIntFlt) {
         khash_t(khIntFlt) *h = handle->hashtab;
         for(k = kh_begin(h); k != kh_end(h); ++k) {
+            int avail, n;
             if(!kh_exist(h, k)) continue;
-            itemlength = sprintf(line+chars, "%d: "FLOAT_FMT, kh_key(h, k), kh_value(h, k));
+            avail = (int)sizeof(line) - chars;
+            n = snprintf(line+chars, (size_t)avail, "%d: "FLOAT_FMT,
+                         kh_key(h, k), kh_value(h, k));
+            if(n < 0) {
+                line[chars] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
+                memset(line, ' ', 4);
+                chars = 4;
+                continue;
+            }
+            if(n >= avail) {
+                line[chars] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
+                memset(line, ' ', 4);
+                chars = 4;
+                n = snprintf(line+chars, sizeof(line)-chars, "%d: "FLOAT_FMT,
+                             kh_key(h, k), kh_value(h, k));
+                if(n < 0 || n >= (int)sizeof(line)-chars) {
+                    line[sizeof(line)-1] = '\0';
+                    csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
+                    memset(line, ' ', 4);
+                    chars = 4;
+                    continue;
+                }
+            }
+            itemlength = n;
             chars += itemlength;
-            if(chars + (item_maxlength - itemlength) <= linelength) {
+            if(chars + (item_maxlength - itemlength) <= linelength &&
+               chars + (item_maxlength - itemlength) < (i32)sizeof(line)) {
                 for(int i=itemlength; i<item_maxlength; i++) {
                     line[chars++] = ' ';
                 }
             } else {
-                line[chars+1] = '\0';
+                line[chars] = '\0';
                 csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
                 memset(line, ' ', 4);
                 chars = 4;
@@ -2198,13 +2460,41 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
     } else if(khtype == khIntStr) {
         khash_t(khIntStr) *h = handle->hashtab;
         for(k = kh_begin(h); k != kh_end(h); ++k) {
+            kstring_t *v;
+            int avail, n;
             if(!kh_exist(h, k)) continue;
-            chars += sprintf(line+chars, "%d: %s", kh_key(h, k), kh_val(h, k).s);
-            if(chars < linelength) {
+            v = &(kh_val(h, k));
+            if(v->s != NULL && v->l > 128) {
+                if(chars > 0) {
+                    line[chars] = '\0';
+                    csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
+                    chars = 0;
+                }
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%d: %s,\n",
+                                 kh_key(h, k), v->s);
+                continue;
+            }
+            avail = (int)sizeof(line) - chars;
+            n = snprintf(line+chars, (size_t)avail, "%d: %s",
+                         kh_key(h, k), v->s != NULL ? v->s : "");
+            if(n < 0) {
+                line[chars] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
+                chars = 0;
+                continue;
+            }
+            if(n >= avail) {
+                line[chars] = '\0';
+                csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
+                chars = 0;
+                continue;
+            }
+            chars += n;
+            if(chars < linelength && chars + 2 < (i32)sizeof(line)) {
                 line[chars++] = ',';
                 line[chars++] = ' ';
             } else {
-                line[chars+1] = '\0';
+                line[chars] = '\0';
                 csound->MessageS(csound, CSOUNDMSG_ORCH, "%s\n", (char*)line);
                 chars = 0;
             }
@@ -2223,7 +2513,8 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
         print_hashtab_sf(csound, handle->hashtab2);
     } else {
         char *fmt = intdef_to_strdef(khtype);
-        csound->ErrorMsg(csound, Str("dict format not supported: %d (%s)"), khtype, fmt);
+        csound->ErrorMsg(csound, Str("dict format not supported: %d (%s)"), khtype,
+                         fmt != NULL ? fmt : "unknown");
         return NOTOK;
     }
     csound->MessageS(csound, CSOUNDMSG_ORCH, "}\n");
@@ -2233,7 +2524,9 @@ _dict_print(CSOUND *csound, DICT_PRINT *p, HANDLE *handle) {
 static i32
 dict_print_i(CSOUND *csound, DICT_PRINT *p) {
     HASH_GLOBALS *g = dict_globals(csound);
-    HANDLE *handle = &(g->handles[(int)*p->handleidx]);
+    HANDLE *handle = handle_lookup(g, *p->handleidx);
+    if(handle == NULL || handle->hashtab == NULL)
+        return INITERR(Str("dict does not exist"));
     _dict_print(csound, p, handle);
     return OK;
 }
@@ -2249,7 +2542,7 @@ static i32
 dict_print_k(CSOUND *csound, DICT_PRINT *p) {
     HANDLE *handle = get_handle(p);
     i32 trig = (i32) *p->ktrig;
-    if(handle->hashtab == NULL)
+    if(handle == NULL || handle->hashtab == NULL)
         return PERFERR(Str("dict does not exist"));
     if(trig == -1 || (trig > 0 && trig > p->lasttrig)) {
         p->lasttrig = trig;
@@ -2299,7 +2592,7 @@ static i32 dict_exists(CSOUND *csound, DICT_QUERY1 *p) {
         return OK;
     }
     HANDLE *handle = get_handle(p);
-    *p->outstr = handle != NULL || handle->hashtab != NULL;
+    *p->outstr = handle != NULL && handle->hashtab != NULL;
     return OK;
 }
 
@@ -2347,6 +2640,13 @@ static i32 dict_size(CSOUND *csound, DICT_QUERY1 *p) {
         *p->outstr = -1;
         return OK;
     }
+    if(handle->khtype == khStrAny) {
+        khash_t(khStrStr) *h = handle->hashtab;
+        khash_t(khStrFlt) *h2 = handle->hashtab2;
+        *p->outstr = (h != NULL ? (cs_float)kh_size(h) : 0) +
+                     (h2 != NULL ? (cs_float)kh_size(h2) : 0);
+        return OK;
+    }
     with_hashtable(handle, {
         *p->outstr = kh_size(h);
     })
@@ -2384,6 +2684,19 @@ dict_query_arr_keys_s(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
         kh_foreach_key(h, key, {
             stringdat_set(csound, &(outdata[counter++]), key, strlen(key));
         });
+    } else if(khtype == khStrAny) {
+        khash_t(khStrStr) *h = handle->hashtab;
+        khash_t(khStrFlt) *h2 = handle->hashtab2;
+        if(h != NULL) {
+            kh_foreach_key(h, key, {
+                stringdat_set(csound, &(outdata[counter++]), key, strlen(key));
+            });
+        }
+        if(h2 != NULL) {
+            kh_foreach_key(h2, key, {
+                stringdat_set(csound, &(outdata[counter++]), key, strlen(key));
+            });
+        }
     } else {
         khash_t(khStrStr) *h = handle->hashtab;
         kh_foreach_key(h, key, {
@@ -2453,9 +2766,19 @@ dict_query_arr_values_f(CSOUND *csound, HANDLE *handle, ARRAYDAT *out) {
 }
 
 static ui32 handle_get_hashtable_size(HANDLE *handle) {
+    if(handle == NULL)
+        return 0;
+    if(handle->khtype == khStrAny) {
+        khash_t(khStrStr) *h = handle->hashtab;
+        khash_t(khStrFlt) *h2 = handle->hashtab2;
+        ui32 s1 = h != NULL ? kh_size(h) : 0;
+        ui32 s2 = h2 != NULL ? kh_size(h2) : 0;
+        return s1 + s2;
+    }
     with_hashtable(handle, {
         return kh_size(h);
     })
+    return 0;
 }
 
 
@@ -2463,12 +2786,14 @@ static ui32 handle_get_hashtable_size(HANDLE *handle) {
 static i32
 dict_query_arr(CSOUND *csound, DICT_QUERY_ARR *p) {
     ui32 idx = (ui32)*(p->handleidx);
-    HANDLE *handle = &(p->g->handles[idx]);
+    HANDLE *handle = handle_lookup(p->g, (cs_float)idx);
     CHECK_HANDLE(handle);
 
     ui32 size = handle_get_hashtable_size(handle);
     ARRAYCHECK(p->outstr, (i32) size);
 
+    if(handle->khtype == khStrAny && (p->cmd == 2 || p->cmd == 3))
+        return PERFERR(Str("dict_query: 'values' not supported for str:any dicts (mixed types)"));
     switch(p->cmd) {
     case 0:  // keys, string
         return dict_query_arr_keys_s(csound, handle, p->outstr);
@@ -2493,8 +2818,10 @@ dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
     char *vartypename = p->outstr->arrayType->varTypeName;
     ui32 size = handle_get_hashtable_size(handle);
     tabinit_compat(csound, p->outstr, (i32)size, &(p->h));
+    if(handle == NULL || handle->hashtab == NULL)
+        return INITERR(Str("dict: instance doesn't exist"));
     if(strcmp(data, "keys")==0) {
-        if(handle->khtype == 21 || handle->khtype == 22) {
+        if(handle->khtype == 21 || handle->khtype == 22 || handle->khtype == khStrAny) {
             // str keys, check output array
             if(vartypename[0] != 'S')
                 return INITERRF(Str("Expected out array of type S, got %s"),
@@ -2508,6 +2835,8 @@ dict_query_arr_0(CSOUND *csound, DICT_QUERY_ARR *p) {
             p->cmd = 1;
         }
     } else if(strcmp(data, "values")==0) {
+        if(handle->khtype == khStrAny)
+            return INITERR(Str("dict_query: 'values' not supported for str:any dicts (mixed types)"));
         if(handle->khtype == 12 || handle->khtype == 22) {
             // string values, check
             if(vartypename[0] != 'S')
@@ -2569,15 +2898,24 @@ typedef struct {
 // dict_iter init function common to all types
 static i32
 dict_iter_init_common(CSOUND *csound, DICT_ITER *p) {
+    HANDLE *handle;
+    khash_t(khStrStr) *h;
+    char *dictsig;
+    if(!( *p->handleidx >= 0))
+        return INITERRF("Handle index invalid: %d", (int)*p->handleidx);
     p->_handleidx = (ui32)*p->handleidx;
     p->g = dict_globals(csound);
     p->nextk = 0;
     p->numyields = 0;
     p->kcounter = 999;
-    HANDLE *handle = &(p->g->handles[p->_handleidx]);
-    khash_t(khStrStr) *h = handle->hashtab;
+    handle = handle_lookup(p->g, (cs_float)p->_handleidx);
+    if(handle == NULL || handle->hashtab == NULL)
+        return INITERR(Str("dict: instance doesn't exist"));
+    h = handle->hashtab;
     CHECK_HASHTAB_EXISTS(h);
-    char *dictsig = intdef_to_strdef(handle->khtype);
+    dictsig = intdef_to_strdef(handle->khtype);
+    if(dictsig == NULL)
+        return INITERRF("Unknown dict type: %d", handle->khtype);
     if(strcmp(dictsig, p->signature) != 0)
         return INITERRF("Own signature is %s, but the dict has a type %s",
                         p->signature, dictsig);
@@ -2615,9 +2953,11 @@ dict_iter_perf(CSOUND *csound, DICT_ITER *p) {
             p->nextk = 0;
         }
     }
-    HANDLE *handle = &(p->g->handles[p->_handleidx]);
+    HANDLE *handle = handle_lookup(p->g, (cs_float)p->_handleidx);
     kstring_t *kstr;
-    i32 khtype = handle->khtype;
+    i32 khtype;
+    CHECK_HANDLE(handle);
+    khtype = handle->khtype;
     if(khtype == khStrStr) {
         khash_t(khStrStr) *h = handle->hashtab;
         CHECK_HASHTAB_EXISTS(h);
@@ -2733,15 +3073,37 @@ set_many_sf(CSOUND *csound, void** inargs, ui32 numargs, HANDLE *handle) {
 
 
 void _set_sa_f(CSOUND *csound, HANDLE *handle, char *key, cs_float value) {
-    // for a dict of type str:any, set a str:float pair
+    // for a dict of type str:any, set a str:float pair (last wins)
     khash_t(khStrFlt) *h2 = handle->hashtab2;
+    khash_t(khStrStr) *h = handle->hashtab;
+    if(h != NULL) {
+        khiter_t k = kh_get(khStrStr, h, key);
+        if(k != kh_end(h)) {
+            STRINGDAT tmp;
+            tmp.data = key;
+            tmp.size = (i32)strlen(key) + 1;
+            _hashtab_del_ss(csound, h, &tmp);
+        }
+    }
     _set_sf(csound, h2, key, value);
+    handle->counter++;
 }
 
 void _set_sa_s(CSOUND *csound, HANDLE *handle, char *key, char *value) {
-    // for a dict of type str:any, set a str:float pair
+    // for a dict of type str:any, set a str:str pair (last wins)
     khash_t(khStrStr) *h = handle->hashtab;
+    khash_t(khStrFlt) *h2 = handle->hashtab2;
+    if(h2 != NULL) {
+        khiter_t k = kh_get(khStrFlt, h2, key);
+        if(k != kh_end(h2)) {
+            STRINGDAT tmp;
+            tmp.data = key;
+            tmp.size = (i32)strlen(key) + 1;
+            _hashtab_del_sf(csound, h2, &tmp);
+        }
+    }
     _set_ss(csound, h, key, value);
+    handle->counter++;
 }
 
 
@@ -2825,83 +3187,149 @@ typedef struct {
 } DICT_DUMP;
 
 static i64 _dict_dump_sf(khash_t(khStrFlt) *h, char *buf, size_t buflen) {
-    const char *buforig = buf;
-    const char *key;
-    ui64 chars = 0;
-    if(h->size == 0) {
-        buf[0] = '\0';
+    char *pos = buf;
+    size_t remain = buflen;
+    int first = 1;
+    if(h == NULL || h->size == 0) {
+        if(buflen > 0)
+            buf[0] = '\0';
         return 0;
     }
     for(khint_t k=kh_begin(h); k != kh_end(h); ++k) {
+        const char *key;
+        int n;
         if(!kh_exist(h, k)) continue;
         key = kh_key(h, k);
-        cs_float val = kh_val(h, k);
-        if(buflen < 80) {
-            return -1;
+        if(!first) {
+            if(remain < 3)
+                return -1;
+            *pos++ = ',';
+            *pos++ = '\n';
+            remain -= 2;
         }
-        chars = sprintf(buf, "%s: "FLOAT_FMT, key, val);
-        buf += chars;
-        buflen -= chars;
-        *buf++ = ',';
-        *buf++ = '\n';
+        n = snprintf(pos, remain, "%s: "FLOAT_FMT, key, kh_val(h, k));
+        if(n < 0)
+            return -1;
+        if((size_t)n >= remain)
+            return -1;
+        pos += n;
+        remain -= (size_t)n;
+        first = 0;
     }
-    buf[-2] = '\0';
-    i64 outputlen = (buf - buforig) - 2;
-    return outputlen;
+    return (i64)(pos - buf);
 }
 
 static i64 _dict_dump_ss(khash_t(khStrStr) *h, char *buf, size_t buflen) {
-    const char *buforig = buf;
-    const char *key;
-    kstring_t value;
-    ui64 chars = 0;
-    if(h->size == 0) {
-        buf[0] = '\0';
+    char *pos = buf;
+    size_t remain = buflen;
+    int first = 1;
+    if(h == NULL || h->size == 0) {
+        if(buflen > 0)
+            buf[0] = '\0';
         return 0;
     }
     for(khint_t k=kh_begin(h); k != kh_end(h); ++k) {
+        const char *key;
+        kstring_t value;
+        int n;
         if(!kh_exist(h, k)) continue;
         key = kh_key(h, k);
         value = kh_val(h, k);
-        if(buflen < 80) {
-            return -1;
+        if(!first) {
+            if(remain < 3)
+                return -1;
+            *pos++ = ',';
+            *pos++ = '\n';
+            remain -= 2;
         }
-        chars = sprintf(buf, "%s: '%s'", key, value.s);
-        buf += chars;
-        buflen -= chars;
-        *buf++ = ',';
-        *buf++ = '\n';
+        n = snprintf(pos, remain, "%s: '%s'", key,
+                     value.s != NULL ? value.s : "");
+        if(n < 0)
+            return -1;
+        if((size_t)n >= remain)
+            return -1;
+        pos += n;
+        remain -= (size_t)n;
+        first = 0;
     }
-    buf[-2] = '\0';
-    i64 outputlen = (buf - buforig) - 2;
-    return outputlen;
+    return (i64)(pos - buf);
 }
 
 static i64 _dict_dump_sa(HANDLE *handle, char *buf, size_t buflen) {
-    i64 dumplen = _dict_dump_sf(handle->hashtab2, buf, buflen);
-    if(dumplen < 0) {
+    char *pos = buf;
+    size_t remain = buflen;
+    i64 n1 = _dict_dump_sf(handle->hashtab2, pos, remain);
+    if(n1 < 0)
         return -1;
+    if(n1 > 0) {
+        pos += n1;
+        remain -= (size_t)n1;
     }
-    if(dumplen > 0) {
-        buf[dumplen] = ',';
-        buf[dumplen+1] = '\n';
+    {
+        khash_t(khStrStr) *h = handle->hashtab;
+        int hsize = (h != NULL) ? (int)kh_size(h) : 0;
+        if(hsize > 0 && n1 > 0) {
+            if(remain < 3)
+                return -1;
+            *pos++ = ',';
+            *pos++ = '\n';
+            remain -= 2;
+        }
     }
-    i64 dumplen2 = _dict_dump_ss(handle->hashtab, &buf[dumplen+2], buflen-dumplen-2);
-    if(dumplen2 < 0)
-        return -1;
-    return dumplen + dumplen2;
+    {
+        i64 n2 = _dict_dump_ss(handle->hashtab, pos, remain);
+        if(n2 < 0)
+            return -1;
+        return n1 + (n1 > 0 && n2 > 0 ? 2 : 0) + n2;
+    }
+}
+
+static size_t dict_dump_estimate(HANDLE *handle) {
+    size_t need = 1;
+    if(handle->khtype == khStrFlt || handle->khtype == khStrAny) {
+        khash_t(khStrFlt) *h = handle->khtype == khStrFlt ?
+            (khash_t(khStrFlt)*)handle->hashtab :
+            (khash_t(khStrFlt)*)handle->hashtab2;
+        if(h != NULL) {
+            for(khint_t k = kh_begin(h); k != kh_end(h); ++k) {
+                if(!kh_exist(h, k)) continue;
+                need += strlen(kh_key(h, k)) + 32;
+            }
+        }
+    }
+    if(handle->khtype == khStrStr || handle->khtype == khStrAny) {
+        khash_t(khStrStr) *h = handle->hashtab;
+        if(h != NULL) {
+            for(khint_t k = kh_begin(h); k != kh_end(h); ++k) {
+                kstring_t *v;
+                if(!kh_exist(h, k)) continue;
+                v = &(kh_val(h, k));
+                need += strlen(kh_key(h, k)) + (v->s != NULL ? v->l : 0) + 8;
+            }
+        }
+    }
+    return need;
 }
 
 static i32 dict_dump(CSOUND *csound, DICT_DUMP *p) {
     HASH_GLOBALS *g = dict_globals(csound);
-    ui32 idx = (ui32)*p->dictidx;
-    HANDLE *handle = get_handle_by_idx(g, idx);
-    if(handle == NULL) {
-        return INITERRF("Invalid dict handle %d", idx);
-    }
-    enum {buflen = 2000};
-    char buf[buflen];
+    HANDLE *handle;
+    char *buf;
+    size_t buflen;
     i64 dumplen;
+    char *typename;
+    if(!(*p->dictidx >= 0))
+        return INITERRF("Invalid dict handle %d", (int)*p->dictidx);
+    handle = get_handle_by_idx(g, (ui32)*p->dictidx);
+    if(handle == NULL || handle->hashtab == NULL) {
+        return INITERRF("Invalid dict handle %d", (int)*p->dictidx);
+    }
+    buflen = dict_dump_estimate(handle);
+    if(buflen < 64)
+        buflen = 64;
+    buf = csound->Malloc(csound, buflen);
+    if(buf == NULL)
+        return INITERR(Str("Out of memory dumping dict"));
     switch(handle->khtype) {
     case khStrFlt:
         dumplen = _dict_dump_sf(handle->hashtab, buf, buflen);
@@ -2913,13 +3341,20 @@ static i32 dict_dump(CSOUND *csound, DICT_DUMP *p) {
         dumplen = _dict_dump_sa(handle, buf, buflen);
         break;
     default:
-        return INITERRF("Dict type %s not supported", intdef_to_strdef(handle->khtype));
+        csound->Free(csound, buf);
+        typename = intdef_to_strdef(handle->khtype);
+        return INITERRF("Dict type %s not supported",
+                        typename != NULL ? typename : "unknown");
     }
     if(dumplen < 0) {
-        p->sout->data[0] = '\0';
-        return INITERR("Eror dumping dict");
+        csound->Free(csound, buf);
+        if(p->sout->data != NULL && p->sout->size > 0)
+            p->sout->data[0] = '\0';
+        return INITERR("Error dumping dict (out of space)");
     }
-    stringdat_set(csound, p->sout, buf, dumplen);
+    buf[dumplen] = '\0';
+    stringdat_set(csound, p->sout, buf, (size_t)dumplen);
+    csound->Free(csound, buf);
     return OK;
 }
 
@@ -3327,9 +3762,8 @@ static i32 _pool_free(CSOUND *csound, int instance) {
     }
     csound->Free(csound, handle->data);
     handle->data = NULL;
-    i32 *instancecount = pool_instance_counter(csound);
     char name[32];
-    sprintf(name, "_pool:%d", *instancecount);
+    sprintf(name, "_pool:%d", instance);
     csound->DestroyGlobalVariable(csound, name);
     return 0;
 }
@@ -3405,6 +3839,8 @@ pool_empty(CSOUND *csound, POOL_NEW *p) {
         cangrow = 1;
     }
     POOL_HANDLE *handle = pool_make(csound, allocated, cangrow);
+    if(handle == NULL)
+        return INITERRF("Could not create pool (max. size: %d)", allocated);
     *p->handleidx = handle->handlenum;
     return OK;
 }
@@ -3464,11 +3900,11 @@ pool_pop_perf(CSOUND *csound, POOL_1 *p) {
     int size = p->handle->size;
     cs_float item;
     if(size > 0) {
-        item = p->handle->data[size -1];
+        item = p->handle->data[size - 1];
+        p->handle->size--;
     } else {
         item = *p->arg1;
     }
-    p->handle->size--;
     *p->out = item;
     return OK;
 }
@@ -3543,25 +3979,30 @@ pool_push_init(CSOUND *csound, POOL_PUSH *p) {
     return OK;
 }
 
-void pool_resize(CSOUND *csound, POOL_HANDLE *handle, int minsize) {
+static i32 pool_resize(CSOUND *csound, POOL_HANDLE *handle, int minsize) {
     int allocated = handle->allocated;
+    cs_float *newdata;
     while(allocated < minsize) {
         allocated *= 2;
     }
-    handle->data = csound->ReAlloc(csound, handle->data, sizeof(cs_float)*allocated);
+    newdata = csound->ReAlloc(csound, handle->data, sizeof(cs_float)*allocated);
+    if(newdata == NULL)
+        return NOTOK;
+    handle->data = newdata;
     handle->allocated = allocated;
+    return OK;
 }
 
 static i32
 pool_push_perf_(CSOUND *csound, POOL_PUSH *p, int mode) {
     if(p->handle->size >= p->handle->allocated) {
         if(p->handle->cangrow) {
-            pool_resize(csound, p->handle, p->handle->allocated*2);
+            if(pool_resize(csound, p->handle, p->handle->allocated*2) == NOTOK)
+                return INITPERFERR(mode, Str("Pool resize failed (out of memory)"));
         } else {
-            if(mode == 1)
-                return INITERRF("Pool is full. Trying to push item %f to pool %d (size: %d, max. size: %d)", *p->item, p->handle->handlenum, p->handle->size, p->handle->allocated);
-            else
-                return PERFERRF("Pool is full. Trying to push item %f to pool %d (size: %d, max. size: %d)", *p->item, p->handle->handlenum, p->handle->size, p->handle->allocated);
+            return INITPERFERRF(mode,
+                "Pool is full. Trying to push item %f to pool %d (size: %d, max. size: %d)",
+                *p->item, p->handle->handlenum, p->handle->size, p->handle->allocated);
         }
     }
     p->handle->data[p->handle->size] = *p->item;

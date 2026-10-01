@@ -295,7 +295,7 @@ jobs:
           rm -fr build-linux
           mkdir build-linux
           cd build-linux
-          cmake ..
+          cmake -DAPIVERSION=6.0 ..
           cmake --build . --parallel
           cmake --install .
           cd ..

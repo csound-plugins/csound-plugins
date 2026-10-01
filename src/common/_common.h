@@ -13,6 +13,12 @@
 #define PERFERR(m) (csound->PerfError(csound, &(p->h), "%s", m))
 #define PERFERRF(fmt, ...) (csound->PerfError(csound, &(p->h), fmt, __VA_ARGS__))
 
+// Report an error from a helper that can run at init (mode == 1) or at
+// performance time (any other mode), so the message is written only once.
+#define INITPERFERR(mode, m) ((mode) == 1 ? INITERR(m) : PERFERR(m))
+#define INITPERFERRF(mode, fmt, ...) \
+    ((mode) == 1 ? INITERRF(fmt, __VA_ARGS__) : PERFERRF(fmt, __VA_ARGS__))
+
 #define DBG(s)        do{printf("\n>>>  " s "\n"); fflush(stdout);} while(0)
 #define DBGF(fmt,...) do{printf("\n>>>  " fmt "\n", __VA_ARGS__); fflush(stdout);}while(0)
 

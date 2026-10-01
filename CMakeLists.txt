@@ -8,16 +8,25 @@ endif()
 
 project("csound_plugins")
 
+# The jsfx/jsusfx submodule still declares cmake_minimum_required(VERSION 2.6),
+# which CMake >= 4 rejects (compat with < 3.5 was removed). The submodule is
+# pinned upstream, so we cannot fix it in place; instead, tell CMake to treat
+# such old declarations as 3.5. Respects an explicit -D value if given.
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
 
-set(APIVERSION "6.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
 
-if(APIVERSION MATCHES "6.0")
+set(APIVERSION "7.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
+
+if(APIVERSION STREQUAL "6.0")
     add_definitions("-DCSOUNDAPI6")
     add_definitions("-DCS_API_VERSION_MAJOR=6")
-else()
+elseif(APIVERSION STREQUAL "7.0")
     add_definitions("-DCSOUNDAPI7")
     add_definitions("-DCS_API_VERSION_MAJOR=7")
-
+else()
+    message(FATAL_ERROR "APIVERSION must be one of 6.0 or 7.0, got '${APIVERSION}'")
 endif()
 
 message(STATUS "Csound API Version: ${APIVERSION}")

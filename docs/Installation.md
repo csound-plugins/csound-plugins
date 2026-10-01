@@ -44,10 +44,13 @@ cd csound-plugins
 git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
 mkdir build && cd build
-cmake ..
+cmake -DAPIVERSION=7.0 ..
 cmake --build .
 cmake --install .
 ```
+
+> The build defaults to the Csound 7 API (`APIVERSION=7.0`).
+> Pass `-DAPIVERSION=6.0` instead to build against Csound 6.
 
 --------
 
@@ -63,7 +66,7 @@ cd csound-plugins
 git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
 mkdir build && cd build
-cmake ..
+cmake -DAPIVERSION=7.0 ..
 cmake --build .
 cmake --install .
 ```
@@ -83,7 +86,7 @@ git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
 mkdir build
 cd build
-cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF ..
+cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DAPIVERSION=7.0 ..
 cmake --build . --config Release
 cmake --install .
 
