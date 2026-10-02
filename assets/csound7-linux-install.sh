@@ -4,6 +4,7 @@ set -euo pipefail
 # ═══════════════════════════════════════════════════════════════
 # Csound 7 Portable Linux Installer
 # Shipped inside: csound7-linux-portable-with-plugins.zip
+# Within the csound portable .zip package, it is renamed to install.sh
 # ═══════════════════════════════════════════════════════════════
 
 # ─── Colors ───────────────────────────────────────────────────
@@ -32,6 +33,8 @@ AUTO_YES=false
 VERBOSE=false
 INSTALL_RISSET=false
 INSTALL_EXTERNALS=false
+SKIP_RISSET=false
+SKIP_EXTERNALS=false
 USER_CSOUND_PATH="$HOME/.local/csound"
 USER_PLUGINS_DIR="$HOME/.local/lib/csound/7.0/plugins64"
 
@@ -42,16 +45,18 @@ Usage: ${0##*/} [OPTIONS]
 Installs csound7 (static build, no dependencies, glibc>=2.2.5, avx2)
 
 Options:
-  --user    Install for the current user only (installs csound in ~/.local/csound,
-            plugins in ~/.local/lib/csound/7.0/plugins64)
-  --system  Install system-wide (/usr/local, requires sudo)
-  --risset  Also install risset (csound package manager) via uv
-  --plugins Install external plugins
-  -y        Non-interactive: answer yes to all questions and install csound
-            only (defaults to a system installation). Combine with --risset
-            and/or --plugins to also install those.
-  --verbose Output extra information
-  --help    Show this help message and exit
+  --user       Install for the current user only (installs csound in ~/.local/csound,
+               plugins in ~/.local/lib/csound/7.0/plugins64)
+  --system     Install system-wide (/usr/local, requires sudo)
+  --risset     Also install risset (csound package manager) via uv
+  --no-risset  Do not install risset and do not ask about it
+  --plugins    Install external plugins
+  --no-plugins Do not install external plugins and do not ask about them
+  -y           Non-interactive: answer yes to all questions and install csound
+               only (defaults to a system installation). Combine with --risset
+               and/or --plugins to also install those.
+  --verbose    Output extra information
+  --help       Show this help message and exit
 EOF
 }
 
@@ -73,6 +78,10 @@ while [[ $# -gt 0 ]]; do
             INSTALL_EXTERNALS=true
             shift
             ;;
+        --no-plugins)
+            SKIP_EXTERNALS=true
+            shift
+            ;;
         -y)
             AUTO_YES=true
             shift
@@ -81,17 +90,32 @@ while [[ $# -gt 0 ]]; do
             INSTALL_RISSET=true
             shift
             ;;
+        --no-risset)
+            SKIP_RISSET=true
+            shift
+            ;;
         --help)
             usage
             exit 0
             ;;
         *)
             error "Unknown option: $1"
-            usage
-            exit 1
+            shift
             ;;
     esac
 done
+
+if [ "$INSTALL_RISSET" = true ] && [ "$SKIP_RISSET" = true ]; then
+    error "Options --risset and --no-risset are mutually exclusive"
+    usage
+    exit 1
+fi
+
+if [ "$INSTALL_EXTERNALS" = true ] && [ "$SKIP_EXTERNALS" = true ]; then
+    error "Options --plugins and --no-plugins are mutually exclusive"
+    usage
+    exit 1
+fi
 
 if [[ -n "$INSTALL_MODE_ARG" ]]; then
     INSTALL_MODE="$INSTALL_MODE_ARG"
@@ -495,6 +519,8 @@ if command_exists risset; then
     info "risset is already available at $(command -v risset); skipping installation."
 elif [ "$INSTALL_RISSET" = true ]; then
     install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
+elif [ "$SKIP_RISSET" = true ]; then
+    debug "Skipping risset installation (--no-risset)."
 elif [ "$AUTO_YES" = false ] && ask_yes_no "Install risset (csound package manager)?"; then
     install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
 fi
@@ -503,6 +529,8 @@ fi
 echo ""
 if [ "$INSTALL_EXTERNALS" = true ]; then
     install_externals || warn "External plugins installation failed. You can install them via risset"
+elif [ "$SKIP_EXTERNALS" = true ]; then
+    debug "Skipping external plugins installation (--no-plugins)."
 elif [ "$AUTO_YES" = false ] && ask_yes_no "Install external plugins?"; then
     install_externals || warn "External plugins installation failed. You can install them via risset"
 fi
