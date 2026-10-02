@@ -55,7 +55,7 @@
    saw tooth wave
 */
 
-#include "csdl.h"
+#include "../common/csound_compat.h"
 #include "arrays.h"
 #include "../common/_common.h"
 

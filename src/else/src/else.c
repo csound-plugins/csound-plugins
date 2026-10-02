@@ -173,7 +173,7 @@
 
 */
 
-#include "csdl.h"
+#include "../../common/csound_compat.h"
 #include "arrays.h"
 #include "csound.h"
 #include <math.h>

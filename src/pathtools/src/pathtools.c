@@ -27,7 +27,7 @@
 
 */
 
-#include "csdl.h"
+#include "../../common/csound_compat.h"
 #include <math.h>
 #include <ctype.h>
 #include "arrays.h"

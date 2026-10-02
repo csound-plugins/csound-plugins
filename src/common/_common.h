@@ -1,7 +1,7 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#include "csdl.h"
+#include "csound_compat.h"
 #include "arrays.h"
 
 

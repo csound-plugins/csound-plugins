@@ -1,4 +1,4 @@
-#include "csdl.h"
+#include "../../common/csound_compat.h"
 
 
 typedef struct {
@@ -31,4 +31,3 @@ static OENTRY localops[] = {
 };
 
 LINKAGE
-

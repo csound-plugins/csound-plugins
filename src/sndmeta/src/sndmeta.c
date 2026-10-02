@@ -27,7 +27,7 @@
 // and creating conflicts with the symbols imported in sndfile.h
 #define _SOUNDFILE_H_
 
-#include "csdl.h"
+#include "../../common/csound_compat.h"
 #include <math.h>
 #include <ctype.h>
 #include "arrays.h"

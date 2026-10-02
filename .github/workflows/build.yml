@@ -33,7 +33,7 @@ jobs:
           else
             APIVERSION=7.0
             APIMAJOR=7
-            ln -s csound/platform/android/CsoundAndroid/jni/version.h csound/include
+            ln -s "${GITHUB_WORKSPACE}/csound/platform/android/CsoundAndroid/jni/version.h" "${GITHUB_WORKSPACE}/csound/include/version.h"
           fi
           echo "APIVERSION = $APIVERSION"
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION=$APIVERSION ..
@@ -258,6 +258,7 @@ jobs:
 
       - name: Configure and build repository plugins
         run: |
+          ln -sfn "${GITHUB_WORKSPACE}/csound-build/include/version.h" "${GITHUB_WORKSPACE}/csound/include/version.h"
           cmake -B plugins-build -S . \
             -DAPIVERSION=7.0 \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
@@ -436,7 +437,7 @@ jobs:
 
           cd csound
           git switch develop
-          ln -s platform/android/CsoundAndroid/jni/version.h ./include
+          ln -s ../platform/android/CsoundAndroid/jni/version.h include/version.h
           # ln -s Android/CsoundAndroid/jni/version.h ./include
           cd ..
 

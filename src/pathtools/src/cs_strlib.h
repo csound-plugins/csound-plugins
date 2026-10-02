@@ -1,7 +1,7 @@
 #ifndef CS_STRLIB
 #define CS_STRLIB
 
-#include "csdl.h"
+#include "../../common/csound_compat.h"
 
 
 unsigned long next_power_of_two(unsigned long v) {

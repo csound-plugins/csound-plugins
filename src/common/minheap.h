@@ -1,7 +1,7 @@
 #ifndef _MINHEAP_H_
 #define _MINHEAP_H_
 
-#include "csdl.h"
+#include "csound_compat.h"
 
 // A min heap of doubles
 

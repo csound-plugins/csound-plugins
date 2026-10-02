@@ -60,7 +60,7 @@ Compilation options: -a /usr/share/faust/csound.cpp -lang cpp -i -ct 1 -es 1 -mc
 //
 //==============================================================================
 
-#include "csdl.h"                        /* CSOUND plugin API header */
+#include "../../common/csound_compat.h"  /* Csound plugin API compatibility */
 
 // make sure we use csound floats
 #define FAUSTFLOAT cs_float

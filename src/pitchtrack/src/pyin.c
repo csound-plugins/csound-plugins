@@ -28,7 +28,7 @@
 
 */
 
-#include "csdl.h"
+#include "../../common/csound_compat.h"
 
 #include "../../common/_common.h"
 #include "pyinlib.h"
