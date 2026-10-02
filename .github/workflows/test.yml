@@ -6,7 +6,7 @@ jobs:
 
   macos-test:
     name: Test mac universal plugins, csound ${{ matrix.csound-branch }}
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       matrix:
         csound-branch: ["csound6", "develop"]
