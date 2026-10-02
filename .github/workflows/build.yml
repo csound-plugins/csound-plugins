@@ -397,7 +397,8 @@ jobs:
 
           cd csound
           git switch develop
-          Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "include"
+          Copy-Item "platform/android/CsoundAndroid/jni/version.h" -Destination "include"
+          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "include"
           cd ..
 
           Remove-Item -Recurse -Force build -ErrorAction Ignore
@@ -435,7 +436,8 @@ jobs:
 
           cd csound
           git switch develop
-          ln -s Android/CsoundAndroid/jni/version.h ./include
+          ln -s platform/android/CsoundAndroid/jni/version.h ./include
+          # ln -s Android/CsoundAndroid/jni/version.h ./include
           cd ..
 
           rm -fr build && mkdir build && cd build
