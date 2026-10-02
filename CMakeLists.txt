@@ -19,6 +19,18 @@ endif()
 
 set(APIVERSION "7.0" CACHE STRING "Csound API version, one of 6.0 or 7.0")
 
+# Normalize: accept bare major versions ("6"/"7", possibly quoted) as well,
+# since some shells mangle "-DAPIVERSION=7.0" into "7" + stray ".0" path arg.
+string(STRIP "${APIVERSION}" _APIVERSION_NORM)
+string(REPLACE "\"" "" _APIVERSION_NORM "${_APIVERSION_NORM}")
+string(REPLACE "'" "" _APIVERSION_NORM "${_APIVERSION_NORM}")
+if(_APIVERSION_NORM STREQUAL "6" OR _APIVERSION_NORM STREQUAL "6.0")
+    set(APIVERSION "6.0" CACHE STRING "Csound API version, one of 6.0 or 7.0" FORCE)
+elseif(_APIVERSION_NORM STREQUAL "7" OR _APIVERSION_NORM STREQUAL "7.0")
+    set(APIVERSION "7.0" CACHE STRING "Csound API version, one of 6.0 or 7.0" FORCE)
+endif()
+unset(_APIVERSION_NORM)
+
 if(APIVERSION STREQUAL "6.0")
     add_definitions("-DCSOUNDAPI6")
     add_definitions("-DCS_API_VERSION_MAJOR=6")
