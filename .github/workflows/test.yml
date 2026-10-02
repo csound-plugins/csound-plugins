@@ -9,7 +9,7 @@ jobs:
     runs-on: macos-15
     strategy:
       matrix:
-        csound-branch: ["csound6", "develop"]
+        csound-branch: ["develop"]
 
     steps:
       - uses: actions/checkout@v3
