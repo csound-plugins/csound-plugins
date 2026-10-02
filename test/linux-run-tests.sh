@@ -12,6 +12,7 @@ cp beadsynt.wav ../../../artifacts
 cd ../../else/examples
 csound -o perlin3.flac perlin3-test.csd
 cp perlin3.flac ../../../artifacts
+csound --opcode-lib=../../../build/libelse.so bisect-interp1d-test.csd
 
 popd
 

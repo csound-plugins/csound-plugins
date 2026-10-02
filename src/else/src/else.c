@@ -206,6 +206,12 @@
 
 #define ONE_OVER_PI 0.3183098861837907
 
+#if defined(__GNUC__) && !defined(__clang__)
+#define ELSE_IVDEP _Pragma("GCC ivdep")
+#else
+#define ELSE_IVDEP
+#endif
+
 // #define DEBUG
 
 #ifdef DEBUG
@@ -3529,25 +3535,23 @@ static inline cs_float _exp_interpol(cs_float y0, cs_float y1, cs_float frac, cs
 //     return y0 + (y1 - y0) * frac2;
 // }
 
-static inline cs_float _smooth_interpol(cs_float y0, cs_float y1, cs_float frac, cs_float param) {
-    if(param==0) {
-        cs_float frac2 = frac*frac*(3 - 2*frac);
-        return y0 + (y1 - y0) * frac2;
-    }
-    cs_float paramint;
-    cs_float paramfrac = modf(param, &paramint);
+static inline void _smooth_interp_param(cs_float param, int *paramint, cs_float *paramfrac) {
+    cs_float ip;
+    *paramfrac = modf(param, &ip);
+    *paramint = (int)ip;
+}
+
+static inline cs_float _smooth_interpol(cs_float y0, cs_float y1, cs_float frac,
+                                        int paramint, cs_float paramfrac) {
     cs_float frac1 = frac*frac*(3-2*frac);
-    for(int i=0; i<(int)paramint; i++) {
+    for(int i=0; i<paramint; i++) {
         frac1 = frac1*frac1*(3-2*frac1);
     }
     if(paramfrac == 0) {
         return y0 + (y1 - y0) * frac1;
     }
     cs_float frac2 = frac1*frac1*(3 - 2*frac1);
-    // cs_float val0 = y0 + (y1 - y0) * frac1;
-    // cs_float val1 = y0 + (y1 - y0) * frac2;
-    // return val0 + (val1-val0)*paramfrac;
-    // this is a simplified version of the above:
+    // this is a simplified version of the two-point blend above:
     cs_float ydiff = y0-y1;
     return -frac1*ydiff + paramfrac*(frac1 - frac2)*ydiff + y0;
 }
@@ -3622,11 +3626,15 @@ static int32_t interparr_k_kK_init(CSOUND *csound, INTERPARR_x_xK *p) {
 
 static int32_t interparr_k_kK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
     IGN(csound);
+    cs_float *data = p->arr->data;
+    uint64_t len = p->arr->sizes[0];
+    if (len == 0)
+        return PERFERRF("interp1d requires a non-empty array: %d", (int)len);
+    if (p->method == InterpError)
+        return PERFERRF("invalid interpolation method: %d", (int)p->method);
     cs_float idx = *p->idx;
     cs_float intpart, ypre, ypost;
     cs_float frac = modf(idx, &intpart);
-    cs_float *data = p->arr->data;
-    uint64_t len = p->arr->sizes[0];
     if (idx <= 0) {
         *p->out = data[0];
         return OK;
@@ -3656,12 +3664,16 @@ static int32_t interparr_k_kK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
     case InterpCubic:
         // this only is a true continuous shape is the x coord is periodic!
         ypre = i > 0 ? data[i-1] : y0;
-        ypost = len - i > 2 ? data[i+2] : y1;
+        ypost = i + 2 < len ? data[i+2] : y1;
         *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
         break;
-    case InterpSmooth:
-        *p->out = _smooth_interpol(y0, y1, frac, *p->param);
+    case InterpSmooth: {
+        int paramint;
+        cs_float paramfrac;
+        _smooth_interp_param(*p->param, &paramint, &paramfrac);
+        *p->out = _smooth_interpol(y0, y1, frac, paramint, paramfrac);
         break;
+    }
     case InterpSmoother:
         *p->out = _smoother_interpol(y0, y1, frac, *p->param);
         break;
@@ -3678,56 +3690,117 @@ static int32_t interparr_k_kK_ir(CSOUND *csound, INTERPARR_x_xK *p) {
 
 
 static int32_t interparr_a_aK_kr(CSOUND *csound, INTERPARR_x_xK *p) {
-    cs_float *out = p->out;
-    cs_float *in = p->idx;
-    cs_float *data = p->arr->data;
-    cs_float frac, intpart, idx;
-    uint64_t len = p->arr->sizes[0];
+    cs_float       * restrict out  = p->out;
+    const cs_float * restrict in   = p->idx;
+    const cs_float * restrict data = p->arr->data;
+    int64_t len = p->arr->sizes[0];
+    if (len == 0)
+        return PERFERRF("interp1d requires a non-empty array: %d", (int)len);
+    if (p->method == InterpError)
+        return PERFERRF("invalid interpolation method: %d", (int)p->method);
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
-    int method = p->method;
-    cs_float param = *p->param;
-    for(n=offset; n<nsmps; n++) {
-        idx = in[n];
-        intpart = modf(idx, &frac);
-        if (idx <= 0) {
+
+    if (len < 2) {
+        for(n=offset; n<nsmps; n++)
             out[n] = data[0];
-            continue;
-        }
-        if (idx >= len - 1) {
-            out[n] = data[len - 1];
-            continue;
-        }
-
-        uint64_t i = (uint64_t)intpart;
-
-        cs_float y0 = data[i];
-        cs_float y1 = data[i+1];
-        switch(method) {
-        case InterpLinear:
-            out[n] = y0 + (y1 - y0)*frac;
-            break;
-        case InterpCos:
-            out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
-            break;
-        case InterpFloor:
-            out[n] = y0;
-            break;
-        case InterpSmooth:
-            out[n] = _smooth_interpol(y0, y1, frac, param);
-            break;
-        case InterpSmoother:
-            out[n] = _smoother_interpol(y0, y1, frac, param);
-            break;
-        case InterpExp:
-            out[n] = _exp_interpol(y0, y1, frac, param);
-            break;
-        case InterpCubic:
-            out[n] = 0;
-            break;
-        }
+        return OK;
     }
+
+    const cs_float tmaxf = (cs_float)(len - 1);
+    const int32_t rowmax = (int32_t)(len - 2);
+    cs_float idx, frac, y0, y1, ypre, ypost;
+    int32_t i;
+
+#define INTERP_CLAMP(iv)                        \
+    do {                                        \
+        idx = (iv);                             \
+        idx = idx < 0.0 ? 0.0 : idx;            \
+        idx = idx > tmaxf ? tmaxf : idx;        \
+        i = (int32_t)idx;                       \
+        i = i > rowmax ? rowmax : i;            \
+        frac = idx - (cs_float)i;               \
+    } while (0)
+
+    switch(p->method) {
+    case InterpLinear:
+        ELSE_IVDEP
+        for(n=offset; n<nsmps; n++) {
+            INTERP_CLAMP(in[n]);
+            y0 = data[i];
+            y1 = data[i+1];
+            out[n] = y0 + (y1 - y0)*frac;
+        }
+        break;
+    case InterpCos:
+        ELSE_IVDEP
+        for(n=offset; n<nsmps; n++) {
+            INTERP_CLAMP(in[n]);
+            y0 = data[i];
+            y1 = data[i+1];
+            out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
+        }
+        break;
+    case InterpFloor:
+        ELSE_IVDEP
+        for(n=offset; n<nsmps; n++) {
+            idx = in[n];
+            idx = idx < 0.0 ? 0.0 : idx;
+            idx = idx > tmaxf ? tmaxf : idx;
+            out[n] = data[(int32_t)idx];
+        }
+        break;
+    case InterpExp: {
+        cs_float param = *p->param;
+        ELSE_IVDEP
+        for(n=offset; n<nsmps; n++) {
+            INTERP_CLAMP(in[n]);
+            y0 = data[i];
+            y1 = data[i+1];
+            out[n] = _exp_interpol(y0, y1, frac, param);
+        }
+        break;
+    }
+    case InterpSmooth: {
+        int paramint;
+        cs_float paramfrac;
+        _smooth_interp_param(*p->param, &paramint, &paramfrac);
+        ELSE_IVDEP
+        for(n=offset; n<nsmps; n++) {
+            INTERP_CLAMP(in[n]);
+            y0 = data[i];
+            y1 = data[i+1];
+            out[n] = _smooth_interpol(y0, y1, frac, paramint, paramfrac);
+        }
+        break;
+    }
+    case InterpSmoother: {
+        cs_float param = *p->param;
+        ELSE_IVDEP
+        for(n=offset; n<nsmps; n++) {
+            INTERP_CLAMP(in[n]);
+            y0 = data[i];
+            y1 = data[i+1];
+            out[n] = _smoother_interpol(y0, y1, frac, param);
+        }
+        break;
+    }
+    case InterpCubic:
+        ELSE_IVDEP
+        for(n=offset; n<nsmps; n++) {
+            INTERP_CLAMP(in[n]);
+            y0 = data[i];
+            y1 = data[i+1];
+            ypre = i > 0 ? data[i-1] : y0;
+            ypost = i + 2 < len ? data[i+2] : y1;
+            out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
+        }
+        break;
+    default:
+        break;
+    }
+#undef INTERP_CLAMP
     return OK;
 }
 
@@ -3770,21 +3843,31 @@ static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
     cs_float frac, intpart, idx, ypre, ypost;
     size_t len = p->arr->sizes[0];
     size_t numitems = p->idx->sizes[0];
+    if (len == 0)
+        return PERFERRF("interp1d requires a non-empty array: %d", (int)len);
+    if (p->method == InterpError)
+        return PERFERRF("invalid interpolation method: %d", (int)p->method);
     tabcheck(csound, p->out, numitems, &(p->h));
     int method = p->method;
-    cs_float param = *p->param;
+    cs_float param = 0.0;
+    if (method == InterpExp || method == InterpSmooth || method == InterpSmoother)
+        param = *p->param;
     cs_float data0 = data[0];
     cs_float data1 = data[len-1];
+    int smooth_paramint = 0;
+    cs_float smooth_paramfrac = 0.0;
+    if (method == InterpSmooth)
+        _smooth_interp_param(param, &smooth_paramint, &smooth_paramfrac);
     for(size_t n=0; n < numitems; n++) {
         idx = in[n];
         frac = modf(idx, &intpart);
         if (idx <= 0) {
             out[n] = data0;
-            return OK;
+            continue;
         }
         if (idx >= len - 1) {
             out[n] = data1;
-            return OK;
+            continue;
         }
 
         size_t i = (uint64_t)intpart;
@@ -3803,14 +3886,14 @@ static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
             break;
         case InterpCubic:
             ypre = i > 0 ? data[i-1] : y0;
-            ypost = len - i > 3 ? data[i+2] : y1;
+            ypost = i + 2 < len ? data[i+2] : y1;
             out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
             break;
         case InterpExp:
             out[n] = _exp_interpol(y0, y1, frac, param);
             break;
         case InterpSmooth:
-            out[n] = _smooth_interpol(y0, y1, frac, param);
+            out[n] = _smooth_interpol(y0, y1, frac, smooth_paramint, smooth_paramfrac);
             break;
         case InterpSmoother:
             out[n] = _smoother_interpol(y0, y1, frac, param);
@@ -3823,12 +3906,8 @@ static int32_t interparr_K_KK_kr(CSOUND *csound, INTERPARR_K_KK *p) {
 }
 
 static int32_t interparr_K_KK_ir(CSOUND *csound, INTERPARR_K_KK *p) {
-    p->method = InterpLinear;
-    if(p->idx->dimensions > 1)
-        return INITERR("idx array should be 1D");
-    if(p->arr->dimensions > 1)
-        return INITERR("data array should be 1D");
-    tabinit_compat(csound, p->out, p->idx->sizes[0], &(p->h));
+    if (interparr_K_KK_init(csound, p) != OK)
+        return NOTOK;
     return interparr_K_KK_kr(csound, p);
 }
 
@@ -3845,6 +3924,13 @@ typedef struct {
     cs_float param;
     int numargs;
     enum InterpMethod method;
+
+    int64_t cache_lastpos;
+    uint64_t cache_numrows;
+    uint64_t cache_flen;
+    int32_t cache_step;
+    int32_t cache_offset;
+    int cache_valid;
 } INTERPTAB;
 
 
@@ -3859,6 +3945,7 @@ static int32_t interptab_init_kk(CSOUND *csound, INTERPTAB *p) {
     p->lasttab = (int)*p->tabnum;
     p->method = InterpLinear;
     p->numargs = 2;
+    p->cache_valid = 0;
     return OK;
 }
 
@@ -3873,6 +3960,7 @@ static int32_t interptab_init_kkSkk(CSOUND *csound, INTERPTAB *p) {
     p->lasttab = (int)*p->tabnum;
     p->numargs = 5;
     p->method = _interp_parse_mode_with_param(p->mode->data, &(p->param));
+    p->cache_valid = 0;
     return OK;
 }
 
@@ -3892,26 +3980,44 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
         taboffset = (int32_t)*p->offset;
     }
 
+    uint64_t len = p->ftp->flen;
+    if (UNLIKELY(!(p->cache_valid && p->cache_flen == len &&
+                   p->cache_step == step && p->cache_offset == taboffset))) {
+        if (len == 0 || step <= 0 || taboffset < 0 || (uint64_t)taboffset >= len)
+            return PERFERRF("invalid table step/offset: step=%d offset=%d", step, taboffset);
+        uint64_t q = (len - 1 - (uint64_t)taboffset) / (uint64_t)step;
+        uint64_t lp = q * (uint64_t)step;
+        if (lp == 0)
+            return PERFERRF("table interpolation requires at least two rows (last position %d)", (int)lp);
+        p->cache_lastpos = (int64_t)lp;
+        p->cache_numrows = q + 1;
+        p->cache_flen = len;
+        p->cache_step = step;
+        p->cache_offset = taboffset;
+        p->cache_valid = 1;
+    }
+    uint64_t lastpos = (uint64_t)p->cache_lastpos;
+    uint64_t numrows = p->cache_numrows;
+
     if (idx <= 0) {
         *p->out = data[taboffset];
+        return OK;
+    }
+    if (idx >= numrows - 1) {
+        *p->out = data[taboffset + lastpos];
         return OK;
     }
 
     cs_float intpart;
     cs_float frac = modf(idx, &intpart);
 
-    uint64_t len = p->ftp->flen;
-    uint64_t i = (uint64_t)intpart * step + taboffset;
-
-    if (i >= len - 1) {
-        *p->out = data[len - step + taboffset];
-        return OK;
-    }
+    uint64_t i = (uint64_t)intpart * step;
 
     if (frac == 0) {
-        *p->out = data[i];
+        *p->out = data[taboffset + i];
         return OK;
     }
+    i += taboffset;
     cs_float y0 = data[i];
     cs_float y1 = data[i+step];
     cs_float ypre, ypost;
@@ -3926,13 +4032,18 @@ static int32_t interptab_kr(CSOUND *csound, INTERPTAB *p) {
         *p->out = y0;
         break;
     case InterpCubic:
-        ypre = i > 0 ? data[i-1] : y0;
-        ypost = len - i > 3 ? data[i+2] : y1;
+        ypre = i >= (uint64_t)taboffset + (uint64_t)step ? data[i-step] : y0;
+        ypost = (uint64_t)taboffset + lastpos - i >= (uint64_t)step * 2
+                    ? data[i+2*step] : y1;
         *p->out = _cubic_interpol(frac, ypre, y0, y1, ypost);
         break;
-    case InterpSmooth:
-        *p->out = _smooth_interpol(y0, y1, frac, p->param);
+    case InterpSmooth: {
+        int paramint;
+        cs_float paramfrac;
+        _smooth_interp_param(p->param, &paramint, &paramfrac);
+        *p->out = _smooth_interpol(y0, y1, frac, paramint, paramfrac);
         break;
+    }
     case InterpSmoother:
         *p->out = _smoother_interpol(y0, y1, frac, p->param);
         break;
@@ -3970,148 +4081,125 @@ static int32_t interptab_a_a_kr(CSOUND *csound, INTERPTAB *p) {
         p->ftp = ftp;
         p->lasttab = (int)*p->tabnum;
     }
-    cs_float *out = p->out;
-    cs_float *in = p->idx;
-    uint64_t taboffset = (uint64_t)*p->offset;
-    uint64_t step = (uint64_t)*p->step;
-    if(step <= 0) {
-        return PERFERRF("step cannot be less than 1, got %lu", step);
+    cs_float       * restrict out = p->out;
+    const cs_float * restrict in  = p->idx;
+    int32_t signed_offset, signed_step;
+    if(p->numargs == 2) {
+        signed_offset = 0;
+        signed_step = 1;
+    } else {
+        signed_offset = (int32_t)*p->offset;
+        signed_step = (int32_t)*p->step;
     }
-
-    cs_float *data = &(p->ftp->ftable[taboffset]);
-    cs_float idx, intpart, frac, y0, y1, ypre, ypost;
-    uint64_t len = p->ftp->flen;
+    int64_t len = p->ftp->flen;
+    if (len == 0 || signed_step <= 0 || signed_offset < 0 || signed_offset >= len)
+        return PERFERRF("invalid table step/offset: step=%d offset=%d", signed_step, signed_offset);
+    int64_t taboffset = signed_offset;
+    int64_t step = signed_step;
+    int64_t lastrow = (len - 1 - taboffset) / step;
+    if (lastrow == 0)
+        return PERFERRF("table interpolation requires at least two rows (last position %d)", (int)lastrow);
+    int64_t numframes = lastrow + 1;
+    int64_t lastpos = lastrow * step;
+    const cs_float * restrict data = &(p->ftp->ftable[taboffset]);
+    cs_float idx, frac, y0, y1, ypre, ypost;
+    int64_t off;
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
 
-    // we branch outside the loop depending on the interpolation mode
-    cs_float firstelem = data[0];
-    cs_float lastelem = data[len - step];
-    cs_float param = p->param;
+    const cs_float tmaxf = (cs_float)(numframes - 1);
+    const int32_t rowmax = (int32_t)(numframes - 2);
+
+#define INTERP_CLAMP(iv)                        \
+    do {                                        \
+        cs_float _t = (iv);                     \
+        _t = _t < 0.0 ? 0.0 : _t;               \
+        _t = _t > tmaxf ? tmaxf : _t;           \
+        int32_t _r = (int32_t)_t;               \
+        _r = _r > rowmax ? rowmax : _r;         \
+        off = (int64_t)_r * step;               \
+        frac = _t - (cs_float)_r;               \
+    } while (0)
+
     switch(p->method) {
     case InterpLinear:
+        ELSE_IVDEP
         for(n=offset; n < nsmps; n++) {
-            idx = in[n];
-            frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step;
-            if(i <= 0)
-                out[n] = firstelem;
-            else if(i>= len - 1)
-                out[n] = lastelem;
-            else if(frac == 0)
-                out[n] = data[i];
-            else {
-                y0 = data[i];
-                y1 = data[i+step];
-                out[n] = y0 + (y1 - y0)*frac;
-            }
+            INTERP_CLAMP(in[n]);
+            y0 = data[off];
+            y1 = data[off+step];
+            out[n] = y0 + (y1 - y0)*frac;
         }
         break;
     case InterpCos:
+        ELSE_IVDEP
         for(n=offset; n < nsmps; n++) {
-            idx = in[n];
-            frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step;
-            if(i <= 0)
-                out[n] = firstelem;
-            else if(i>= len - 1)
-                out[n] = lastelem;
-            else if(frac == 0)
-                out[n] = data[i];
-            else {
-                y0 = data[i];
-                y1 = data[i+step];
-                out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
-            }
+            INTERP_CLAMP(in[n]);
+            y0 = data[off];
+            y1 = data[off+step];
+            out[n] = y0 + (y1-y0) * (1 - COS(frac*PI)) / 2.;
         }
         break;
-    case InterpExp:
+    case InterpExp: {
+        cs_float param = p->param;
+        ELSE_IVDEP
         for(n=offset; n < nsmps; n++) {
-            idx = in[n];
-            frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step ;
-            if(i <= 0)
-                out[n] = firstelem;
-            else if(i>= len - 1)
-                out[n] = lastelem;
-            else if(frac == 0)
-                out[n] = data[i];
-            else {
-                y0 = data[i];
-                y1 = data[i+step];
-                out[n] = _exp_interpol(y0, y1, frac, param);
-            }
+            INTERP_CLAMP(in[n]);
+            y0 = data[off];
+            y1 = data[off+step];
+            out[n] = _exp_interpol(y0, y1, frac, param);
         }
         break;
+    }
     case InterpFloor:
+        ELSE_IVDEP
         for(n=offset; n < nsmps; n++) {
             idx = in[n];
-            frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step;
-            if(i <= 0)
-                out[n] = firstelem;
-            else if(i>= len - 1)
-                out[n] = lastelem;
-            else
-                out[n] = data[i];
+            idx = idx < 0.0 ? 0.0 : idx;
+            idx = idx > tmaxf ? tmaxf : idx;
+            out[n] = data[(int64_t)(int32_t)idx * step];
         }
         break;
     case InterpCubic:
+        ELSE_IVDEP
         for(n=offset; n < nsmps; n++) {
-            idx = in[n];
-            frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step;
-            if(i <= 0)
-                out[n] = firstelem;
-            else if(i>= len - 1)
-                out[n] = lastelem;
-            else if(frac == 0)
-                out[n] = data[i];
-            else {
-                y0 = data[i];
-                y1 = data[i+step];
-                ypre = i >= step ? data[i-step] : y0;
-                ypost = len - i > step*2 ? data[i+step+step] : y1;
-                out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
-            }
+            INTERP_CLAMP(in[n]);
+            y0 = data[off];
+            y1 = data[off+step];
+            ypre = off >= step ? data[off-step] : y0;
+            ypost = off + 2*step <= lastpos ? data[off+2*step] : y1;
+            out[n] = _cubic_interpol(frac, ypre, y0, y1, ypost);
         }
         break;
-    case InterpSmooth:
+    case InterpSmooth: {
+        int paramint;
+        cs_float paramfrac;
+        _smooth_interp_param(p->param, &paramint, &paramfrac);
+        ELSE_IVDEP
         for(n=offset; n < nsmps; n++) {
-            idx = in[n];
-            frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step;
-            if(i <= 0)
-                out[n] = firstelem;
-            else if(i>= len - 1)
-                out[n] = lastelem;
-            else {
-                y0 = data[i];
-                y1 = data[i+step];
-                out[n] = _smooth_interpol(y0, y1, frac, param);
-            }
+            INTERP_CLAMP(in[n]);
+            y0 = data[off];
+            y1 = data[off+step];
+            out[n] = _smooth_interpol(y0, y1, frac, paramint, paramfrac);
         }
         break;
-    case InterpSmoother:
+    }
+    case InterpSmoother: {
+        cs_float param = p->param;
+        ELSE_IVDEP
         for(n=offset; n < nsmps; n++) {
-            idx = in[n];
-            frac = modf(idx, &intpart);
-            uint64_t i = (uint64_t)intpart * step;
-            if(i <= 0)
-                out[n] = firstelem;
-            else if(i>= len - 1)
-                out[n] = lastelem;
-            else {
-                y0 = data[i];
-                y1 = data[i+step];
-                out[n] = _smoother_interpol(y0, y1, frac, param);
-            }
+            INTERP_CLAMP(in[n]);
+            y0 = data[off];
+            y1 = data[off+step];
+            out[n] = _smoother_interpol(y0, y1, frac, param);
         }
         break;
+    }
     default:
         return PERFERRF("Invalid interpolation method %s", p->mode->data);
     }
+#undef INTERP_CLAMP
     return OK;
 }
 
@@ -4142,30 +4230,39 @@ typedef struct {
 } BISECT;
 
 
-static inline int64_t array_bisect_multidim(cs_float x, cs_float *xs, int64_t len,
-                                            int step, int offset, int64_t lastidx) {
+static inline int64_t array_bisect_multidim(cs_float x, cs_float *xs, int step, int offset,
+                                            int64_t numframes, int64_t lastidx) {
     // step: the frame size, a.k.a the number of columns per row. Must be >= 1
     // offset: the column index to use for comparison
+    // numframes: number of rows, must be >= 1 (validated by the caller)
     // returns: the fractional row index
+    int64_t lastframe = numframes - 1;
+    int64_t lastpos = lastframe * step + offset;
+
     if(x <= xs[offset]) {
         return -1;
     }
-    if(x >= xs[len-step+offset]) {
+    if(x >= xs[lastpos]) {
         return -2;
     }
+    if(numframes < 2)
+        return -1;
 
-    if(lastidx >= 0 &&
-            lastidx < len-step*2 &&
-            xs[lastidx*step+offset] <= x && x < xs[(lastidx+1)*step+offset]) {
-        return lastidx;
-    }
-    // ceil(x/y) = (x+y-1) // y;
-    int64_t numframes = (len-offset+step-1) / step;
-    // int64_t numframes = (int64_t)ceil((len-offset)/step);
     int64_t imin = 0;
     int64_t imax = numframes;
-    int64_t imid;
 
+    // Bisect inputs are usually monotonic, but not necessarily, so just probe
+    // the frame at lastidx and the next one before falling back to a full
+    // bisection (the value could be anywhere if it moved backwards).
+    if(lastidx >= 0 && lastidx < lastframe) {
+        int64_t lpos = lastidx*step + offset;
+        if(xs[lpos] <= x) {
+            if(x < xs[lpos+step]) return lastidx;
+            if(lastidx + 2 <= lastframe && x < xs[lpos+2*step]) return lastidx + 1;
+        }
+    }
+
+    int64_t imid;
     while (imin < imax) {
         imid = (imax + imin) / 2;
         if (xs[imid*step+offset] < x)
@@ -4179,23 +4276,22 @@ static inline int64_t array_bisect_multidim(cs_float x, cs_float *xs, int64_t le
 
 
 static inline int64_t array_bisect(cs_float x, cs_float *xs, int64_t xslen, int64_t lastidx) {
+    if (xslen <= 0)
+        return -1;
     // Boundary checks
     if(x <= xs[0]) return -1;
     if(x >= xs[xslen-1]) return -2;
 
-    int64_t imin;
+    int64_t imin = 0;
+    int64_t imax = xslen - 1;  // exclusive upper bound for the binary search
 
-    // Exploit locality: check if value is near last index
+    // Bisect inputs are usually monotonic, but not necessarily, so just probe
+    // the bin at lastidx and the next one before falling back to a full
+    // bisection (the value could be anywhere if it moved backwards).
     if(lastidx >= 0 && lastidx < xslen-1 && xs[lastidx] <= x) {
         if(x < xs[lastidx+1]) return lastidx;
         if(lastidx < xslen-2 && x < xs[lastidx+2]) return lastidx + 1;
-        imin = lastidx + 2;  // Start search from lastidx+2 instead of lastidx
     }
-    else {
-        imin = 0;
-    }
-
-    int64_t imax = xslen - 1;  // Adjusted bounds
 
     // Binary search with branchless midpoint calculation
     while (imin < imax) {
@@ -4260,6 +4356,8 @@ static int32_t bisect_init(CSOUND *csound, BISECT *p) {
 static int32_t bisect_kr(CSOUND *csound, BISECT *p) {
     IGN(csound);
     int64_t lenarr = p->arr->sizes[0];
+    if (lenarr <= 0)
+        return PERFERRF("bisect requires a non-empty array: %d", (int)lenarr);
     cs_float *arr = p->arr->data;
     cs_float x = *p->x;
     cs_float x0, x1, frac;
@@ -4294,6 +4392,8 @@ static int32_t bisect_ir(CSOUND *csound, BISECT *p) {
 static int32_t bisect_a_a_kr(CSOUND *csound, BISECT *p) {
     IGN(csound);
     int64_t lenarr = p->arr->sizes[0];
+    if (lenarr <= 0)
+        return PERFERRF("bisect requires a non-empty array: %d", (int)lenarr);
     cs_float *arr = p->arr->data;
     cs_float *out = p->out;
     cs_float *in = p->x;
@@ -4345,6 +4445,8 @@ static int32_t bisectarr_kr(CSOUND *csound, BISECTARR *p) {
     cs_float *arr = p->arr->data;
 
     size_t lenarr = p->arr->sizes[0];
+    if (lenarr == 0)
+        return PERFERRF("bisect requires a non-empty array: %d", (int)lenarr);
     size_t numitems = p->xs->sizes[0];
     tabcheck(csound, p->out, numitems, &(p->h));
 
@@ -4423,15 +4525,19 @@ static int32_t bisecttab_k_k_kr(CSOUND *csound, BISECTTAB *p) {
     int32_t step = (int32_t)(*p->step);
     if(step == 0)
         step = 1;
-    else if(step < 0)
-        return PERFERRF("step cannot be negative, got %d", step);
-    int64_t row = array_bisect_multidim(x, data, lendata, step, taboffset, p->lastidx);
+    if(step < 1 || taboffset < 0 || taboffset >= lendata)
+        return PERFERRF("invalid table step/offset: step=%d offset=%d", step, taboffset);
+    int64_t lastrow = (lendata - 1 - taboffset) / step;
+    if (lastrow == 0)
+        return PERFERRF("bisect table requires at least two rows (row count %d)", (int)lastrow);
+    int64_t row = array_bisect_multidim(x, data, step, taboffset,
+                                        lastrow + 1, p->lastidx);
 
     if(row == -1) {
         *p->out = 0;
         p->lastidx = -1;
     } else if (row == -2) {
-        *p->out = ceil((lendata-taboffset)/step)-1;
+        *p->out = lastrow;
         p->lastidx = -1;
     } else {
         x0 = data[taboffset+row*step];
@@ -4465,26 +4571,26 @@ static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
     cs_float *in = p->in;
     int32_t taboffset = (int32_t)*p->offset;
     int32_t step = (int32_t)*p->step;
-    if(step <= 0) {
-        return PERFERRF("step cannot be less than 1, got %d", step);
-    } else if(step == 0) {
+    if(step == 0) {
         step = 1;
     }
+    int64_t lendata = p->ftp->flen;
+    if(step < 1 || taboffset < 0 || taboffset >= lendata)
+        return PERFERRF("invalid table step/offset: step=%d offset=%d", step, taboffset);
 
     cs_float *data = p->ftp->ftable;
 
     AUDIO_OPCODE(csound, p);
     AUDIO_OUTPUT(out);
 
-    int64_t idx,
-            lendata = p->ftp->flen,
-            lastidx = p->lastidx;
+    int64_t idx, lastidx = p->lastidx;
+    int64_t numframes = (lendata - 1 - taboffset) / step + 1;
 
     cs_float x0, x1, frac, x;
-    cs_float rightmost = ceil((lendata-taboffset)/step)-1;
+    cs_float rightmost = (cs_float)(numframes - 1);
     for(n=offset; n < nsmps; n++) {
         x = in[n];
-        idx = array_bisect_multidim(x, data, lendata, step, taboffset, lastidx);
+        idx = array_bisect_multidim(x, data, step, taboffset, numframes, lastidx);
         if(idx == -1) {
             out[n] = 0;
             lastidx = -1;
@@ -4500,6 +4606,7 @@ static int32_t bisecttab_a_a_kr(CSOUND *csound, BISECTTAB *p) {
             lastidx = idx;
         }
     }
+    p->lastidx = lastidx;
     return OK;
 }
 
@@ -4545,34 +4652,35 @@ static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
     cs_float *in = p->in->data;
     int32_t taboffset = (int32_t)*p->offset;
     int32_t step = (int32_t)*p->step;
-    if(step <= 0)
+    if(step < 0)
+        return PERFERRF("step cannot be negative, got %d", step);
+    if(step == 0)
         step = 1;
     size_t arrsize = p->in->sizes[0];
     tabcheck(csound, p->out, arrsize, &(p->h));
-    if(step < 0) {
-        MSGF("step cannot be negative, got %d", step);
-        return NOTOK;
-    }
-    if(step == 0)
-        step = 1;
-
     int64_t idx,
             lendata = p->ftp->flen,
             lastidx = p->lastidx;
+    if(step < 1 || taboffset < 0 || taboffset >= lendata)
+        return PERFERRF("invalid table step/offset: step=%d offset=%d", step, taboffset);
+    int64_t lastrow = (lendata - 1 - taboffset) / step;
+    if (lastrow == 0)
+        return PERFERRF("bisect table requires at least two rows (row count %d)", (int)lastrow);
+    int64_t numframes = lastrow + 1;
 
     cs_float x0, x1, frac, x;
     for(size_t n=0; n < arrsize; n++) {
         x = in[n];
-        idx = array_bisect_multidim(x, data, lendata, step, taboffset, lastidx);
+        idx = array_bisect_multidim(x, data, step, taboffset, numframes, lastidx);
         if(idx == -1) {
             out[n] = 0;
             lastidx = -1;
         } else if(idx == -2) {
-            out[n] = lendata - step + taboffset;
+            out[n] = lastrow;
             lastidx = -1;
         } else {
             x0 = data[taboffset + idx*step];
-            x1 = data[taboffset + idx*step + 1];
+            x1 = data[taboffset + (idx+1)*step];
             frac = (x - x0) / (x1 - x0);
             out[n] = (cs_float)idx + frac;
             lastidx = idx;
@@ -4583,7 +4691,9 @@ static int32_t bisecttabarr_kr(CSOUND *csound, BISECTTAB_ARR *p) {
 }
 
 static int32_t bisecttabarr_ir(CSOUND *csound, BISECTTAB_ARR *p) {
-    bisecttabarr_init(csound, p);
+    int res = bisecttabarr_init(csound, p);
+    if (res == NOTOK)
+        return NOTOK;
     return bisecttabarr_kr(csound, p);
 }
 
@@ -7634,7 +7744,7 @@ static OENTRY localops[] = {
     {"interp1d.i",  S(INTERPTAB), 0, 1, "i", "ii", (SUBR)interptab_ir2, NULL, NULL, NULL},
 
     {"interp1d.a",  S(INTERPTAB), 0, 3, "a", "akSPO", (SUBR)interptab_init_kkSkk, (SUBR)interptab_a_a_kr, NULL, NULL},
-    {"interp1d.a",  S(INTERPTAB), 0, 3, "a", "ak", (SUBR)interptab_init_kkSkk, (SUBR)interptab_a_a_kr, NULL, NULL},
+    {"interp1d.a",  S(INTERPTAB), 0, 3, "a", "ak", (SUBR)interptab_init_kk, (SUBR)interptab_a_a_kr, NULL, NULL},
 
     // TODO : kout[] interp1d kin[], ktab, Smode=0,kstep=1, koffset=0
 
@@ -7821,7 +7931,7 @@ static OENTRY localops[] = {
     {"interp1d.i",  S(INTERPTAB), 0, "i", "ii", (SUBR)interptab_ir2, NULL, NULL, NULL, 0},
 
     {"interp1d.a",  S(INTERPTAB), 0, "a", "akSPO", (SUBR)interptab_init_kkSkk, (SUBR)interptab_a_a_kr, NULL, NULL, 0},
-    {"interp1d.a",  S(INTERPTAB), 0, "a", "ak", (SUBR)interptab_init_kkSkk, (SUBR)interptab_a_a_kr, NULL, NULL, 0},
+    {"interp1d.a",  S(INTERPTAB), 0, "a", "ak", (SUBR)interptab_init_kk, (SUBR)interptab_a_a_kr, NULL, NULL, 0},
 
     // TODO : kout[] interp1d kin[], ktab, Smode=0,kstep=1, koffset=0
 

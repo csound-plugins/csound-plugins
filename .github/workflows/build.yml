@@ -14,9 +14,12 @@ jobs:
 
       - name: setup csound
         run: |
-          git submodule update --init --recursive
+          git submodule update --init csound src/jsfx/jsusfx
           cd csound
-          git switch ${{ matrix.csound-branch }}
+          git fetch origin "refs/heads/${{ matrix.csound-branch }}:refs/remotes/origin/${{ matrix.csound-branch }}"
+          git switch --detach origin/${{ matrix.csound-branch }}
+          git submodule update --init --recursive
+          cd ..
 
       - name: build
         run: |
@@ -122,7 +125,7 @@ jobs:
             -lo${{ env.LIBLO_VERSION }}
             -portmidi${{ env.PORTMIDI_VERSION }}
             -portaudio${{ env.PORTAUDIO_VERSION }}
-            -v3
+            -v4
 
       - name: Build static dependencies
         if: steps.cache-static-deps.outputs.cache-hit != 'true'
@@ -195,9 +198,6 @@ jobs:
             -DPA_USE_ALSA=ON -DPA_ALSA_DYNAMIC=OFF -DPA_USE_JACK=ON
           cmake --build /tmp/portaudio-build -j"$(nproc)"
           cmake --install /tmp/portaudio-build
-
-      - name: Build static liblo
-        run: |
           curl -fsSL "https://github.com/radarsat1/liblo/releases/download/${LIBLO_VERSION}/liblo-${LIBLO_VERSION}.tar.gz" | tar -xz -C /tmp
           cd "/tmp/liblo-${LIBLO_VERSION}"
           ./configure --prefix="${DEPS_PREFIX}" --enable-static --disable-shared \
@@ -375,9 +375,12 @@ jobs:
 
       - name: Checkout submodules
         run: |
-          git submodule update --init --recursive
+          git submodule update --init csound src/jsfx/jsusfx
           cd csound
-          git switch develop
+          git fetch origin refs/heads/develop:refs/remotes/origin/develop
+          git switch --detach origin/develop
+          git submodule update --init --recursive
+          cd ..
 
       - name: windows build - csound 7
         if: runner.os == 'windows'
@@ -392,11 +395,10 @@ jobs:
           choco install libsndfile
           # choco install fluidsynth
 
-          git submodule update --init --recursive --remote
           git submodule status --recursive
 
           cd csound
-          git switch develop
+          git switch --detach origin/develop
           Copy-Item "platform/android/CsoundAndroid/jni/version.h" -Destination "include"
           # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "include"
           cd ..
@@ -407,7 +409,7 @@ jobs:
 
           # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
 
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" "-DAPIVERSION=7.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF "-DAPIVERSION=7.0" ..
           cmake --build . --parallel --config Release
           cd ..
           ls build/Release
@@ -431,11 +433,10 @@ jobs:
           sudo apt-get install nasm
           # sudo apt-get install libfluidsynth-dev
 
-          git submodule update --init --recursive --remote
           git submodule status --recursive
 
           cd csound
-          git switch develop
+          git switch --detach origin/develop
           ln -s ../platform/android/CsoundAndroid/jni/version.h include/version.h
           # ln -s Android/CsoundAndroid/jni/version.h ./include
           cd ..
@@ -483,9 +484,12 @@ jobs:
 
       - name: Checkout submodules
         run: |
-          git submodule update --init --recursive
+          git submodule update --init csound src/jsfx/jsusfx
           cd csound
-          git switch csound6
+          git fetch origin refs/heads/csound6:refs/remotes/origin/csound6
+          git switch --detach origin/csound6
+          git submodule update --init --recursive
+          cd ..
 
       - name: linux build
         if: runner.os == 'linux'
@@ -495,11 +499,10 @@ jobs:
           sudo apt-get install nasm
           # sudo apt-get install libfluidsynth-dev
 
-          git submodule update --init --recursive --remote
           git submodule status --recursive
 
           cd csound
-          git switch csound6
+          git switch --detach origin/csound6
           cd include
           ln -s ../Android/CsoundAndroid/jni/version.h .
           cd ../..
@@ -545,7 +548,6 @@ jobs:
           # ls "${ENV:PROGRAMFILES}\libsndfile\include"
           # choco install fluidsynth
 
-          git submodule update --init --recursive --remote
           # git submodule foreach git pull origin master
           git submodule status --recursive
           echo "Finished submodules"
@@ -559,10 +561,7 @@ jobs:
 
           # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
 
-          echo "Listing VCPKG_ROOT: $env:VCPKG_ROOT"
-          ls "$VCPKG_ROOT" -recurse
-
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" "-DAPIVERSION=6.0" -DVCPKG_TARGET_TRIPLET=x64-windows ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF "-DAPIVERSION=6.0" ..
           cmake --build . --parallel --config Release
           cd ..
           ls build/Release
