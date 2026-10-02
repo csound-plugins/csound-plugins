@@ -22,16 +22,18 @@ jobs:
         run: |
           set -x
 
-          ln -s csound/Android/CsoundAndroid/jni/version.h csound/include
-
+          
           rm -fr build && mkdir build && cd build
 
           if [[ ${{ matrix.csound-branch }} == csound6 ]]; then
             APIVERSION=6.0
             APIMAJOR=6
+            ln -s csound/Android/CsoundAndroid/jni/version.h csound/include
+              
           else
             APIVERSION=7.0
             APIMAJOR=7
+            ln -s csound/platform/android/CsoundAndroid/jni/version.h csound/include
           fi
           echo "APIVERSION = $APIVERSION"
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION=$APIVERSION ..
