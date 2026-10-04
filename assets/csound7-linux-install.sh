@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # ═══════════════════════════════════════════════════════════════
-# Csound 7 Portable Linux Installer
-# Shipped inside: csound7-linux-portable-with-plugins.zip
-# Within the csound portable .zip package, it is renamed to install.sh
+# Csound 7 Portable Linux Installer (interactive)
+#
+# This is the interactive installer, it must be run from a terminal
 # ═══════════════════════════════════════════════════════════════
 
 # ─── Colors ───────────────────────────────────────────────────
@@ -28,13 +28,7 @@ debug() {
 }
 
 # ─── Command-line options ─────────────────────────────────────
-INSTALL_MODE_ARG=""
-AUTO_YES=false
 VERBOSE=false
-INSTALL_RISSET=false
-INSTALL_EXTERNALS=false
-SKIP_RISSET=false
-SKIP_EXTERNALS=false
 USER_CSOUND_PATH="$HOME/.local/csound"
 USER_PLUGINS_DIR="$HOME/.local/lib/csound/7.0/plugins64"
 
@@ -44,17 +38,9 @@ Usage: ${0##*/} [OPTIONS]
 
 Installs csound7 (static build, no dependencies, glibc>=2.2.5, avx2)
 
+This installer is interactive and must be run from a terminal.
+
 Options:
-  --user       Install for the current user only (installs csound in ~/.local/csound,
-               plugins in ~/.local/lib/csound/7.0/plugins64)
-  --system     Install system-wide (/usr/local, requires sudo)
-  --risset     Also install risset (csound package manager) via uv
-  --no-risset  Do not install risset and do not ask about it
-  --plugins    Install external plugins
-  --no-plugins Do not install external plugins and do not ask about them
-  -y           Non-interactive: answer yes to all questions and install csound
-               only (defaults to a system installation). Combine with --risset
-               and/or --plugins to also install those.
   --verbose    Output extra information
   --help       Show this help message and exit
 EOF
@@ -66,67 +52,25 @@ while [[ $# -gt 0 ]]; do
             VERBOSE=true
             shift
             ;;
-        --user)
-            INSTALL_MODE_ARG="user"
-            shift
-            ;;
-        --system)
-            INSTALL_MODE_ARG="system"
-            shift
-            ;;
-        --plugins)
-            INSTALL_EXTERNALS=true
-            shift
-            ;;
-        --no-plugins)
-            SKIP_EXTERNALS=true
-            shift
-            ;;
-        -y)
-            AUTO_YES=true
-            shift
-            ;;
-        --risset)
-            INSTALL_RISSET=true
-            shift
-            ;;
-        --no-risset)
-            SKIP_RISSET=true
-            shift
-            ;;
         --help)
             usage
             exit 0
             ;;
         *)
             error "Unknown option: $1"
-            shift
+            exit 1
             ;;
     esac
 done
 
-if [ "$INSTALL_RISSET" = true ] && [ "$SKIP_RISSET" = true ]; then
-    error "Options --risset and --no-risset are mutually exclusive"
-    usage
+if [ ! -t 0 ]; then
+    error "This installer must be run from a terminal."
     exit 1
-fi
-
-if [ "$INSTALL_EXTERNALS" = true ] && [ "$SKIP_EXTERNALS" = true ]; then
-    error "Options --plugins and --no-plugins are mutually exclusive"
-    usage
-    exit 1
-fi
-
-if [[ -n "$INSTALL_MODE_ARG" ]]; then
-    INSTALL_MODE="$INSTALL_MODE_ARG"
 fi
 
 # ─── Helpers ──────────────────────────────────────────────────
 ask_yes_no() {
     local prompt="$1" response
-    if [ "$AUTO_YES" = true ]; then
-        return 0
-    fi
     while true; do
         read -rp "$prompt [y/N]: " response
         case "$response" in
@@ -154,30 +98,6 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# ─── risset installation ──────────────────────────────────────
-install_risset() {
-    # risset is a python package, installed via uv
-    if ! command_exists uv; then
-        info "uv is not installed, installing it first..."
-        if ! command_exists curl; then
-            error "curl is required to install uv but is not installed."
-            error "Please install curl, or install uv manually: https://docs.astral.sh/uv/"
-            return 1
-        fi
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        # Make uv available in this session (the installer puts it in ~/.local/bin)
-        export PATH="$HOME/.local/bin:$PATH"
-        if ! command_exists uv; then
-            error "uv installation failed."
-            return 1
-        fi
-        ok "uv installed: $(uv --version)"
-    fi
-    info "Installing risset..."
-    uv tool install risset
-    ok "risset installed. Run 'risset --help' to get started."
-    info "To uninstall risset later: uv tool uninstall risset"
-}
 
 install_externals() {
     mkdir -p "$USER_PLUGINS_DIR"
@@ -291,11 +211,7 @@ echo "    (u)ser   - Current user only (~/.local)"
 echo "    (s)ystem - All users (/usr/local, requires sudo)"
 echo ""
 
-if [ -z "${INSTALL_MODE:-}" ] && [ "$AUTO_YES" = true ]; then
-    INSTALL_MODE="system"
-elif [ -z "${INSTALL_MODE:-}" ]; then
-    INSTALL_MODE=$(ask_choice "Installation mode")
-fi
+INSTALL_MODE=$(ask_choice "Installation mode")
 
 # ─── Check for an existing Csound installation ────────────────
 if command_exists csound; then
@@ -399,11 +315,8 @@ if [ "$INSTALL_MODE" = "system" ]; then
     ok "System-wide installation complete!"
     echo ""
     echo "  csound          → $BIN_DIR/csound"
-    echo "  $LIB_NAME       → $LIB_DIR/$LIB_NAME"
     echo "  libcsound64.so  → $LIB_DIR/libcsound64.so (symlink)"
     echo "  plugins         → $PLUGIN_DIR"
-    echo ""
-    echo "  Run 'csound --version' to verify."
     echo ""
     echo "  To uninstall, run:"
     echo "    sudo rm -f $BIN_DIR/csound"
@@ -490,19 +403,14 @@ else
     echo "═══════════════════════════════════════════════════════"
     echo ""
     echo "  csound          → $INSTALL_DIR/csound"
-    echo "  $LIB_NAME       → $INSTALL_DIR/$LIB_NAME"
-    echo "  libcsound64.so  → $INSTALL_DIR/libcsound64.so (symlink)"
     echo "  plugins         → $PLUGIN_DIR"
+    echo "  libcsound64.so  → $INSTALL_DIR/libcsound64.so"
     echo ""
     echo "  Shell config:    $SHELL_RC"
     echo ""
-    echo "  To use Csound immediately, run:"
+    echo "  To use Csound immediately, open a new terminal session or run:"
     echo "    source $SHELL_RC"
     echo ""
-    echo "  Or open a new terminal session."
-    echo ""
-    echo "  Test with:"
-    echo "    csound --version"
     echo "═══════════════════════════════════════════════════════"
     echo ""
     echo "  To uninstall, run:"
@@ -513,24 +421,8 @@ else
 
 fi
 
-# ─── Optional: install risset ─────────────────────────────────
-echo ""
-if command_exists risset; then
-    info "risset is already available at $(command -v risset); skipping installation."
-elif [ "$INSTALL_RISSET" = true ]; then
-    install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
-elif [ "$SKIP_RISSET" = true ]; then
-    debug "Skipping risset installation (--no-risset)."
-elif [ "$AUTO_YES" = false ] && ask_yes_no "Install risset (csound package manager)?"; then
-    install_risset || warn "risset installation failed. You can retry later with: uv tool install risset"
-fi
-
 # ─── Optional: install externals ─────────────────────────────────
 echo ""
-if [ "$INSTALL_EXTERNALS" = true ]; then
-    install_externals || warn "External plugins installation failed. You can install them via risset"
-elif [ "$SKIP_EXTERNALS" = true ]; then
-    debug "Skipping external plugins installation (--no-plugins)."
-elif [ "$AUTO_YES" = false ] && ask_yes_no "Install external plugins?"; then
+if ask_yes_no "Install external plugins?"; then
     install_externals || warn "External plugins installation failed. You can install them via risset"
 fi
