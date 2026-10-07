@@ -36,9 +36,9 @@
 
 // -------------------------------------------------------------------------------------
 
-// kfreq, kconf, kvoiced pyin asig, iframesize=2048, ihop=0, if0min=70, if0max=1000, itransweight=0.1,
-// kfreq, kconf, kvoiced pyin asig, "framesize", 2048, "hop", 512, "fmin", 70, "fmax", 1000,
-static const char *pyin_params[] = {
+// kfreq, kconf, kvoiced pyin asig, iframesize=2048, ihop=framesize/4, if0min=60, if0max=900, itransweight=0.1,
+// kfreq, kconf, kvoiced pyin asig, "framesize", 2048, "hop", 512, "fmin", 60, "fmax", 900,
+static const char *const pyin_params[] = {
     "framesize",                      // 0
     "hop",                            // 1
     "fmin",                           // 2
@@ -57,7 +57,7 @@ static const char *pyin_params[] = {
     NULL
 };
 
-static int _key_index(char *key, const char **options) {
+static int _key_index(const char *key, const char *const *options) {
     const char *param;
     for(int i=0; i<256; i++) {
         param = options[i];
@@ -90,12 +90,22 @@ static int32_t pyin_init(CSOUND *csound, PYIN_OPCODE *p) {
     PYINConfig cfg = pyin_config_default();
     cfg.sample_rate = LOCAL_SR(p);
     cfg.block_size = LOCAL_KSMPS(p);
-    STRINGDAT *key;
-    CS_TYPE *cstype;
+    /* hop defaults to one quarter of the frame unless "hop" is given */
+    cfg.hop_size = 0;
+    const STRINGDAT *key;
+    const CS_TYPE *cstype;
+    if(LOCAL_KSMPS(p) > 512) {
+        return INITERRF("pyin: ksmps %d exceeds maximum supported block size 512\n",
+                        (int)LOCAL_KSMPS(p));
+    }
     int numargs = _GetInputArgCnt(csound, p) - 1;
     if(numargs % 2) {
-        INITERRF("Expected event number of arguments, got %d\n", numargs);
+        INITERRF("Expected even number of arguments, got %d\n", numargs);
         return NOTOK;
+    }
+    if(numargs > 30) {
+        return INITERRF("Too many arguments (%d), maximum is 30 (15 key/value pairs)\n",
+                        numargs);
     }
     p->last_freq = 0.;
     p->last_conf = 0.;
@@ -107,13 +117,18 @@ static int32_t pyin_init(CSOUND *csound, PYIN_OPCODE *p) {
                 INITERRF("Expected a string for arg %d, got %s\n", i+1, cstype->varTypeName);
                 return NOTOK;
             }
-            key = (STRINGDAT*)(p->ctrls[i*2]);
+            key = (const STRINGDAT*)(p->ctrls[i*2]);
             int paramindex = _key_index(key->data, pyin_params);
             if(paramindex < 0) {
-                INITERRF("Unknown parmeter %s. Known parameters: ", key->data);
-                for(uint32_t j=0; j < sizeof(pyin_params) / sizeof(pyin_params[0]); j++) {
+                INITERRF("Unknown parameter %s. Known parameters: ", key->data);
+                for(size_t j=0; pyin_params[j] != NULL; j++) {
                     INITERRF("%s, ", pyin_params[j]);
                 }
+                return NOTOK;
+            }
+            cstype = _GetTypeForArg(csound, p->ctrls[i*2+1]);
+            if(cstype == NULL || cstype->varTypeName[0] == 'S') {
+                INITERRF("Expected a numeric value for parameter %s\n", key->data);
                 return NOTOK;
             }
             cs_float value = *(cs_float *)(p->ctrls[i*2+1]);
@@ -168,9 +183,9 @@ static int32_t pyin_init(CSOUND *csound, PYIN_OPCODE *p) {
                 return NOTOK;
             }
         }
-        if(cfg.hop_size == 0)
-            cfg.hop_size = cfg.frame_size / 4;
     }
+    if(cfg.hop_size == 0)
+        cfg.hop_size = cfg.frame_size / 4;
     PYINContext *ctx = pyin_create(cfg, (allocfn_t)(csound->Calloc), (freefn_t)csound->Free, csound);
     if(!ctx) {
         INITERR("Error while creating PYIN context");
@@ -188,7 +203,7 @@ static int32_t pyin_deinit(CSOUND *csound, PYIN_OPCODE *p) {
 static int32_t pyin_perf(CSOUND *csound, PYIN_OPCODE *p) {
     PYINResult res;
     float block[512];
-    cs_float *asig = p->asig;
+    const cs_float *asig = p->asig;
     for(uint32_t i=0; i < LOCAL_KSMPS(p); i++) {
         block[i] = (float)asig[i];
     }

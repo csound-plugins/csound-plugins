@@ -29,7 +29,7 @@ kfreq, kconfidence, kvoiced pyin asig, Sarg1, ivalue1, [Sarg2, ivalue2, ...]
 * **framesize**: 1024–8192 (2048). Analysis frame size in samples
 * **hop**: 64– (1/4 framesize). Hop size in samples
 * **fmin**: 20– (60). Min. frequency
-* **fmax**: 20- (1000). Max. frequency
+* **fmax**: 20- (900). Max. frequency
 * **bins**: 2–50 (10). Subdivisions per semitone
 * **transition_weight**: 0–1 (0.1). Prob. of switching voiced↔unvoiced
 * **minrms**: 0–1. Mark sound with rms below this as silent
@@ -42,7 +42,7 @@ kfreq, kconfidence, kvoiced pyin asig, Sarg1, ivalue1, [Sarg2, ivalue2, ...]
   stretch (e.g. a fast pitch glide) does not force an unvoiced dropout
 * **octave_cost**: 0–0.5 (0). Cost of jumping an octave between frames. 
   Use if the algorithm falsely predicts the 2nd overtone as the fundamental
-* **subharmonic_tresh**: 4. Used together with octave_cost, controls the 
+* **subharmonic_thresh**: 4. Used together with octave_cost, controls the 
   threshold of a downward octave jump
 * **subharmonic_cost**: 0–2 (0). Suppresses subharmonic locks (pitch reported
   one or more octaves too low), typically after a fast jump to a higher pitch.
@@ -99,17 +99,17 @@ Parameter          Range          Default
 framesize          1024 - 8192    2048
 hop                64 -           1/4 of framesize
 fmin               20 -           60
-fmax               20 -           1000
+fmax               20 -           900
 bins               2 - 50         10
 transition_weight  0. - 1.        0.1
 minrms             0. - 1.        0.
 beta_a             1 - 3          2
-beta_b             1 - 20         3
+beta_b             1 - 20         6
 drift              10 -           100
 voiced_obs_floor   0-1            0.
 voiced_hold        0.             0. - 0.95
 octave_cost        0.             0. - 0.5
-subharmonic_tresh  4              1 - 8
+subharmonic_thresh  4              1 - 8
 subharmonic_cost   0.             0. - 2.
 
 */
