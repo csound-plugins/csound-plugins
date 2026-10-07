@@ -48,8 +48,8 @@ subharmonic_cost   0.             0. - 2.
 
 instr 1
   asig1 = oscili:a(0.5, 500)
-  ; asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]
-  asig2 = diskin2("../../else/examples/voiceover-fragment-48k.flac", 1, 0, 1)[0]
+  asig2 = diskin2("../../else/examples/finnegan01.flac", 1, 0, 1)[0]
+  ; asig2 = diskin2("../../else/examples/voiceover-fragment-48k.flac", 1, 0, 1)[0]
   asig3 = buzz(0.1, 300, 7, -1)
   asig4 = pinker() * 0.1
   Snames[] fillarray "sine  ", "speech", "buzz  ", "pink  "
@@ -57,8 +57,8 @@ instr 1
   if metro(1/3) == 1 then
     ksource = (ksource + 1) % 4
   endif
-  ; asig = picksource(ksource, asig1, asig2, asig3, asig4)
-  asig = asig2
+  asig = picksource(ksource, asig1, asig2, asig3, asig4)
+  ; asig = asig2
   ; ar compress2 aasig, acsig, kthresh, kloknee, khiknee, kratio, katt, krel, ilook
   asigpyin = compress2:a(asig, asig, -90, -40, -20, 6, 0.01, 0.5, 0.02)
   asigpyin *= 3
@@ -79,7 +79,7 @@ endin
 </CsInstruments>
 
 <CsScore>
-i1 0 5
+i1 0 20
 
 </CsScore>
 </CsoundSynthesizer>
