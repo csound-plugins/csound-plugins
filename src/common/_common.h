@@ -139,7 +139,7 @@ static inline void InsertScoreEventNow(CSOUND *csound, EVTBLK *evt, OPDS *ctx) {
 }
 
 
-static inline void tabinit_compat(CSOUND *csound, ARRAYDAT *p, int32_t size, OPDS *ctx) {
+static inline void tabinit_compat(CSOUND *csound, ARRAYDAT *p, int32_t size, const OPDS *ctx) {
 #ifdef CSOUNDAPI7
     tabinit(csound, p, size, ctx->insdshead);
 #else
@@ -201,7 +201,7 @@ static inline int32_t _StringArg2Insno(CSOUND *csound, char *arg, int32_t isstr)
     return csound->strarg2insno(csound, arg, isstr);
 #endif
 }
-static inline CS_VARIABLE* arrayCreateVariableSameType(CSOUND *csound, ARRAYDAT *arr, OPDS *ctx) {
+static inline CS_VARIABLE* arrayCreateVariableSameType(CSOUND *csound, const ARRAYDAT *arr, const OPDS *ctx) {
 #ifdef CSOUNDAPI7
     return arr->arrayType->createVariable(csound, arr->arrayType, NULL, ctx->insdshead);
 #else
@@ -226,7 +226,7 @@ static inline INSTRTXT *GetInstrumentByNumber(CSOUND *csound, int32_t n) {
     return list[n];
 }
 
-static inline CS_TYPE *_GetTypeForArg(CSOUND *csound, void *argptr) {
+static inline const CS_TYPE *_GetTypeForArg(CSOUND *csound, void *argptr) {
 #ifdef CSOUNDAPI7
     IGN(csound);
     return GetTypeForArg(argptr);

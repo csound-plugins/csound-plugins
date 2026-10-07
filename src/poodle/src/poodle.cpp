@@ -1286,7 +1286,7 @@ static int zitarev_init(CSOUND *csound, ZITAREV *p) {
     p->numargs = numargs;
 
     STRINGDAT *key;
-    CS_TYPE *cstype;
+    const CS_TYPE *cstype;
     if(numargs > 0) {
         for(int i=0; i < numargs / 2; i++) {
             cstype = _GetTypeForArg(csound, p->ctrls[i*2]);
@@ -2183,8 +2183,8 @@ static int32_t fofcycle_init(CSOUND *csound, FOFCYCLE *p) {
         return NOTOK;
     }
     p->numargs = numargs;
-    STRINGDAT *key;
-    CS_TYPE *cstype;
+    const STRINGDAT *key;
+    const CS_TYPE *cstype;
     if(numargs > 0) {
         for(int i=0; i < numargs / 2; i++) {
             cstype = _GetTypeForArg(csound, p->ctrls[i*2]);

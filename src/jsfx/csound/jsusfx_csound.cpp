@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2019 Eduardo Moguillansky
  *
@@ -481,7 +482,7 @@ struct t_jsfx {
  * dest: signature will be put here. It should have been declared as: char dest[256]
  */
 static int get_signature(CSOUND *csound, void **args, int numargs, char *dest) {
-    CS_TYPE *cstype;
+    const CS_TYPE *cstype;
     ARRAYDAT *arr;
     for(int i=0; i < numargs; i++) {
         // cstype = csound->GetTypeForArg(args[i]);

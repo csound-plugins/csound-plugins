@@ -570,7 +570,7 @@ typedef struct {
 
 static int32_t sigmdrive_a_ak(CSOUND *csound, SIGMDRIVE * p) {
     IGN(csound);
-    cs_float *in = p->in;
+    const cs_float *in = p->in;
     cs_float *out = p->out;
     cs_float drivefactor = *p->drivefactor;
     if(drivefactor < 0)
@@ -602,9 +602,9 @@ static int32_t sigmdrive_a_ak(CSOUND *csound, SIGMDRIVE * p) {
 
 static int32_t sigmdrive_a_aa(CSOUND *csound, SIGMDRIVE * p) {
     IGN(csound);
-    cs_float *in = p->in;
+    const cs_float *in = p->in;
     cs_float *out = p->out;
-    cs_float *drivefactorp = p->drivefactor;
+    const cs_float *drivefactorp = p->drivefactor;
     cs_float drivefactor;
     cs_float x;
     SAMPLE_ACCURATE(out);
@@ -766,7 +766,7 @@ static int32_t schmitt_a_perf (CSOUND *csound, SCHMITT *p) {
     cs_float x;
     SAMPLE_ACCURATE(out);
 
-    cs_float *in = p->in;
+    const cs_float *in = p->in;
     cs_float lo = *p->low;
     cs_float hi = *p->high;
     cs_float last = p->last;
@@ -878,7 +878,7 @@ static int32_t standardchaos_perf(CSOUND *csound, STANDARDCHAOS *p) {
 
 enum RampgateState { Off, Attack, Sustain, Release, Retrigger };
 
-char* _rampgateStateNames[] = {"Off", "Attack", "Sustain", "Release", "Retrigger"};
+static const char *const _rampgateStateNames[] = {"Off", "Attack", "Sustain", "Release", "Retrigger"};
 
 
 typedef struct {
@@ -1252,7 +1252,7 @@ static int32_t sp_peaklim_compute(CSOUND *csound, SP_PEAKLIM *p) {
 
     cs_float *out = p->out;
     SAMPLE_ACCURATE(out);
-    cs_float *in = p->in;
+    const cs_float *in = p->in;
 
     cs_float gain = 0;
 
@@ -1450,7 +1450,7 @@ static int32_t dioderingmod_perf(CSOUND *csound, t_diode_ringmod *p) {
     cs_float nl = *p->knonlinearities * 100;
     cs_float outgain = 1;
 
-    cs_float *ain = p->ain;
+    const cs_float *ain = p->ain;
     cs_float *aout = p->aout;
 
     if(! p->started) {
@@ -2722,7 +2722,7 @@ typedef struct {
     int local;
 } REF_NEW_ARRAY;
 
-void _handle_copy_data_from_array(CSOUND *csound, ARRAYDAT *arr, REF_HANDLE *h) {
+void _handle_copy_data_from_array(CSOUND *csound, const ARRAYDAT *arr, REF_HANDLE *h) {
     size_t numbytes = arr->arrayMemberSize * arr->sizes[0];
     size_t sizes_numbytes = sizeof(int) * arr->dimensions;
     h->data = csound->Malloc(csound, numbytes);
@@ -3111,9 +3111,9 @@ static int32_t errormsg_init0(CSOUND *csound, ERRORMSG *p) {
 
 
 static int32_t errormsg_perf(CSOUND *csound, ERRORMSG *p) {
-    char *name;
+    const char *name;
     INSDS *ip;
-    char *msg = p->which == 0 ? p->S1->data : p->S2->data;
+    const char *msg = p->which == 0 ? p->S1->data : p->S2->data;
 
     switch(p->kind) {
     case ERRORMSG_ERROR:
@@ -4230,7 +4230,7 @@ typedef struct {
 } BISECT;
 
 
-static inline int64_t array_bisect_multidim(cs_float x, cs_float *xs, int step, int offset,
+static inline int64_t array_bisect_multidim(cs_float x, const cs_float *xs, int step, int offset,
                                             int64_t numframes, int64_t lastidx) {
     // step: the frame size, a.k.a the number of columns per row. Must be >= 1
     // offset: the column index to use for comparison
@@ -4275,7 +4275,7 @@ static inline int64_t array_bisect_multidim(cs_float x, cs_float *xs, int step, 
 }
 
 
-static inline int64_t array_bisect(cs_float x, cs_float *xs, int64_t xslen, int64_t lastidx) {
+static inline int64_t array_bisect(cs_float x, const cs_float *xs, int64_t xslen, int64_t lastidx) {
     if (xslen <= 0)
         return -1;
     // Boundary checks
@@ -4822,7 +4822,7 @@ static int32_t zeroarr_perf(CSOUND *csound, ZEROARR *p) {
     return OK;
 }
 
-inline void _zeroarr_masked(CSOUND *csound, ARRAYDAT *arr, cs_float *mask) {
+inline void _zeroarr_masked(CSOUND *csound, ARRAYDAT *arr, const cs_float *mask) {
     // This is only for 1D audio arrays
     // For audio arrays arrayMemberSize holds the number of bytes of an audio signal,
     // that is ksmps * sizeof(cs_float)
@@ -4845,7 +4845,7 @@ static int32_t zeroarr_masked_perf(CSOUND *csound, ZEROARR *p) {
         PERFERRF("The mask is too small (mask size=%d, array size=%d)", p->mask->sizes[0], p->arr->sizes[0]);
         return NOTOK;
     }
-    cs_float *maskdata = p->mask->data;
+    const cs_float *maskdata = p->mask->data;
     _zeroarr_masked(csound, p->arr, maskdata);
     return OK;
 }
@@ -4966,7 +4966,7 @@ typedef struct {
 
 static int32_t findarr_s(CSOUND *csound, FINDARR_S *p) {
     STRINGDAT *data = (STRINGDAT *)p->arr->data;
-    char *val = p->val->data;
+    const char *val = p->val->data;
     int32_t vallen = strlen(val);
     for(int32_t i=0; i<p->arr->sizes[0]; i++) {
         if(data[i].size >= vallen && strcmp(val, data[i].data) == 0) {
@@ -4990,8 +4990,8 @@ typedef struct {
 } loadnpy_ARR;
 
 
-int64_t strfind(char *s, char *subs) {
-    char *s2 = strstr(s, subs);
+int64_t strfind(const char *s, const char *subs) {
+    const char *s2 = strstr(s, subs);
     if(s2 != NULL) {
         return s2 - s;
     }
@@ -5351,13 +5351,13 @@ static inline cs_float euclidian_distance(cs_float x0, cs_float y0, cs_float x1,
     return sqrt(dx*dx + dy*dy);
 }
 
-static cs_float distance_to_nearest_point(cs_float x, cs_float y, ARRAYDAT *arr, int pointsize) {
+static cs_float distance_to_nearest_point(cs_float x, cs_float y, const ARRAYDAT *arr, int pointsize) {
     size_t n = arr->sizes[0];
     if(n == 0) {
         return -1.;
     }
     cs_float mindistance = INF;
-    cs_float *data = arr->data;
+    const cs_float *data = arr->data;
     cs_float px, py;
     cs_float distance;
     for(size_t i=0; i < n; i++) {
@@ -5371,10 +5371,10 @@ static cs_float distance_to_nearest_point(cs_float x, cs_float y, ARRAYDAT *arr,
 }
 
 
-static void calculate_mindistances(ARRAYDAT *points, cs_double *mindistances, const int pointsize) {
+static void calculate_mindistances(const ARRAYDAT *points, cs_double *mindistances, const int pointsize) {
     size_t numpoints = points->sizes[0] / pointsize;
     cs_double distance, ix, iy, jx, jy;
-    cs_float *data = points->data;
+    const cs_float *data = points->data;
 
     for(size_t i=0; i < numpoints; i++) {
         mindistances[i] = INF;
@@ -5396,10 +5396,10 @@ static void calculate_mindistances(ARRAYDAT *points, cs_double *mindistances, co
     }
 }
 
-static cs_float calculate_weight(int pointidx, PRESETINTERP *p, cs_float cursorx, cs_float cursory) {
+static cs_float calculate_weight(int pointidx, const PRESETINTERP *p, cs_float cursorx, cs_float cursory) {
     cs_float cursor_radius = distance_to_nearest_point(cursorx, cursory, p->coords, p->pointsize);
     cs_float point_radius = p->mindistances[pointidx];
-    cs_float *coordsdata = p->coords->data;
+    const cs_float *coordsdata = p->coords->data;
     cs_float dist = euclidian_distance(cursorx, cursory, coordsdata[pointidx*p->pointsize], coordsdata[pointidx*p->pointsize+1]);
     cs_float intersection = point_radius + cursor_radius - dist;
     cs_float weight = intersection / point_radius;
@@ -5961,14 +5961,14 @@ static const vowelspeaker voweldb[] = {
 const char *_defined_speakers = "vtl-male, csound-soprano, csound-alto, csound-countertenor, csound-tenor, csound-bass";
 
 
-int speaker_name_to_index(char *name) {
+int speaker_name_to_index(const char *name) {
     if(strcmp(name, "vtl-male")==0)
         return 0;
     return -1;
 }
 
 
-int vowel_to_index(char *vowel) {
+int vowel_to_index(const char *vowel) {
     int l = strlen(vowel);
     if(l == 1) {
         char vowel0 = vowel[0];
@@ -5993,7 +5993,7 @@ int vowel_to_index(char *vowel) {
     return -1;
 }
 
-static char * _strsep(char **sp, char *sep) {
+static char * _strsep(char **sp, const char *sep) {
     char *p, *s;
     if (sp == NULL || *sp == NULL || **sp == '\0') return(NULL);
     s = *sp;
@@ -6050,7 +6050,7 @@ int32_t tabinit2d(CSOUND *csound, ARRAYDAT *arr, int numrows, int numcols, OPDS 
     return res;
 }
 
-const vowelspeaker *find_speaker(char *speakername) {
+const vowelspeaker *find_speaker(const char *speakername) {
     for(int i=0;;i++) {
         const vowelspeaker *speaker = &voweldb[i];
         if(speaker->name[0] == '\0')
@@ -6495,7 +6495,7 @@ static int32_t _pvsflatness_perf(CSOUND *csound, PVSFLATNESS *p) {
         minfreq = 10.;
     }
 
-    const float* restrict fin = (float *)p->fin->frame.auxp;
+    const float* restrict fin = (const float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     float geommean = 0.;
     float mean = 0.;
@@ -6565,7 +6565,7 @@ static int32_t pvsrolloff_perf(CSOUND *csound, PVSROLLOFF *p) {
     if(minfreq <= 0) {
         minfreq = 20.;
     }
-    float *fin = (float *)p->fin->frame.auxp;
+    const float *fin = (const float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     cs_float total_energy = 0.;
     int32_t minbin = 0, maxbin = N - 2;
@@ -6683,7 +6683,7 @@ static int32_t pvscrest_perf(CSOUND *csound, PVSCREST *p) {
         *p->out = p->old;
         return OK;
     }
-    float *fin = (float *)p->fin->frame.auxp;
+    const float *fin = (const float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     cs_float minfreq = *p->minfreq;
     cs_float maxfreq = *p->maxfreq;
@@ -6975,7 +6975,7 @@ static int32_t pvsmagsum_perf(CSOUND *csound, PVSMAGSUM *p) {
         *p->out = p->old;
         return OK;
     }
-    float *fin = (float *)p->fin->frame.auxp;
+    const float *fin = (const float *)p->fin->frame.auxp;
     int32 i, N = p->fin->N;
     cs_float minfreq = *p->minfreq;
     cs_float maxfreq = *p->maxfreq;
@@ -7081,7 +7081,7 @@ static inline cs_float beta_pdf(cs_float x, cs_float a, cs_float b)
  * Helper: parabolic interpolation to refine the lag estimate.
  * Returns sub-sample lag at the minimum around index tau.
  * ------------------------------------------------------------------------- */
-static inline cs_float parabolic_interpolation(cs_float *d, int tau, int len)
+static inline cs_float parabolic_interpolation(const cs_float *d, int tau, int len)
 {
     if (tau <= 0 || tau >= len - 1)
         return (cs_float)tau;
@@ -7104,7 +7104,7 @@ static inline cs_float parabolic_interpolation(cs_float *d, int tau, int len)
  * autocorrelation trick (r[0] + r[tau] - 2*r[tau] via IFFT of |X|^2),
  * which reduces it to O(W log W).
  * ------------------------------------------------------------------------- */
-static void compute_yin_cmnd(cs_float *x, cs_float *diff, cs_float *cmnd,
+static void compute_yin_cmnd(const cs_float *x, cs_float *diff, cs_float *cmnd,
                               int W, int taumax)
 {
     int tau, j;
@@ -7158,10 +7158,10 @@ static void precalculate_thresholds(cs_float *beta_weights, cs_float *thresholds
  *
  * Returns the number of candidates found.
  * ------------------------------------------------------------------------- */
-static int pyin_pitch_candidates(cs_float *cmnd, int taumin, int taumax,
+static int pyin_pitch_candidates(const cs_float *cmnd, int taumin, int taumax,
                                  cs_float sr,
                                  cs_float *out_freq, cs_float *out_prob,
-                                 int maxcands, cs_float *beta_weights, cs_float *thresholds)
+                                 int maxcands, const cs_float *beta_weights, const cs_float *thresholds)
 {
     int n_cands = 0;
     taumax = taumax < 4095 ? taumax : 4095;
@@ -7291,17 +7291,17 @@ static inline cs_float transition_weight(int i, int j, cs_float trans_self, int 
 #define GAUSS_1 0.60653065971263342  /* exp(-0.5) */
 
 static void hmm_forward_step(
-    cs_float *fwd_prev,
+    const cs_float *fwd_prev,
     cs_float *fwd_cur,
-    cs_float *cand_freq,
-    cs_float *cand_prob,
+    const cs_float *cand_freq,
+    const cs_float *cand_prob,
     int n_cands,
     cs_float a4,
     cs_float transprob,
     int drift_semitones,
     int hmm_states,
     int subbins,
-    cs_float *transition_matrix)
+    const cs_float *transition_matrix)
 {
     int s, c, j;
 
@@ -7385,7 +7385,7 @@ static void hmm_forward_step(
  * Extract pitch estimate from forward variable.
  * Returns best state index, sets confidence and voicing flag.
  * ------------------------------------------------------------------------- */
-static int hmm_decode(cs_float *fwd, cs_float *conf, int *voiced, int hmmstates, cs_float minconf)
+static int hmm_decode(const cs_float *fwd, cs_float *conf, int *voiced, int hmmstates, cs_float minconf)
 {
     int best = 0;
     cs_float best_val = fwd[0];
