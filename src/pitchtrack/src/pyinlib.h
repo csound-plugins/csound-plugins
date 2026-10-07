@@ -42,16 +42,20 @@ typedef struct {
     /**
      * HMM pitch grid resolution (subdivisions per semitone).
      *
-     * The state space spans MIDI notes 21–108 (A0–C8, 88 semitones).
-     * Finer grids track vibrato and glides more accurately and reduce
-     * Viterbi quantisation error.  The banded Viterbi is O(states × 8σ)
-     * per frame so cost scales linearly, not quadratically.
+     * F0 candidates are quantised to a uniform grid in cents spanning the
+     * configured [f0_min, f0_max] range.  Finer grids track vibrato and
+     * glides more accurately and reduce Viterbi quantisation error.  The
+     * banded Viterbi is O(states × 8σ) per frame so cost scales linearly
+     * with the number of states, not quadratically.
      *
-     *   1  → 100 cents/state  (88 states)    coarse, very fast
-     *   2  →  50 cents/state  (176 states)
-     *   4  →  25 cents/state  (352 states)
-     *  10  →  10 cents/state  (880 states)   recommended default
-     *  20  →   5 cents/state  (1760 states)  fine
+     *   1  → 100 cents/state  coarse, very fast
+     *   2  →  50 cents/state
+     *   4  →  25 cents/state
+     *  10  → 10 cents/state  recommended default
+     *  20  →   5 cents/state  fine
+     *
+     * The state count also depends on the f0 range; e.g. the default
+     * 60–900 Hz range at 10 cents/state gives roughly 470 states.
      */
     int   cents_per_semitone;
 

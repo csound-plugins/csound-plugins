@@ -50,9 +50,6 @@
 
 #define VITERBI_DEPTH       20
 
-#define HMM_MIDI_MIN        21
-#define HMM_SEMITONES       88
-
 /* ── Helpers ────────────────────────────────────────────────────────────── */
 
 static int next_pow2(int x)
@@ -339,9 +336,11 @@ static inline int hmm_best_state(const HMM *h)
 
 /* ── State ↔ frequency ──────────────────────────────────────────────────── */
 
-static inline float state_to_hz(int s, float state_cents)
+/* Frequency of pitch state s.  The grid is uniform in cents; state 0 sits at
+ * `midi_min`, derived from the configured f0 range (see pyin_create). */
+static inline float state_to_hz(int s, float state_cents, float midi_min)
 {
-    float cents = (float)(HMM_MIDI_MIN * 100) + (float)s * state_cents;
+    float cents = midi_min * 100.0f + (float)s * state_cents;
     return 440.0f * powf(2.0f, (cents - 6900.0f) / 1200.0f);
 }
 
@@ -595,7 +594,7 @@ struct PYINContext {
     /* Derived */
     int    lag_min;
     int    lag_max;
-    int    n_pitched;    /* voiced pitch states  = HMM_SEMITONES * cps       */
+    int    n_pitched;    /* voiced pitch states (derived from f0 range)     */
     int    band_half;
     float  state_cents;
     double beta_a;       /* cached from cfg for hot-path use                 */
@@ -727,8 +726,24 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
     ctx->cfg         = cfg;
     ctx->lag_min     = (int)(cfg.sample_rate / cfg.f0_max + 0.5f);
     ctx->lag_max     = (int)(cfg.sample_rate / cfg.f0_min + 0.5f);
-    ctx->n_pitched   = HMM_SEMITONES * cfg.cents_per_semitone;
     ctx->state_cents = 100.0f / (float)cfg.cents_per_semitone;
+
+    /* Pitch-state grid.  Instead of a fixed MIDI 21..108 span, derive the
+     * grid from the configured f0 range: every state then maps to a period
+     * inside [lag_min, lag_max] and carries a real observation, rather than
+     * spending states outside the search range on FLOOR observations.
+     *
+     * Use the frequencies corresponding to the *rounded* lags (not f0_min /
+     * f0_max directly): lag_min = round(sr/f0_max) can round up, which would
+     * otherwise push the top state's period below lag_min and give it FLOOR. */
+    float hz_lo = cfg.sample_rate / (float)ctx->lag_max;
+    float hz_hi = cfg.sample_rate / (float)ctx->lag_min;
+    float midi_min = 69.0f + 12.0f * log2f(hz_lo / 440.0f);
+    float midi_max = 69.0f + 12.0f * log2f(hz_hi / 440.0f);
+    int n_states = (int)floorf((midi_max - midi_min)
+                               * (float)cfg.cents_per_semitone + 0.5f) + 1;
+    if (n_states < 1) n_states = 1;
+    ctx->n_pitched   = n_states;
     ctx->beta_a      = (double)cfg.beta_a;
     ctx->beta_b      = (double)cfg.beta_b;
 
@@ -793,7 +808,8 @@ PYINContext *pyin_create(PYINConfig cfg, allocfn_t allocfn, freefn_t freefn, voi
                                      (size_t)ctx->n_pitched, sizeof(float));
     if (!ctx->state_tau) goto fail;
     for (int s = 0; s < ctx->n_pitched; s++)
-        ctx->state_tau[s] = cfg.sample_rate / state_to_hz(s, ctx->state_cents);
+        ctx->state_tau[s] = cfg.sample_rate
+                          / state_to_hz(s, ctx->state_cents, midi_min);
 
     /* FFT workspace for the autocorrelation path (create-time only, so the
      * hot path never allocates).  N must cover frame + max lag. */
