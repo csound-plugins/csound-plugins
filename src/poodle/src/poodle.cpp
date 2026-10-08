@@ -1231,10 +1231,10 @@ struct ZITAREV {
     OPDS h;
     cs_float* aout[ZITAREV_OUTPUTS];
     cs_float* ain[ZITAREV_INPUTS];
-    void* ctrls[22];                      // alternate Stringparam, kparamvalue
+    void* ctrls[2 * ZITAREV_CONTROLS];     // alternate Stringparam, kparamvalue
     zitarev_dsp* DSP;                     //
     AUXCH     dspmem;                     // aux memory allocated once to store the DSP object
-    int ctrlindexes[11];
+    int ctrlindexes[ZITAREV_CONTROLS];
     int numargs;
 };
 
@@ -1283,6 +1283,11 @@ static int zitarev_init(CSOUND *csound, ZITAREV *p) {
         INITERRF("Expected even number of arguments, got %d\n", numargs);
         return NOTOK;
     }
+    if(numargs / 2 > ZITAREV_CONTROLS) {
+        INITERRF("At most %d zitarev parameter pairs are supported, got %d\n",
+                 ZITAREV_CONTROLS, numargs / 2);
+        return NOTOK;
+    }
     p->numargs = numargs;
 
     STRINGDAT *key;
@@ -1322,6 +1327,17 @@ static int32_t zitarev_perf(CSOUND *csound, ZITAREV *p) {
     for(int i = 0; i < numpairs; i++) {
         cs_float value = *(cs_float *)(p->ctrls[i * 2 + 1]);
         int index = p->ctrlindexes[i];
+        // Keep the decay and crossover calculations away from zero and the
+        // crossover filter's tan() singularities. These limits follow the
+        // ranges documented for zitarev, with the crossover also kept below
+        // Nyquist for the current sample rate.
+        if(index == ZR_DECAYMID || index == ZR_DECAYLOW) {
+            value = std::min<cs_float>(10.0, std::max<cs_float>(0.01, value));
+        } else if(index == ZR_DECAYLFX) {
+            cs_float high = std::min<cs_float>(1000.0, 0.45 * dsp->sr);
+            cs_float low = std::min<cs_float>(50.0, high);
+            value = std::min<cs_float>(high, std::max<cs_float>(low, value));
+        }
         slots[index] = value;
     }
     
@@ -1397,6 +1413,7 @@ char *_fofcycle_params_list = NULL;
 #define    FOFCYCLE_VOICETYPE 5
 #define    FOFCYCLE_ENVATTACK 6
 #define    FOFCYCLE_OUTGAIN   7
+#define    FOFCYCLE_CONTROLS  8
 
 
 class fofcycle_dsp : public dsp {
@@ -1405,7 +1422,7 @@ class fofcycle_dsp : public dsp {
     FAUSTFLOAT param_freq;
 	FAUSTFLOAT param_gain;
 
-    FAUSTFLOAT params[8];
+    FAUSTFLOAT params[FOFCYCLE_CONTROLS];
 
     /*
     FAUSTFLOAT param_vibfreq;
@@ -2143,10 +2160,10 @@ struct FOFCYCLE {
     cs_float *gate;
     cs_float *freq;
     cs_float *gain;
-    void *ctrls[20];
+    void *ctrls[2 * FOFCYCLE_CONTROLS];
     fofcycle_dsp *DSP;
     AUXCH dspmem;
-    int ctrlindexes[10];
+    int ctrlindexes[FOFCYCLE_CONTROLS];
     int numargs;
 };
 
@@ -2180,6 +2197,11 @@ static int32_t fofcycle_init(CSOUND *csound, FOFCYCLE *p) {
     int numargs = _GetInputArgCnt(csound, p) - 3;
     if(numargs % 2) {
         INITERRF("Expected even number of arguments, got %d\n", numargs);
+        return NOTOK;
+    }
+    if(numargs / 2 > FOFCYCLE_CONTROLS) {
+        INITERRF("At most %d fofcyclevoc parameter pairs are supported, got %d\n",
+                 FOFCYCLE_CONTROLS, numargs / 2);
         return NOTOK;
     }
     p->numargs = numargs;

@@ -143,9 +143,9 @@ gaussian_normal(GaussianState *gs) {
     return v2*fac;
 }
 
-static cs_float* gaussians = NULL;
+static float* gaussians = NULL;
 
-#define GAUSSIANS_SIZE 65536
+#define GAUSSIANS_SIZE 8192
 
 static void
 gaussians_init(uint32_t seed) {
@@ -156,9 +156,9 @@ gaussians_init(uint32_t seed) {
       gs.gset = 0;
       gs.iset = 0;
       gs.seed = seed;
-      cs_float *g = malloc(sizeof(cs_float)*size);
+      float *g = malloc(sizeof(float)*size);
       for(i=0; i<size; i++) {
-        g[i] = gaussian_normal(&gs);
+        g[i] = (float)gaussian_normal(&gs);
       }
       gaussians = g;
     }
@@ -321,7 +321,6 @@ beosc_kkiii(CSOUND *csound, BEOSC *p) {
 
     switch (p->flags) {
     case 0:    // uniform noise, no interp.
-      printf("freq: %.1f, phaseinc: %d, tabsize: %d\n", freqin, phaseinc, p->ftp->flen);
       for (n=offset; n<nsmps; n++) {
         x0 = x1; x1 = x2; x2 = x3;
         // kelly uses 6. / GAIN
@@ -773,13 +772,11 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     prevamps  = (cs_float*)p->pamp.auxp;
     prevfreqs = (cs_float*)p->pfreq.auxp;
 
-    // clear output before adding partials
+    // clear output before adding partials (this also zeroes the early tail)
     memset(out, 0, nsmps*sizeof(cs_float));
 
-    if (UNLIKELY(early)) {
+    if (UNLIKELY(early))
         nsmps -= early;
-        memset(&out[nsmps], '\0', early*sizeof(cs_float));
-    }
 
     coefs = (FILTCOEFS *)(p->filtcoefs.auxp);
     // GaussianState *gsptr = &(p->gs);
@@ -789,6 +786,10 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
     int32_t lomask2 = (tabsize - 1) << 3;             // FIX
     cs_float cpstoinc2 = tabsize * sampledur * 65536;    // FIX
     int32_t phaseinc; // FIX
+
+    if(UNLIKELY(flags >= 8 || flags < 0)) {
+        return PERFERRF(Str("beadsynt: invalid flag %d (should be 0 <= flags < 8"), flags);
+    }
 
     for (c=0; c<count; c++) {
         ampnow = prevamps[c];
@@ -811,9 +812,6 @@ beadsynt_perf(CSOUND *csound, BEADSYNT *p) {
         phs    = lphs[c];
         ampinc = (amp - ampnow) * CS_ONEDKSMPS;
 
-        if(UNLIKELY(flags >= 8 || flags < 0)) {
-            return PERFERRF(Str("beadsynt: invalid flag %d (should be 0 <= flags < 8"), flags);
-        }
         if(LIKELY(bwin != 0)) {
             x1 = coefs->x1; x2 = coefs->x2; x3 = coefs->x3;
             y1 = coefs->y1; y2 = coefs->y2; y3 = coefs->y3;
@@ -1453,7 +1451,7 @@ static OENTRY localops[] = {
 
     // kOut[]  tabrowlin krow, ifnsrc, inumcols,
     //                   ioffset=0, istart=0, iend=0, istep=1
-    {"getrowlin", S(TABROWCOPY), 0, 3, "k[]", "kiiooop", (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k, NULL, NULL},
+    {"getrowlin", S(TABROWCOPYARR), 0, 3, "k[]", "kiiooop", (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k, NULL, NULL},
 
     // kOut[] getrowlin kMtrx[], krow, kstart=0, kend=0, kstep=1
     {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "k[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
@@ -1494,7 +1492,7 @@ static OENTRY localops[] = {
 
     // kOut[]  tabrowlin krow, ifnsrc, inumcols,
     //                   ioffset=0, istart=0, iend=0, istep=1
-    {"getrowlin", S(TABROWCOPY), 0, "k[]", "kiiooop", (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k, NULL, NULL},
+    {"getrowlin", S(TABROWCOPYARR), 0, "k[]", "kiiooop", (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k, NULL, NULL},
 
     // kOut[] getrowlin kMtrx[], krow, kstart=0, kend=0, kstep=1
     {"getrowlin", S(GETROWLIN), 0, "k[]", "k[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
