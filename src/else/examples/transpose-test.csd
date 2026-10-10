@@ -18,7 +18,6 @@ opcode nativetranspose, a, akkp
   asig, ksemitones, kwindur, iwindow xin
   imaxdelay = 2
   kfreqratio = semitone(ksemitones)
-  println "kfreqratio: %f", kfreqratio
   iwindowtab = ftgenonce(0, 0, 4096, 20, iwindow, 1)
   iwindowtab = giwindowtab
   kphasorfreq = (1 - kfreqratio) / kwindur
@@ -38,7 +37,9 @@ instr 1
   asig = gtadsr(asig, 0.004, 0.008, 0.2, 0.3, metro(7/3))
   ktime = eventtime()
   kshift = bpf:k(ktime, 0, 0, 8, 12, 12, 12, 20, 0)
-  println "kshift: %f", kshift
+  if metro(4) == 1 then
+    println "kshift: %.3f", kshift
+  endif
   ashifted = nativetranspose(asig, kshift, kwindur, 1)
   outs ashifted, ashifted
 endin
