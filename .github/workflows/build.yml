@@ -6,7 +6,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        csound-branch: ["csound6", "develop"]
+        csound-branch: ["develop"]
 
     steps:
       - name: Checkout

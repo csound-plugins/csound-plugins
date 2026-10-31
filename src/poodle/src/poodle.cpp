@@ -2257,17 +2257,6 @@ static int32_t fofcycle_perf(CSOUND *csound, FOFCYCLE *p) {
 // -------------------------------------------------------------
 
 
-#ifdef CSOUNDAPI6
-extern "C" {
-    static OENTRY localops[] = {
-        {(char*)"zitarev", sizeof(ZITAREV), 0, 3, (char*)"aa", (char*)"aa*", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL},
-        {(char*)"fofcyclevoc", sizeof(FOFCYCLE), 0, 3, (char*)"a", (char*)"kkk*", (SUBR)fofcycle_init, (SUBR)fofcycle_perf, NULL, NULL}
-
-    };
-    LINKAGE
-}
-
-#else
 extern "C" {
     static OENTRY localops[] = {
         {(char*)"zitarev", sizeof(ZITAREV), 0, (char*)"aa", (char*)"aa*", (SUBR)zitarev_init, (SUBR)zitarev_perf, NULL, NULL },
@@ -2276,7 +2265,6 @@ extern "C" {
     };
     LINKAGE
 }
-#endif
 
 // NB: The (char*) in front of the strings is to comply with the fact
 // that in cpp literal c-strings are const char*, but OENTRY defines
