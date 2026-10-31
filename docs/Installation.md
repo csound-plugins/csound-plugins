@@ -12,21 +12,11 @@ contains the latest version.
     A csound plugin is a shared library (`.dylib` in macOS, `.so` in Linux, `.dll` in windows) which
     is loaded by csound and contains multiple opcodes.
 
-In csound >= 6.16, place the plugins in the user plugins folder (create the folder if it does not exist):
+Place the plugins in the user plugins folder (create the folder if it does not exist):
 
-* **macOS**: `~/Library/csound/6.0/plugins64`
-* **Linux**: `~/.local/lib/csound/6.0/plugins64`
-* **Windows**: `C:\Users\<User>\AppData\Local\csound\6.0\plugins64`
-
-For previous versions, put the plugins along csound's own plugins (this folder should already exist
-and contain a multitude of files):
-
-* **macOS**: `/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64` if csound was 
-  installed via the official installer, or 
-  `~/Library/Frameworks/CsoundLib64.framework/Versions/6.0/Resources/Opcodes64` if installed from source
-* **Linux**: `/usr/local/lib/csound/plugins64-6.0` if installed from source, `/usr/lib/csound/plugins64-6.0` if
-  installed by the package manager
-* **Windows**: `C:\Program Files\Csound6_x64\plugins64`
+* **macOS**: `~/Library/csound/7.0/plugins64`
+* **Linux**: `~/.local/lib/csound/7.0/plugins64`
+* **Windows**: `C:\Users\<User>\AppData\Local\csound\7.0\plugins64`
 
 
 ## Installation from source
@@ -44,13 +34,12 @@ cd csound-plugins
 git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
 mkdir build && cd build
-cmake -DAPIVERSION=7.0 ..
+cmake ..
 cmake --build .
 cmake --install .
 ```
 
-> The build defaults to the Csound 7 API (`APIVERSION=7.0`).
-> Pass `-DAPIVERSION=6.0` instead to build against Csound 6.
+> Csound 7 is required. Csound 6 is no longer supported.
 
 --------
 
@@ -66,7 +55,7 @@ cd csound-plugins
 git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
 mkdir build && cd build
-cmake -DAPIVERSION=7.0 ..
+cmake ..
 cmake --build .
 cmake --install .
 ```
@@ -86,10 +75,10 @@ git submodule update --init --recursive --remote
 git submodule foreach git pull origin master
 mkdir build
 cd build
-cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DAPIVERSION=7.0 ..
+cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF ..
 cmake --build . --config Release
 cmake --install .
 
-# This last step simply copies Release\*.dll to "C:\Users\<User>\AppData\Local\csound\6.0\plugins64" 
+# This last step simply copies Release\*.dll to "C:\Users\<User>\AppData\Local\csound\7.0\plugins64" 
 
 ```

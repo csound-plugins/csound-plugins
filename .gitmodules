@@ -4,5 +4,5 @@
 [submodule "csound"]
 	path = csound
 	url = https://github.com/csound/csound
-	branch = csound6
+	branch = develop
 	ignore = dirty

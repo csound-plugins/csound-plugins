@@ -45,7 +45,7 @@ Compilation options: -a /usr/share/faust/csound.cpp -lang cpp -i -ct 1 -es 1 -mc
 
 //==============================================================================
 //
-//          CSOUND6 architecture file for FAUST
+//          CSOUND 7 architecture file for FAUST
 //          Y. Orlarey & V. Lazzarini
 //
 //          Usage : faust -uim -a csound.cpp <myfx>.dsp -o <myfx>.cpp

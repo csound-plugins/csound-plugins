@@ -62,10 +62,6 @@
 typedef int32_t i32;
 typedef uint32_t ui32;
 
-#ifdef CSOUNDAPI6
-#define register_deinit(csound, p, func) \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
-#endif
 
 // --------------------------------------------
 //               Utilities
@@ -562,14 +558,9 @@ void handle_set_state(POLY1 *p, ui32 idx) {
     state->h.insdshead = p->h.insdshead;
     state->h.optext = p->optext;
 
-#ifdef CSOUNDAPI6
-    state->h.iopadr = opc->iopadr;
-    state->h.opadr = opc->kopadr;
-#else
     state->h.init = opc->init;
     state->h.perf = opc->perf;
     state->h.deinit = opc->deinit;
-#endif
     handle->state = state;
 }
 
@@ -620,11 +611,6 @@ OPTXT* poly_make_optext(CSOUND *csound, POLY1 *p) {
     txt->outlist->count = 0;
     txt->inlist = (ARGLST *)csound->Malloc(csound, sizeof(ARGLST));
     txt->inlist->count = 0;
-#ifdef CSOUNDAPI6
-    optext->t.intype = p->in_signature[0];
-    txt->pftype = p->out_signature[0];
-#else
-#endif
     return optext;
 }
 
@@ -760,9 +746,6 @@ static i32 poly1_init(CSOUND *csound, POLY1 *p) {
         }
     }
 
-#ifdef CSOUNDAPI6
-    csound->RegisterDeinitCallback(csound, p, (i32 (*)(CSOUND*, void*))poly1_deinit);
-#endif
     return OK;
 }
 
@@ -1032,9 +1015,6 @@ static i32 polyseq_init(CSOUND *csound, POLY1 *p) {
     }
 
     // register out deinit func to deallocate everything
-#ifdef CSOUNDAPI6
-    csound->RegisterDeinitCallback(csound, p, (i32 (*)(CSOUND*, void*))poly1_deinit);
-#endif
     return OK;
 }
 
@@ -1107,12 +1087,6 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
     state->h.insdshead = p->h.insdshead;
     state->h.optext = optext;
 
-#ifdef CSOUNDAPI6
-    optext->t.intype = opc_insig[0];
-    state->h.iopadr = opc->iopadr;
-    state->h.opadr = opc->kopadr;
-
-#endif
     p->optext = optext;
     p->opc_state = state;
 
@@ -1142,9 +1116,6 @@ static i32 defer_init(CSOUND *csound, DEFER *p) {
     if(opc->useropinfo != NULL)
         return INITERRF("UDOs are not supported (name=%s)", opc->opname);
 
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, defer_deinit);
-#endif
     return OK;
 }
 
@@ -1249,25 +1220,12 @@ int32_t testopc_perf(CSOUND *csound, TESTOPC_a_a *p) {
 #define S(s) sizeof(s)
 
 static OENTRY localops[] = {
-#ifdef CSOUNDAPI6
-    { "poly0", S(POLY1), 0, 3, "", "iS*", (SUBR)poly1_init, (SUBR)poly1_perf, NULL, NULL },
-
-    { "poly", S(POLY1), 0, 3, "*", "iS*", (SUBR)poly1_init, (SUBR)poly1_perf, NULL, NULL },
-
-    { "polyseq", S(POLY1), 0, 3, "*", "iS*", (SUBR)polyseq_init, (SUBR)poly1_perf, NULL, NULL },
-    // not working yet
-    { "defer", S(DEFER), 0, 1, "", "S*", (SUBR)defer_init, NULL, NULL, NULL},
-
-    // { "sumarray4", S(TABQUERY1), 0, 2, "a", "a[]", NULL, (SUBR)tabsuma },
-    { "testopc.a_a", S(TESTOPC_a_a), 0, 3, "a", "ak", (SUBR)testopc_init, (SUBR)testopc_perf, NULL, NULL}
-#else
     { "poly0", S(POLY1), 0, "", "iS*", (SUBR)poly1_init, (SUBR)poly1_perf, (SUBR)poly1_deinit, NULL },
     { "poly", S(POLY1), 0, "*", "iS*", (SUBR)poly1_init, (SUBR)poly1_perf, (SUBR)poly1_deinit, NULL },
     { "polyseq", S(POLY1), 0, "*", "iS*", (SUBR)polyseq_init, (SUBR)poly1_perf, (SUBR)poly1_deinit, NULL },
     { "defer", S(DEFER), 0, "", "S*", (SUBR)defer_init, NULL, (SUBR)defer_deinit, NULL},
     // { "sumarray4", S(TABQUERY1), 0, "a", "a[]", NULL, (SUBR)tabsuma },
     { "testopc.a_a", S(TESTOPC_a_a), 0, "a", "ak", (SUBR)testopc_init, (SUBR)testopc_perf, NULL, NULL}
-#endif
 };
 
 LINKAGE

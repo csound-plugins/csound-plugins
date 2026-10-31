@@ -125,7 +125,7 @@ cd csound-plugins
 git submodule update --init --recursive
 mkdir build
 cd build
-cmake -DAPIVERSION=7.0 ..
+cmake ..
 cmake --build . --parallel
 cmake --install .
 ```

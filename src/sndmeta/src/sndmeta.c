@@ -171,13 +171,8 @@ static int32_t sfreadmeta_ss(CSOUND *csound, SFREADMETA_SS *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-#ifdef CSOUNDAPI6
-    { "filereadmeta.i", S(SFREADMETA), 0, 1, "S", "SS", (SUBR)sfreadmeta_i, NULL, NULL, NULL},
-    { "filereadmeta.i", S(SFREADMETA_SS), 0, 1, "S[]S[]", "S", (SUBR)sfreadmeta_ss, NULL, NULL, NULL},
-#else
     { "filereadmeta.i", S(SFREADMETA), 0, "S", "SS", (SUBR)sfreadmeta_i, NULL, NULL, NULL},
     { "filereadmeta.i", S(SFREADMETA_SS), 0, "S[]S[]", "S", (SUBR)sfreadmeta_ss, NULL, NULL, NULL},
-#endif
 };
 
 LINKAGE

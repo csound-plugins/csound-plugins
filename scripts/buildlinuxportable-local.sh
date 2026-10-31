@@ -169,7 +169,7 @@ ldd "$BUILD_ROOT/csound-build/librtpa.so" | grep -F 'libasound.so'
 ldd "$BUILD_ROOT/csound-build/librtpa.so" | grep -F 'libjack.so'
 ! ldd "$BUILD_ROOT/csound-build/libemugens.so" | grep -E 'lib(pipewire|asound|jack)\.so'
 
-cmake -B "$BUILD_ROOT/plugins-build" -S "$ROOT" -DAPIVERSION=7.0 \
+cmake -B "$BUILD_ROOT/plugins-build" -S "$ROOT" \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_PREFIX_PATH="$DEPS_PREFIX" \
     -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" -DCMAKE_C_FLAGS="-march=x86-64-v3" \
     -DCMAKE_CXX_FLAGS="-march=x86-64-v3" \

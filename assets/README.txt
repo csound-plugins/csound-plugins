@@ -5,33 +5,27 @@ The source code lives at <https://github.com/csound-plugins/csound-plugins>
 
 The plugins in this collection are released under the LGPLv2
 
+These plugins require Csound 7.
+
 ---------------------------------------------------------
 
 ## Installation - Windows
 
-In csound 6 the .dll files should be placed in:
-
-    C:\Users\<User>\AppData\Local\csound\6.0\plugins64
-
-(Create the folder if it does not exist)
-
-For csound 7, the plugins folder is:
+Place the .dll files in:
 
     C:\Users\<User>\AppData\Local\csound\7.0\plugins64
+
+(Create the folder if it does not exist)
 
 ----------------------------------------------------------
 
 ## Installation - macOS
 
-In csound 6 place the .dylib files in in the folder:
-
-    ~/Library/csound/6.0/plugins64
-
-(Create the folder if it does not exist)
-
-For csound 7 substitute "6.0" for "7.0":
+Place the .dylib files in:
 
     ~/Library/csound/7.0/plugins64
+
+(Create the folder if it does not exist)
 
 macOS only loads code that has been signed, and since these plugins are
 not notarized, browsers additionally mark downloaded files as
@@ -52,12 +46,8 @@ identity as csound.
 
 ## Installation - Linux
 
-For csound 6, place the .so files in in the folder:
-
-    ~/.local/lib/csound/6.0/plugins64
-
-(Create the folder if it does not exist)
-
-For csound 7 the plugins folder is:
+Place the .so files in:
 
     ~/.local/lib/csound/7.0/plugins64
+
+(Create the folder if it does not exist)

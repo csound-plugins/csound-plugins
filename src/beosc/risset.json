@@ -17,22 +17,9 @@
   "binaries": [
     {
       "platform": "linux",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-linux.zip",
-      "extractpath": "libbeosc.so",
-      "csound_version": ">=6.17<7.0"
-    },
-    {
-      "platform": "linux",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux-x86_64.zip",
       "extractpath": "libbeosc.so",
       "csound_version": ">=7.0"
-    },
-    {
-      "platform": "windows",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-windows.zip",
-      "extractpath": "beosc.dll",
-      "build_platform": "Windows 10",
-      "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "windows",
@@ -43,24 +30,10 @@
     },
     {
       "platform": "macos-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-macos-universal.zip",
-      "extractpath": "libbeosc.dylib",
-      "build_platform": "10.14.0",
-      "csound_version": ">=6.17<7.0"
-    },
-    {
-      "platform": "macos-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-universal.zip",
       "extractpath": "libbeosc.dylib",
       "build_platform": "10.14.0",
       "csound_version": ">=7.0"
-    },
-    {
-      "platform": "macos-arm64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound6-macos-universal.zip",
-      "extractpath": "libbeosc.dylib",
-      "build_platform": "10.14.0",
-      "csound_version": ">=6.17<7.0"
     },
     {
       "platform": "macos-arm64",

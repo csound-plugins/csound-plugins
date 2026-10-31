@@ -1431,33 +1431,6 @@ Input types:
 
 static OENTRY localops[] = {
 
-#ifdef CSOUNDAPI6
-    // aout beosc xfreq, kbw, ifn=-1, iphase=0, iflags=1
-    {"beosc", S(BEOSC), TR, 3, "a", "kkjop", (SUBR)beosc_init, (SUBR)beosc_kkiii, NULL, NULL },
-    {"beosc", S(BEOSC), TR, 3, "a", "akjop", (SUBR)beosc_init, (SUBR)beosc_akiii, NULL, NULL },
-
-    // aout beadsynt ifreqft, iampft, ibwft, inumosc,
-    //               iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
-    {"beadsynt", S(BEADSYNT), TR, 3, "a", "iiijpPPjj", (SUBR)beadsynt_init, (SUBR)beadsynt_perf, NULL, NULL },
-
-    // aout beadsynt kFreq[], kAmp[], kBw[],
-    //               inumosc=-1, iflags=1, kfreq=1, kbw=1, ifn=-1, iphs=-1
-    {"beadsynt", S(BEADSYNT), TR, 3, "a", ".[].[].[]jpPPjj", (SUBR)beadsynt_init_array, (SUBR)beadsynt_perf, NULL, NULL },
-
-
-    // tabrowlin krow, ifnsrc, ifndest, inumcols,
-    //                 ioffset=0, istart=0, iend=0, istep=1
-    {"tabrowlin", S(TABROWCOPY), 0, 3, "", "kiiiooop", (SUBR)tabrowcopy_init, (SUBR)tabrowcopyk, NULL, NULL },
-
-    // kOut[]  tabrowlin krow, ifnsrc, inumcols,
-    //                   ioffset=0, istart=0, iend=0, istep=1
-    {"getrowlin", S(TABROWCOPYARR), 0, 3, "k[]", "kiiooop", (SUBR)tabrowcopyarr_init, (SUBR)tabrowcopyarr_k, NULL, NULL},
-
-    // kOut[] getrowlin kMtrx[], krow, kstart=0, kend=0, kstep=1
-    {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "k[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
-
-    {"getrowlin", S(GETROWLIN), 0, 3, "k[]", "i[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
-#else
     // csound7
     //   name          struct      0   outsig insig    init                perf            deinit                 NULL
     // { "OSCsend_lo", S(OSCSEND), 0,  "",    "kSkSN", (SUBR)osc_send_set, (SUBR)osc_send, (SUBR) oscsend_deinit, NULL },
@@ -1499,7 +1472,6 @@ static OENTRY localops[] = {
 
     {"getrowlin", S(GETROWLIN), 0, "k[]", "i[]kOOP", (SUBR)getrowlin_init, (SUBR)getrowlin_k, NULL, NULL },
 
-#endif
 
 };
 

@@ -126,11 +126,7 @@ static int32_t risset1(CSOUND *csound, RISSET1 *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-#ifdef CSOUNDAPI6
-     { "risset.1", S(RISSET1), 0, 1, "S", "S", (SUBR)risset1, NULL, NULL, NULL }
-#else
     { "risset.1", S(RISSET1), 0, "S", "S", (SUBR)risset1, NULL, NULL, NULL }
-#endif
 };
 
 LINKAGE

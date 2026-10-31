@@ -634,24 +634,6 @@ static int32_t getPlatform(CSOUND *csound, S_ *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-#ifdef CSOUNDAPI6
-    { "pathSplit", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplit_opcode, NULL, NULL, NULL }
-    ,{ "pathSplitk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplit_opcode, NULL, NULL }
-    ,{ "pathSplitExt", S(SS_S), 0, 1, "SS", "S", (SUBR)pathSplitExt_opcode, NULL, NULL, NULL }
-    ,{ "pathSplitExtk", S(SS_S), 0, 2, "SS", "S", NULL, (SUBR)pathSplitExt_opcode, NULL, NULL }
-    ,{ "pathIsAbsolute.i", S(K_S), 0, 1, "i", "S", (SUBR)pathIsAbsolute, NULL, NULL, NULL}
-    ,{ "pathIsAbsolute.k", S(K_S), 0, 2, "k", "S", NULL, (SUBR)pathIsAbsolute, NULL, NULL}
-    ,{ "pathAbsolute", S(S_S), 0, 1, "S", "S", (SUBR)pathAbsolute, NULL, NULL, NULL}
-    ,{ "pathJoin", S(S_SS), 0, 1, "S", "SS", (SUBR)pathJoin, NULL, NULL, NULL}
-    ,{ "findFileInPath", S(S_S), 0, 1, "S", "S", (SUBR)findFile, NULL, NULL, NULL}
-    ,{ "getEnvVar", S(S_S), 0, 1, "S", "S", (SUBR)getEnvVar, NULL, NULL, NULL }
-    ,{ "scriptDir", S(S_), 0, 1, "S", "", (SUBR)pathOfScript, NULL, NULL, NULL }
-    ,{ "pathNative", S(S_S), 0, 1, "S", "S", (SUBR)pathNative, NULL, NULL, NULL }
-    ,{ "sysPlatform", S(S_), 0, 1, "S", "", (SUBR)getPlatform, NULL, NULL, NULL}
-    ,{ "strsplit", S(STRSPLIT), 0, 1, "S[]", "SS", (SUBR)string_split, NULL, NULL, NULL}
-    ,{ "strjoin.arr_i", S(STRJOIN_ARR), 0, 1, "S", "SS[]", (SUBR)strjoin_arr_i, NULL, NULL, NULL}
-    ,{ "strjoin.i", S(STRJOIN_VARARGS), 0, 1, "S", "S*", (SUBR)strjoin_varargs_i, NULL, NULL, NULL}
-#else
      { "pathSplit", S(SS_S), 0, "SS", "S", (SUBR)pathSplit_opcode, NULL, NULL, NULL }
     ,{ "pathSplitk", S(SS_S), 0, "SS", "S", NULL, (SUBR)pathSplit_opcode, NULL, NULL }
     ,{ "pathSplitExt", S(SS_S), 0, "SS", "S", (SUBR)pathSplitExt_opcode, NULL, NULL, NULL }
@@ -669,7 +651,6 @@ static OENTRY localops[] = {
     ,{ "strjoin.arr_i", S(STRJOIN_ARR), 0, "S", "SS[]", (SUBR)strjoin_arr_i, NULL, NULL, NULL}
     ,{ "strjoin.i", S(STRJOIN_VARARGS), 0, "S", "S*", (SUBR)strjoin_varargs_i, NULL, NULL, NULL}
 
-#endif
 };
 
 LINKAGE

@@ -5,11 +5,8 @@ on: push
 jobs:
 
   macos-test:
-    name: Test mac universal plugins, csound ${{ matrix.csound-branch }}
+    name: Test mac universal plugins, csound 7
     runs-on: macos-15
-    strategy:
-      matrix:
-        csound-branch: ["develop"]
 
     steps:
       - uses: actions/checkout@v3
@@ -22,19 +19,7 @@ jobs:
             exit 1
           fi
 
-      - name: Install csound 6 from installer
-        if: matrix.csound-branch == 'csound6'
-        run: |
-          curl -L -o csound6.18.dmg https://github.com/csound/csound/releases/download/6.18.1/Csound-MacOS-universal-6.18.1.dmg
-          brew install p7zip
-          7z x csound6.18.dmg
-          cd Csound-universal-6.18.1
-          sudo installer -pkg csound-MacOS-universal-6.18.1.pkg -target /
-          csound --version
-          cd ..
-
       - name: Install csound 7 from source
-        if: matrix.csound-branch == 'develop'
         run: |
           git clone -b develop https://github.com/csound/csound --depth 1
           cd csound
@@ -52,19 +37,14 @@ jobs:
           csound --version
           which csound
           file $(which csound)
-          if [[ ${{ matrix.csound-branch }} == csound6 ]]; then
-            APIMAJOR=6
-          else
-            APIMAJOR=7
-          fi
           # The publish job in build.yml re-uploads the 'latest' assets
           # concurrently with this job, so the asset may 404 while it is
           # being replaced. Wait for it instead of failing immediately.
-          URL="https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound$APIMAJOR-macos-universal.zip"
+          URL="https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound7-macos-universal.zip"
           OK=0
           for i in $(seq 1 45); do
-            rm -f plugins-csound$APIMAJOR-macos-universal.zip
-            if wget "$URL" && unzip -o plugins-csound$APIMAJOR-macos-universal.zip; then
+            rm -f plugins-csound7-macos-universal.zip
+            if wget "$URL" && unzip -o plugins-csound7-macos-universal.zip; then
               OK=1
               break
             fi
@@ -76,7 +56,7 @@ jobs:
             exit 1
           fi
           ls -l *.dylib
-          PLUGINSDIR="$HOME/Library/csound/$APIMAJOR.0/plugins64"
+          PLUGINSDIR="$HOME/Library/csound/7.0/plugins64"
           mkdir -p "$PLUGINSDIR"
           cp *.dylib "$PLUGINSDIR"
           if [ -f macos-codesign.py ]; then
@@ -94,24 +74,20 @@ jobs:
           # beosc
           pushd .
           cd src/beosc/examples
-          csound --wave -o "beadsynt-macos-csound-${{ matrix.csound-branch }}.wav" beadsynt.csd
+          csound --wave -o "beadsynt-macos-csound-7.wav" beadsynt.csd
           cp beadsynt*.wav ../../../artifacts
           popd
           ls artifacts/*
 
       - uses: actions/upload-artifact@v4
         with:
-          name: artifacts-macos-universal-csound-${{ matrix.csound-branch }}
+          name: artifacts-macos-universal-csound-7
           path: artifacts/*
 
 
   windows-test-release:
-    name: Windows - Test released plugins on csound ${{ matrix.csound-version }}
+    name: Windows - Test released plugins on csound 7
     runs-on: windows-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        csound-version: ["6", "7"]
 
     steps:
       - name: checkout
@@ -119,23 +95,9 @@ jobs:
 
       - uses: lukka/get-cmake@v3.29.0
 
-      - name: Install csound from package
-        if: matrix.csound-version == '6'
-        run: |
-          choco install libsndfile
-          curl -L -o csound-binaries.zip https://github.com/csound/csound/releases/download/6.18.1/Csound-6.18.1-windows-x64-binaries.zip
-          Expand-Archive csound-binaries.zip -DestinationPath ".\csound-binaries"
-          New-Item -Type Directory -Force "C:/Program Files/csound"
-          cp .\csound-binaries\build\Release\* "C:/Program Files/csound"
-          [Environment]::SetEnvironmentVariable("PATH", $Env:PATH + ";C:\Program Files\csound", [EnvironmentVariableTarget]::Machine)
-          $Env:Path = $Env:Path + ";C:\Program Files\csound"
-          Write-Output $Env:PATH
-          csound.exe --version
-
       # --- Optimized Csound 7 build (cache + parallel) ---
 
       - name: Export GitHub Actions cache environment variables
-        if: matrix.csound-version == '7'
         uses: actions/github-script@v6
         with:
           script: |
@@ -143,14 +105,12 @@ jobs:
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
       - name: Get Csound develop HEAD SHA
-        if: matrix.csound-version == '7'
         id: csound-sha
         shell: bash
         run: |
           echo "sha=$(git ls-remote https://github.com/csound/csound refs/heads/develop | cut -f1)" >> $GITHUB_OUTPUT
 
       - name: Cache Csound build artifacts
-        if: matrix.csound-version == '7'
         id: csound-cache
         uses: actions/cache@v4
         with:
@@ -158,7 +118,7 @@ jobs:
           key: csound-windows-develop-${{ steps.csound-sha.outputs.sha }}
 
       - name: Cache vcpkg downloads and packages
-        if: matrix.csound-version == '7' && steps.csound-cache.outputs.cache-hit != 'true'
+        if: steps.csound-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -168,13 +128,13 @@ jobs:
           restore-keys: vcpkg-windows-
 
       - name: Set up MSVC dev environment
-        if: matrix.csound-version == '7' && steps.csound-cache.outputs.cache-hit != 'true'
+        if: steps.csound-cache.outputs.cache-hit != 'true'
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
       - name: Install csound 7 from source
-        if: matrix.csound-version == '7' && steps.csound-cache.outputs.cache-hit != 'true'
+        if: steps.csound-cache.outputs.cache-hit != 'true'
         env:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
         run: |
@@ -209,7 +169,6 @@ jobs:
           Get-ChildItem build -Filter "*.dll" | Copy-Item -Destination ../csound-build-artifacts
 
       - name: Install Csound 7 (from cache or fresh build)
-        if: matrix.csound-version == '7'
         run: |
           New-Item -Type Directory -Force "C:/Program Files/csound"
           cp csound-build-artifacts\* "C:/Program Files/csound"
@@ -222,8 +181,8 @@ jobs:
 
       - name: Download and install plugins
         run: |
-          $url = "https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound${{ matrix.csound-version }}-windows.zip"
-          $pluginsdir = "$env:LOCALAPPDATA\csound\${{ matrix.csound-version }}.0\plugins64"
+          $url = "https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound7-windows.zip"
+          $pluginsdir = "$env:LOCALAPPDATA\csound\7.0\plugins64"
           New-Item -Type Directory -Force "$pluginsdir"
           echo "Plugins dir: $pluginsdir"
           # The publish job in build.yml re-uploads the 'latest' assets
@@ -249,7 +208,7 @@ jobs:
           }
           Get-ChildItem -Recurse -Path "$pluginsdir"
 
-      - name: Test plugins - Windows - Csound ${{ matrix.csound-version }}
+      - name: Test plugins - Windows - Csound 7
         run: |
           $machinePath = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine')
           $Env:Path = $Env:Path + ";C:/Program Files/csound"
@@ -265,91 +224,12 @@ jobs:
           cp *.flac ../../../artifacts
 
 
-  windows-csound6:
-    name: Test windows against csound package (csound6)
-    runs-on: windows-latest
-
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: Install csound
-        run: |
-          choco install libsndfile
-          curl -L -o csound-binaries.zip https://github.com/csound/csound/releases/download/6.18.1/Csound-6.18.1-windows-x64-binaries.zip
-          Expand-Archive csound-binaries.zip -DestinationPath "C:\Program Files\csound-binaries"
-          ls -r "C:\Program Files\csound-binaries"
-          $Env:Path = $Env:Path + ";C:/Program Files/csound-binaries/build/Release"
-          csound.exe --version
-
-      - name: Build and test plugins
-        run: |
-          git submodule update --init --recursive --remote
-          git submodule status --recursive
-          echo "Finished submodules"
-          Remove-Item -Recurse -Force build-windows -ErrorAction Ignore
-          mkdir build-windows
-          cd build-windows
-          cmake -DAPIVERSION="6.0" -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF ..
-          cmake --build . --parallel --config Release
-          cmake --install .
-          $Env:Path = $Env:Path + ";C:/Program Files/csound-binaries/build/Release"
-          csound.exe -z1
-          cd ..
-          if(!(Test-Path artifacts)) {
-            New-Item -ItemType directory -Path artifacts
-          }
-          cd src/beosc/examples
-          csound.exe -o beadsynt.flac beadsynt.csd
-          cp *.flac ../../../artifacts
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-windows-csound6
-          path: artifacts/*
-
-
-  linuxapt:
-    name: Test linux against csound package (csound6)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: linux test against csound package
-        if: runner.os == 'linux'
-        run: |
-          set -x
-          sudo cp /etc/apt/sources.list /etc/apt/sources.list~
-          sudo sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
-          sudo apt-get update
-          sudo apt-get install csound libcsnd-dev
-          sudo apt-get install libsndfile1-dev nasm
-          git submodule update --init --recursive --remote
-          git submodule status --recursive
-          rm -fr build-linux
-          mkdir build-linux
-          cd build-linux
-          cmake -DAPIVERSION=6.0 ..
-          cmake --build . --parallel
-          cmake --install .
-          cd ..
-          bash test/linux-run-tests.sh
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux-apt
-          path: artifacts/*
-
-
   linuxgit:
-    name: Test linux against csound git, branch ${{ matrix.branch }}
+    name: Test linux against csound git, branch develop
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        branch: ["csound6", "develop"]
       fail-fast: false
 
     steps:
@@ -365,8 +245,8 @@ jobs:
           sudo apt-get update
           sudo apt-get build-dep csound
           sudo apt-get install cmake
-          REPODIR=csound-${{ matrix.branch }}
-          git clone -b ${{ matrix.branch }} https://github.com/csound/csound.git $REPODIR
+          REPODIR=csound-develop
+          git clone -b develop https://github.com/csound/csound.git $REPODIR
           cd $REPODIR
           mkdir build && cd build
           cmake ..
@@ -378,18 +258,12 @@ jobs:
           git submodule update --init --recursive --remote
           git submodule status --recursive
           cd csound
-          git switch ${{ matrix.branch }}
+          git switch develop
           cd ..
           rm -fr build-linux
           mkdir build-linux
           cd build-linux
-          if [[ ${{ matrix.branch }} = "csound6" ]]; then
-            APIVERSION=6.0
-          else
-            APIVERSION=7.0
-          fi
-          echo "APIVERSION: '$APIVERSION'"
-          cmake -DSKIP_FAST_MATH=True -DAPIVERSION=$APIVERSION ..
+          cmake -DSKIP_FAST_MATH=True ..
           cmake --build . --parallel
           cmake --install .
           cd ..
@@ -397,5 +271,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: artifacts-linux-git-${{ matrix.os }}-${{ matrix.branch }}
+          name: artifacts-linux-git-${{ matrix.os }}
           path: artifacts/*

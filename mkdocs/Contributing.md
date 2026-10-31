@@ -45,11 +45,11 @@ At the root folder of this repository, do
 
     mkdir build
     cd build
-    cmake -DAPIVERSION=7.0 ..
+    cmake ..
 	cmake --build .
 	cmake --install .
 
-(The build defaults to the Csound 7 API; pass `-DAPIVERSION=6.0` for Csound 6.)
+(Csound 7 is required; Csound 6 is no longer supported.)
     
 
 
@@ -72,7 +72,7 @@ It should have the minimal form:
   ],
   "short_description": "A short description",
   "long_description": "A longer description",
-  "csound_version": "6.17",
+  "csound_version": "7.0",
   "author": "Name Surname",
   "email": "name.surname@mail.com",
   "license": "LGPL",

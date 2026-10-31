@@ -249,10 +249,6 @@
         memset(&out[nsmps], '\0', early*sizeof(cs_float));              \
     }                                                                \
 
-#ifdef CSOUNDAPI6
-#define register_deinit(csound, p, func)                                \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
-#endif
 
 #ifdef USE_DOUBLE
 // from https://www.gamedev.net/forums/topic/621589-extremely-fast-sin-approximation/
@@ -2181,7 +2177,6 @@ typedef struct {
 
 static int32_t
 atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
-#ifdef CSOUNDAPI7
     cs_float pfields[VARGMAX] = {0};
     cs_float offset = csound->GetScoreOffsetSeconds(csound);
     pfields[0] = p->instrnum;
@@ -2193,25 +2188,6 @@ atstop_deinit(CSOUND *csound, SCHED_DEINIT *p) {
     
     csound->Event(csound, 0, (const cs_float *)(&pfields), p->numargs + 3);
     return OK;
-#else
-    EVTBLK evt;
-    memset(&evt, 0, sizeof(EVTBLK));
-    evt.opcod = 'i';
-    evt.strarg = NULL;
-    evt.scnt = 0;
-    evt.pinstance = NULL;
-    evt.p2orig = p->h.insdshead->p2.value;
-    evt.p3orig = p->h.insdshead->p3.value;
-    evt.p[1] = p->instrnum;
-    evt.p[2] = *p->p2;
-    evt.p[3] = *p->p3;
-    for(size_t i=0; i < p->numargs; i++) {
-        evt.p[4+i] = *(cs_float *)p->pargs[i];
-    }
-    evt.pcnt = (int16_t)(p->numargs + 3);
-    InsertScoreEventNow(csound, &evt, &(p->h));
-    return OK;
-#endif
 }
 
 
@@ -2256,9 +2232,6 @@ atstop_init(CSOUND *csound, SCHED_DEINIT *p, cs_float instrnum) {
     p->instrnum = instrnum;
     p->numargs = _GetInputArgCnt(csound, p) - 3;
 
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, atstop_deinit);
-#endif
     return OK;
 }
 
@@ -2486,9 +2459,6 @@ static int tabalias_init(CSOUND *csound, TABALIAS *p) {
     _init_array_view(csound, p->out, &(ftp->ftable[start]), end-start,
                      sizeof(cs_float)*(tabsize-start), &(p->h));
 
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, tabalias_deinit);
-#endif
     return OK;
 }
 
@@ -2539,9 +2509,6 @@ static int32_t
         end = p->in->sizes[0];
     _init_array_view(csound, p->out, &(p->in->data[start]), end - start,
                      p->in->allocated - start, &(p->h));
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, arrayview_deinit);
-#endif
     return OK;
 }
 
@@ -2835,9 +2802,6 @@ ref_new_array(CSOUND *csound, REF_NEW_ARRAY *p) {
     p->g = g;
     *p->out = slot;
     p->slot = slot;
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, ref_new_deinit);
-#endif
     return OK;
 }
 
@@ -2921,9 +2885,6 @@ deref_array_k_init(CSOUND *csound, DEREF_ARRAY *p) {
     if(outarr->sizes != NULL) {
         csound->Free(csound, outarr->sizes);
     }
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, deref_array_deinit);
-#endif
     return OK;
 }
 
@@ -2979,9 +2940,6 @@ deref_array(CSOUND *csound, DEREF_ARRAY *p) {
     handle->refcount -= extrarefs;
     p->slot = slot;
     p->g = g;
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, deref_array_deinit);
-#endif
     return OK;
 }
 
@@ -4716,18 +4674,8 @@ static int32_t filltab(CSOUND *csound, FILLTAB *p) {
     ftevt->strarg = NULL;
     int32_t n = _GetInputArgCnt(csound, p); // csound->GetInputArgCnt(p);
     int32_t tabsize = n;
-#ifdef CSOUNDAPI6
-    cs_float *fp = &ftevt->p[0];
-    fp[0] = 0.;
-    fp[1] = 0.;
-    fp[2] = 0.;
-    fp[3] = -(cs_float)tabsize;
-    fp[4] = 2.;
-    fp[5] = 0.;
-#else
     cs_float pfields[] = {0., 0., 0., -(cs_float)tabsize, 2., 0.};
     ftevt->p = &pfields[0];
-#endif
     ftevt->p2orig = 0.;
     ftevt->p3orig = -tabsize;
     ftevt->pcnt = 6;
@@ -4764,18 +4712,8 @@ static int32_t ftnew(CSOUND *csound, FTNEW *p) {
     ftevt->p3orig = -tabsize;
     ftevt->pcnt = (int16) 6;
     // int n = csound->hfgens(csound, &ftp, ftevt, 1);         /* call the fgen */
-#ifdef CSOUNDAPI6
-    cs_float *fp = &ftevt->p[0];;
-    fp[0] = 0.;
-    fp[1] = 0.;
-    fp[2] = 0.;
-    fp[3] = -(cs_float)tabsize;
-    fp[4] = 2.;
-    fp[5] = 0.;
-#else
     cs_float pfields[] = {0., 0., 0., -(cs_float)tabsize, 2., 0.};
     ftevt->p = &pfields[0];
-#endif
     int n = _createTable(csound, &ftp, ftevt, 1);
 
     // ftevt->p = NULL;
@@ -7624,201 +7562,6 @@ static int pyin_perf(CSOUND *csound, PYIN_OPCODE *p)
 #define S(x) sizeof(x)
 
 
-#ifdef CSOUNDAPI6
-
-static OENTRY localops[] = {
-
-    {"crackle", S(CRACKLE), 0, 3, "a", "P", (SUBR)crackle_init, (SUBR)crackle_perf, NULL, NULL},
-    {"ramptrig.k_kk", S(RAMPTRIGK), 0, 3, "k", "kkP", (SUBR)ramptrig_k_kk_init, (SUBR)ramptrig_k_kk, NULL, NULL},
-    {"ramptrig.a_kk", S(RAMPTRIGK), 0, 3, "a", "kkP", (SUBR)ramptrig_a_kk_init, (SUBR)ramptrig_a_kk, NULL, NULL},
-    {"ramptrig.sync_kk_kk", S(RAMPTRIGSYNC), 0, 3, "kk", "kkPO", (SUBR)ramptrigsync_kk_kk_init, (SUBR)ramptrigsync_kk_kk, NULL, NULL},
-
-    {"sigmdrive.a_ak",S(SIGMDRIVE), 0, 2, "a", "akO", NULL, (SUBR)sigmdrive_a_ak, NULL, NULL},
-    {"sigmdrive.a_aa",S(SIGMDRIVE), 0, 2, "a", "aaO", NULL, (SUBR)sigmdrive_a_aa, NULL, NULL},
-
-    {"lfnoise", S(LFNOISE), 0, 3, "a", "kO", (SUBR)lfnoise_init, (SUBR)lfnoise_perf, NULL, NULL},
-
-    {"schmitt.k", S(SCHMITT), 0, 3, "k", "kkk", (SUBR)schmitt_k_init, (SUBR)schmitt_k_perf, NULL, NULL},
-    {"schmitt.a", S(SCHMITT), 0, 3, "a", "akk", (SUBR)schmitt_k_init, (SUBR)schmitt_a_perf, NULL, NULL},
-
-    {"standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kkio", (SUBR)standardchaos_init, (SUBR)standardchaos_perf, NULL, NULL},
-    {"standardchaos", S(STANDARDCHAOS), 0, 3, "a", "kP", (SUBR)standardchaos_init_x, (SUBR)standardchaos_perf, NULL, NULL},
-
-    {"linenv.k_k", S(RAMPGATE), 0, 3, "k", "kiM", (SUBR)linenv_k_init, (SUBR)linenv_k_k, NULL, NULL},
-    {"linenv.a_k", S(RAMPGATE), 0, 3, "a", "kiM", (SUBR)linenv_a_init, (SUBR)linenv_a_k, NULL, NULL},
-
-    // aout dioderingmod ain, kfreq, kdiodeon=1, kfeedback=0, knonlinear=0, ioversample=0
-    {"diode_ringmod", S(t_diode_ringmod), 0, 3, "a", "akPOOO", (SUBR)dioderingmod_init, (SUBR)dioderingmod_perf, NULL, NULL},
-
-    {"fileexists", S(FILE_EXISTS), 0, 1, "i", "S", (SUBR)file_exists_init, NULL, NULL, NULL},
-
-    {"pread.i", S(PREAD), 0, 1, "i", "iij", (SUBR)pread_i, NULL, NULL, NULL},
-    {"pread.k", S(PREAD), 0, 3, "k", "ikJ", (SUBR)pread_init, (SUBR)pread_perf, NULL, NULL},
-    {"pread.arr_i", S(PREADARR), 0, 1, "i[]", "ii[]j", (SUBR)preadarr_i, NULL, NULL, NULL},
-    {"pwrite.i", S(PWRITE), 0, 1, "", "im", (SUBR)pwrite_i, NULL, NULL, NULL},
-    {"pwrite.k", S(PWRITE), 0, 3, "", "i*", (SUBR)pwrite_initcommon, (SUBR)pwrite_perf, NULL, NULL},
-
-    {"pwriten.k", S(PWRITE), 0, 3, "", "k*", (SUBR)pwriten_init, (SUBR)pwriten_perf, NULL, NULL},
-
-    {"uniqinstance.i", S(UNIQINSTANCE),   0, 1, "i", "io", (SUBR)uniqueinstance_i, NULL, NULL, NULL},
-    {"uniqinstance.S_i", S(UNIQINSTANCE), 0, 1, "i", "So", (SUBR)uniqueinstance_S_init, NULL, NULL, NULL},
-
-    {"atstop.s1", S(SCHED_DEINIT), 0, 1, "", "Soj", (SUBR)atstop_s, NULL, NULL, NULL},
-    {"atstop.s", S(SCHED_DEINIT),  0, 1, "", "Siim", (SUBR)atstop_s, NULL, NULL, NULL},
-    {"atstop.i1", S(SCHED_DEINIT), 0, 1, "", "ioj", (SUBR)atstop_i, NULL, NULL, NULL},
-    {"atstop.i", S(SCHED_DEINIT), 0, 1, "", "iiim", (SUBR)atstop_i, NULL, NULL, NULL},
-    // {"atstop.k", S(SCHED_DEINIT), 0, 1, "", "iii*", (SUBR)atstop_i },
-    // {"atstop.Sk", S(SCHED_DEINIT), 0, 1, "", "Sii*", (SUBR)atstop_s },
-    {"accum.k", S(ACCUM), 0, 3, "k", "koO", (SUBR)accum_init, (SUBR)accum_perf, NULL, NULL},
-    {"accum.a", S(ACCUM), 0, 3, "a", "koO", (SUBR)accum_init, (SUBR)accum_perf_audio, NULL, NULL},
-
-
-    {"frac2int.i", S(FUNC12), 0, 1, "i", "ii", (SUBR)frac2int, NULL, NULL, NULL},
-    {"frac2int.k", S(FUNC12), 0, 2, "k", "kk", NULL, (SUBR)frac2int, NULL, NULL},
-
-    {"memview.i_table", S(TABALIAS),  0, 1, "i[]", "ioo", (SUBR)tabalias_init, NULL, NULL, NULL},
-    {"memview.k_table", S(TABALIAS),  0, 1, "k[]", "ioo", (SUBR)tabalias_init, NULL, NULL, NULL},
-    {"memview.i", S(ARRAYVIEW), 0, 1, "i[]", ".[]oo", (SUBR)arrayview_init, NULL, NULL, NULL},
-    {"memview.k", S(ARRAYVIEW), 0, 1, "k[]", ".[]oo", (SUBR)arrayview_init, NULL, NULL, NULL},
-
-    {"ref.arr", S(REF_NEW_ARRAY), 0, 1, "i", ".[]o", (SUBR)ref_new_array, NULL, NULL, NULL},
-    // {"ref.k_send", S(REF1), 0, 3, "i", "k", (SUBR)ref_scalar_init, (SUBR)ref_scalar_perf},
-    // {"ref.a_send", S(REF1), 0, 3, "i", "a", (SUBR)ref_audio_init, (SUBR)ref_audio_perf},
-
-    // {"derefview.arr_i", S(DEREF_ARRAY), 0, 1, "i[]", "io", (SUBR)deref_array},
-    // {"derefview.arr_k", S(DEREF_ARRAY), 0, 1, "k[]", "io", (SUBR)deref_array},
-    {"deref.arr_kk", S(DEREF_ARRAY), 0, 3, "k[]", "k", (SUBR)deref_array_k_init, (SUBR)deref_array_perf, NULL, NULL},
-
-    {"deref.arr_i", S(DEREF_ARRAY), 0, 1, "i[]", "io", (SUBR)deref_array, NULL, NULL, NULL},
-    {"deref.arr_k", S(DEREF_ARRAY), 0, 1, "k[]", "io", (SUBR)deref_array, NULL, NULL, NULL},
-
-    // {"refread.k_recv", S(REF1), 0, 3, "k", "i", (SUBR)deref_scalar_init, (SUBR)deref_scalar_perf},
-    // {"refread.a_recv", S(REF1), 0, 3, "a", "i", (SUBR)deref_audio_init, (SUBR)deref_audio_perf},
-
-    {"refvalid.i", S(REF1), 0, 1, "i", "i", (SUBR)ref_valid_i, NULL, NULL, NULL},
-    {"refvalid.k", S(REF1), 0, 3, "k", "k", (SUBR)ref1_init, (SUBR)ref_valid_perf, NULL, NULL},
-
-    // {"xtracycles.i", S(OPCk_0), 0, 1, "i", "", (SUBR)xtracycles},
-
-    {"throwerror.s", S(ERRORMSG), 0, 3, "", "S", (SUBR)errormsg_init0, (SUBR)errormsg_perf, NULL, NULL},
-    {"throwerror.ss", S(ERRORMSG), 0, 3, "", "SS", (SUBR)errormsg_init, (SUBR)errormsg_perf, NULL, NULL},
-    {"initerror.s", S(ERRORMSG), 0, 1, "", "S", (SUBR)initerror, NULL, NULL, NULL},
-
-    {"setslice.i", S(ARRSETSLICE), 0, 1, "", "i[]ioop", (SUBR)array_set_slice, NULL, NULL, NULL},
-    {"setslice.k", S(ARRSETSLICE), 0, 2, "", "k[]kOOP", NULL, (SUBR)array_set_slice, NULL, NULL},
-    {"setslice.a", S(ARRSETSLICE), 0, 2, "", "a[]kOOP", NULL, (SUBR)array_set_slice, NULL, NULL},
-
-    {"setslice.i[]", S(_AAk), 0, 1, "", "i[]i[]i", (SUBR)setslice_array_k_init_i, NULL, NULL, NULL},
-    {"setslice.k[]", S(_AAk), 0, 3, "", "k[]k[]k", (SUBR)setslice_array_k_init_k, (SUBR)setslice_array_k, NULL, NULL},
-    {"setslice.S[]", S(_AAk), 0, 3, "", "S[]S[]k", (SUBR)setslice_array_k_init_S, (SUBR)setslice_array_k, NULL, NULL},
-
-    {"extendarray.ii", S(_AA), 0, 1, "", "i[]i[]", (SUBR)extendArray_i, NULL, NULL, NULL},
-    {"extendarray.ki", S(_AA), 0, 3, "", "k[]i[]", (SUBR)extendArray_init, (SUBR)extendArray_k, NULL, NULL},
-    {"extendarray.kk", S(_AA), 0, 3, "", "k[]k[]", (SUBR)extendArray_init, (SUBR)extendArray_k, NULL, NULL},
-    {"extendarray.SS", S(_AA), 0, 1, "", "S[]S[]", (SUBR)extendArray_i, NULL, NULL, NULL},
-    // itab, sr, nchnls, loopstart=0, basenote=60
-    {"ftsetparams.i", S(FTSETPARAMS), 0, 1, "", "iiioj", (SUBR)ftsetparams, NULL, NULL, NULL},
-    {"perlin3.k_kkk", S(PERLIN3), 0, 3, "k", "kkk", (SUBR)perlin3_init, (SUBR)perlin3_k_kkk, NULL, NULL},
-    {"perlin3.a_aaa", S(PERLIN3), 0, 3, "a", "aaa", (SUBR)perlin3_init, (SUBR)perlin3_a_aaa, NULL, NULL},
-
-    {"interp1d.k_kK", S(INTERPARR_x_xK), 0, 3, "k", "k.[]", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL},
-    {"interp1d.k_kKS", S(INTERPARR_x_xK), 0, 3, "k", "k.[]SO", (SUBR)interparr_k_kK_init, (SUBR)interparr_k_kK_kr, NULL, NULL},
-
-    {"interp1d.a_aKS", S(INTERPARR_x_xK), 0, 3, "a", "a.[]", (SUBR)interparr_k_kK_init, (SUBR)interparr_a_aK_kr, NULL, NULL},
-    {"interp1d.a_aK", S(INTERPARR_x_xK), 0, 3, "a", "a.[]SO", (SUBR)interparr_k_kK_init, (SUBR)interparr_a_aK_kr, NULL, NULL},
-
-    {"interp1d.i_iI", S(INTERPARR_x_xK), 0, 1, "i", "ii[]", (SUBR)interparr_k_kK_ir, NULL, NULL, NULL},
-    {"interp1d.i_iIS", S(INTERPARR_x_xK), 0, 1, "i", "ii[]So", (SUBR)interparr_k_kK_ir, NULL, NULL, NULL},
-
-    {"interp1d.K_KK", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]", (SUBR)interparr_K_KK_init_simple, (SUBR)interparr_K_KK_kr, NULL, NULL},
-    {"interp1d.K_KKS", S(INTERPARR_K_KK), 0, 3, "k[]", "k[].[]SO", (SUBR)interparr_K_KK_init, (SUBR)interparr_K_KK_kr, NULL, NULL},
-
-    {"interp1d.I_II", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]", (SUBR)interparr_K_KK_ir, NULL, NULL, NULL},
-    {"interp1d.I_IIS", S(INTERPARR_K_KK), 0, 1, "i[]", "i[]i[]So", (SUBR)interparr_K_KK_ir, NULL, NULL, NULL},
-
-    // kout interptab kin, ktab, Smode='linear', kstep=1, koffset=0
-    {"interp1d.k",  S(INTERPTAB), 0, 3, "k", "kkSPO", (SUBR)interptab_init_kkSkk, (SUBR)interptab_kr, NULL, NULL},
-    {"interp1d.k",  S(INTERPTAB), 0, 3, "k", "kk", (SUBR)interptab_init_kk, (SUBR)interptab_kr, NULL, NULL},
-
-    {"interp1d.i",  S(INTERPTAB), 0, 1, "i", "iiSpo", (SUBR)interptab_ir5, NULL, NULL, NULL},
-    {"interp1d.i",  S(INTERPTAB), 0, 1, "i", "ii", (SUBR)interptab_ir2, NULL, NULL, NULL},
-
-    {"interp1d.a",  S(INTERPTAB), 0, 3, "a", "akSPO", (SUBR)interptab_init_kkSkk, (SUBR)interptab_a_a_kr, NULL, NULL},
-    {"interp1d.a",  S(INTERPTAB), 0, 3, "a", "ak", (SUBR)interptab_init_kk, (SUBR)interptab_a_a_kr, NULL, NULL},
-
-    // TODO : kout[] interp1d kin[], ktab, Smode=0,kstep=1, koffset=0
-
-    {"bisect.k_k", S(BISECT), 0, 3, "k", "k.[]", (SUBR)bisect_init, (SUBR)bisect_kr, NULL, NULL},
-    {"bisect.i_i", S(BISECT), 0, 1, "i", "i.[]", (SUBR)bisect_ir, NULL, NULL, NULL},
-    {"bisect.a_a", S(BISECT), 0, 3, "a", "a.[]", (SUBR)bisect_init, (SUBR)bisect_a_a_kr, NULL, NULL},
-    {"bisect.K_K", S(BISECTARR), 0, 3, "k[]", "k[].[]", (SUBR)bisectarr_init, (SUBR)bisectarr_kr, NULL, NULL},
-    {"bisect.I_I", S(BISECTARR), 0, 1, "i[]", "i[].[]", (SUBR)bisectarr_ir, NULL, NULL, NULL},
-
-    {"bisect.tab_k_k", S(BISECTTAB), 0, 3, "k", "kkOO", (SUBR)bisecttab_init, (SUBR)bisecttab_k_k_kr, NULL, NULL},
-    {"bisect.tab_i_i", S(BISECTTAB), 0, 1, "i", "iioo", (SUBR)bisecttab_k_k_ir, NULL, NULL, NULL},
-    {"bisect.tab_a_a", S(BISECTTAB), 0, 3, "a", "akOO", (SUBR)bisecttab_init, (SUBR)bisecttab_a_a_kr, NULL, NULL},
-    {"bisect.tab_K_K", S(BISECTTAB_ARR), 0, 3, "k[]", "k[]kOO", (SUBR)bisecttabarr_init, (SUBR)bisecttabarr_kr, NULL, NULL},
-
-    {"bisect.tab_I_I", S(BISECTTAB_ARR), 0, 1, "i[]", "i[]ioo", (SUBR)bisecttabarr_ir, NULL, NULL, NULL},
-
-    {"ftfill.i", S(FILLTAB), 0, 1, "i", "m", (SUBR)filltab, NULL, NULL, NULL},
-    {"ftnew.i", S(FTNEW), 0, 1, "i", "io", (SUBR)ftnew, NULL, NULL, NULL},
-    //  "ftfill.arr_i", S(FTNEWARR), 0, 1, "i", "ii[]o", (SUBR)ftnew_arr },
-    {"zeroarray.k", S(ZEROARR), 0, 2, "", "k[]", NULL, (SUBR)zeroarr_perf, NULL, NULL},
-    {"zeroarray.a", S(ZEROARR), 0, 2, "", "a[]", NULL, (SUBR)zeroarr_perf, NULL, NULL},
-    {"zeroarray.i", S(ZEROARR), 0, 1, "", "i[]", (SUBR)zeroarr_perf, NULL, NULL, NULL},
-    {"zeroarray.masked_k", S(ZEROARR), 0, 2, "", "a[]k[]", NULL, (SUBR)zeroarr_masked_perf, NULL, NULL},
-    {"zeroarray.masked_i", S(ZEROARR), 0, 2, "", "a[]i[]", NULL, (SUBR)zeroarr_masked_perf, NULL, NULL},
-    {"zeroarray.masked_tab", S(ZEROARR_TAB), 0, 3, "", "a[]k", (SUBR)zeroarr_maskedtab_init, (SUBR)zeroarr_maskedtab_perf, NULL, NULL},
-
-    {"mixarray.a", S(ZEROARR), 0, 2, "", "a[]ka", NULL, (SUBR)mixarray_perf, NULL, NULL},
-
-    {"findarray.k", S(FINDARR), 0, 2, "k", ".[]kj", NULL, (SUBR)findarr_perf, NULL, NULL},
-    {"findarray.i", S(FINDARR), 0, 1, "i", "i[]ij", (SUBR)findarr_perf, NULL, NULL, NULL},
-    {"findarray.S_i", S(FINDARR_S), 0, 1, "i", "S[]S", (SUBR)findarr_s, NULL, NULL, NULL},
-    {"findarray.S_k", S(FINDARR_S), 0, 2, "k", "S[]S", NULL, (SUBR)findarr_s, NULL, NULL},
-
-    {"ftfind.k", S(FTINDEX), 0, 2, "k", "kkj", NULL, (SUBR)ftindex_perf, NULL, NULL},
-    {"ftfind.i", S(FTINDEX), 0, 1, "i", "iij", (SUBR)ftindex_perf, NULL, NULL, NULL},
-    {"loadnpy.k", S(loadnpy_ARR), 0, 1, "k[]", "S", (SUBR)loadnpy, NULL, NULL, NULL},
-    {"loadnpy.i", S(loadnpy_ARR), 0, 1, "i[]", "S", (SUBR)loadnpy, NULL, NULL, NULL},
-    {"detectsilence.k", S(DETECT_SILENCE), 0, 3, "k", "aJJ", (SUBR)detectSilence_init, (SUBR)detectSilence_k_a, NULL, NULL},
-    {"panstereo", S(BALANCE2), 0, 3, "aa", "aakP", (SUBR)balance2_init, (SUBR)balance2_ak, NULL, NULL},
-    {"zerocrossing", S(ZEROCROSSING), 0, 3, "a", "a", (SUBR)zerocrossing_init, (SUBR)zerocrossing_a_a, NULL, NULL},
-
-    {"presetinterp", S(PRESETINTERP), 0, 3, "k[]", "kkk[]o", (SUBR)presetinterpw_init, (SUBR)presetinterp_perf, NULL, NULL},
-
-    {"presetinterp", S(PRESETINTERP), 0, 3, "k[]", "kki[]o", (SUBR)presetinterpw_init, (SUBR)presetinterp_perf, NULL, NULL},
-
-    {"weightedsum", S(ROWSWEIGHTEDSUM), 0, 3, "k[]", "k[]k[]", (SUBR)rowsweightedsum_init, (SUBR)rowsweightedsum_perf, NULL, NULL},
-    {"weightedsum", S(ROWSWEIGHTEDSUM), 0, 3, "k[]", "i[]k[]", (SUBR)rowsweightedsum_init, (SUBR)rowsweightedsum_perf, NULL, NULL},
-
-    {"weightedsum", S(ROWSWEIGHTEDSUM), 0, 1, "i[]", "i[]i[]", (SUBR)rowsweightedsum_i, NULL, NULL, NULL},
-
-    {"vowelsdb", S(VOWELSDB), 0, 1, "i[]i[]i[]", "SS", (SUBR)vowelsdb_i, NULL, NULL, NULL},
-    {"vowelsdb", S(VOWELSDB), 0, 1, "k[]k[]k[]", "SS", (SUBR)vowelsdb_i, NULL, NULL, NULL},
-    {"mtro", S(MTRO), 0, 3, "k", "kp", (SUBR)mtro_init, (SUBR)mtro, NULL, NULL},
-    {"nametoinstrnum.i", S(NAMETOINSTRNUM), 0, 1, "i", "S", (SUBR)nametoinstrnum, NULL, NULL, NULL},
-
-    {"nametoinstrnum.k", S(NAMETOINSTRNUM), 0, 2, "k", "S", NULL, (SUBR)nametoinstrnum, NULL, NULL},
-    {"cuetrig", S(CUETRIG), 0, 3, "k", "kM", (SUBR)cuetrig_init, (SUBR)cuetrig, NULL, NULL},
-
-    {"gaintovel.i", S(GAINTOVEL), 0, 1, "i", "iiioo", (SUBR)gaintovel, NULL, NULL, NULL},
-    {"gaintovel.k", S(GAINTOVEL), 0, 2, "k", "kkkOO", NULL, (SUBR)gaintovel, NULL, NULL},
-
-    {"linexp.i", S(LINEXP), 0, 1, "i", "iiiiop", (SUBR)linexp, NULL, NULL, NULL},
-    {"linexp.k", S(LINEXP), 0, 2, "k", "kkkkOP", NULL, (SUBR)linexp, NULL, NULL},
-    {"pvsflatness", S(PVSFLATNESS), 0, 3, "k", "f", (SUBR)pvsflatness_init, (SUBR)pvsflatness_perf, NULL, NULL},
-    {"pvscrest", S(PVSCREST), 0, 3, "k", "fOO", (SUBR)pvscrest_init, (SUBR)pvscrest_perf, NULL, NULL},
-
-    {"transpose", S(PITCHSHIFT), 0, 3, "a", "akJJ", (SUBR)faust_pitchshift_init, (SUBR)faust_pitchshift, NULL, NULL},
-    {"picksource.k", S(PICKSOURCE), 0, 2, "a", "ky", NULL, (SUBR)picksource_k_perf, NULL, NULL},
-
-
-    {"_testopcode", S(TESTOPCODE), 0, 1, "a", "aPP", (SUBR)testopcode_init}
-};
-
-#else
 static OENTRY localops[] = {
 
     // Csound 7
@@ -8010,6 +7753,5 @@ static OENTRY localops[] = {
     {"pyinf0", S(PYIN_OPCODE), 0, "kkk", "aiiooOOoo", (SUBR)pyin_init, (SUBR)pyin_perf, NULL, NULL, 0}
 
 };
-#endif
 
 LINKAGE

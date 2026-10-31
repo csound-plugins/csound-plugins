@@ -86,41 +86,25 @@ int em_isinfornan(cs_float d) {
 }
 
 
-// Functions to deal with both csound6 and csound7 in the same codebase
+// Helpers for the Csound 7 API
 
 static inline FUNC * FTFind(CSOUND *csound, cs_float *num) {
-#ifdef CSOUNDAPI7
     return csound->FTFind(csound, num);
-#else
-    return csound->FTnp2Find(csound, num);
-#endif
 }
 
 static inline int32_t _GetInputArgCnt(CSOUND *csound, void *p) {
-#ifdef CSOUNDAPI7
     IGN(csound);
     return GetInputArgCnt((OPDS *)p);
-#else
-    return csound->GetInputArgCnt((OPDS*)p);
-#endif
 }
 
 static inline int32_t _GetOutputArgCnt(CSOUND *csound, void *p) {
-#ifdef CSOUNDAPI7
     IGN(csound);
     return GetOutputArgCnt((OPDS *)p);
-#else
-    return csound->GetOutputArgCnt((OPDS *)p);
-#endif
 }
 
 static inline char* _GetInputArgName(CSOUND *csound, void *p, uint32_t idx) {
-#ifdef CSOUNDAPI7
     IGN(csound);
     return GetInputArgName((OPDS *)p, idx);
-#else
-    return csound->GetInputArgName((OPDS *)p, idx);
-#endif
 }
 
 // static inline cs_float _currentTime(CSOUND *csound, OPDS *ctx) {
@@ -128,86 +112,44 @@ static inline char* _GetInputArgName(CSOUND *csound, void *p, uint32_t idx) {
 // }
 
 static inline void InsertScoreEventNow(CSOUND *csound, EVTBLK *evt, OPDS *ctx) {
-#ifdef CSOUNDAPI7
     cs_float sr = GetLocalSr(ctx);
     // csound->InsertScoreEvent(csound, evt, csound->GetCurrentTimeSamples(csound) / sr);
     csound->Event(csound, 0, evt->p, evt->pcnt);
-#else
-    IGN(ctx);
-    csound->insert_score_event_at_sample(csound, evt, csound->GetCurrentTimeSamples(csound));
-#endif
 }
 
 
 static inline void tabinit_compat(CSOUND *csound, ARRAYDAT *p, int32_t size, const OPDS *ctx) {
-#ifdef CSOUNDAPI7
     tabinit(csound, p, size, ctx->insdshead);
-#else
-    IGN(ctx);
-    tabinit(csound, p, size);
-#endif
 }
 
 static inline int32_t
 _createTable(CSOUND *csound, FUNC **ftp, const EVTBLK * ftevt, int32_t n) {
-#ifdef CSOUNDAPI7
     return csound->FTCreate(csound, ftp, ftevt, n);
-#else
-    return csound->hfgens(csound, ftp, ftevt, n);
-#endif
 }
 
 static inline cs_float _GetLocalSr(CSOUND *csound, OPDS *ctx) {
-#ifdef CSOUNDAPI7
     IGN(csound);
     return GetLocalSr(ctx);
-#else
-    IGN(ctx);
-    return csound->GetSr(csound);
-#endif
 }
 
 static inline cs_float _GetLocalKsmps(CSOUND *csound, OPDS *ctx) {
-#ifdef CSOUNDAPI7
     IGN(csound);
     return GetLocalKsmps(ctx);
-#else
-    IGN(ctx);
-    return csound->GetKsmps(csound);
-#endif
 }
 
 
-#ifdef CSOUNDAPI7
 #define LOCAL_SR(p) (GetLocalSr(&(p->h)))
 #define LOCAL_KR(p) (GetLocalKr(&(p->h)))
 #define LOCAL_KSMPS(p) (GetLocalKsmps(&(p->h)))
 #define GET_INPUT_ARG_CNT (GetInputArgCnt(&(p->h)))
 #define OPDS_INITFUNC(opds) (opds->init)
 #define OPDS_PERFFUNC(opds) (opds->perf)
-#else
-#define LOCAL_SR(p) (csound->GetSr(csound))
-#define LOCAL_KR(p) (csound->GetKr(csound))
-#define LOCAL_KSMPS(p) (csound->GetKsmps(csound))
-#define GET_INPUT_ARG_CNT (csound->GetInputArgCnt(p))
-#define OPDS_INITFUNC(opds) (opds->iopadr)
-#define OPDS_PERFFUNC(opds) (opds->kopadr)
-#endif
 
 static inline int32_t _StringArg2Insno(CSOUND *csound, char *arg, int32_t isstr) {
-#ifdef CSOUNDAPI7
     return csound->StringArg2Insno(csound, arg, isstr);
-#else
-    return csound->strarg2insno(csound, arg, isstr);
-#endif
 }
 static inline CS_VARIABLE* arrayCreateVariableSameType(CSOUND *csound, const ARRAYDAT *arr, const OPDS *ctx) {
-#ifdef CSOUNDAPI7
     return arr->arrayType->createVariable(csound, arr->arrayType, NULL, ctx->insdshead);
-#else
-    IGN(ctx);
-    return arr->arrayType->createVariable(csound, NULL);
-#endif
 }
 
 INSTRTXT *GetInstrumentByName(CSOUND *csound, const char *name) {
@@ -227,22 +169,13 @@ static inline INSTRTXT *GetInstrumentByNumber(CSOUND *csound, int32_t n) {
 }
 
 static inline const CS_TYPE *_GetTypeForArg(CSOUND *csound, void *argptr) {
-#ifdef CSOUNDAPI7
     IGN(csound);
     return GetTypeForArg(argptr);
-#else
-    return csound->GetTypeForArg(argptr);
-#endif
 }
 
 static inline const OENTRY* _FindOpcode(CSOUND *csound, char *name, char *outsig, char *insig) {
-#ifdef CSOUNDAPI7
     // exact = 0
     return csound->FindOpcode(csound, 0, name, outsig, insig);
-#else
-    // not exact
-    return csound->find_opcode_new(csound, name, outsig, insig);
-#endif
 }
 
 

@@ -271,10 +271,6 @@ static inline void *handle_lookup_void(void *g_void, cs_float fidx);
 
 #define get_handle(p) ((HANDLE*)handle_lookup_void((p)->g, *(p)->handleidx))
 
-#ifdef CSOUNDAPI6
-#define register_deinit(csound, p, func) \
-    csound->RegisterDeinitCallback(csound, p, (int32_t(*)(CSOUND*, void*))(func))
-#endif
 
 // Mutex support removed: dicts/pools are not thread-safe for concurrent
 // write access. Callers must serialize access from the orchestra (init/k-rate
@@ -2153,10 +2149,6 @@ dict_free(CSOUND *csound, DICT_FREE *p) {
     if((i32)*p->iwhen == 0) {
         return _dict_free(csound, g, idx);
     }
-#ifdef CSOUNDAPI6
-    // free at the end of the note
-    register_deinit(csound, p, dict_free_callback);
-#endif
     return OK;
 }
 
@@ -3538,9 +3530,6 @@ sview_i(CSOUND *csound, CACHEGET *p) {
     if(ks == NULL)
         return INITERRF("string not found in cache (idx: %d)", idx);
     stringdat_view(csound, p->outstr, ks->s, ks->m);
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, sview_deinit);
-#endif
     return OK;
 }
 
@@ -3549,9 +3538,6 @@ sview_init(CSOUND *csound, CACHEGET *p) {
     STRCACHE_GLOBALS *g = cache_globals(csound);
     p->g = g;
     stringdat_view_init(csound, p->outstr);
-#ifdef CSOUNDAPI6
-    register_deinit(csound, p, sview_deinit);
-#endif
     return OK;
 }
 
@@ -3569,39 +3555,6 @@ sview_k(CSOUND *csound, CACHEGET *p) {
     p->outstr->size = ks->m;
     return OK;
 }
-
-typedef struct {
-    OPDS h;
-    STRINGDAT *s;
-    cs_float *idx;
-} STRPEEK;
-
-
-static i32
-strpeek_deinit(CSOUND *csound, STRPEEK *p) {
-    IGN(csound);
-    p->s->data = NULL;
-    p->s->size = 0;
-    return OK;
-}
-
-#ifdef CSOUNDAPI6
-static i32
-strpeek_i(CSOUND *csound, STRPEEK *p) {
-    int idx = (int)*p->idx;
-    if(idx < 0 || idx >= csound->GetStrsmax(csound)) {
-        return INITERRF("strpeek: index %d out of bounds", idx);
-    }
-    char *src = csound->GetStrsets(csound, idx);
-    if(src == NULL) {
-        return INITERRF("strpeek: index %d not set", idx);
-    }
-    stringdat_view(csound, p->s, src, strlen(src));
-    register_deinit(csound, p, strpeek_deinit);
-    return OK;
-}
-#endif
-
 
 static i32
 cachepop_i(CSOUND *csound, CACHEGET *p) {
@@ -3875,9 +3828,6 @@ pool_free_init(CSOUND *csound, POOL_0 *p) {
     if(when == 0) {
         return _pool_free(csound, *p->handleidx);
     }
-#ifdef CSOUNDAPI6
-    else { register_deinit(csound, p, pool_free_deinit); }
-#endif
     return OK;
 }
 
@@ -4051,102 +4001,6 @@ pool_at_i(CSOUND *csound, POOL_1 *p) {
 #define S(x) sizeof(x)
 
 static OENTRY localops[] = {
-#ifdef CSOUNDAPI6
-    { "dict_new.size", S(DICT_NEW), 0, 1, "i", "Sj", (SUBR)dict_new, NULL, NULL, NULL },
-    { "dict_new.many", S(DICT_NEW), 0, 1, "i", "S*", (SUBR)dict_new_many, NULL, NULL, NULL },
-    { "dict_new.many_k", S(DICT_NEW), 0, 2, "k", "S*", NULL, (SUBR)dict_new_many, NULL, NULL },
-
-    { "dict_free", S(DICT_FREE),   0, 1, "", "ip",   (SUBR)dict_free, NULL, NULL, NULL},
-
-    { "dict_clear.i", S(DICT_CLEAR), 0, 1, "", "i", (SUBR)dict_clear_i, NULL, NULL, NULL},
-    { "dict_clear.k", S(DICT_CLEAR), 0, 3, "", "k", (SUBR)dict_clear_init, (SUBR)dict_clear_perf, NULL, NULL},
-
-    { "dict_get.sk_k", S(DICT_GET_sf), 0, 3, "k", "iSO", (SUBR)dict_get_sf_0, (SUBR)dict_get_sf, NULL, NULL },
-    { "dict_get.ss_k", S(DICT_GET_ss), 0, 3, "S", "iS", (SUBR)dict_get_ss_0, (SUBR)dict_get_ss, NULL, NULL },
-    { "dict_geti.ss_i", S(DICT_GET_ss), 0, 1, "S", "iS", (SUBR)dict_get_ss_i, NULL, NULL, NULL},
-    { "dict_get.sf_i", S(DICT_GET_sf), 0, 1, "i", "iSo", (SUBR)dict_get_sf_i, NULL, NULL, NULL},
-    { "dict_get.if_k", S(DICT_GET_if), 0, 3, "k", "ikO", (SUBR)dict_get_if_0, (SUBR)dict_get_if, NULL, NULL },
-    { "dict_get.is_i", S(DICT_GET_is), 0, 1, "S", "ii", (SUBR)hashtab_get_is_i, NULL, NULL, NULL},
-
-    { "dict_get.is_k", S(DICT_GET_is), 0, 3, "S", "ik", (SUBR)hashtab_get_is_0, (SUBR)hashtab_get_is, NULL, NULL },
-
-    { "dict_get.if_i", S(DICT_GET_if), 0, 1, "i", "iio", (SUBR)dict_get_if_i, NULL, NULL, NULL},
-
-
-    { "dict_set.ss_k", S(DICT_SET_ss), 0, 3, "",  "iSS", (SUBR)dict_set_ss_0, (SUBR)dict_set_ss, NULL, NULL },
-    { "dict_set.sf_i", S(DICT_SET_sf), 0, 1, "",  "iSi", (SUBR)dict_set_sf_i, NULL, NULL, NULL},
-    { "dict_set.sf_k", S(DICT_SET_sf), 0, 3, "",  "iSk", (SUBR)dict_set_sf_0, (SUBR)dict_set_sf, NULL, NULL },
-    { "dict_set.if_i", S(DICT_SET_if), 0, 1, "",  "iii", (SUBR)dict_set_if_i, NULL, NULL, NULL},
-
-    { "dict_set.if_k", S(DICT_SET_if), 0, 3, "",  "ikk", (SUBR)dict_set_if_0, (SUBR)dict_set_if, NULL, NULL },
-
-    { "dict_set.is_i", S(DICT_SET_is), 0, 1, "",  "iiS", (SUBR)dict_set_is_i, NULL, NULL, NULL},
-
-    { "dict_set.is_k", S(DICT_SET_is), 0, 3, "",  "ikS", (SUBR)dict_set_is_0, (SUBR)dict_set_is, NULL, NULL },
-
-    { "dict_update.sf", S(DICT_UPDATE), 0, 1, "", "ii", (SUBR)dict_update_sf, NULL, NULL, NULL},
-
-    { "dict_del.del_i", S(DICT_DEL_i),   0, 1, "", "ii",   (SUBR)dict_del_i, NULL, NULL, NULL },
-    { "dict_del.del_k", S(DICT_DEL_i),   0, 2, "", "ik",   NULL, (SUBR)dict_del_i, NULL, NULL },
-    { "dict_del.del_S", S(DICT_DEL_s),   0, 2, "", "iS",   NULL, (SUBR)dict_del_s, NULL, NULL },
-    // { "dict_del", S(DICT_DEL_s), 0, 1, "", "iS", (SUBR)dict_del_s_atstop},
-    // { "dict_del", S(DICT_DEL_s), 0, 1, "", "ii", (SUBR)dict_del_i_atstop},
-
-    { "dict_print", S(DICT_PRINT), 0, 1, "", "i",  (SUBR)dict_print_i, NULL, NULL, NULL},
-    { "dict_print", S(DICT_PRINT), 0, 3, "", "ik", (SUBR)dict_print_k_0, (SUBR)dict_print_k, NULL, NULL},
-
-    { "dict_query.k", S(DICT_QUERY1), 0, 3, "k", "iS", (SUBR)dict_query_0, (SUBR)dict_query, NULL, NULL },
-    { "dict_query.k[]", S(DICT_QUERY_ARR), 0, 3, "k[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
-    { "dict_query.S[]", S(DICT_QUERY_ARR), 0, 3, "S[]", "iS", (SUBR)dict_query_arr_0, (SUBR)dict_query_arr, NULL, NULL},
-
-    { "dict_iter", S(DICT_ITER), 0, 3, "SSk", "iP", (SUBR)dict_iter_ss_0, (SUBR)dict_iter_perf, NULL, NULL},
-    { "dict_iter", S(DICT_ITER), 0, 3, "Skk", "iP", (SUBR)dict_iter_sf_0, (SUBR)dict_iter_perf, NULL, NULL},
-    { "dict_iter", S(DICT_ITER), 0, 3, "kSk", "iP", (SUBR)dict_iter_is_0, (SUBR)dict_iter_perf, NULL, NULL},
-    { "dict_iter", S(DICT_ITER), 0, 3, "kkk", "iP", (SUBR)dict_iter_if_0, (SUBR)dict_iter_perf, NULL, NULL},
-
-    { "dict_size.k", S(DICT_QUERY1), 0, 3, "k", "k", (SUBR)dict_size_0, (SUBR)dict_size, NULL, NULL},
-    { "dict_size.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_size_0, NULL, NULL, NULL},
-
-    { "dict_exists.i", S(DICT_QUERY1), 0, 1, "i", "i", (SUBR)dict_exists, NULL, NULL, NULL },
-
-    { "dict_loadstr", S(DICT_LOADSTR), 0, 1, "i", "S", (SUBR)dict_loadstr, NULL, NULL, NULL},
-    { "dict_dump", S(DICT_DUMP), 0, 1, "S", "i", (SUBR)dict_dump, NULL, NULL, NULL},
-    // { "cacheput.i", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i },
-    // { "cacheput.k", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf },
-    { "sref.i_set", S(CACHEPUT), 0, 1, "i", "S", (SUBR)cacheput_i, NULL, NULL, NULL },
-    { "sref.k_set", S(CACHEPUT), 0, 3, "k", "S", (SUBR)cacheput_0, (SUBR)cacheput_perf, NULL, NULL },
-
-    // { "strcache.i_get", S(CACHEGET), 0, 1, "S", "i", (SUBR)cacheget_i },
-    // { "strcache.k_get", S(CACHEGET), 0, 3, "S", "k", (SUBR)cacheget_0, (SUBR)cacheget_perf },
-
-    // { "strview.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview_i},
-    { "sderef.i", S(CACHEGET), 0, 1, "S", "i", (SUBR)sview_i, NULL, NULL, NULL},
-    { "sderef.k", S(CACHEGET), 0, 3, "S", "k", (SUBR)sview_init, (SUBR)sview_k, NULL, NULL},
-
-    { "strpeek.i", S(STRPEEK), 0, 1, "S", "i", (SUBR)strpeek_i, NULL, NULL, NULL },
-
-    { "pool_gen", S(POOL_NEW), 0, 1, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL},
-    { "pool_new", S(POOL_NEW), 0, 1, "i", "o",  (SUBR)pool_empty, NULL, NULL, NULL},
-    { "pool_free", S(POOL_0),  0, 1, "",  "io", (SUBR)pool_free_init, NULL, NULL, NULL },
-
-    { "pool_pop.i", S(POOL_1), 0, 1, "i", "ij", (SUBR)pool_pop_i, NULL, NULL, NULL},
-    { "pool_pop.k", S(POOL_1), 0, 3, "k", "iJ", (SUBR)pool_1_init, (SUBR)pool_pop_perf, NULL, NULL},
-
-    { "pool_push.i", S(POOL_PUSH), 0, 1, "", "iio", (SUBR)pool_push_i, NULL, NULL, NULL},
-    { "pool_push.k", S(POOL_PUSH), 0, 3, "", "ik", (SUBR)pool_push_init, (SUBR)pool_push_perf, NULL, NULL},
-
-    { "pool_capacity.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_capacity_i, NULL, NULL, NULL},
-    { "pool_capacity.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_capacity_perf, NULL, NULL},
-
-    { "pool_size.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_size_i, NULL, NULL, NULL},
-    { "pool_size.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_size_perf, NULL, NULL},
-
-    { "pool_isfull.i", S(POOL_1), 0, 1, "i", "i", (SUBR)pool_isfull_i, NULL, NULL, NULL},
-    { "pool_isfull.k", S(POOL_1), 0, 3, "k", "i", (SUBR)pool_1_init, (SUBR)pool_isfull_perf, NULL, NULL},
-
-    { "pool_at.i", S(POOL_1), 0, 1, "i", "ii", (SUBR)pool_at_i, NULL, NULL, NULL},
-    { "pool_at.k", S(POOL_1), 0, 3, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf, NULL, NULL},
-#else
     // Csound 7
     { "dict_new.size", S(DICT_NEW), 0, "i", "Sj", (SUBR)dict_new, NULL, NULL, NULL, 0 },
     { "dict_new.many", S(DICT_NEW), 0, "i", "S*", (SUBR)dict_new_many, NULL, NULL, NULL, 0 },
@@ -4206,8 +4060,6 @@ static OENTRY localops[] = {
     { "sderef.i", S(CACHEGET), 0, "S", "i", (SUBR)sview_i, NULL, (SUBR)sview_deinit, NULL, 0},
     { "sderef.k", S(CACHEGET), 0, "S", "k", (SUBR)sview_init, (SUBR)sview_k, (SUBR)sview_deinit, NULL, 0},
 
-    // { "strpeek.i", S(STRPEEK), 0, "S", "i", (SUBR)strpeek_i, NULL, NULL, NULL },
-
     { "pool_gen", S(POOL_NEW), 0, "i", "io", (SUBR)pool_gen, NULL, NULL, NULL, 0},
     { "pool_new", S(POOL_NEW), 0, "i", "o", (SUBR)pool_empty, NULL, NULL, NULL, 0},
     { "pool_free", S(POOL_0), 0, "", "io", (SUBR)pool_free_init, NULL, (SUBR)pool_free_deinit, NULL, 0},
@@ -4229,7 +4081,6 @@ static OENTRY localops[] = {
 
     { "pool_at.i", S(POOL_1), 0, "i", "ii", (SUBR)pool_at_i, NULL, NULL, NULL, 0},
     { "pool_at.k", S(POOL_1), 0, "k", "ik", (SUBR)pool_1_init, (SUBR)pool_at_perf, NULL, NULL, 0},
-#endif
 };
 
 LINKAGE

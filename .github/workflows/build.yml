@@ -2,11 +2,8 @@ name: Build And Publish
 on: push
 jobs:
   buildmacuniversal:
-    name: Build plugins for mac, ${{ matrix.csound-branch }}
+    name: Build plugins for mac (csound 7)
     runs-on: macos-latest
-    strategy:
-      matrix:
-        csound-branch: ["develop"]
 
     steps:
       - name: Checkout
@@ -16,8 +13,8 @@ jobs:
         run: |
           git submodule update --init csound src/jsfx/jsusfx
           cd csound
-          git fetch origin "refs/heads/${{ matrix.csound-branch }}:refs/remotes/origin/${{ matrix.csound-branch }}"
-          git switch --detach origin/${{ matrix.csound-branch }}
+          git fetch origin "refs/heads/develop:refs/remotes/origin/develop"
+          git switch --detach origin/develop
           git submodule update --init --recursive
           cd ..
 
@@ -25,20 +22,10 @@ jobs:
         run: |
           set -x
 
-          if [[ ${{ matrix.csound-branch }} == csound6 ]]; then
-            APIVERSION=6.0
-            APIMAJOR=6
-            ln -s csound/Android/CsoundAndroid/jni/version.h csound/include  
-          else
-            APIVERSION=7.0
-            APIMAJOR=7
-            ln -s "${GITHUB_WORKSPACE}/csound/platform/android/CsoundAndroid/jni/version.h" "${GITHUB_WORKSPACE}/csound/include/version.h"
-          fi
-        
           rm -fr build && mkdir build && cd build
 
-          echo "APIVERSION = $APIVERSION"
-          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DAPIVERSION=$APIVERSION ..
+          APIMAJOR=7
+          cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" ..
           cmake --build . --parallel
 
           cd ..
@@ -56,13 +43,6 @@ jobs:
           mv $ARCHIVE artifacts
 
       - uses: actions/upload-artifact@v4
-        if: matrix.csound-branch == 'csound6'
-        with:
-          name: plugins-csound6-macos-universal
-          path: artifacts/*
-
-      - uses: actions/upload-artifact@v4
-        if: matrix.csound-branch == 'develop'
         with:
           name: plugins-csound7-macos-universal
           path: artifacts/*
@@ -257,9 +237,7 @@ jobs:
 
       - name: Configure and build repository plugins
         run: |
-          ln -sfn "${GITHUB_WORKSPACE}/csound-build/include/version.h" "${GITHUB_WORKSPACE}/csound/include/version.h"
           cmake -B plugins-build -S . \
-            -DAPIVERSION=7.0 \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_PREFIX_PATH="${DEPS_PREFIX}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
@@ -399,8 +377,6 @@ jobs:
 
           cd csound
           git switch --detach origin/develop
-          Copy-Item "platform/android/CsoundAndroid/jni/version.h" -Destination "include"
-          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "include"
           cd ..
 
           Remove-Item -Recurse -Force build -ErrorAction Ignore
@@ -409,7 +385,7 @@ jobs:
 
           # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
 
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF "-DAPIVERSION=7.0" ..
+          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF ..
           cmake --build . --parallel --config Release
           cd ..
           ls build/Release
@@ -437,14 +413,12 @@ jobs:
 
           cd csound
           git switch --detach origin/develop
-          ln -s ../platform/android/CsoundAndroid/jni/version.h include/version.h
-          # ln -s Android/CsoundAndroid/jni/version.h ./include
           cd ..
 
           rm -fr build && mkdir build && cd build
 
           # cmake -DSKIP_FAST_MATH=True ..
-          cmake -DAPIVERSION=7.0 ..
+          cmake ..
           cmake --build . --parallel
 
           ls
@@ -472,118 +446,9 @@ jobs:
           name: plugins-csound7-linux-${{ runner.arch == 'X64' && 'x86_64' || 'aarch64' }}
           path: artifacts/*
 
-  buildjob6:
-    name: Build plugins on ${{ matrix.os }} (csound 6)
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-22.04]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Checkout submodules
-        run: |
-          git submodule update --init csound src/jsfx/jsusfx
-          cd csound
-          git fetch origin refs/heads/csound6:refs/remotes/origin/csound6
-          git switch --detach origin/csound6
-          git submodule update --init --recursive
-          cd ..
-
-      - name: linux build
-        if: runner.os == 'linux'
-        run: |
-          sudo apt update
-          sudo apt-get install libsndfile1-dev
-          sudo apt-get install nasm
-          # sudo apt-get install libfluidsynth-dev
-
-          git submodule status --recursive
-
-          cd csound
-          git switch --detach origin/csound6
-          cd include
-          ln -s ../Android/CsoundAndroid/jni/version.h .
-          cd ../..
-
-          rm -fr build && mkdir build && cd build
-
-          # cmake -DSKIP_FAST_MATH=True ..
-          cmake -DAPIVERSION=6.0 ..
-          cmake --build . --parallel
-
-          cd ..
-          mkdir -p artifacts
-          cp build/*.so artifacts
-          cp assets/README.txt artifacts
-
-          ARCHIVE=plugins-csound6-linux.zip
-          7z a $ARCHIVE ./artifacts/*
-          mv $ARCHIVE artifacts
-
-      # Windows: Restore from cache the previously built ports.
-      # If cache-miss, download and build vcpkg (aka "bootstrap vcpkg").
-      #- name: Restore from cache and install vcpkg
-      #  if: runner.os == 'windows'
-      #  # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
-      #  uses: lukka/run-vcpkg@v6
-      #  with:
-      #    vcpkgArguments: libsndfile:x64-windows  # fluidsynth:x64-windows
-      #    vcpkgTriplet: x64-windows
-      #    vcpkgGitCommitId: "0bf3923f9fab4001c00f0f429682a0853b5749e0"
-      #    # setupOnly: true
-
-      - name: windows build
-        if: runner.os == 'windows'
-        run: |
-          # where.exe vcpkg
-          # $VCPKG_ROOT/vcpkg integrate install
-          # vcpkg integrate install
-          # $VCPKG_ROOT/vcpkg install libsndfile:x64-windows
-
-          #vcpkg install libsndfile:x64-windows
-
-          choco install libsndfile
-          # ls "${ENV:PROGRAMFILES}\libsndfile\include"
-          # choco install fluidsynth
-
-          # git submodule foreach git pull origin master
-          git submodule status --recursive
-          echo "Finished submodules"
-
-          # Copy-Item "Android/CsoundAndroid/jni/version.h" -Destination "csound/include"
-
-          ls
-          Remove-Item -Recurse -Force build -ErrorAction Ignore
-          mkdir build
-          cd build
-
-          # cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows ..
-
-          cmake -A x64 -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF "-DAPIVERSION=6.0" ..
-          cmake --build . --parallel --config Release
-          cd ..
-          ls build/Release
-
-          New-Item artifacts -ItemType Directory -ea 0
-          Copy-Item -Path "build/Release/*.dll" -Destination "artifacts"
-          Copy-Item "assets/README.txt" -Destination "artifacts"
-          ls artifacts
-
-          set-variable -name ARCHIVE -value "plugins-csound6-windows.zip"
-          rm $ARCHIVE -ErrorAction Ignore
-          7z a $ARCHIVE ./artifacts/*
-          mv $ARCHIVE artifacts
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: plugins-csound6-${{ runner.os }}
-          path: artifacts/*
-
   publish:
     name: Publish artifacts as a Pre-Release
-    needs: [buildjob6, buildjob7, buildmacuniversal, buildlinuxportable]
+    needs: [buildjob7, buildmacuniversal, buildlinuxportable]
     runs-on: ubuntu-latest
     permissions:
       contents: write
