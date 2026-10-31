@@ -15,8 +15,14 @@
   "repository": "https://github.com/csound-plugins/csound-plugins",
   "binaries": [
     {
-      "platform": "linux",
+      "platform": "linux-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux-x86_64.zip",
+      "extractpath": "libpoly.so",
+      "csound_version": ">=7.0"
+    },
+    {
+      "platform": "linux-arm64",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-linux-arm64.zip",
       "extractpath": "libpoly.so",
       "csound_version": ">=7.0"
     },
@@ -27,7 +33,7 @@
       "csound_version": ">=7.0"
     },
     {
-      "platform": "windows",
+      "platform": "windows-x86_64",
       "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-windows.zip",
       "extractpath": "poly.dll",
       "csound_version": ">=7.0"
