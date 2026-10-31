@@ -1,8 +1,8 @@
 name: Build And Publish
 on: push
 jobs:
-  buildmacuniversal:
-    name: Build plugins for mac (csound 7)
+  buildmacarm64:
+    name: Build plugins for mac arm64 (csound 7)
     runs-on: macos-latest
 
     steps:
@@ -24,7 +24,6 @@ jobs:
 
           rm -fr build && mkdir build && cd build
 
-          APIMAJOR=7
           cmake -DSKIP_FAST_MATH=True -DBUILD_JSUSFX_OPCODES=OFF -DBUILD_SNDMETA_OPCODES=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" ..
           cmake --build . --parallel
 
@@ -38,13 +37,13 @@ jobs:
           fi
 
           # Make zip for release
-          ARCHIVE=plugins-csound$APIMAJOR-macos-universal.zip
+          ARCHIVE=plugins-csound7-macos-arm64.zip
           7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
 
       - uses: actions/upload-artifact@v4
         with:
-          name: plugins-csound7-macos-universal
+          name: plugins-csound7-macos-arm64
           path: artifacts/*
 
   buildlinuxportable:
@@ -428,8 +427,10 @@ jobs:
           cp build/*.so artifacts
           cp assets/README.txt artifacts
 
-          # Make zip for release
+          # Make zip for release. Use one architecture name for every
+          # platform ("arm64", not the Linux-only "aarch64").
           ARCH=$(uname -m)
+          [ "$ARCH" = "aarch64" ] && ARCH=arm64
           ARCHIVE=plugins-csound7-linux-$ARCH.zip
           7z a $ARCHIVE ./artifacts/*
           mv $ARCHIVE artifacts
@@ -443,12 +444,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: runner.os == 'linux'
         with:
-          name: plugins-csound7-linux-${{ runner.arch == 'X64' && 'x86_64' || 'aarch64' }}
+          name: plugins-csound7-linux-${{ runner.arch == 'X64' && 'x86_64' || 'arm64' }}
           path: artifacts/*
 
   publish:
     name: Publish artifacts as a Pre-Release
-    needs: [buildjob7, buildmacuniversal, buildlinuxportable]
+    needs: [buildjob7, buildmacarm64, buildlinuxportable]
     runs-on: ubuntu-latest
     permissions:
       contents: write

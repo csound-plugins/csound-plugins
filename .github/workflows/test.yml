@@ -40,11 +40,11 @@ jobs:
           # The publish job in build.yml re-uploads the 'latest' assets
           # concurrently with this job, so the asset may 404 while it is
           # being replaced. Wait for it instead of failing immediately.
-          URL="https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound7-macos-universal.zip"
+          URL="https://github.com/csound-plugins/csound-plugins/releases/download/latest/plugins-csound7-macos-arm64.zip"
           OK=0
           for i in $(seq 1 45); do
-            rm -f plugins-csound7-macos-universal.zip
-            if wget "$URL" && unzip -o plugins-csound7-macos-universal.zip; then
+            rm -f plugins-csound7-macos-arm64.zip
+            if wget "$URL" && unzip -o plugins-csound7-macos-arm64.zip; then
               OK=1
               break
             fi
@@ -81,7 +81,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: artifacts-macos-universal-csound-7
+          name: artifacts-macos-arm64-csound-7
           path: artifacts/*
 
 

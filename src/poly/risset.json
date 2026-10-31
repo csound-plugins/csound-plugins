@@ -21,14 +21,8 @@
       "csound_version": ">=7.0"
     },
     {
-      "platform": "macos-x86_64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-universal.zip",
-      "extractpath": "libpoly.dylib",
-      "csound_version": ">=7.0"
-    },
-    {
       "platform": "macos-arm64",
-      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-universal.zip",
+      "url": "https://github.com/csound-plugins/csound-plugins/releases/download/v${version}/plugins-csound7-macos-arm64.zip",
       "extractpath": "libpoly.dylib",
       "csound_version": ">=7.0"
     },
