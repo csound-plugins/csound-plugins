@@ -54,7 +54,8 @@ if "$install_system_deps"; then
     sudo apt-get update -qq
     sudo apt-get install -y --no-install-recommends \
         build-essential ca-certificates curl flex bison git nasm php-cli \
-        pkg-config xz-utils zip unzip patchelf libasound2-dev libjack-jackd2-dev
+        pkg-config xz-utils zip unzip patchelf libasound2-dev libjack-jackd2-dev \
+        libpipewire-0.3-dev
 fi
 
 for command in ar cmake curl make patchelf pkg-config tar unzip zip; do
@@ -155,7 +156,7 @@ PKG_CONFIG_PATH="$DEPS_PREFIX/lib/pkgconfig" cmake -B "$BUILD_ROOT/csound-build"
     -DCMAKE_MODULE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
     -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="$ROOT/.github/cmake/linux-portable.cmake" \
     -DBUILD_PLUGINS=ON -DUSE_AVX2=ON -DUSE_LIBLO=ON -DUSE_ALSA=ON -DUSE_JACK=ON \
-    -DUSE_PIPEWIRE=OFF -DUSE_PORTMIDI=ON -DUSE_PORTAUDIO=ON -DUSE_PULSEAUDIO=OFF \
+    -DUSE_PIPEWIRE=ON -DUSE_PORTMIDI=ON -DUSE_PORTAUDIO=ON -DUSE_PULSEAUDIO=OFF \
     -DBUILD_UTILITIES=OFF \
     -DUSE_FLTK=OFF -DBUILD_VIRTUAL_KEYBOARD=OFF -DBUILD_JAVA_INTERFACE=OFF \
     -DBUILD_PYTHON_INTERFACE=OFF -DINSTALL_PYTHON_INTERFACE=OFF -DBUILD_LUA_INTERFACE=OFF \
@@ -167,6 +168,12 @@ cmake --build "$BUILD_ROOT/csound-build" -j"$JOBS"
 ! ldd "$BUILD_ROOT/csound-build/librtpa.so" | grep -F 'libportaudio.so'
 ldd "$BUILD_ROOT/csound-build/librtpa.so" | grep -F 'libasound.so'
 ldd "$BUILD_ROOT/csound-build/librtpa.so" | grep -F 'libjack.so'
+if [ ! -f "$BUILD_ROOT/csound-build/librtpw.so" ]; then
+    echo "error: PipeWire backend was not built;" \
+         "libpipewire-0.3-dev >= 0.3.50 is required" >&2
+    exit 1
+fi
+ldd "$BUILD_ROOT/csound-build/librtpw.so" | grep -F 'libpipewire-0.3.so'
 ! ldd "$BUILD_ROOT/csound-build/libemugens.so" | grep -E 'lib(pipewire|asound|jack)\.so'
 
 cmake -B "$BUILD_ROOT/plugins-build" -S "$ROOT" \

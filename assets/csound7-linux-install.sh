@@ -36,7 +36,7 @@ usage() {
     cat <<EOF
 Usage: ${0##*/} [OPTIONS]
 
-Installs csound7 (static build, no dependencies, glibc>=2.2.5, avx2)
+Installs csound7 (glibc>=2.39, x86-64-v3; uses system ALSA/JACK/PipeWire)
 
 This installer is interactive and must be run from a terminal.
 

@@ -48,7 +48,7 @@ jobs:
 
   buildlinuxportable:
     name: Build portable Linux Csound with externals
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     #container:
     #  image: ubuntu:20.04
     env:
@@ -79,7 +79,8 @@ jobs:
             xz-utils \
             zip \
             libasound2-dev \
-            libjack-jackd2-dev
+            libjack-jackd2-dev \
+            libpipewire-0.3-dev
 
       - name: Checkout repository and submodules
         uses: actions/checkout@v4
@@ -95,7 +96,7 @@ jobs:
         with:
           path: ${{ env.DEPS_PREFIX }}
           key: |
-            static-deps-ubuntu22
+            static-deps-ubuntu24
             -ogg${{ env.LIBOGG_VERSION }}
             -vorbis${{ env.LIBVORBIS_VERSION }}
             -opus${{ env.LIBOPUS_VERSION }}
@@ -203,7 +204,7 @@ jobs:
             -DUSE_LIBLO=ON \
             -DUSE_ALSA=ON \
             -DUSE_JACK=ON \
-            -DUSE_PIPEWIRE=OFF \
+            -DUSE_PIPEWIRE=ON \
             -DUSE_PORTMIDI=ON \
             -DUSE_PORTAUDIO=ON \
             -DUSE_PULSEAUDIO=OFF \
@@ -229,6 +230,14 @@ jobs:
           ! ldd csound-build/librtpa.so | grep -F 'libportaudio.so'
           ldd csound-build/librtpa.so | grep -F 'libasound.so'
           ldd csound-build/librtpa.so | grep -F 'libjack.so'
+
+      - name: Check PipeWire backend is built against the system library
+        run: |
+          test -f csound-build/librtpw.so || {
+            echo "error: PipeWire backend was not built; libpipewire-0.3-dev >= 0.3.50 is required" >&2
+            exit 1
+          }
+          ldd csound-build/librtpw.so | grep -F 'libpipewire-0.3.so'
 
       - name: Check unrelated built-in plugins have no audio backend dependencies
         run: |

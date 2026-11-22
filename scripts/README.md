@@ -27,4 +27,6 @@ test the user installer from that archive:
     scripts/buildlinuxportable-local.sh
 
 The script installs the job's Ubuntu build dependencies using `apt` and writes
-all build output to `local-build/linux-portable/`.
+all build output to `local-build/linux-portable/`. It requires PipeWire
+development headers >= 0.3.50 (`libpipewire-0.3-dev`), so the host must be at
+least Ubuntu 24.04.
